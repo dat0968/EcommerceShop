@@ -1,5 +1,6 @@
 using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.Repositories.Product;
+using APIClothesEcommerceShop.Repositories.ProductDetails;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
@@ -60,6 +61,7 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

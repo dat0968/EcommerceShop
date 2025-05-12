@@ -1,13 +1,14 @@
 ﻿using APIClothesEcommerceShop.DTO.Product;
+using APIClothesEcommerceShop.Models;
 
 namespace APIClothesEcommerceShop.Repositories.Product
 {
     public interface IProductRepository
     {
-        Task<ProductResponseDTO> GetAll();
+        Task<List<ProductResponseDTO>> GetAll();
         Task<ProductResponseDTO> GetById(int id);
-        Task<ProductResponseDTO> Add(AddProductResquestDTO model);
-        Task<ProductResponseDTO> Update(UpdateProductResquestDTO model);
+        Task<Sanpham> Add(Sanpham model);
+        Task<Sanpham> Update(Sanpham model);
         Task Cancel(int id);
     }
 }

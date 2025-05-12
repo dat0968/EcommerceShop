@@ -1,7 +1,9 @@
 ﻿using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO.CategoryDetails;
+using APIClothesEcommerceShop.DTO.ImageProduct;
 using APIClothesEcommerceShop.DTO.Product;
 using APIClothesEcommerceShop.DTO.ProductDetails;
+using APIClothesEcommerceShop.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIClothesEcommerceShop.Repositories.Product
@@ -13,9 +15,18 @@ namespace APIClothesEcommerceShop.Repositories.Product
         {
             this.db = db;
         }
-        public Task<ProductResponseDTO> Add(AddProductResquestDTO model)
+        public async Task<Sanpham> Add(Sanpham model)
         {
-            throw new NotImplementedException();
+            try
+            {
+                db.Sanphams.Add(model);
+                await db.SaveChangesAsync();
+                return model;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
 
         public async Task Cancel(int id)
@@ -27,6 +38,9 @@ namespace APIClothesEcommerceShop.Repositories.Product
                 {
                     throw new Exception("Not Found Product");
                 }
+                findProduct.IsActive = true;
+                db.Update(findProduct);
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -34,43 +48,93 @@ namespace APIClothesEcommerceShop.Repositories.Product
             }
         }
 
-        public async Task<ProductResponseDTO> GetAll()
+        public async Task<List<ProductResponseDTO>> GetAll()
         {
-            //try
-            //{
-            //    var GetProduct = await db.Sanphams.AsNoTracking().Select(p => new ProductResponseDTO
-            //    {
-            //        MaSp = p.MaSp,
-            //        TenSanPham = p.TenSanPham,
-            //        MoTa = p.MoTa,
-            //        CategoryDetails = db.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
-            //        {
-            //            MaDanhMucCha = p.MaDanhMucCha,
-            //            MaDanhMucCon = p.MaDanhMucCon
-            //        }).ToList(),
-            //        ProductDetails = db.Chitietsanphams.Select(p => new ProductDetailResponseDTO
-            //        {
-            //            MaCtsp = p.MaCtsp,
-            //            KichThuoc = p.KichThuoc,
-            //            MauSac = p.MauSac,
-            //            SoLuongTon = p.SoLuongTon,
-            //            DonGia = p.DonGia,
-            //            Hinhanhs = db.Hinhanhs.
-            //        }).Where(p => p.IsActive == false).ToList(),
-            //    }).Where(p => p.IsActive == false).ToListAsync();
-
-            //}
-            throw new NotImplementedException();
+            try
+            {
+                var GetProduct = await db.Sanphams.AsNoTracking().Select(p => new ProductResponseDTO
+                {
+                    MaSp = p.MaSp,
+                    TenSanPham = p.TenSanPham,
+                    MoTa = p.MoTa,
+                    CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
+                    {
+                        MaDanhMucCha = p.MaDanhMucCha,
+                        MaDanhMucCon = p.MaDanhMucCon
+                    }).ToList(),
+                    ProductDetails = p.Chitietsanphams.Select(p => new ProductDetailResponseDTO
+                    {
+                        MaCtsp = p.MaCtsp,
+                        KichThuoc = p.KichThuoc,
+                        MauSac = p.MauSac,
+                        SoLuongTon = p.SoLuongTon,
+                        DonGia = p.DonGia,
+                        Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                        {
+                            MaCtsp = p.MaCtsp,
+                            TenHinhAnh = p.TenHinhAnh
+                        }).ToList(),
+                    }).Where(p => p.IsActive == false).ToList(),
+                }).Where(p => p.IsActive == false).ToListAsync();
+                return GetProduct;
+            }catch(Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
 
-        public Task<ProductResponseDTO> GetById(int id)
+        public async Task<ProductResponseDTO> GetById(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var GetProductById = await db.Sanphams.AsNoTracking().Select(p => new ProductResponseDTO
+                {
+                    MaSp = p.MaSp,
+                    TenSanPham = p.TenSanPham,
+                    MoTa = p.MoTa,
+                    CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
+                    {
+                        MaDanhMucCha = p.MaDanhMucCha,
+                        MaDanhMucCon = p.MaDanhMucCon
+                    }).ToList(),
+                    ProductDetails = p.Chitietsanphams.Select(p => new ProductDetailResponseDTO
+                    {
+                        MaCtsp = p.MaCtsp,
+                        KichThuoc = p.KichThuoc,
+                        MauSac = p.MauSac,
+                        SoLuongTon = p.SoLuongTon,
+                        DonGia = p.DonGia,
+                        Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                        {
+                            MaCtsp = p.MaCtsp,
+                            TenHinhAnh = p.TenHinhAnh
+                        }).ToList(),
+                    }).Where(p => p.IsActive == false).ToList(),
+                }).FirstOrDefaultAsync(p => p.IsActive == false && p.MaSp == id);
+                if (GetProductById == null)
+                {
+                    throw new Exception("Not Found Product");
+                }
+                return GetProductById;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
 
-        public Task<ProductResponseDTO> Update(UpdateProductResquestDTO model)
+        public async Task<Sanpham> Update(Sanpham model)
         {
-            throw new NotImplementedException();
+            try
+            {
+                db.Sanphams.Update(model);
+                await db.SaveChangesAsync();
+                return model;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
     }
 }
