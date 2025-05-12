@@ -50,9 +50,7 @@ public partial class EcommerceShopContext : DbContext
 
     public virtual DbSet<Sanpham> Sanphams { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=NGUYENTHANHDATP\\MSSQLSERVER03;Initial Catalog=EcommerceShop;Integrated Security=True;Trust Server Certificate=True");
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -112,7 +110,7 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("CHITIETSANPHAM");
 
             entity.Property(e => e.MaCtsp).HasColumnName("MaCTSP");
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.KichThuoc).HasMaxLength(30);
             entity.Property(e => e.MaSp).HasColumnName("MaSP");
             entity.Property(e => e.MauSac).HasMaxLength(30);
@@ -129,7 +127,7 @@ public partial class EcommerceShopContext : DbContext
 
             entity.ToTable("CHUCVU");
 
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Luong).HasColumnType("decimal(11, 2)");
             entity.Property(e => e.TenChucVu).HasMaxLength(40);
         });
@@ -141,7 +139,7 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("COMBO");
 
             entity.Property(e => e.Hinh).HasMaxLength(200);
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.MoTa).HasMaxLength(500);
             entity.Property(e => e.TenCombo).HasMaxLength(100);
         });
@@ -176,7 +174,7 @@ public partial class EcommerceShopContext : DbContext
 
             entity.ToTable("DANHMUCCHA");
 
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.TenDanhMucCha).HasMaxLength(40);
         });
 
@@ -186,7 +184,7 @@ public partial class EcommerceShopContext : DbContext
 
             entity.ToTable("DANHMUCCON");
 
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.TenDanhMucCon).HasMaxLength(40);
         });
 
@@ -266,7 +264,7 @@ public partial class EcommerceShopContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("HinhThucTT");
             entity.Property(e => e.HoTen).HasMaxLength(50);
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.LyDoHuy).HasMaxLength(500);
             entity.Property(e => e.MaCode)
                 .HasMaxLength(20)
@@ -321,7 +319,7 @@ public partial class EcommerceShopContext : DbContext
             entity.Property(e => e.GioiTinh).HasMaxLength(5);
             entity.Property(e => e.HinhDaiDien).HasColumnType("text");
             entity.Property(e => e.HoTen).HasMaxLength(40);
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.MatKhau)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -358,7 +356,7 @@ public partial class EcommerceShopContext : DbContext
             entity.Property(e => e.NgayBatDau).HasColumnType("datetime");
             entity.Property(e => e.NgayKetThuc).HasColumnType("datetime");
             entity.Property(e => e.PhanTramGiam).HasColumnType("decimal(5, 2)");
-            entity.Property(e => e.TrangThai).HasDefaultValue(false);
+            entity.Property(e => e.TrangThai).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<Nhanvien>(entity =>
@@ -380,7 +378,7 @@ public partial class EcommerceShopContext : DbContext
                 .IsFixedLength();
             entity.Property(e => e.GioiTinh).HasMaxLength(5);
             entity.Property(e => e.HoTen).HasMaxLength(40);
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.MatKhau)
                 .HasMaxLength(255)
                 .IsUnicode(false)
@@ -425,7 +423,7 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("SANPHAM");
 
             entity.Property(e => e.MaSp).HasColumnName("MaSP");
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.MoTa).HasMaxLength(500);
             entity.Property(e => e.TenSanPham).HasMaxLength(100);
         });
