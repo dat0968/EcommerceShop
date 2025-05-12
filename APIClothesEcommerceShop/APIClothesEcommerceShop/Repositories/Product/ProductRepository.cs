@@ -38,7 +38,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                 {
                     throw new Exception("Not Found Product");
                 }
-                findProduct.IsActive = true;
+                findProduct.IsActive = false;
                 db.Update(findProduct);
                 await db.SaveChangesAsync();
             }
@@ -74,8 +74,8 @@ namespace APIClothesEcommerceShop.Repositories.Product
                             MaCtsp = p.MaCtsp,
                             TenHinhAnh = p.TenHinhAnh
                         }).ToList(),
-                    }).Where(p => p.IsActive == false).ToList(),
-                }).Where(p => p.IsActive == false).ToListAsync();
+                    }).Where(p => p.IsActive == true).ToList(),
+                }).Where(p => p.IsActive == true).ToListAsync();
                 return GetProduct;
             }catch(Exception ex)
             {
@@ -109,8 +109,8 @@ namespace APIClothesEcommerceShop.Repositories.Product
                             MaCtsp = p.MaCtsp,
                             TenHinhAnh = p.TenHinhAnh
                         }).ToList(),
-                    }).Where(p => p.IsActive == false).ToList(),
-                }).FirstOrDefaultAsync(p => p.IsActive == false && p.MaSp == id);
+                    }).Where(p => p.IsActive == true).ToList(),
+                }).FirstOrDefaultAsync(p => p.IsActive == true && p.MaSp == id);
                 if (GetProductById == null)
                 {
                     throw new Exception("Not Found Product");

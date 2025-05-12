@@ -33,7 +33,7 @@ namespace APIClothesEcommerceShop.Repositories.ProductDetails
                 {
                     throw new Exception("Not Found Details Product");
                 }
-                FindProductDetails.IsActive = true;
+                FindProductDetails.IsActive = false;
             }
             catch (Exception ex)
             {
@@ -43,7 +43,15 @@ namespace APIClothesEcommerceShop.Repositories.ProductDetails
 
         public async Task<Chitietsanpham> Update(Chitietsanpham model)
         {
-            throw new NotImplementedException();
+            try
+            {
+                db.Chitietsanphams.Update(model);
+                await db.SaveChangesAsync();
+                return model;
+            }catch(Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
     }
 }
