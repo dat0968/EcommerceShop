@@ -1,0 +1,6 @@
+@APIClothesEcommerceShop_HostAddress = http://localhost:5031
+
+GET {{APIClothesEcommerceShop_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
