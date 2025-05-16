@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.Statistics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,8 +26,15 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProductStatistics()
         {
-            var result = await _statisticRepository.GetProductStatisticsAsync();
-            return Ok(result);
+            try
+            {
+                var result = await _statisticRepository.GetProductStatisticsAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
         [HttpGet]
         public async Task<IActionResult> GetCustomerStatistics()

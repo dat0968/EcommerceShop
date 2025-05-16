@@ -12,6 +12,11 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<EcommerceShopContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
+});
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -44,10 +49,6 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityRequirement(securityRequirement);
 
-});
-builder.Services.AddDbContext<EcommerceShopContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
 });
 builder.Services.AddCors(options =>
 {

@@ -6,6 +6,7 @@ using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.Statistics;
 using APIClothesEcommerceShop.DTO.Statistics.Sub;
+using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Utils;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,7 +19,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         {
             _context = context;
         }
-
         #region Đơn hàng
 
         /// <summary>

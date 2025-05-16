@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.Statistics;
+using APIClothesEcommerceShop.Models;
 
 namespace APIClothesEcommerceShop.Repositories.Statistics
 {
