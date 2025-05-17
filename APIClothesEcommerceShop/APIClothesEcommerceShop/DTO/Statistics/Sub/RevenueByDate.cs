@@ -9,5 +9,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
     {
         public DateTime Date { get; set; } // Ngày
         public decimal Revenue { get; set; } // Doanh thu trong ngày này
+        public int Count { get; set; } // Số lượng đơn hàng trong ngày này
     }
 }

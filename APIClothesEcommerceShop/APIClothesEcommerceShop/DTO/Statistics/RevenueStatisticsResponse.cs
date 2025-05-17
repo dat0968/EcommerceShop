@@ -25,12 +25,14 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public int Month { get; set; } // Tháng
         public int Year { get; set; } // Năm
         public decimal Revenue { get; set; } // Doanh thu trong tháng này
+        public int Count { get; set; } // Số lượng đơn hàng trong này
     }
 
     public class RevenueByYear
     {
         public int Year { get; set; } // Năm
         public decimal Revenue { get; set; } // Doanh thu trong năm này
+        public int Count { get; set; } // Số lượng đơn hàng trong này
     }
 
     public class TopProductByRevenue
