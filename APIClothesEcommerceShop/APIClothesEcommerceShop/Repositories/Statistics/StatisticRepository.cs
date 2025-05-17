@@ -30,15 +30,15 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<OrderSummaryResponse> response = new();
             try
             {
-                var data = await _context.Hoadons.ToListAsync();
-                if (data?.Any() != true)
+                var dataMain = await GetHoadonsAsync();
+                if (dataMain?.Any() != true)
                 {
                     response.SetErrorResponse("Không có dữ liệu đơn hàng nào trong hệ thống.", 404);
                     return response;
                 }
-                var totalOrders = data.Count;
-                var totalRevenue = data.Sum(x => x.TienGoc);
-                var totalShippingFee = data.Sum(x => x.PhiVanChuyen);
+                var totalOrders = dataMain.Count;
+                var totalRevenue = dataMain.Sum(x => x.TienGoc);
+                var totalShippingFee = dataMain.Sum(x => x.PhiVanChuyen);
 
                 if (response.Data == null)
                 {
@@ -51,10 +51,10 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 response.Data.TotalShippingFee = totalShippingFee;
 
                 // ! Cần phải tính toán lại
-                response.Data.TotalDiscount = data.Sum(x => x.MaCodeNavigation?.SoTienGiam ?? 0);
-                response.Data.TotalCustomers = data.Select(x => x.MaKh).Distinct().Count();
-                response.Data.TotalProducts = data.SelectMany(x => x.Cthoadons).Count();
-                response.Data.OrderStatusStatistics = data.GroupBy(x => x.TinhTrang)
+                response.Data.TotalDiscount = dataMain.Sum(x => x.MaCodeNavigation?.SoTienGiam ?? 0);
+                response.Data.TotalCustomers = dataMain.Select(x => x.MaKh).Distinct().Count();
+                response.Data.TotalProducts = dataMain.SelectMany(x => x.Cthoadons).Count();
+                response.Data.OrderStatusStatistics = dataMain.GroupBy(x => x.TinhTrang)
                     .Select(g => new OrderStatusStatistics
                     {
                         Status = g.Key,
@@ -62,7 +62,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     }).ToList();
 
                 // ! Cần phải tính toán lại
-                response.Data.BestSellingProducts = data.SelectMany(x => x.Cthoadons)
+                response.Data.BestSellingProducts = dataMain.SelectMany(x => x.Cthoadons)
                     .GroupBy(x => new { x.MaCtsp, x.MaCtspNavigation?.MaSpNavigation.TenSanPham })
                     .Select(g => new BestSellingProduct
                     {
@@ -70,45 +70,45 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         ProductName = g.Key.TenSanPham ?? string.Empty,
                         Quantity = g.Sum(x => x.SoLuong)
                     }).OrderByDescending(x => x.Quantity).ToList();
-                response.Data.RevenueByDate = data.GroupBy(x => x.NgayTao.Date)
+                response.Data.RevenueByDate = dataMain.GroupBy(x => x.NgayTao.Date)
                     .Select(g => new RevenueByDate
                     {
                         Date = g.Key,
                         Revenue = g.Sum(x => x.TienGoc)
                     }).ToList();
-                response.Data.RevenueByMonth = data.GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
+                response.Data.RevenueByMonth = dataMain.GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
                     .Select(g => new RevenueByMonth
                     {
                         Month = g.Key.Month,
                         Year = g.Key.Year,
                         Revenue = g.Sum(x => x.TienGoc)
                     }).ToList();
-                response.Data.RevenueByYear = data.GroupBy(x => x.NgayTao.Year)
+                response.Data.RevenueByYear = dataMain.GroupBy(x => x.NgayTao.Year)
                     .Select(g => new RevenueByYear
                     {
                         Year = g.Key,
                         Revenue = g.Sum(x => x.TienGoc)
                     }).ToList();
-                response.Data.OrdersByDate = data.GroupBy(x => x.NgayTao.Date)
+                response.Data.OrdersByDate = dataMain.GroupBy(x => x.NgayTao.Date)
                     .Select(g => new OrderByDate
                     {
                         Date = g.Key,
                         Count = g.Count()
                     }).ToList();
-                response.Data.OrdersByMonth = data.GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
+                response.Data.OrdersByMonth = dataMain.GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
                     .Select(g => new OrderByMonth
                     {
                         Month = g.Key.Month,
                         Year = g.Key.Year,
                         Count = g.Count()
                     }).ToList();
-                response.Data.OrdersByYear = data.GroupBy(x => x.NgayTao.Year)
+                response.Data.OrdersByYear = dataMain.GroupBy(x => x.NgayTao.Year)
                     .Select(g => new OrderByYear
                     {
                         Year = g.Key,
                         Count = g.Count()
                     }).ToList();
-                response.Data.TopProductByOrder = data.SelectMany(x => x.Cthoadons)
+                response.Data.TopProductByOrder = dataMain.SelectMany(x => x.Cthoadons)
                     .GroupBy(x => new { x.MaCtsp, x.MaCtspNavigation?.MaSpNavigation.TenSanPham })
                     .Select(g => new TopProductByOrder
                     {
@@ -116,7 +116,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         ProductName = g.Key.TenSanPham ?? string.Empty,
                         Count = g.Count()
                     }).OrderByDescending(x => x.Count).ToList();
-                response.Data.TopCustomerByOrder = data.GroupBy(x => new { x.MaKh, x.MaKhNavigation?.HoTen })
+                response.Data.TopCustomerByOrder = dataMain.GroupBy(x => new { x.MaKh, x.MaKhNavigation?.HoTen })
                     .Select(g => new TopCustomerByOrder
                     {
                         CustomerId = g.Key.MaKh,
@@ -147,7 +147,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<ProductStatisticsResponse> response = new();
             try
             {
-                var dataMain = await _context.Sanphams.ToListAsync();
+                var dataMain = await GetSanphamsAsync();
                 var dataCategory = await _context.Danhmucchas
                                         .Include(x => x.Chitietdanhmucs)
                                         .ToListAsync();
@@ -234,12 +234,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<CustomerStatisticsResponse> response = new();
             try
             {
-                var data = await _context.Khachhangs.ToListAsync();
-                var dataOrder = await _context.Hoadons
-                                        .Include(x => x.Cthoadons)
-                                            .ThenInclude(x => x.MaCtspNavigation)
-                                                .ThenInclude(x => x.MaSpNavigation)
-                                        .ToListAsync();
+                var data = await GetKhachhangsAsync();
+                var dataOrder = await GetHoadonsAsync();
                 if (data?.Any() != true)
                 {
                     response.SetErrorResponse("Không có dữ liệu khách hàng nào trong hệ thống.", 404);
@@ -320,7 +316,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<EmployeeStatisticsResponse> response = new();
             try
             {
-                var data = await _context.Nhanviens.ToListAsync();
+                var data = await GetNhanviensAsync();
                 if (data?.Any() != true)
                 {
                     response.SetErrorResponse("Không có dữ liệu nhân viên nào trong hệ thống.", 404);
@@ -400,7 +396,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<RevenueStatisticsResponse> response = new();
             try
             {
-                var data = await _context.Hoadons.ToListAsync();
+                var data = await GetHoadonsAsync();
                 if (data?.Any() != true)
                 {
                     response.SetErrorResponse("Không có dữ liệu doanh thu nào trong hệ thống.", 404);
@@ -487,8 +483,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<ComboStatisticsResponse> response = new();
             try
             {
-                var data = await _context.Combos.ToListAsync();
-                var dataOrder = await _context.Hoadons.ToListAsync();
+                var data = await GetCombosAsync();
+                var dataOrder = await GetHoadonsAsync();
 
                 if (data?.Any() != true)
                 {
@@ -556,6 +552,58 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             return response;
         }
 
+        #endregion
+
+
+        #region [PRIVATE METHOD]
+        private async Task<List<Hoadon>> GetHoadonsAsync()
+        {
+            var data = await _context.Hoadons
+                            .Include(x => x.Cthoadons)
+                                .ThenInclude(x => x.MaCtspNavigation)
+                                    .ThenInclude(x => x.MaSpNavigation)
+                            .Include(x => x.MaKhNavigation)
+                            .Include(x => x.MaCodeNavigation)
+                            .ToListAsync();
+            return data;
+        }
+        private async Task<List<Sanpham>> GetSanphamsAsync()
+        {
+            var data = await _context.Sanphams
+                            .Include(x => x.Chitietsanphams)
+                            .Include(x => x.Chitietdanhmucs)
+                            .ToListAsync();
+            return data;
+        }
+        private async Task<List<Khachhang>> GetKhachhangsAsync()
+        {
+            var data = await _context.Khachhangs
+                            .Include(x => x.Hoadons)
+                            .ToListAsync();
+            return data;
+        }
+        private async Task<List<Nhanvien>> GetNhanviensAsync()
+        {
+            var data = await _context.Nhanviens
+                            .Include(x => x.Hoadons)
+                            .ToListAsync();
+            return data;
+        }
+        private async Task<List<Combo>> GetCombosAsync()
+        {
+            var data = await _context.Combos
+                            .Include(x => x.Chitietcombohoadons)
+                            .ToListAsync();
+            return data;
+        }
+        private async Task<List<Chitietcombohoadon>> GetChitietcombohoadonsAsync()
+        {
+            var data = await _context.Chitietcombohoadons
+                            .Include(x => x.MaComboNavigation)
+                            .Include(x => x.MaHdNavigation)
+                            .ToListAsync();
+            return data;
+        }
         #endregion
     }
 }
