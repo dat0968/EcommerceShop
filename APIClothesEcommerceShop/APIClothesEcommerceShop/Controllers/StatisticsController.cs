@@ -30,6 +30,13 @@ namespace APIClothesEcommerceShop.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        /// <summary>
+        ///     Nhận số liệu thống kê của khách hàng
+        /// </summary>
+        /// <returns>
+        ///     Số liệu thống kê của khách hàng
+        ///     <para>Trả về danh sách khách hàng</para>
+        /// </returns>
         [HttpGet]
         public async Task<IActionResult> GetCustomerStatistics()
         {
@@ -49,7 +56,7 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
         [HttpGet]
-        public async Task<IActionResult> GetOrderSummaryBy()
+        public async Task<IActionResult> GetOrderSummary()
         {
             var result = await _statisticRepository.GetOrderSummaryByOrder();
             return Ok(result);
