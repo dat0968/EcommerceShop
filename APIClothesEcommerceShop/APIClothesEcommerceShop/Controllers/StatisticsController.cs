@@ -18,12 +18,6 @@ namespace APIClothesEcommerceShop.Controllers
             _statisticRepository = statisticRepository;
         }
         [HttpGet]
-        public async Task<IActionResult> GetOrderStatistics()
-        {
-            var result = await _statisticRepository.GetOrderStatisticsAsync();
-            return Ok(result);
-        }
-        [HttpGet]
         public async Task<IActionResult> GetProductStatistics()
         {
             try

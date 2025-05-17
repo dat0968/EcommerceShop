@@ -10,7 +10,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
 {
     public interface IStatisticRepository
     {
-        Task<ResponseAPI<OrderStatisticsResponse>> GetOrderStatisticsAsync();
         Task<ResponseAPI<ProductStatisticsResponse>> GetProductStatisticsAsync();
         Task<ResponseAPI<CustomerStatisticsResponse>> GetCustomerStatisticsAsync();
         Task<ResponseAPI<EmployeeStatisticsResponse>> GetEmployeeStatisticsAsync();

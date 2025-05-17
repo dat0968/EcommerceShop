@@ -22,15 +22,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         #region Đơn hàng
 
         /// <summary>
-        /// Lấy thống kê đơn hàng
-        /// </summary>
-        /// <returns>Thống kê đơn hàng</returns>
-        public Task<ResponseAPI<OrderStatisticsResponse>> GetOrderStatisticsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Lấy thông tin chi tiết đơn hàng theo mã đơn hàng
         /// </summary>
         /// <returns>Thông tin chi tiết đơn hàng</returns>
@@ -98,6 +89,41 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         Year = g.Key,
                         Revenue = g.Sum(x => x.TienGoc)
                     }).ToList();
+                response.Data.OrdersByDate = data.GroupBy(x => x.NgayTao.Date)
+                    .Select(g => new OrderByDate
+                    {
+                        Date = g.Key,
+                        Count = g.Count()
+                    }).ToList();
+                response.Data.OrdersByMonth = data.GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
+                    .Select(g => new OrderByMonth
+                    {
+                        Month = g.Key.Month,
+                        Year = g.Key.Year,
+                        Count = g.Count()
+                    }).ToList();
+                response.Data.OrdersByYear = data.GroupBy(x => x.NgayTao.Year)
+                    .Select(g => new OrderByYear
+                    {
+                        Year = g.Key,
+                        Count = g.Count()
+                    }).ToList();
+                response.Data.TopProductByOrder = data.SelectMany(x => x.Cthoadons)
+                    .GroupBy(x => new { x.MaCtsp, x.MaCtspNavigation?.MaSpNavigation.TenSanPham })
+                    .Select(g => new TopProductByOrder
+                    {
+                        ProductId = g.Key.MaCtsp ?? 0,
+                        ProductName = g.Key.TenSanPham ?? string.Empty,
+                        Count = g.Count()
+                    }).OrderByDescending(x => x.Count).ToList();
+                response.Data.TopCustomerByOrder = data.GroupBy(x => new { x.MaKh, x.MaKhNavigation?.HoTen })
+                    .Select(g => new TopCustomerByOrder
+                    {
+                        CustomerId = g.Key.MaKh,
+                        CustomerName = g.Key.HoTen ?? string.Empty,
+                        Count = g.Count()
+                    }).OrderByDescending(x => x.Count).ToList();
+
 
                 response.SetSuccessResponse();
             }
