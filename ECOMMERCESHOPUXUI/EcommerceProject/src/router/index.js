@@ -8,6 +8,7 @@ import detailCombo from '../views/customer/ComboDetails.vue'
 import cart from '../views/customer/Cart.vue'
 import checkout from '../views/customer/Checkout.vue'
 import statistics from '../views/admin/statistics/statistics.vue'
+import products from '../views/admin/products/index.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -27,7 +28,8 @@ const router = createRouter({
       path: '/Admin',
       component: LayoutAdmin,
       children: [
-        {path: '/Admin', name: statistics, component: statistics}
+        {path: '/Admin', name: statistics, component: statistics},
+        {path: '/Admin/Product', name: products, component: products}
       ]
     }
   ],

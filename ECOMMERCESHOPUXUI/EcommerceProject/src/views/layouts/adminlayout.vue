@@ -23,6 +23,7 @@ import 'bootstrap-datepicker'
 import 'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'
 import '../../assets/Admin/js/main.js'
 import statistics from '../admin/statistics/statistics.vue'
+import products from '../admin/products/index.vue'
 import { onMounted } from 'vue'
 
 onMounted(() => {
@@ -72,7 +73,7 @@ onMounted(() => {
             </ul>
             <ul class="xp-vertical-menu">
               <li>
-                <RouterLink>
+                <RouterLink to="/Admin/Product">
                   <i class="icon-speedometer"></i><span>Quản lý sản phẩm</span>
                 </RouterLink>
               </li>
@@ -244,15 +245,8 @@ onMounted(() => {
         </div>
         <!-- End XP Topbar -->
 
-        <statistics />
+        <router-view />
 
-        <!-- Start XP Footerbar -->
-        <div class="xp-footerbar">
-          <footer class="footer">
-            <p class="mb-0">© 2020 Neon - All Rights Reserved.</p>
-          </footer>
-        </div>
-        <!-- End XP Footerbar -->
       </div>
       <!-- End XP Rightbar -->
     </div>

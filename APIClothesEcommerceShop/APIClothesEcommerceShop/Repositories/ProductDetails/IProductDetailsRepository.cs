@@ -8,5 +8,6 @@ namespace APIClothesEcommerceShop.Repositories.ProductDetails
         Task<Chitietsanpham> Add(Chitietsanpham model);
         Task<Chitietsanpham> Update(Chitietsanpham model);
         Task Cancel(int id);
+        Task<List<Chitietsanpham>> GetDetailProductByProductId(int productId);
     }
 }

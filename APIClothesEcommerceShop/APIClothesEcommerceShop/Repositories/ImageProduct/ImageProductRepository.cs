@@ -25,12 +25,13 @@ namespace APIClothesEcommerceShop.Repositories.ImageProduct
             }
         }
 
-        public async Task Delete(int id)
+        public async Task DeleteImageProductByMaCtSp(int ProductDetailsId)
         {
             try
             {
-                var FindImage = await db.Hinhanhs.FirstOrDefaultAsync(p => p.MaHinhAnh == id);
-                db.Hinhanhs.Remove(FindImage);
+                var FindImage = await db.Hinhanhs.Where(p => p.MaCtsp == ProductDetailsId).ToListAsync();
+                db.Hinhanhs.RemoveRange(FindImage);
+                await db.SaveChangesAsync();
             }
             catch (Exception ex)
             {

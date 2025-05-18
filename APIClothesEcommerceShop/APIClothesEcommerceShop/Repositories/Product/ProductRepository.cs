@@ -5,6 +5,7 @@ using APIClothesEcommerceShop.DTO.Product;
 using APIClothesEcommerceShop.DTO.ProductDetails;
 using APIClothesEcommerceShop.Models;
 using Microsoft.EntityFrameworkCore;
+using Mscc.GenerativeAI;
 
 namespace APIClothesEcommerceShop.Repositories.Product
 {
@@ -52,30 +53,38 @@ namespace APIClothesEcommerceShop.Repositories.Product
         {
             try
             {
-                var GetProduct = await db.Sanphams.AsNoTracking().Select(p => new ProductResponseDTO
-                {
-                    MaSp = p.MaSp,
-                    TenSanPham = p.TenSanPham,
-                    MoTa = p.MoTa,
-                    CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
+                var GetProduct = await db.Sanphams.AsNoTracking()
+                    .Where(p => p.IsActive == true)
+                    .Select(p => new ProductResponseDTO
                     {
-                        MaDanhMucCha = p.MaDanhMucCha,
-                        MaDanhMucCon = p.MaDanhMucCon
-                    }).ToList(),
-                    ProductDetails = p.Chitietsanphams.Select(p => new ProductDetailResponseDTO
-                    {
-                        MaCtsp = p.MaCtsp,
-                        KichThuoc = p.KichThuoc,
-                        MauSac = p.MauSac,
-                        SoLuongTon = p.SoLuongTon,
-                        DonGia = p.DonGia,
-                        Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                        MaSp = p.MaSp,
+                        TenSanPham = p.TenSanPham,
+                        KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
+                        ? (p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia) == p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)
+                            ? $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
+                            : $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ - {p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)} VNĐ")
+                        : "Chưa có giá",
+                        SoLuong = p.Chitietsanphams.Where(p => p.IsActive == true).Count(),
+                        MoTa = p.MoTa,
+                        CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
+                        {
+                            MaDanhMucCha = p.MaDanhMucCha,
+                            MaDanhMucCon = p.MaDanhMucCon
+                        }).ToList(),
+                        ProductDetails = p.Chitietsanphams.Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
                         {
                             MaCtsp = p.MaCtsp,
-                            TenHinhAnh = p.TenHinhAnh
+                            KichThuoc = p.KichThuoc,
+                            MauSac = p.MauSac,
+                            SoLuongTon = p.SoLuongTon,
+                            DonGia = p.DonGia,
+                            Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                            {
+                                MaCtsp = p.MaCtsp,
+                                TenHinhAnh = p.TenHinhAnh
+                            }).ToList(),
                         }).ToList(),
-                    }).Where(p => p.IsActive == true).ToList(),
-                }).Where(p => p.IsActive == true).ToListAsync();
+                    }).ToListAsync();
                 return GetProduct;
             }catch(Exception ex)
             {
