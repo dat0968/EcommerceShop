@@ -1,6 +1,7 @@
 <template>
   <!-- Start XP Contentbar -->
-  <div style="margin-top: 100px;" class="xp-contentbar">
+  <div style="margin-top: 100px" class="xp-contentbar">
+    <OrderSummary></OrderSummary>
     <!-- Start Widget -->
 
     <!-- Start XP Row -->
@@ -534,8 +535,20 @@
 </template>
 
 <script>
-export default {}
+import OrderSummary from '@/components/statistics/OrderSummary.vue'
+
+export default {
+  name: 'StatisticsView',
+  components: { OrderSummary },
+  props: {},
+  data() {
+    return {}
+  },
+  computed: {},
+  watch: {},
+  mounted() {},
+  methods: {},
+}
 </script>
 
-<style>
-</style>
+<style scoped></style>

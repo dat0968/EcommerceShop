@@ -172,7 +172,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var dataOrder = await _context.Hoadons
                                                 .Include(x => x.Cthoadons)
                                                     .ThenInclude(x => x.MaCtspNavigation)
-                                                        .ThenInclude(x => x.MaSpNavigation)
+                                                        .ThenInclude(x => x == null ? new Sanpham() : x.MaSpNavigation)
                                                 .ToListAsync();
 
                 if (!dataMain.Any())
@@ -446,15 +446,16 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var data = await _context.Hoadons
                     .Include(h => h.Cthoadons) // Tải trước chi tiết hóa đơn liên quan
                         .ThenInclude(h => h.MaCtspNavigation) // Tải trước sản phẩm liên quan
-                            .ThenInclude(h => h.MaSpNavigation) // Tải trước thông tin sản phẩm
+                            .ThenInclude(h => h == null ? new Sanpham() : h.MaSpNavigation) // Tải trước thông tin sản phẩm
                     .Include(h => h.MaKhNavigation) // Tải trước thông tin khách hàng
+                    .Include(h => h.MaCodeNavigation)
                     .Select(static h => new
                     {
                         h.TienGoc,
                         h.NgayTao,
                         h.MaKh,
                         h.MaKhNavigation.HoTen,
-                        h.MaCodeNavigation.SoTienGiam,
+                        MaCodeNavigation = h.MaCodeNavigation,
                         h.PhiVanChuyen,
                         h.TinhTrang,
                         h.MaKhNavigation,
@@ -462,7 +463,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         Cthoadons = h.Cthoadons.Select(static ct => new
                         {
                             ct.MaCtsp,
-                            ct.MaCtspNavigation.MaSpNavigation.TenSanPham,
+                            TenSanPham = ct.MaCtspNavigation == null ? "N/A" : ct.MaCtspNavigation.MaSpNavigation.TenSanPham,
                             ct.Gia,
                             ct.SoLuong,
                             ct.GiamGia
@@ -614,7 +615,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 data = await _context.Hoadons
                                 .Include(x => x.Cthoadons)
                                     .ThenInclude(x => x.MaCtspNavigation)
-                                        .ThenInclude(x => x.MaSpNavigation)
+                                        .ThenInclude(x => x == null ? new Sanpham() : x.MaSpNavigation)
                                 .Include(x => x.MaKhNavigation)
                                 .Include(x => x.MaCodeNavigation)
                                 .ToListAsync();
