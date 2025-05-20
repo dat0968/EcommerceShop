@@ -10,8 +10,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public int TotalCombos { get; set; } // Tổng số combo
         public int TotalActiveCombos { get; set; } // Tổng số combo đang hoạt động
         public int TotalInactiveCombos { get; set; } // Tổng số combo không hoạt động
-        public List<TopComboBySales> TopCombosBySales { get; set; } = new(); // Danh sách combo có doanh số cao nhất
-        public List<TopComboByRevenue> TopCombosByRevenue { get; set; } = new(); // Danh sách combo có doanh thu cao nhất
         public decimal AverageComboPrice { get; set; } // Giá trung bình của combo
         public decimal TotalComboRevenue { get; set; } // Tổng doanh thu từ combo
     }

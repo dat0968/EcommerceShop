@@ -67,5 +67,11 @@ namespace APIClothesEcommerceShop.Controllers
             var result = await _statisticRepository.GetComboStatisticsAsync();
             return Ok(result);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetDatatableStatistics()
+        {
+            var result = await _statisticRepository.GetDatatableStatisticsAsync();
+            return Ok(result);
+        }
     }
 }

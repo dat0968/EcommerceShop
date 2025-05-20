@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.DTO.Statistics.Sub
 {
-
-    public class TopCustomerByPurchase
+    public class TopCustomerByOrder
     {
         public int CustomerId { get; set; } // Mã khách hàng
         public string CustomerName { get; set; } = string.Empty; // Tên khách hàng
-        public int PurchaseCount { get; set; } // Số lần mua hàng của khách hàng
+        public decimal Revenue { get; set; } // Doanh thu từ khách hàng này
+        public int Count { get; set; } // Số lượng đơn hàng của khách hàng này
     }
 }

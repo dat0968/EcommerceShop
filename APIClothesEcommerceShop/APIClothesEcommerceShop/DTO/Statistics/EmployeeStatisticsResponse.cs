@@ -10,10 +10,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public int TotalEmployees { get; set; } // Tổng số nhân viên
         public int TotalActiveEmployees { get; set; } // Tổng số nhân viên đang hoạt động
         public int TotalInactiveEmployees { get; set; } // Tổng số nhân viên không hoạt động
-        public List<EmployeeByDepartment> EmployeesByDepartment { get; set; } = new(); // Danh sách nhân viên theo phòng ban
-        public List<EmployeeByPosition> EmployeesByPosition { get; set; } = new(); // Danh sách nhân viên theo chức vụ
-        public List<TopEmployeeByPerformance> TopEmployeesByPerformance { get; set; } = new(); // Danh sách nhân viên có hiệu suất cao nhất
-        public List<TopEmployeeBySales> TopEmployeesBySales { get; set; } = new(); // Danh sách nhân viên có doanh số cao nhất
         public decimal AverageSalary { get; set; } // Lương trung bình của nhân viên
         public decimal TotalSalary { get; set; } // Tổng lương của tất cả nhân viên
     }

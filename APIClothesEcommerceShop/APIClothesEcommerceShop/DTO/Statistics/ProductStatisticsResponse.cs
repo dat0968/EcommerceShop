@@ -41,17 +41,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public decimal AveragePrice { get; set; }
 
         /// <summary>
-        /// Danh sách sản phẩm bán chạy nhất
-        /// </summary>
-        public List<BestSellingProduct> BestSellingProducts { get; set; } = new();
-
-        /// <summary>
-        /// Thống kê sản phẩm theo danh mục
-        /// </summary>
-        public List<ProductCategoryStatistics> ProductCategoryStatistics { get; set; } = new();
-
-
-        /// <summary>
         /// Doanh thu từ sản phẩm theo ngày
         /// </summary>
         public List<SalesByDate> SalesByDate { get; set; } = new();

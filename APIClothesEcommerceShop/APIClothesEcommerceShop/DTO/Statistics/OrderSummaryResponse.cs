@@ -16,11 +16,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public decimal TotalDiscount { get; set; } // Tổng số tiền giảm giá
         public decimal TotalShippingFee { get; set; } // Tổng số tiền phí vận chuyển
         public List<OrderStatusStatistics> OrderStatusStatistics { get; set; } = new(); // Thống kê trạng thái đơn hàng
-        public List<BestSellingProduct> BestSellingProducts { get; set; } = new(); // Danh sách sản phẩm bán chạy nhất
-        public List<RevenueByDate> RevenueByDate { get; set; } = new(); // Doanh thu theo ngày
-        public List<RevenueByMonth> RevenueByMonth { get; set; } = new(); // Doanh thu theo tháng
-        public List<RevenueByYear> RevenueByYear { get; set; } = new(); // Doanh thu theo năm
-        public List<TopProductByOrder> TopProductByOrder { get; set; } = new(); // Danh sách sản phẩm được đặt hàng nhiều nhất
-        public List<TopCustomerByOrder> TopCustomerByOrder { get; set; } = new(); // Danh sách khách hàng đặt hàng nhiều nhất
+        public Dictionary<string, List<RevenueByTime>> RevenueByTime { get; set; } = new(); // Doanh thu theo ngày
     }
 }
