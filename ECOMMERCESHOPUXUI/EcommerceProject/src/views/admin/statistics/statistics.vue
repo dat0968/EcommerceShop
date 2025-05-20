@@ -1,26 +1,26 @@
 <template>
-  <!-- <code>
-      OrderSummary:
-      {{ orderSummaryData }}
-      <hr />
-      ProductStatistic:
-      {{ productStatisticData }}
-      <hr />
-      CustomerStatistic:
-      {{ customerStatisticsData }}
-      <hr />
-      EmployeeStatistic:
-      {{ employeeStatisticsData }}
-      <hr />
-      RevenueStatistic:
-      {{ revenueStatisticData }}
-      <hr />
-      ComboStatictis:
-      {{ comboStatisticsaryData }}
-    </code> -->
   <!-- Start XP Contentbar -->
   <div style="margin-top: 100px" class="xp-contentbar">
-    <OrderSummary></OrderSummary>
+    <div v-if="isLoading" class="text-center my-4">
+      <span>Đang tải dữ liệu...</span>
+    </div>
+    <div class="" v-else>
+      <OrderSummary :data="orderSummaryData" :is-loading="isLoading"></OrderSummary>
+      <hr />
+      <ProductStatistic :data="productStatisticData" :is-loading="isLoading"></ProductStatistic>
+      <hr />
+      <CustomerStatistic :data="customerStatisticsData" :is-loading="isLoading"></CustomerStatistic>
+      <hr />
+      <EmployeeStatistic :data="employeeStatisticsData" :is-loading="isLoading"></EmployeeStatistic>
+      <hr />
+      <RevenueStatistic :data="revenueStatisticData" :is-loading="isLoading"></RevenueStatistic>
+      <hr />
+      <ComboStatistic :data="comboStatisticsaryData" :is-loading="isLoading"></ComboStatistic>
+      <hr />
+      <DatatableStatistic :data="datatableStatisticsResponse"></DatatableStatistic>
+      <hr />
+    </div>
+
     <!-- Start Widget -->
 
     <!-- Start XP Row -->
@@ -557,20 +557,35 @@
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 
-import { OrderSummaryResponse } from '@/models/dtos/statisticsDtos/orderSummaryResponse'
-
 import toastr from 'toastr'
-import { CustomerStatisticsResponse } from '@/models/dtos/statisticsDtos/customerStatisticsResponse'
-import { ProductStatisticsResponse } from '@/models/dtos/statisticsDtos/productStatisticsResponse'
-import { EmployeeStatisticsResponse } from '@/models/dtos/statisticsDtos/employeeStatisticsResponse'
-import { RevenueStatisticsResponse } from '@/models/dtos/statisticsDtos/revenueStatisticsResponse'
-import { ComboStatisticsResponse } from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
+
+import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
+import CustomerStatisticsResponse from '@/models/dtos/statisticsDtos/customerStatisticsResponse'
+import ProductStatisticsResponse from '@/models/dtos/statisticsDtos/productStatisticsResponse'
+import EmployeeStatisticsResponse from '@/models/dtos/statisticsDtos/employeeStatisticsResponse'
+import RevenueStatisticsResponse from '@/models/dtos/statisticsDtos/revenueStatisticsResponse'
+import ComboStatisticsResponse from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
+import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 
 import OrderSummary from '@/components/statistics/OrderSummary.vue'
+import ProductStatistic from '@/components/statistics/ProductStatistic.vue'
+import CustomerStatistic from '@/components/statistics/CustomerStatistic.vue'
+import EmployeeStatistic from '@/components/statistics/EmployeeStatistic.vue'
+import RevenueStatistic from '@/components/statistics/RevenueStatistic.vue'
+import ComboStatistic from '@/components/statistics/ComboStatistic.vue'
+import DatatableStatistic from '@/components/statistics/DatatableStatistic.vue'
 
 export default {
   name: 'StatisticsView',
-  components: { OrderSummary },
+  components: {
+    OrderSummary,
+    ProductStatistic,
+    CustomerStatistic,
+    EmployeeStatistic,
+    RevenueStatistic,
+    ComboStatistic,
+    DatatableStatistic,
+  },
   props: {},
   data() {
     return {
@@ -580,6 +595,8 @@ export default {
       employeeStatisticsData: {},
       revenueStatisticData: {},
       comboStatisticsaryData: {},
+      datatableStatisticsResponse: {},
+      isLoading: true,
     }
   },
   computed: {},
@@ -587,7 +604,7 @@ export default {
   async mounted() {
     let errorMessage = ''
     let errorLogs = []
-
+    this.loading = true
     try {
       await this.loadOrderSummaryData()
     } catch (error) {
@@ -624,11 +641,18 @@ export default {
       errorMessage += 'Combo.'
       errorLogs.push(error)
     }
+    try {
+      await this.loadDatatableData()
+    } catch (error) {
+      errorMessage += 'Datatable.'
+      errorLogs.push(error)
+    }
 
-    if (errorMessage === '') {
+    if (errorMessage != '') {
       toastr.error('Hiện không thể load dữ liệu: ' + errorMessage)
       console.warn(errorLogs)
     }
+    this.isLoading = false
   },
   methods: {
     async loadOrderSummaryData() {
@@ -672,6 +696,15 @@ export default {
         ConfigsRequest.getSkipAuthConfig(),
       )
       this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
+    },
+    async loadDatatableData() {
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetDatatableStatistics',
+        ConfigsRequest.getSkipAuthConfig(),
+      )
+      console.log(response.data)
+      this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)
+      console.log(this.datatableStatisticsResponse)
     },
   },
 }
