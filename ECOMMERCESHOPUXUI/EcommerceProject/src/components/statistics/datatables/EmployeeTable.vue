@@ -38,6 +38,7 @@ export default {
         data: dataSet,
         destroy: true,
         columns: [
+          configsDt.defaultTdToShowDetail,
           { data: 'employeeId', title: 'Mã nhân viên', className: 'text-center' },
           { data: 'employeeName', title: 'Tên nhân viên' },
           { data: 'performanceScore', title: 'Điểm hiệu suất', className: 'text-center' },
@@ -45,7 +46,40 @@ export default {
           { data: 'salesAmount', title: 'Doanh số', className: 'text-right' },
         ],
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
+        initComplete: () => {
+          configsDt.attachDetailsControl(`#employeeDatatable`, this.formatDetails.bind(this))
+        },
       })
+    },
+    formatDetails(rowData) {
+      const div = $('<div/>').addClass('loading').text('Loading...')
+      const employee = this.employees.find((x) => x.employeeId == rowData.employeeId)
+
+      const orderDetailsHtml =
+        employee.orderRecents && employee.orderRecents.length > 0
+          ? employee.orderRecents
+              .map(
+                (order) => `
+                  <div class="row">
+                    <div class="col-6 col-md-12 order-item border rounded p-2 mb-2 bg-light position-relative">
+                      <p><strong>Mã hóa đơn:</strong> ${order.maHd}</p>
+                      <p><strong>Tên khách hàng:</strong> ${order.hoTen}</p>
+                      <p><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
+                      <p><strong>Trạng thái:</strong> <span class="${order.isActive ? 'text-success' : 'text-danger'}">${order.tinhTrang}</span></p>
+                    
+                      <span class="tooltip-icon position-absolute top-0 end-0 m-1" data-toggle="tooltip" title="${order.diaChiNhanHang}">
+                        <i class="fas fa-info-circle"></i>
+                      </span>
+                    </div>
+                  </div>
+                `,
+              )
+              .join('')
+          : '<p>Không có đơn hàng nào để hiển thị.</p>'
+
+      div.html(orderDetailsHtml)
+
+      return div
     },
   },
 }

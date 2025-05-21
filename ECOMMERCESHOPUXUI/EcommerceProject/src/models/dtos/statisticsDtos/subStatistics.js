@@ -69,12 +69,20 @@ class TopCustomerByRevenue {
 }
 // TopProduct.js
 class TopProduct {
-  constructor({ productId = 0, productName = '', categoryName = '', revenue = 0, count = 0 } = {}) {
+  constructor({
+    productId = 0,
+    productName = '',
+    categoryName = '',
+    revenue = 0,
+    count = 0,
+    detailTopProducts = [],
+  } = {}) {
     this.productId = productId // Mã sản phẩm
     this.productName = productName // Tên sản phẩm
     this.categoryName = categoryName // Tên danh mục sản phẩm
     this.revenue = revenue // Doanh thu từ sản phẩm này
     this.count = count // Số lượng bán được
+    this.detailTopProducts = detailTopProducts
   }
 
   static fromApiResponse(data = {}) {
@@ -84,6 +92,7 @@ class TopProduct {
       categoryName: data.categoryName,
       revenue: data.revenue,
       count: data.count,
+      detailTopProducts: data.detailTopProducts,
     })
   }
 }
@@ -97,6 +106,7 @@ class TopCustomer {
     location = '',
     ageGroup = '',
     count = 0,
+    orderRecents = [],
   } = {}) {
     this.customerId = customerId // Mã khách hàng
     this.customerName = customerName // Tên khách hàng
@@ -104,6 +114,7 @@ class TopCustomer {
     this.location = location // Địa điểm
     this.ageGroup = ageGroup // Nhóm tuổi
     this.count = count // Số lượng khách hàng tại địa điểm này
+    this.orderRecents = orderRecents
   }
 
   static fromApiResponse(data = {}) {
@@ -114,6 +125,7 @@ class TopCustomer {
       location: data.location,
       ageGroup: data.ageGroup,
       count: data.count,
+      orderRecents: data.orderRecents,
     })
   }
 }
@@ -128,6 +140,7 @@ class TopEmployee {
     departmentName = '',
     salesAmount = 0,
     count = 0,
+    orderRecents = [],
   } = {}) {
     this.employeeId = employeeId // Mã nhân viên
     this.employeeName = employeeName // Tên nhân viên
@@ -136,6 +149,7 @@ class TopEmployee {
     this.departmentName = departmentName // Tên phòng ban
     this.salesAmount = salesAmount // Doanh số của nhân viên
     this.count = count // Số lượng nhân viên trong phòng ban này
+    this.orderRecents = orderRecents
   }
 
   static fromApiResponse(data = {}) {
@@ -147,17 +161,25 @@ class TopEmployee {
       departmentName: data.departmentName,
       salesAmount: data.salesAmount,
       count: data.count,
+      orderRecents: data.orderRecents,
     })
   }
 }
 
 // TopCombo.js
 class TopCombo {
-  constructor({ comboId = 0, comboName = '', salesCount = 0, revenue = 0 } = {}) {
+  constructor({
+    comboId = 0,
+    comboName = '',
+    salesCount = 0,
+    revenue = 0,
+    detailTopCombos = [],
+  } = {}) {
     this.comboId = comboId // Mã combo
     this.comboName = comboName // Tên combo
     this.salesCount = salesCount // Số lượng combo được bán
     this.revenue = revenue // Doanh thu từ combo
+    this.detailTopCombos = detailTopCombos
   }
 
   static fromApiResponse(data = {}) {
@@ -166,6 +188,7 @@ class TopCombo {
       comboName: data.comboName,
       salesCount: data.salesCount,
       revenue: data.revenue,
+      detailTopCombos: data.detailTopCombos,
     })
   }
 }
