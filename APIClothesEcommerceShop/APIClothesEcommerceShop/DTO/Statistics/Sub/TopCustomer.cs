@@ -14,5 +14,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
         public string Location { get; set; } = string.Empty; // Địa điểm
         public string AgeGroup { get; set; } = string.Empty; // Nhóm tuổi
         public int Count { get; set; } // Số lượng khách hàng tại địa điểm này
+        public List<OrderRecentTopUser> OrderRecents { get; set; } = new();
     }
 }

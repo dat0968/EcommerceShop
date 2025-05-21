@@ -74,86 +74,186 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Count = g.Count()
                 }).ToList();
         }
-        private static List<TopProduct> GetTopProducts(IEnumerable<Hoadon> dataOrder, IEnumerable<Danhmuccha> dataCategory)
+        /// <summary>
+        /// Lấy danh sách dữ liệu thống kê về các sản phẩm tiềm năng 
+        /// </summary>
+        /// <param name="dataOrder"></param>
+        /// <param name="dataCategory"></param>
+        /// <returns></returns>
+        private static List<TopProduct> GetTopProducts(IEnumerable<Hoadon> dataOrder, IEnumerable<Sanpham> dataProduct, IEnumerable<Danhmuccha> dataCategory)
         {
-            // Tạo dictionary ánh xạ productId -> categoryName
-            var productCategoryDict = dataCategory
-                .SelectMany(cat => cat.Chitietdanhmucs ?? Enumerable.Empty<Chitietdanhmuc>())
-                .Where(cd => cd.MaSpNavigation != null)
-                .SelectMany(cd => cd.MaSpNavigation.Chitietsanphams ?? Enumerable.Empty<Chitietsanpham>())
+            // Tạo dictionary ánh xạ MaSp -> Tên danh mục cha
+            var productCategoryDict = dataProduct
                 .ToDictionary(
-                    ctsp => ctsp.MaCtsp,
-                    ctsp => ctsp.MaSpNavigation?.Chitietdanhmucs?.FirstOrDefault()?.MaDanhMucChaNavigation?.TenDanhMucCha ?? string.Empty
+                    sp => sp.MaSp,
+                    sp => sp.Chitietdanhmucs?.FirstOrDefault()?.MaDanhMucChaNavigation?.TenDanhMucCha ?? string.Empty
                 );
 
-            return dataOrder
+            // Gom tất cả các chi tiết hóa đơn
+            var allDetails = dataOrder
                 .SelectMany(x => x.Cthoadons ?? Enumerable.Empty<Cthoadon>())
-                .Where(x => x.MaCtsp.HasValue)
-                .GroupBy(x => new { x.MaCtsp, ProductName = x.MaCtspNavigation?.MaSpNavigation?.TenSanPham ?? string.Empty })
+                .Where(x => x.MaCtspNavigation != null && x.MaCtspNavigation.MaSpNavigation != null)
+                .ToList();
+
+            // Gom nhóm theo MaSp (sản phẩm cha)
+            var topProducts = allDetails
+                .Where(x => x.MaCtspNavigation != null)
+                .GroupBy(x => x.MaCtspNavigation!.MaSp) // ? Here has a !
                 .Select(g =>
                 {
-                    var productId = g.Key?.MaCtsp ?? 0;
-                    productCategoryDict.TryGetValue(productId, out var categoryName);
+                    var maSp = g.Key;
+                    var product = dataProduct.FirstOrDefault(sp => sp.MaSp == maSp);
+                    var productName = product?.TenSanPham ?? "N/A";
+                    productCategoryDict.TryGetValue(maSp, out var categoryName);
+
+                    // Lấy danh sách chi tiết sản phẩm (ctsp) bán chạy nhất của sản phẩm này
+                    var detailTopProducts = g
+                        .GroupBy(x => x.MaCtsp)
+                        .Select(ctspGroup =>
+                        {
+                            var ctsp = ctspGroup.First().MaCtspNavigation;
+                            return new DetailTopProduct(
+                                ctsp!.MaCtsp, // ? Here has a !
+                                ctsp.MaSp,
+                                ctsp.KichThuoc,
+                                ctsp.MauSac,
+                                ctsp.SoLuongTon,
+                                ctsp.DonGia,
+                                ctsp.Hinhanhs?.FirstOrDefault()?.TenHinhAnh ?? string.Empty,
+                                ctsp.IsActive
+                            );
+                        })
+                        .OrderByDescending(dtp =>
+                            g.Where(x => x.MaCtsp == dtp.MaCtsp)
+                             .Sum(x => (x.SoLuong))
+                        )
+                        .ToList();
+
                     return new TopProduct
                     {
-                        ProductId = productId,
-                        ProductName = g.Key?.ProductName ?? "N/A",
+                        ProductId = maSp,
+                        ProductName = productName,
                         CategoryName = categoryName ?? string.Empty,
                         Revenue = g.Sum(x => ((x.Gia) * (x.SoLuong)) - (x.GiamGia)),
-                        Count = g.Sum(x => x.SoLuong)
+                        Count = g.Sum(x => x.SoLuong),
+                        DetailTopProducts = detailTopProducts
                     };
                 })
                 .OrderByDescending(x => x.Revenue)
                 .ToList();
-        }
 
+            return topProducts;
+        }
+        /// <summary>
+        /// Lấy danh sách dữ liệu thống kê về những khách hàng tiềm năng
+        /// </summary>
+        /// <param name="dataOrder">Dữ liệu đơn hàng gốc để xử lí</param>
+        /// <returns></returns>
         private static List<TopCustomer> GetTopCustomers(IEnumerable<Hoadon> dataOrder)
         {
-            return dataOrder
+            // Tạo dictionary để truy xuất nhanh các đơn hàng theo mã khách hàng
+            var ordersByCustomer = dataOrder
                 .Where(x => x.MaKhNavigation != null)
-                .GroupBy(x => x.MaKhNavigation)
-                .Select(g =>
+                .GroupBy(x => x.MaKh)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
+
+            return ordersByCustomer.Select(kvp =>
+            {
+                var customerOrders = kvp.Value;
+                var customer = customerOrders.First().MaKhNavigation;
+                var ageGroup = "Không xác định";
+                if (customer.NgaySinh.HasValue)
                 {
-                    var customer = g.Key;
-                    var ageGroup = "Không xác định";
-                    if (customer.NgaySinh.HasValue)
-                    {
-                        var age = DateTime.Now.Year - customer.NgaySinh.Value.Year;
-                        if (age < 18) ageGroup = "Dưới 18";
-                        else if (age < 30) ageGroup = "18-29";
-                        else if (age < 40) ageGroup = "30-39";
-                        else if (age < 50) ageGroup = "40-49";
-                        else ageGroup = "50+";
-                    }
-                    return new TopCustomer
-                    {
-                        CustomerId = customer.MaKh,
-                        CustomerName = customer.HoTen ?? string.Empty,
-                        Count = g.Count(),
-                        Revenue = g.Sum(x => x.TienGoc - x.PhiVanChuyen),
-                        Location = customer.DiaChi ?? "N/A",
-                        AgeGroup = ageGroup
-                    };
-                })
-                .OrderByDescending(x => x.Count)
-                .ToList();
+                    var age = DateTime.Now.Year - customer.NgaySinh.Value.Year;
+                    if (age < 18) ageGroup = "Dưới 18";
+                    else if (age < 30) ageGroup = "18-29";
+                    else if (age < 40) ageGroup = "30-39";
+                    else if (age < 50) ageGroup = "40-49";
+                    else ageGroup = "50+";
+                }
+
+                return new TopCustomer
+                {
+                    CustomerId = customer.MaKh,
+                    CustomerName = customer.HoTen ?? "N/A",
+                    Count = customerOrders.Count,
+                    Revenue = customerOrders.Sum(x => x.TienGoc - x.PhiVanChuyen),
+                    Location = customer.DiaChi ?? "N/A",
+                    AgeGroup = ageGroup,
+                    OrderRecents = customerOrders
+                        .Take(3)
+                        .Select(o => new OrderRecentTopUser(
+                            o.MaHd,
+                            customer.MaKh,
+                            customer.HoTen ?? "N/A",
+                            o.MaNv,
+                            o.MaCode,
+                            o.NgayTao,
+                            o.DiaChiNhanHang,
+                            o.HinhThucTt,
+                            o.TinhTrang,
+                            o.MoTa,
+                            o.Sdt,
+                            o.IsActive,
+                            o.PhiVanChuyen,
+                            o.TienGoc
+                        )).ToList()
+                };
+            })
+            .OrderByDescending(x => x.Count)
+            .ToList();
         }
+        /// <summary>
+        /// Lấy danh sách thống kê nhân viên tiềm năng
+        /// </summary>
+        /// <param name="dataOrder"></param>
+        /// <param name="dataEmployee"></param>
+        /// <returns></returns>
         private static List<TopEmployee> GetTopEmployees(IEnumerable<Hoadon> dataOrder, IEnumerable<Nhanvien> dataEmployee)
         {
-            List<TopEmployee> topEmployees = new();
-            topEmployees = dataEmployee
-                    .GroupBy(x => new { x.MaNv, x.HoTen, x.MaChucVuNavigation.TenChucVu })
-                    .Select(g => new TopEmployee
-                    {
-                        EmployeeId = g.Key.MaNv,
-                        EmployeeName = g.Key.HoTen ?? string.Empty,
-                        PerformanceScore = 1, // ! Eno - dataEmployee.First(x => x.MaNv == g.Key.MaNv).TinhTrang ? 1 : 0
-                        PositionName = g.Key.TenChucVu,
-                        Count = g.Count(x => x.MaNv == g.Key.MaNv),
-                        SalesAmount = g.Sum(x => x.Hoadons.Sum(y => y.TienGoc))
-                    }).OrderByDescending(x => x.SalesAmount).ToList();
+            // Tạo dictionary mã nhân viên -> danh sách hóa đơn đã sắp xếp mới nhất
+            var ordersByEmployee = dataOrder
+                .Where(x => x.MaNv != null && x.MaNvNavigation != null)
+                .GroupBy(x => x.MaNv ?? 0)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
 
-            return topEmployees;
+            return dataEmployee
+                .Where(e => e.MaChucVuNavigation != null)
+                .Select(e =>
+                {
+                    ordersByEmployee.TryGetValue(e.MaNv, out var employeeOrders);
+                    employeeOrders ??= new List<Hoadon>();
+
+                    return new TopEmployee
+                    {
+                        EmployeeId = e.MaNv,
+                        EmployeeName = e.HoTen ?? string.Empty,
+                        PerformanceScore = (e.IsActive ?? false) ? 1 : 0,
+                        PositionName = e.MaChucVuNavigation.TenChucVu ?? string.Empty,
+                        Count = employeeOrders.Count,
+                        SalesAmount = employeeOrders.Sum(x => x.TienGoc),
+                        OrderRecents = employeeOrders
+                            .Take(3)
+                            .Select(o => new OrderRecentTopUser(
+                                o.MaHd,
+                                o.MaKh,
+                                o.MaKhNavigation?.HoTen ?? "N/A",
+                                o.MaNv,
+                                o.MaCode,
+                                o.NgayTao,
+                                o.DiaChiNhanHang,
+                                o.HinhThucTt,
+                                o.TinhTrang,
+                                o.MoTa,
+                                o.Sdt,
+                                o.IsActive,
+                                o.PhiVanChuyen,
+                                o.TienGoc
+                            )).ToList()
+                    };
+                })
+                .OrderByDescending(x => x.SalesAmount)
+                .ToList();
         }
         private static Dictionary<string, List<RevenueByTime>> GetRevenueByTime(IEnumerable<Hoadon> dataMain)
         {
@@ -531,7 +631,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         Revenue = g.Sum(ct => (ct.Gia * ct.SoLuong) - ct.GiamGia)
                     }).OrderByDescending(x => x.Revenue).ToList(); */
 
-                var topProducts = GetTopProducts(dataOrder, dataCategory);
+                var topProducts = GetTopProducts(dataOrder, dataProduct, dataCategory);
                 var topCustomers = GetTopCustomers(dataOrder);
                 var topEmployees = GetTopEmployees(dataOrder, dataEmployee);
                 // ! Thống kê combo [bad]

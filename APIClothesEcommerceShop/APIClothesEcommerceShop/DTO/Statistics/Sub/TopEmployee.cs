@@ -15,5 +15,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
         public string DepartmentName { get; set; } = string.Empty; // Tên phòng ban
         public decimal SalesAmount { get; set; } // Doanh số của nhân viên
         public int Count { get; set; } // Số lượng nhân viên trong phòng ban này
+        public List<OrderRecentTopUser> OrderRecents { get; set; } = new();
     }
 }

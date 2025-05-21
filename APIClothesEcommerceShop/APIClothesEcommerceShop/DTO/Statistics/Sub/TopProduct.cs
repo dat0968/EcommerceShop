@@ -12,5 +12,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
         public string CategoryName { get; set; } = string.Empty;
         public decimal Revenue { get; set; } // Doanh thu từ sản phẩm này
         public int Count { get; set; }
+        public List<DetailTopProduct> DetailTopProducts { get; set; } = new();
     }
 }

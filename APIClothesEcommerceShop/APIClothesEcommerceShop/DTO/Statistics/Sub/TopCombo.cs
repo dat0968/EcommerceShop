@@ -12,5 +12,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
         public string ComboName { get; set; } = string.Empty; // Tên combo
         public int SalesCount { get; set; } // Số lượng combo được bán
         public decimal Revenue { get; set; } // Doanh thu từ combo
+        public List<DetailTopCombo> DetailTopCombos { get; set; } = new();
     }
 }
