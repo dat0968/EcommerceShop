@@ -1,15 +1,39 @@
 <template>
-  <div>
-    <h2>Thống kê Nhân viên</h2>
-    <div class="row mb-4">
-      <div class="col" v-for="item in summaryList" :key="item.label">
-        <div class="stat-box">
-          <div class="stat-label">{{ item.label }}</div>
-          <div class="stat-value">{{ item.value }}</div>
+  <div class="row">
+    <div class="col-12">
+      <!-- Khung dữ liệu tóm tắt và biểu đồ -->
+      <div class="card m-b-30">
+        <div class="card-header bg-white">
+          <h5 class="card-title text-black mb-0">Tổng quan lương nhân viên</h5>
+        </div>
+        <div class="card-body">
+          <div class="row align-items-center g-3">
+            <div class="col-md-6">
+              <!-- Khung dữ liệu tóm tắt -->
+              <div class="xp-widget-box text-black">
+                <h4 class="mb-0 font-26">{{ formatCurrency(this.data?.averageSalary) }}</h4>
+                <p class="mb-2">Lương trung bình</p>
+                <p class="mb-0">
+                  <span class="f-w-7">{{ formatCurrency(this.data?.totalSalary) }}</span>
+                  <br />
+                  <span class="font-12">Tổng lương</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <!-- Khung biểu đồ -->
+              <div class="chart-container">
+                <canvas id="employeeChart" v-show="!isLoading"></canvas>
+                <div v-if="isLoading" class="text-center my-4">
+                  <span>Đang tải dữ liệu...</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <canvas id="employeeChart"></canvas>
   </div>
 </template>
 
@@ -29,17 +53,6 @@ export default {
     return {
       employeeChart: null,
     }
-  },
-  computed: {
-    summaryList() {
-      return [
-        { label: 'Tổng nhân viên', value: this.data?.totalEmployees ?? 0 },
-        { label: 'Nhân viên đang làm', value: this.data?.totalActiveEmployees ?? 0 },
-        { label: 'Nhân viên nghỉ việc', value: this.data?.totalInactiveEmployees ?? 0 },
-        { label: 'Lương trung bình', value: this.formatCurrency(this.data?.averageSalary) },
-        { label: 'Tổng lương', value: this.formatCurrency(this.data?.totalSalary) },
-      ]
-    },
   },
   watch: {
     data: {
@@ -91,26 +104,9 @@ export default {
 </script>
 
 <style scoped>
-canvas {
+.chart-container {
   max-width: 400px;
   margin: 20px auto;
   display: block;
-}
-.stat-box {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 12px 8px;
-  text-align: center;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.stat-label {
-  font-size: 14px;
-  color: #666;
-}
-.stat-value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #222;
 }
 </style>

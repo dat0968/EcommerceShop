@@ -1,9 +1,6 @@
 import { OrderStatusStatistics, RevenueByTime } from './subStatistics'
 export default class OrderSummaryResponse {
   constructor() {
-    this.totalOrders = 0 // Tổng số đơn hàng
-    this.totalRevenue = 0.0 // Tổng doanh thu
-    this.averageOrderValue = 0.0 // Giá trị trung bình của mỗi đơn hàng
     this.totalCustomers = 0 // Tổng số khách hàng
     this.totalProducts = 0 // Tổng số sản phẩm được bán
     this.totalDiscount = 0.0 // Tổng số tiền giảm giá

@@ -1,15 +1,45 @@
 <template>
-  <div>
-    <h2>Thống kê Sản phẩm</h2>
-    <div class="row mb-4">
-      <div class="col" v-for="item in summaryList" :key="item.label">
-        <div class="stat-box">
-          <div class="stat-label">{{ item.label }}</div>
-          <div class="stat-value">{{ item.value }}</div>
+  <div class="row mb-4">
+    <!-- Card Thống kê Sản phẩm -->
+    <div class="col-12">
+      <div class="card m-b-30">
+        <div class="card-header bg-white">
+          <h5 class="card-title text-black mb-0">Thống kê Sản phẩm</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col" v-for="item in summaryList" :key="item.label">
+              <div class="stat-box">
+                <div class="stat-label">{{ item.label }}</div>
+                <div class="stat-value">{{ item.value }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center my-4">
+            <label for="timePeriod">Chọn khoảng thời gian:</label>
+            <select v-model="selectedTimePeriod" @change="updateSalesChart" class="form-select">
+              <option value="date">Theo ngày</option>
+              <option value="month">Theo tháng</option>
+              <option value="year">Theo năm</option>
+            </select>
+          </div>
+
+          <div v-if="isLoading" class="text-center my-4">
+            <span>Đang tải dữ liệu...</span>
+          </div>
+          <div class="row g-1" v-show="!isLoading">
+            <!-- Điều chỉnh khoảng cách giữa các biểu đồ -->
+            <div class="col-12 col-md-6">
+              <canvas id="productChart" width="300" height="250"></canvas>
+            </div>
+            <div class="col-12 col-md-6">
+              <canvas id="salesQuantityChart" class="mt-4" width="300" height="250"></canvas>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <canvas id="productChart"></canvas>
   </div>
 </template>
 
@@ -25,18 +55,21 @@ export default {
       type: Object,
       required: true,
     },
+    isLoading: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
       productChart: null,
+      salesQuantityChart: null,
+      selectedTimePeriod: 'date',
     }
   },
   computed: {
     summaryList() {
       return [
-        { label: 'Tổng sản phẩm', value: this.data?.totalProducts ?? 0 },
-        { label: 'Sản phẩm đang bán', value: this.data?.totalActiveProducts ?? 0 },
-        { label: 'Sản phẩm ngừng bán', value: this.data?.totalInactiveProducts ?? 0 },
         { label: 'Tổng doanh thu', value: this.formatCurrency(this.data?.totalRevenue) },
         { label: 'Tổng giảm giá', value: this.formatCurrency(this.data?.totalDiscount) },
         { label: 'Giá trung bình', value: this.formatCurrency(this.data?.averagePrice) },
@@ -44,19 +77,37 @@ export default {
     },
   },
   watch: {
+    isLoading(newVal) {
+      if (!newVal) {
+        this.$nextTick(() => {
+          this.renderProductChart()
+          this.updateSalesChart()
+        })
+      }
+    },
     data: {
       handler() {
-        this.$nextTick(() => this.renderProductChart())
+        if (!this.isLoading) {
+          this.$nextTick(() => {
+            this.renderProductChart()
+            this.updateSalesChart()
+          })
+        }
       },
       deep: true,
     },
   },
   mounted() {
-    this.renderProductChart()
+    if (!this.isLoading) {
+      this.renderProductChart()
+      this.updateSalesChart()
+    }
   },
   methods: {
     renderProductChart() {
-      const ctx = document.getElementById('productChart').getContext('2d')
+      const canvas = document.getElementById('productChart')
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
       if (this.productChart) {
         this.productChart.destroy()
       }
@@ -76,14 +127,94 @@ export default {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false, // Giữ tỷ lệ khung hình cho	canvas
           plugins: {
             legend: {
               position: 'bottom',
+              labels: {
+                boxWidth: 10,
+                padding: 10,
+              },
             },
           },
         },
       })
     },
+    updateSalesChart() {
+      const canvas = document.getElementById('salesQuantityChart')
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
+      if (this.salesQuantityChart) {
+        this.salesQuantityChart.destroy()
+      }
+
+      let salesData
+      let labels
+      let revenueData
+      let quantityData
+
+      if (this.selectedTimePeriod === 'date') {
+        salesData = this.data.salesByTimes?.date || []
+        labels = salesData.map((item) => item.date.split('T')[0])
+        revenueData = salesData.map((item) => item.revenue)
+        quantityData = salesData.map((item) => item.count)
+      } else if (this.selectedTimePeriod === 'month') {
+        salesData = this.data.salesByTimes?.month || []
+        labels = salesData.map((item) => `${item.month}/${item.year}`)
+        revenueData = salesData.map((item) => item.revenue)
+        quantityData = salesData.map((item) => item.count)
+      } else if (this.selectedTimePeriod === 'year') {
+        salesData = this.data.salesByTimes?.year || []
+        labels = salesData.map((item) => item.year)
+        revenueData = salesData.map((item) => item.revenue)
+        quantityData = salesData.map((item) => item.count)
+      }
+
+      this.salesQuantityChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Doanh thu',
+              data: revenueData,
+              type: 'line',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderWidth: 2,
+              fill: true,
+              yAxisID: 'y',
+            },
+            {
+              label: 'Số lượng bán',
+              data: quantityData,
+              type: 'bar',
+              backgroundColor: 'rgba(255, 206, 86, 0.7)',
+              borderColor: 'rgba(255, 206, 86, 1)',
+              borderWidth: 1,
+              yAxisID: 'y1', // Sử dụng trục y thứ hai cho số lượng
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              position: 'left',
+            },
+            y1: {
+              beginAtZero: true,
+              position: 'right',
+              grid: {
+                drawOnChartArea: false, // Không vẽ lưới cho trục bên phải
+              },
+            },
+          },
+        },
+      })
+    },
+
     formatCurrency(val) {
       if (typeof val !== 'number') return '0'
       return val.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
@@ -93,26 +224,10 @@ export default {
 </script>
 
 <style scoped>
-canvas {
-  max-width: 400px;
-  margin: 20px auto;
-  display: block;
-}
 .stat-box {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 12px 8px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
   text-align: center;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.stat-label {
-  font-size: 14px;
-  color: #666;
-}
-.stat-value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #222;
 }
 </style>

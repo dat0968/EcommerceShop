@@ -1,23 +1,52 @@
 <template>
-  <div>
-    <h2>Thống kê Khách hàng</h2>
-    <div class="row mb-4">
-      <div class="col" v-for="item in summaryList" :key="item.label">
-        <div class="stat-box">
-          <div class="stat-label">{{ item.label }}</div>
-          <div class="stat-value">{{ item.value }}</div>
+  <div class="row">
+    <div class="col-12">
+      <!-- Khung dữ liệu tóm tắt và biểu đồ -->
+      <div class="card m-b-30">
+        <div class="card-header bg-white">
+          <h5 class="card-title text-black mb-0">Tổng quan khách hàng</h5>
+        </div>
+        <div class="card-body">
+          <div class="row align-items-center g-3">
+            <div class="col-md-6">
+              <!-- Khung dữ liệu tóm tắt -->
+              <div class="xp-chart-label">
+                <ul class="list-inline text-center">
+                  <li class="list-inline-item mx-3">
+                    <p class="text-black">Giá trị mua hàng TB</p>
+                    <h4 class="text-primary-gradient mb-3">
+                      <i class="icon-wallet mr-2"></i
+                      >{{ formatCurrency(this.data?.averagePurchaseAmount) }}
+                    </h4>
+                  </li>
+                  <li class="list-inline-item mx-3">
+                    <p class="text-black">Tổng giá trị mua hàng</p>
+                    <h4 class="text-success-gradient mb-3">
+                      <i class="icon-wallet mr-2"></i
+                      >{{ formatCurrency(this.data?.totalPurchaseAmount) }}
+                    </h4>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <!-- Khung biểu đồ -->
+              <div class="chart-container">
+                <canvas id="customerChart" v-show="!isLoading"></canvas>
+                <div v-if="isLoading" class="text-center my-4">
+                  <span>Đang tải dữ liệu...</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <canvas id="customerChart" v-show="!isLoading"></canvas>
-    <div v-if="isLoading" class="text-center my-4">
-      <span>Đang tải dữ liệu...</span>
     </div>
   </div>
 </template>
 
 <script>
-// import CustomerStatisticsResponse from '@/models/dtos/statisticsDtos/customerStatisticsResponse'
 import { Chart, registerables } from 'chart.js'
 
 Chart.register(...registerables)
@@ -38,24 +67,6 @@ export default {
     return {
       customerChart: null,
     }
-  },
-  computed: {
-    summaryList() {
-      // Hiển thị dữ liệu tĩnh dạng bảng/thẻ
-      return [
-        { label: 'Tổng khách hàng', value: this.data?.totalCustomers ?? 0 },
-        { label: 'Khách hàng hoạt động', value: this.data?.totalActiveCustomers ?? 0 },
-        { label: 'Khách hàng không hoạt động', value: this.data?.totalInactiveCustomers ?? 0 },
-        {
-          label: 'Giá trị mua hàng TB',
-          value: this.formatCurrency(this.data?.averagePurchaseAmount),
-        },
-        {
-          label: 'Tổng giá trị mua hàng',
-          value: this.formatCurrency(this.data?.totalPurchaseAmount),
-        },
-      ]
-    },
   },
   watch: {
     isLoading(newVal) {
@@ -121,26 +132,14 @@ export default {
 </script>
 
 <style scoped>
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 250px; /* Tùy chỉnh chiều cao cho biểu đồ */
+}
+
 canvas {
-  max-width: 400px;
-  margin: 20px auto;
-  display: block;
-}
-.stat-box {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 12px 8px;
-  text-align: center;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-}
-.stat-label {
-  font-size: 14px;
-  color: #666;
-}
-.stat-value {
-  font-size: 20px;
-  font-weight: bold;
-  color: #222;
+  max-width: 100%; /* Đảm bảo canvas không vượt quá chiều rộng */
+  height: auto; /* Thiết lập chiều cao tự động */
 }
 </style>

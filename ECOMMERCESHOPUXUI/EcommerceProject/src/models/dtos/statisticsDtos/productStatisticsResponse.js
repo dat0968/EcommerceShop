@@ -1,3 +1,5 @@
+// import { SalesByTimes } from './subStatistics'
+
 export default class ProductStatisticsResponse {
   constructor() {
     this.totalProducts = 0 // Tổng số sản phẩm
@@ -6,6 +8,7 @@ export default class ProductStatisticsResponse {
     this.totalRevenue = 0.0 // Tổng doanh thu từ sản phẩm
     this.totalDiscount = 0.0 // Tổng giảm giá từ sản phẩm
     this.averagePrice = 0.0 // Giá trung bình của sản phẩm
+    this.salesByTimes = {} // Số liệu thống kê theo thời gian
   }
 
   static fromApiResponse(data) {
@@ -16,6 +19,8 @@ export default class ProductStatisticsResponse {
     response.totalRevenue = data.totalRevenue || 0.0
     response.totalDiscount = data.totalDiscount || 0.0
     response.averagePrice = data.averagePrice || 0.0
+
+    response.salesByTimes = data.salesByTimes
 
     return response
   }
