@@ -13,30 +13,4 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public decimal AverageSalary { get; set; } // Lương trung bình của nhân viên
         public decimal TotalSalary { get; set; } // Tổng lương của tất cả nhân viên
     }
-
-    public class EmployeeByDepartment
-    {
-        public string DepartmentName { get; set; } = string.Empty; // Tên phòng ban
-        public int Count { get; set; } // Số lượng nhân viên trong phòng ban này
-    }
-
-    public class EmployeeByPosition
-    {
-        public string PositionName { get; set; } = string.Empty; // Tên chức vụ
-        public int Count { get; set; } // Số lượng nhân viên có chức vụ này
-    }
-
-    public class TopEmployeeByPerformance
-    {
-        public int EmployeeId { get; set; } // Mã nhân viên
-        public string EmployeeName { get; set; } = string.Empty; // Tên nhân viên
-        public decimal PerformanceScore { get; set; } // Điểm hiệu suất của nhân viên
-    }
-
-    public class TopEmployeeBySales
-    {
-        public int EmployeeId { get; set; } // Mã nhân viên
-        public string EmployeeName { get; set; } = string.Empty; // Tên nhân viên
-        public decimal SalesAmount { get; set; } // Doanh số của nhân viên
-    }
 }

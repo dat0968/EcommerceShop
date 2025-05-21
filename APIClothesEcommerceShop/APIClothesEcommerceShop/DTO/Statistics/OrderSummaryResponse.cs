@@ -8,9 +8,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
 {
     public class OrderSummaryResponse
     {
-        public int TotalOrders { get; set; } // Tổng số đơn hàng
-        public decimal TotalRevenue { get; set; } // Tổng doanh thu
-        public decimal AverageOrderValue { get; set; } // Giá trị trung bình của mỗi đơn hàng
         public int TotalCustomers { get; set; } // Tổng số khách hàng
         public int TotalProducts { get; set; } // Tổng số sản phẩm được bán
         public decimal TotalDiscount { get; set; } // Tổng số tiền giảm giá

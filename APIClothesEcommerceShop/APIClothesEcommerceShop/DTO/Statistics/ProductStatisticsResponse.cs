@@ -39,54 +39,23 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         /// Giá trung bình của sản phẩm
         /// </summary>
         public decimal AveragePrice { get; set; }
-
         /// <summary>
-        /// Doanh thu từ sản phẩm theo ngày
+        /// Thống kê giá với thời gian
         /// </summary>
-        public List<SalesByDate> SalesByDate { get; set; } = new();
-        public List<SalesByMonth> SalesByMonth { get; set; } = new();
-        public List<SalesByYear> SalesByYear { get; set; } = new();
+        public Dictionary<string, List<SalesByTime>> SalesByTimes { get; set; } = [];
     }
 
-    /// <summary>
-    /// Thống kê sản phẩm theo danh mục
-    /// </summary>
-    public class ProductCategoryStatistics
-    {
-        /// <summary>
-        /// Tên danh mục
-        /// </summary>
-        public string CategoryName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Tổng số sản phẩm trong danh mục này
-        /// </summary>
-        public int TotalProducts { get; set; }
-
-        /// <summary>
-        /// Tổng doanh thu từ danh mục này
-        /// </summary>
-        public decimal TotalRevenue { get; set; }
-    }
 
     /// <summary>
     /// Doanh thu từ sản phẩm theo ngày
     /// </summary>
-    public class SalesByDate
+    public class SalesByTime
     {
         /// <summary>
         /// Ngày
         /// </summary>
         public DateTime Date { get; set; }
 
-        /// <summary>
-        /// Doanh thu từ sản phẩm trong ngày này
-        /// </summary>
-        public decimal Revenue { get; set; }
-        public int Count { get; set; } // Số lượng đơn hàng trong ngày này
-    }
-    public class SalesByMonth
-    {
         /// <summary>
         /// Tháng
         /// </summary>
@@ -96,24 +65,10 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         /// Năm
         /// </summary>
         public int Year { get; set; }
-
         /// <summary>
-        /// Doanh thu từ sản phẩm trong tháng này
+        /// Doanh thu từ sản phẩm trong ngày này
         /// </summary>
         public decimal Revenue { get; set; }
-        public int Count { get; set; } // Số lượng đơn hàng trong tháng này
-    }
-    public class SalesByYear
-    {
-        /// <summary>
-        /// Năm
-        /// </summary>
-        public int Year { get; set; }
-
-        /// <summary>
-        /// Doanh thu từ sản phẩm trong năm này
-        /// </summary>
-        public decimal Revenue { get; set; }
-        public int Count { get; set; } // Số lượng đơn hàng trong năm này
+        public int Count { get; set; } // Số lượng đơn hàng trong ngày này
     }
 }
