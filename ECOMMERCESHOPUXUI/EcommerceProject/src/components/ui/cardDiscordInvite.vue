@@ -1,8 +1,8 @@
 <template>
   <div class="invite-card">
-    <h2>Join Our Discord Server!</h2>
-    <p>Click the button below to join our vibrant and active community.</p>
-    <a href="https://discord.gg/NHhJtRuB" target="_blank">Join Now!</a>
+    <h2>Bạn được mời tham gia vào Server!</h2>
+    <p>Nhấn vào để được điều hướng đến lời mới của bạn.</p>
+    <a href="https://discord.gg/NHhJtRuB" target="_blank">Vào ngay!</a>
   </div>
 </template>
 
