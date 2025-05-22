@@ -1,33 +1,38 @@
 <template>
-  <div class="row">
-    <div class="col-12">
-      <!-- Khung dữ liệu tóm tắt và biểu đồ -->
-      <div class="card m-b-30">
-        <div class="card-header bg-white">
-          <h5 class="card-title text-black mb-0">Tổng quan lương nhân viên</h5>
-        </div>
-        <div class="card-body">
-          <div class="row align-items-center g-3">
-            <div class="col-md-6">
-              <!-- Khung dữ liệu tóm tắt -->
-              <div class="xp-widget-box text-black">
-                <h4 class="mb-0 font-26">{{ formatCurrency(this.data?.averageSalary) }}</h4>
-                <p class="mb-2">Lương trung bình</p>
-                <p class="mb-0">
-                  <span class="f-w-7">{{ formatCurrency(this.data?.totalSalary) }}</span>
-                  <br />
-                  <span class="font-12">Tổng lương</span>
-                </p>
-              </div>
+  <div class="col-12">
+    <!-- Khung dữ liệu tóm tắt và biểu đồ -->
+    <div class="card m-b-30">
+      <div class="card-header bg-white">
+        <h5 class="card-title text-black mb-0">Tổng quan lương nhân viên</h5>
+      </div>
+      <div class="card-body">
+        <div class="row align-items-center g-3">
+          <div class="col-md-6">
+            <!-- Khung dữ liệu tóm tắt -->
+            <div class="xp-chart-label">
+              <ul class="list-inline text-center">
+                <li class="list-inline-item mx-3">
+                  <p class="text-black">Lương trung bình</p>
+                  <h4 class="text-primary-gradient mb-3">
+                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(this.data?.averageSalary) }}
+                  </h4>
+                </li>
+                <li class="list-inline-item mx-3">
+                  <p class="text-black">Tổng lương</p>
+                  <h4 class="text-success-gradient mb-3">
+                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(this.data?.totalSalary) }}
+                  </h4>
+                </li>
+              </ul>
             </div>
+          </div>
 
-            <div class="col-md-6">
-              <!-- Khung biểu đồ -->
-              <div class="chart-container">
-                <canvas id="employeeChart" v-show="!isLoading"></canvas>
-                <div v-if="isLoading" class="text-center my-4">
-                  <span>Đang tải dữ liệu...</span>
-                </div>
+          <div class="col-md-6">
+            <!-- Khung biểu đồ -->
+            <div class="chart-container">
+              <canvas id="employeeChart" v-show="!isLoading"></canvas>
+              <div v-if="isLoading" class="text-center my-4">
+                <span>Đang tải dữ liệu...</span>
               </div>
             </div>
           </div>
@@ -108,5 +113,9 @@ export default {
   max-width: 400px;
   margin: 20px auto;
   display: block;
+}
+canvas {
+  min-height: 10em;
+  max-height: 15em;
 }
 </style>

@@ -8,10 +8,14 @@
         </div>
         <div class="card-body">
           <div class="row mb-4">
-            <div class="col" v-for="item in summaryList" :key="item.label">
-              <div class="stat-box">
-                <div class="stat-label">{{ item.label }}</div>
-                <div class="stat-value">{{ item.value }}</div>
+            <div class="col-md-4" v-for="item in summaryList" :key="item.label">
+              <div class="card stat-box h-100">
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title stat-label text-muted">{{ item.label }}</h5>
+                  <div class="stat-value mt-auto text-center">
+                    <h2 class="font-weight-bold">{{ item.value }}</h2>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -30,11 +34,11 @@
           </div>
           <div class="row g-1" v-show="!isLoading">
             <!-- Điều chỉnh khoảng cách giữa các biểu đồ -->
-            <div class="col-12 col-md-6">
-              <canvas id="productChart" width="300" height="250"></canvas>
+            <div class="col-12 col-md-8 border-end">
+              <canvas id="salesQuantityChart" class="m-3" width="700" height="350"></canvas>
             </div>
-            <div class="col-12 col-md-6">
-              <canvas id="salesQuantityChart" class="mt-4" width="300" height="250"></canvas>
+            <div class="col-12 col-md-4 border-end">
+              <canvas id="productChart" class="m-3" width="300" height="350"></canvas>
             </div>
           </div>
         </div>
@@ -229,5 +233,9 @@ export default {
   padding: 10px;
   border-radius: 5px;
   text-align: center;
+}
+canvas {
+  min-height: 20em;
+  max-height: 25em;
 }
 </style>

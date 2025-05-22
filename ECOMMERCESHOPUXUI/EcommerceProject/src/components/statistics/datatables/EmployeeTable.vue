@@ -60,8 +60,8 @@ export default {
           ? employee.orderRecents
               .map(
                 (order) => `
-                  <div class="row">
-                    <div class="col-6 col-md-12 order-item border rounded p-2 mb-2 bg-light position-relative">
+                  <div class="row g-2">
+                    <div class="col-6 col-md-4 col-sm-5 order-item border rounded p-2 mb-2 bg-white shadow position-relative">
                       <p><strong>Mã hóa đơn:</strong> ${order.maHd}</p>
                       <p><strong>Tên khách hàng:</strong> ${order.hoTen}</p>
                       <p><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>

@@ -5,30 +5,24 @@
     <RevenueStatistic :data="revenueStatisticData" :is-loading="isLoading"></RevenueStatistic>
 
     <!-- Start XP Row -->
-    <div class="row">
+    <div class="row align-items-stretch">
       <!-- Start XP Col -->
-      <div class="col-md-12 col-lg-12 col-xl-7">
-        <!-- Start XP Row -->
-        <div class="row">
-          <!-- Start XP Col -->
-          <OrderSummary :data="orderSummaryData" :is-loading="isLoading"></OrderSummary>
-          <!-- End XP Col -->
-        </div>
-        <!-- End XP Row -->
+      <div class="col-md-12 col-lg-12 col-xl-7 m-b-30">
+        <OrderSummary :data="orderSummaryData" :is-loading="isLoading"></OrderSummary>
       </div>
       <!-- End XP Col -->
 
       <!-- Start XP Col -->
       <div class="col-md-12 col-lg-12 col-xl-5">
-        <div class="row">
-          <!-- Start XP Col -->
+        <!-- Start XP Col -->
+        <div class="flex-grow-1">
           <EmployeeStatistic
             :data="employeeStatisticsData"
             :is-loading="isLoading"
           ></EmployeeStatistic>
-
+        </div>
+        <div class="flex-grow-1">
           <!-- End XP Col -->
-
           <CustomerStatistic
             :data="customerStatisticsData"
             :is-loading="isLoading"

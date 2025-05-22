@@ -56,9 +56,6 @@ export default {
 
       const detailsHtml = `
         <div class="container">
-            <div class="row">
-                <p><strong>${rowData.productName}</strong> - ${rowData.categoryName}</p>
-            </div>
             <div class="row mb-3 gap-1 justify-content-between detail-list">
                 ${
                   detailProduct.detailTopProducts && detailProduct.detailTopProducts.length > 0
@@ -92,40 +89,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.table th,
-.table td {
-  vertical-align: middle;
-}
-
-.detail-list {
-  max-height: 200px; /* Đặt chiều cao tối đa cho danh sách biến thể */
-  overflow-y: auto; /* Thêm scrollbar nếu cần */
-}
-
-.detail-item {
-  margin-bottom: 10px; /* Khoảng cách giữa các biến thể */
-  border: 1px solid #ddd; /* Thêm border cho mỗi biến thể */
-  border-radius: 5px; /* Làm tròn các cạnh */
-}
-
-.bg-light {
-  background-color: #f8f9fa !important; /* Đặt màu nền cho item */
-}
-
-.text-primary {
-  color: #007bff !important; /* Màu chữ cho thông tin màu và kích thước */
-}
-
-.text-danger {
-  color: #dc3545 !important; /* Màu chữ cho giá */
-}
-
-.text-warning {
-  color: #ffc107 !important; /* Màu chữ cho số lượng tồn */
-}
-
-.text-success {
-  color: #28a745 !important; /* Màu chữ cho trạng thái đang bán */
-}
-</style>
+<style scoped></style>

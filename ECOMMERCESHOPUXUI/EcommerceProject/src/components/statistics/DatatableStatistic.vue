@@ -2,9 +2,9 @@
   <div v-if="!isLoading" class="row">
     <div class="col-md-12 col-lg-8 col-xl-8 align-self-center">
       <div class="card bg-white m-b-30">
-        <div class="card-header bg-white flex justify-content-between">
-          <h5 class="card-title text-black mb-0">{{ tableTitle }}</h5>
-          <div class="mb-3">
+        <div class="card-header px-3 bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title text-black mb-0 col-6">{{ tableTitle }}</h5>
+          <div class="mb-3 col-auto">
             <select id="dataSelect" class="form-select" v-model="selectedTable">
               <option value="products" :disabled="!data.topProducts.length">
                 Sản phẩm bán chạy nhất
@@ -37,14 +37,7 @@
     </div>
 
     <div class="col-md-12 col-lg-4 col-xl-4">
-      <div class="card m-b-30">
-        <div class="card-header bg-white">
-          <h5 class="card-title text-black mb-0">Lịch</h5>
-        </div>
-        <div class="card-body">
-          <div data-language="en" class="datepicker-here"></div>
-        </div>
-      </div>
+      <cardDiscordInvite />
     </div>
   </div>
 
@@ -54,6 +47,8 @@
 </template>
 
 <script>
+import cardDiscordInvite from '@/components/ui/cardDiscordInvite.vue'
+
 import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 import ProductTable from '@/components/statistics/datatables/ProductTable.vue'
 import CustomerTable from '@/components/statistics/datatables/CustomerTable.vue'
@@ -67,6 +62,7 @@ export default {
     CustomerTable,
     EmployeeTable,
     ComboTable,
+    cardDiscordInvite,
   },
   props: {
     data: {

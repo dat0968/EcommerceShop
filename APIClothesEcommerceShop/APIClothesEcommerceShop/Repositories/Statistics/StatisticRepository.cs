@@ -78,6 +78,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         /// Lấy danh sách dữ liệu thống kê về các sản phẩm tiềm năng 
         /// </summary>
         /// <param name="dataOrder"></param>
+        /// <param name="dataProduct"></param>
         /// <param name="dataCategory"></param>
         /// <returns></returns>
         private static List<TopProduct> GetTopProducts(IEnumerable<Hoadon> dataOrder, IEnumerable<Sanpham> dataProduct, IEnumerable<Danhmuccha> dataCategory)
