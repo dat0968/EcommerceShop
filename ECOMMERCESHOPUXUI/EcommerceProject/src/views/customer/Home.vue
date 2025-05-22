@@ -82,7 +82,7 @@
         <div class="row">
           <div class="col-lg-4 col-md-4">
             <div class="section-title">
-              <h4>New product</h4>
+              <h4>Sản phẩm mới</h4>
             </div>
           </div>
           <div class="col-lg-8 col-md-8">
@@ -399,7 +399,7 @@
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/ht-1.jpg" alt="" />
+                  <!-- <img src="../../assets/img/trend/ht-1.jpg" alt="" /> -->
                 </div>
                 <div class="trend__item__text">
                   <h6>Chain bucket bag</h6>
@@ -415,7 +415,7 @@
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/ht-2.jpg" alt="" />
+                  <!-- <img src="../../assets/img/trend/ht-2.jpg" alt="" /> -->
                 </div>
                 <div class="trend__item__text">
                   <h6>Pendant earrings</h6>
@@ -431,7 +431,7 @@
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/ht-3.jpg" alt="" />
+                  <!-- <img src="../../assets/img/trend/ht-3.jpg" alt="" /> -->
                 </div>
                 <div class="trend__item__text">
                   <h6>Cotton T-Shirt</h6>
@@ -450,11 +450,11 @@
           <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="trend__content">
               <div class="section-title">
-                <h4>Best seller</h4>
+                <h4>Sản phẩm bán chạy</h4>
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/bs-1.jpg" alt="" />
+                  <!-- <img src="../../assets/img/trend/bs-1.jpg" alt="" /> -->
                 </div>
                 <div class="trend__item__text">
                   <h6>Cotton T-Shirt</h6>
@@ -470,7 +470,7 @@
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/bs-2.jpg" alt="" />
+                  <!-- <img src="../../assets/img/trend/bs-2.jpg" alt="" /> -->
                 </div>
                 <div class="trend__item__text">
                   <h6>Zip-pockets pebbled tote <br />briefcase</h6>
@@ -486,7 +486,7 @@
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/bs-3.jpg" alt="" />
+                  <!-- <img src="../../assets/img/trend/bs-3.jpg" alt="" /> -->
                 </div>
                 <div class="trend__item__text">
                   <h6>Round leather bag</h6>

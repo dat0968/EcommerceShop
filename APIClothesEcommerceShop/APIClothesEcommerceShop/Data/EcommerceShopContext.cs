@@ -377,6 +377,7 @@ public partial class EcommerceShopContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength();
             entity.Property(e => e.GioiTinh).HasMaxLength(5);
+            entity.Property(e => e.HinhDaiDien).HasColumnType("text");
             entity.Property(e => e.HoTen).HasMaxLength(40);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.MatKhau)

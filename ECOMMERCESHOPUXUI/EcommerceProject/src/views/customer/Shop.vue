@@ -6,8 +6,8 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="breadcrumb__links">
-              <a href="./index.html"><i class="fa fa-home"></i> Home</a>
-              <span>Shop</span>
+              <a href="./index.html"><i class="fa fa-home"></i> Trang chủ</a>
+              <span>Sản phẩm</span>
             </div>
           </div>
         </div>
@@ -23,7 +23,7 @@
             <div class="shop__sidebar">
               <div class="sidebar__categories">
                 <div class="section-title">
-                  <h4>Categories</h4>
+                  <h4>Loại sản phẩm</h4>
                 </div>
                 <div class="categories__accordion">
                   <div class="accordion" id="accordionExample">
@@ -137,7 +137,7 @@
               </div>
               <div class="sidebar__filter">
                 <div class="section-title">
-                  <h4>Shop by price</h4>
+                  <h4>Khoảng giá</h4>
                 </div>
                 <div class="price-buttons">
                   <button
@@ -152,7 +152,7 @@
               </div>
               <div class="sidebar__sizes sidebar__box">
                 <div class="section-title">
-                  <h4>Shop by size</h4>
+                  <h4>Size</h4>
                 </div>
                 <div class="size-buttons">
                   <button
@@ -167,7 +167,7 @@
               </div>
               <div class="sidebar__color sidebar__box">
                 <div class="section-title">
-                  <h4>Shop by color</h4>
+                  <h4>Màu</h4>
                 </div>
                 <div class="color-buttons">
                   <button

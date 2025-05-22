@@ -1,8 +1,10 @@
 using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.Repositories.CategoryDetails;
+using APIClothesEcommerceShop.Repositories.Customer;
 using APIClothesEcommerceShop.Repositories.ImageProduct;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
+using APIClothesEcommerceShop.Repositories.Staff;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
@@ -12,7 +14,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// Add services to the container.
+builder.Services.AddControllers(options =>
+{
+    // Vô hi?u hóa validate t? ??ng ?? tránh thông báo l?i m?c ??nh
+    options.ModelValidatorProviders.Clear();
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -61,6 +68,8 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>();
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -74,6 +83,7 @@ app.UseHttpsRedirection();
 app.UseCors("MyPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
 
