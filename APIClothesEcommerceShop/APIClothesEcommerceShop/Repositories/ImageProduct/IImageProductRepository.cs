@@ -5,6 +5,6 @@ namespace APIClothesEcommerceShop.Repositories.ImageProduct
     public interface IImageProductRepository
     {
         Task<Hinhanh> Add(Hinhanh model);
-        Task Delete(int id);
+        Task DeleteImageProductByMaCtSp(int ProductDetailsId);
     }
 }

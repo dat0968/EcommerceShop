@@ -1,8 +1,10 @@
 using APIClothesEcommerceShop.Data;
+using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.CategoryDetails;
 using APIClothesEcommerceShop.Repositories.ImageProduct;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
+using APIClothesEcommerceShop.Services;
 using APIClothesEcommerceShop.Repositories.Statistics;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
@@ -70,6 +72,8 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>();
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -82,9 +86,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseCors("MyPolicy");
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 

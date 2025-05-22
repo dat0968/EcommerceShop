@@ -140,7 +140,7 @@ public partial class EcommerceShopContext : DbContext
 
             entity.Property(e => e.Hinh).HasMaxLength(200);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.MoTa).HasMaxLength(500);
+            entity.Property(e => e.MoTa).HasColumnType("nvarchar(max)");
             entity.Property(e => e.TenCombo).HasMaxLength(100);
         });
 
@@ -424,7 +424,7 @@ public partial class EcommerceShopContext : DbContext
 
             entity.Property(e => e.MaSp).HasColumnName("MaSP");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.MoTa).HasMaxLength(500);
+            entity.Property(e => e.MoTa).HasColumnType("nvarchar(max)");
             entity.Property(e => e.TenSanPham).HasMaxLength(100);
         });
 
