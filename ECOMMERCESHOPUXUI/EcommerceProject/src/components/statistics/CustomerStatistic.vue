@@ -6,7 +6,13 @@
         <h5 class="card-title text-black mb-0">Tổng quan khách hàng</h5>
       </div>
       <div class="card-body">
-        <div class="row align-items-center g-3">
+        <div v-if="isLoading" class="text-center my-4">
+          <span>Đang tải dữ liệu...</span>
+        </div>
+        <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
+          <span>Không có dữ liệu để hiển thị.</span>
+        </div>
+        <div v-else class="row align-items-center g-3">
           <div class="col-md-6">
             <!-- Khung dữ liệu tóm tắt -->
             <div class="xp-chart-label">

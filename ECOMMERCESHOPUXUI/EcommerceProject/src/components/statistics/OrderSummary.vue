@@ -1,47 +1,48 @@
 <template>
   <div class="row mb-4">
-    <!-- Card Thống kê Sản phẩm -->
     <div class="col-12">
       <div class="card m-b-30">
         <div class="card-header bg-white">
           <h5 class="card-title text-black mb-0">Doanh thu theo thời gian</h5>
         </div>
         <div class="card-body">
-          <div class="row mb-4">
-            <div class="col-md-4" v-for="item in summaryList" :key="item.label">
-              <div class="card stat-box h-100">
-                <div class="card-body d-flex flex-column">
-                  <h5 class="card-title stat-label text-muted">{{ item.label }}</h5>
-                  <div class="stat-value mt-auto text-center">
-                    <h2 class="font-weight-bold">{{ item.value }}</h2>
+          <div v-if="isLoading" class="text-center my-4">
+            <span>Đang tải dữ liệu...</span>
+          </div>
+          <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
+            <span>Không có dữ liệu để hiển thị.</span>
+          </div>
+          <div v-else>
+            <div class="row mb-4">
+              <div class="col-md-4" v-for="item in summaryList" :key="item.label">
+                <div class="card stat-box h-100">
+                  <div class="card-body d-flex flex-column">
+                    <h5 class="card-title stat-label text-muted">{{ item.label }}</h5>
+                    <div class="stat-value mt-auto text-center">
+                      <h2 class="font-weight-bold">{{ item.value }}</h2>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="text-center my-4">
-            <select v-model="selectedTimePeriod" @change="updateCharts" class="form-select">
-              <option value="date">Theo ngày</option>
-              <option value="month">Theo tháng</option>
-              <option value="year">Theo năm</option>
-            </select>
-          </div>
-
-          <div v-if="isLoading" class="text-center my-4">
-            <span>Đang tải dữ liệu...</span>
-          </div>
-          <div class="row g-1" v-show="!isLoading">
-            <!-- Điều chỉnh khoảng cách giữa các biểu đồ -->
-            <div class="col-12 col-md-8 border-end">
-              <canvas id="revenueChartByTime" class="m-3" width="700" height="350"></canvas>
+            <div class="text-center my-4">
+              <select v-model="selectedTimePeriod" @change="updateCharts" class="form-select">
+                <option value="date">Theo ngày</option>
+                <option value="month">Theo tháng</option>
+                <option value="year">Theo năm</option>
+              </select>
             </div>
-            <div class="col-12 col-md-4 border-end">
-              <canvas id="orderStatusChart" class="m-3" width="300" height="350"></canvas>
+            <div class="row g-1">
+              <div class="col-12 col-md-8 border-end">
+                <canvas id="revenueChartByTime" class="m-3" width="700" height="350"></canvas>
+              </div>
+              <div class="col-12 col-md-4 border-end">
+                <canvas id="orderStatusChart" class="m-3" width="300" height="350"></canvas>
+              </div>
             </div>
           </div>
         </div>
-        <div class="card-footer">
+        <div class="card-footer" v-if="!isLoading && data && Object.keys(data).length > 0">
           <div class="xp-chart-label">
             <ul class="list-inline text-center">
               <li class="list-inline-item mx-3">
@@ -69,6 +70,7 @@
     </div>
   </div>
 </template>
+
 <script>
 import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
 import { Chart, registerables } from 'chart.js'

@@ -6,49 +6,48 @@
           <h5 class="card-title text-black mb-0">Thống kê Doanh thu</h5>
         </div>
         <div class="card-body">
-          <div class="xp-chart-label">
+          <div v-if="isLoading" class="text-center my-4">
+            <span>Đang tải dữ liệu...</span>
+          </div>
+          <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
+            <span>Không có dữ liệu để hiển thị.</span>
+          </div>
+          <div v-else class="xp-chart-label">
             <ul class="list-inline text-center">
               <li class="list-inline-item mx-3">
                 <p class="text-black">Tổng doanh thu</p>
                 <h4 class="text-primary-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i>{{ this.formatCurrency(this.data.totalRevenue) }}
+                  <i class="icon-wallet mr-2"></i>{{ formatCurrency(data.totalRevenue) }}
                 </h4>
               </li>
               <li class="list-inline-item mx-3">
                 <p class="text-black">Doanh thu TB ngày</p>
                 <h4 class="text-success-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i
-                  >{{ this.formatCurrency(this.data.averageDailyRevenue) }}
+                  <i class="icon-wallet mr-2"></i>{{ formatCurrency(data.averageDailyRevenue) }}
                 </h4>
               </li>
               <li class="list-inline-item mx-3">
                 <p class="text-black">Doanh thu TB tháng</p>
                 <h4 class="text-info-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i
-                  >{{ this.formatCurrency(this.data.averageMonthlyRevenue) }}
+                  <i class="icon-wallet mr-2"></i>{{ formatCurrency(data.averageMonthlyRevenue) }}
                 </h4>
               </li>
               <li class="list-inline-item mx-3">
                 <p class="text-black">Doanh thu cao nhất</p>
                 <h4 class="text-warning-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i
-                  >{{ this.formatCurrency(this.data.highestRevenue) }}
+                  <i class="icon-wallet mr-2"></i>{{ formatCurrency(data.highestRevenue) }}
                 </h4>
               </li>
               <li class="list-inline-item mx-3">
                 <p class="text-black">Doanh thu thấp nhất</p>
                 <h4 class="text-danger-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i>{{ this.formatCurrency(this.data.lowestRevenue) }}
+                  <i class="icon-wallet mr-2"></i>{{ formatCurrency(data.lowestRevenue) }}
                 </h4>
               </li>
             </ul>
           </div>
         </div>
       </div>
-    </div>
-
-    <div v-if="isLoading" class="text-center my-4">
-      <span>Đang tải dữ liệu...</span>
     </div>
   </div>
 </template>

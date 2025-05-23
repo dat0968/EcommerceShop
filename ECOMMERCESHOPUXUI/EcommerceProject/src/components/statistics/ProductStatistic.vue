@@ -1,7 +1,7 @@
 <template>
   <div class="card" style="height: 100%">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <h5 class="card-title text-black mb-0">Doanh thu theo thời gian</h5>
+      <h5 class="card-title text-black mb-0">Sản phẩm thu theo thời gian</h5>
       <div class="gap-2 d-flex gap-5 align-items-center" style="position: relative">
         <div class="text-center my-4">
           <select v-model="selectedTimePeriod" @change="updateSalesChart" class="form-select">
@@ -30,13 +30,18 @@
     </div>
     <div class="card-body flex align-items-center m-3">
       <div class="chart-container flex align-items-center">
-        <canvas id="salesQuantityChart" v-show="!isLoading"></canvas>
         <div v-if="isLoading" class="text-center my-4">
           <span>Đang tải dữ liệu...</span>
         </div>
+        <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
+          <span>Không có dữ liệu để hiển thị.</span>
+        </div>
+        <div v-else>
+          <canvas id="salesQuantityChart"></canvas>
+        </div>
       </div>
     </div>
-    <div class="card-footer">
+    <div class="card-footer" v-if="!isLoading && data && Object.keys(data).length > 0">
       <div class="xp-chart-label">
         <ul class="list-inline text-center">
           <li class="list-inline-item mx-3" v-for="item in summaryList" :key="item.label">

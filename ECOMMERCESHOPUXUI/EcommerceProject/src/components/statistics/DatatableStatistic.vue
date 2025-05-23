@@ -1,5 +1,11 @@
 <template>
-  <div v-if="!isLoading" class="row">
+  <div v-if="isLoading" class="text-center my-4">
+    <span>Đang tải dữ liệu...</span>
+  </div>
+  <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
+    <span>Không có dữ liệu để hiển thị.</span>
+  </div>
+  <div v-else class="row">
     <div class="col-md-12 col-lg-8 col-xl-8 align-self-center">
       <div class="card bg-white m-b-30">
         <div class="card-header px-3 bg-white d-flex justify-content-between align-items-center">
@@ -39,10 +45,6 @@
     <div class="col-md-12 col-lg-4 col-xl-4">
       <cardDiscordInvite />
     </div>
-  </div>
-
-  <div v-if="isLoading" class="text-center my-4">
-    <span>Đang tải dữ liệu...</span>
   </div>
 </template>
 

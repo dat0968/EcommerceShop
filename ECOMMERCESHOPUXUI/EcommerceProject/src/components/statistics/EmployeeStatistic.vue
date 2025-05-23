@@ -6,7 +6,13 @@
         <h5 class="card-title text-black mb-0">Tổng quan lương nhân viên</h5>
       </div>
       <div class="card-body">
-        <div class="row align-items-center g-3">
+        <div v-if="isLoading" class="text-center my-4">
+          <span>Đang tải dữ liệu...</span>
+        </div>
+        <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
+          <span>Không có dữ liệu để hiển thị.</span>
+        </div>
+        <div v-else class="row align-items-center g-3">
           <div class="col-md-6">
             <!-- Khung dữ liệu tóm tắt -->
             <div class="xp-chart-label">
@@ -30,8 +36,11 @@
           <div class="col-md-6">
             <!-- Khung biểu đồ -->
             <div class="chart-container">
-              <canvas id="employeeChart" v-show="!isLoading"></canvas>
-              <div v-if="isLoading" class="text-center my-4">
+              <canvas id="employeeChart" v-show="!isLoading && !chartError"></canvas>
+              <div v-if="chartError" class="text-center my-4 text-danger">
+                <span>Không thể tạo biểu đồ do thiếu hoặc lỗi dữ liệu.</span>
+              </div>
+              <div v-else-if="isLoading" class="text-center my-4">
                 <span>Đang tải dữ liệu...</span>
               </div>
             </div>
@@ -53,10 +62,15 @@ export default {
       type: Object,
       required: true,
     },
+    isLoading: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
       employeeChart: null,
+      chartError: false,
     }
   },
   watch: {
@@ -72,33 +86,51 @@ export default {
   },
   methods: {
     renderEmployeeChart() {
-      const ctx = document.getElementById('employeeChart').getContext('2d')
-      if (this.employeeChart) {
-        this.employeeChart.destroy()
-      }
-      this.employeeChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Đang làm', 'Nghỉ việc'],
-          datasets: [
-            {
-              label: 'Tình trạng nhân viên',
-              data: [this.data?.totalActiveEmployees ?? 0, this.data?.totalInactiveEmployees ?? 0],
-              backgroundColor: ['rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)'],
-              borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
+      this.chartError = false
+      try {
+        const ctx = document.getElementById('employeeChart')
+        if (!ctx || !this.data) {
+          this.chartError = true
+          return
+        }
+        const context = ctx.getContext('2d')
+        if (this.employeeChart) {
+          this.employeeChart.destroy()
+        }
+        // Kiểm tra dữ liệu hợp lệ
+        const active = this.data?.totalActiveEmployees ?? 0
+        const inactive = this.data?.totalInactiveEmployees ?? 0
+        if (active === 0 && inactive === 0) {
+          this.chartError = true
+          return
+        }
+        this.employeeChart = new Chart(context, {
+          type: 'doughnut',
+          data: {
+            labels: ['Đang làm', 'Nghỉ việc'],
+            datasets: [
+              {
+                label: 'Tình trạng nhân viên',
+                data: [active, inactive],
+                backgroundColor: ['rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)'],
+                borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom',
+              },
             },
           },
-        },
-      })
+        })
+      } catch (e) {
+        this.chartError = true
+        console.error(e)
+      }
     },
     formatCurrency(val) {
       if (typeof val !== 'number') return '0'
@@ -107,15 +139,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.chart-container {
-  max-width: 400px;
-  margin: 20px auto;
-  display: block;
-}
-canvas {
-  min-height: 10em;
-  max-height: 15em;
-}
-</style>
