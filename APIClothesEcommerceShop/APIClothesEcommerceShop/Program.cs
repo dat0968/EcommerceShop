@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using APIClothesEcommerceShop.Repositories.DbInitializer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -77,6 +78,7 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 
 var app = builder.Build();
 
@@ -92,6 +94,26 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
+SeedDatabaes();
+
 app.MapControllers();
 
 app.Run();
+
+#region Func tạo CConstantsL 
+void SeedDatabaes()
+{
+    using (var seedScope = app.Services.CreateScope())
+    {
+        var dbInitializer = seedScope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        try
+        {
+            dbInitializer.InitializeDb();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+}
+#endregion
