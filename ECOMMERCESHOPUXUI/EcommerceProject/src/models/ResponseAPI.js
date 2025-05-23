@@ -9,7 +9,7 @@ class ResponseAPI {
       data: null,
     },
   ) {
-    console.log(callBackResult)
+    // console.log(callBackResult)
 
     this.status = callBackResult?.status || 204 // Mã trạng thái của phản hồi (status code)
     this.success = callBackResult?.success || false // Trạng thái thành công/chưa thành công

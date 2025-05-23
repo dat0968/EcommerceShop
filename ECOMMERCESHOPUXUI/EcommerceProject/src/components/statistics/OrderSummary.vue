@@ -121,7 +121,7 @@ export default {
     },
     calculateOverviewData() {
       var statusDataByTime
-      console.log(this.data)
+      // console.log(this.data)
 
       switch (this.selectedTimePeriod) {
         case 'date': {
@@ -232,7 +232,7 @@ export default {
       if (this.orderStatusChart) {
         this.orderStatusChart.destroy()
       }
-      console.log(this.data.orderStatusStatistics)
+      // console.log(this.data.orderStatusStatistics)
 
       var statusDataByTime
       switch (this.selectedTimePeriod) {
@@ -249,7 +249,7 @@ export default {
           break
         }
       }
-      console.log(statusDataByTime)
+      // console.log(statusDataByTime)
 
       const statusData = statusDataByTime.map((item) => item.count)
       const statusLabels = statusDataByTime.map((item) => item.status)

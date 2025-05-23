@@ -202,9 +202,9 @@ export default {
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.getSkipAuthConfig(),
       )
-      console.log(response.data)
+      // console.log(response.data)
       this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)
-      console.log(this.datatableStatisticsResponse)
+      // console.log(this.datatableStatisticsResponse)
     },
   },
 }

@@ -34,14 +34,14 @@ async function refreshAccessToken() {
   const refreshToken = Cookies.get('refreshToken') // Lấy refresh token từ cookie
 
   if (!refreshToken) {
-    console.log('Không tìm thấy refresh token trong cookie.')
+    // console.log('Không tìm thấy refresh token trong cookie.')
     return false // Hoặc ném lỗi nếu cần
   }
 
   try {
     const readtoken = ReadToken(Cookies.get('accessToken')) // Đọc thông tin từ access token
     if (!readtoken) {
-      console.log('Không thể đọc thông tin từ access token.')
+      // console.log('Không thể đọc thông tin từ access token.')
       return false // Hoặc ném lỗi
     }
 
@@ -97,7 +97,7 @@ axiosClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${newAccessToken}`
       } else {
         // Không thể làm mới token, chuyển hướng đến trang đăng nhập
-        console.log('Không thể làm mới token, chuyển hướng đến trang đăng nhập.')
+        // console.log('Không thể làm mới token, chuyển hướng đến trang đăng nhập.')
         router.push('/login')
         return config // Hoặc ném lỗi nếu cần
       }
@@ -175,9 +175,9 @@ async function deleteFromApi(url, config = ConfigsRequest.getSkipAuthConfig()) {
 async function handleCastResponse(callback, castFn) {
   try {
     const result = await callback()
-    console.log(result)
+    // console.log(result)
     const data = typeof castFn === 'function' ? castFn(result) : result
-    console.log(data)
+    // console.log(data)
     return new ResponseAPI(data)
   } catch (error) {
     return new ResponseAPI(null, false, error.message)
