@@ -30,10 +30,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         /// Tổng doanh thu từ sản phẩm
         /// </summary>
         public decimal TotalRevenue { get; set; }
-        /// <summary>
-        /// Tổng giảm giá từ sản phẩm
-        /// </summary>
-        public decimal TotalDiscount { get; set; }
 
         /// <summary>
         /// Giá trung bình của sản phẩm

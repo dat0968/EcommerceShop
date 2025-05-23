@@ -319,7 +319,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     TotalActiveProducts = dataMain.Count(x => x.IsActive ?? false),
                     TotalInactiveProducts = dataMain.Count(x => !x.IsActive ?? false),
                     TotalRevenue = dataMain.Sum(x => x.Chitietsanphams.Sum(y => y.DonGia)),
-                    TotalDiscount = 0, // ! Cần phải tính toán lại
                     AveragePrice = dataMain.Count > 0 ? dataMain.Sum(x => x.Chitietsanphams.Sum(y => y.DonGia)) / dataMain.Count : 0,
                     SalesByTimes = GetSalesByTimes(dataOrder)
                 };
