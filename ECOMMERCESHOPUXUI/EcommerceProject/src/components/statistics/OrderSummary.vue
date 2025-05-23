@@ -118,9 +118,25 @@ export default {
       this.renderOrderStatusChart()
     },
     calculateOverviewData() {
-      const orders = this.data.revenueByTimes[this.selectedTimePeriod]
-      this.totalOrders = orders.reduce((acc, item) => acc + item.count, 0) // Tổng số đơn hàng
-      this.totalRevenue = orders.reduce((acc, item) => acc + item.revenue, 0) // Tổng doanh thu
+      var statusDataByTime
+      console.log(this.data)
+
+      switch (this.selectedTimePeriod) {
+        case 'date': {
+          statusDataByTime = this.data.orderStatusStatistics.date
+          break
+        }
+        case 'month': {
+          statusDataByTime = this.data.orderStatusStatistics.month
+          break
+        }
+        case 'year': {
+          statusDataByTime = this.data.orderStatusStatistics.year
+          break
+        }
+      }
+      this.totalOrders = statusDataByTime.reduce((acc, item) => acc + item.count, 0) // Tổng số đơn hàng
+      this.totalRevenue = statusDataByTime.reduce((acc, item) => acc + item.revenue, 0) // Tổng doanh thu
       this.averageOrderValue = this.totalOrders > 0 ? this.totalRevenue / this.totalOrders : 0 // Giá trị đơn hàng trung bình
     },
     renderrevenueChartByTime() {
@@ -214,9 +230,27 @@ export default {
       if (this.orderStatusChart) {
         this.orderStatusChart.destroy()
       }
+      console.log(this.data.orderStatusStatistics)
 
-      const statusData = this.data.orderStatusStatistics.map((item) => item.count)
-      const statusLabels = this.data.orderStatusStatistics.map((item) => item.status)
+      var statusDataByTime
+      switch (this.selectedTimePeriod) {
+        case 'date': {
+          statusDataByTime = this.data.orderStatusStatistics.date
+          break
+        }
+        case 'month': {
+          statusDataByTime = this.data.orderStatusStatistics.month
+          break
+        }
+        case 'year': {
+          statusDataByTime = this.data.orderStatusStatistics.year
+          break
+        }
+      }
+      console.log(statusDataByTime)
+
+      const statusData = statusDataByTime.map((item) => item.count)
+      const statusLabels = statusDataByTime.map((item) => item.status)
 
       this.orderStatusChart = new Chart(ctx, {
         type: 'pie', // Thay đổi loại biểu đồ thành 'pie'

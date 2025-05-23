@@ -94,11 +94,7 @@ export default {
     },
   },
   watch: {
-    isLoading(newVal) {
-      if (!newVal) {
-        this.$nextTick(() => this.renderCustomerChart())
-      }
-    },
+    isLoading() {},
     data: {
       handler() {
         if (!this.isLoading) {

@@ -51,7 +51,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     TotalDiscount = totalDiscount,
                     TotalCustomers = totalCustomers,
                     TotalProducts = totalProducts,
-                    OrderStatusStatistics = GetOrderStatusStatistics(dataMain),
+                    OrderStatusStatistics = GetOrderStatusByTime(dataMain),
                     RevenueByTime = GetRevenueByTime(dataMain),
                 };
 
@@ -64,15 +64,47 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             return response;
         }
 
-        // Các phương thức phụ trợ để xử lý các tính toán
-        private static List<OrderStatusStatistics> GetOrderStatusStatistics(IEnumerable<Hoadon> dataMain)
+        private static Dictionary<string, List<OrderStatusStatistics>> GetOrderStatusByTime(IEnumerable<Hoadon> dataMain)
         {
-            return dataMain.GroupBy(x => x.TinhTrang)
+            Dictionary<string, List<OrderStatusStatistics>> keyTimePairStatus = new();
+
+            var now = DateTime.Now;
+            // Tính ngày đầu tuần (giả sử tuần bắt đầu từ thứ 2)
+            int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var weekStart = now.Date.AddDays(-1 * diff);
+            var weekEnd = weekStart.AddDays(7);
+
+            // Lọc ngày trong tuần hiện tại
+            var weekData = dataMain.Where(x => x.NgayTao.Date >= weekStart && x.NgayTao.Date < weekEnd);
+
+            keyTimePairStatus["date"] = weekData
+                .GroupBy(x => x.TinhTrang)
                 .Select(g => new OrderStatusStatistics
                 {
                     Status = g.Key,
                     Count = g.Count()
                 }).ToList();
+
+            // Lọc tháng trong năm hiện tại
+            var year = now.Year;
+            var monthData = dataMain.Where(x => x.NgayTao.Year == year);
+
+            keyTimePairStatus["month"] = monthData
+                .GroupBy(x => x.TinhTrang)
+                .Select(g => new OrderStatusStatistics
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                }).ToList();
+
+            keyTimePairStatus["year"] = dataMain.GroupBy(x => x.TinhTrang)
+                .Select(g => new OrderStatusStatistics
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                }).ToList();
+
+            return keyTimePairStatus;
         }
         /// <summary>
         /// Lấy danh sách dữ liệu thống kê về các sản phẩm tiềm năng 
@@ -259,7 +291,17 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         private static Dictionary<string, List<RevenueByTime>> GetRevenueByTime(IEnumerable<Hoadon> dataMain)
         {
             Dictionary<string, List<RevenueByTime>> responseGet = new();
-            responseGet["date"] = dataMain.GroupBy(x => x.NgayTao.Date)
+
+            var now = DateTime.Now;
+            // Tính ngày đầu tuần (giả sử tuần bắt đầu từ thứ 2)
+            int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var weekStart = now.Date.AddDays(-1 * diff);
+            var weekEnd = weekStart.AddDays(7);
+
+            // Doanh thu theo ngày trong tuần hiện tại
+            var weekData = dataMain.Where(x => x.NgayTao.Date >= weekStart && x.NgayTao.Date < weekEnd);
+            responseGet["date"] = weekData
+                .GroupBy(x => x.NgayTao.Date)
                 .Select(g => new RevenueByTime
                 {
                     Date = g.Key,
@@ -268,14 +310,21 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Revenue = g.Sum(x => x.TienGoc),
                     Count = g.Count()
                 }).ToList();
-            responseGet["month"] = dataMain.GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
-            .Select(g => new RevenueByTime
-            {
-                Month = g.Key.Month,
-                Year = g.Key.Year,
-                Revenue = g.Sum(x => x.TienGoc),
-                Count = g.Count()
-            }).ToList();
+
+            // Doanh thu theo tháng trong năm hiện tại
+            var year = now.Year;
+            var monthData = dataMain.Where(x => x.NgayTao.Year == year);
+            responseGet["month"] = monthData
+                .GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
+                .Select(g => new RevenueByTime
+                {
+                    Month = g.Key.Month,
+                    Year = g.Key.Year,
+                    Revenue = g.Sum(x => x.TienGoc),
+                    Count = g.Count()
+                }).ToList();
+
+            // Doanh thu theo năm (tất cả các năm)
             responseGet["year"] = dataMain.GroupBy(x => x.NgayTao.Year)
                 .Select(g => new RevenueByTime
                 {
@@ -283,10 +332,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Revenue = g.Sum(x => x.TienGoc),
                     Count = g.Count()
                 }).ToList();
+
             return responseGet;
         }
-
-
         #endregion
 
         #region Sản phẩm
@@ -335,7 +383,17 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         private static Dictionary<string, List<SalesByTime>> GetSalesByTimes(IEnumerable<Hoadon> dataOrder)
         {
             Dictionary<string, List<SalesByTime>> keyValuePairs = new();
-            keyValuePairs["date"] = dataOrder.GroupBy(x => x.NgayTao.Date)
+
+            var now = DateTime.Now;
+            // Tính ngày đầu tuần (giả sử tuần bắt đầu từ thứ 2)
+            int diff = (7 + (now.DayOfWeek - DayOfWeek.Monday)) % 7;
+            var weekStart = now.Date.AddDays(-1 * diff);
+            var weekEnd = weekStart.AddDays(7);
+
+            // Theo ngày trong tuần hiện tại
+            var weekData = dataOrder.Where(x => x.NgayTao.Date >= weekStart && x.NgayTao.Date < weekEnd);
+            keyValuePairs["date"] = weekData
+                .GroupBy(x => x.NgayTao.Date)
                 .Select(g => new SalesByTime
                 {
                     Date = g.Key,
@@ -344,7 +402,12 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0) - (y?.GiamGia ?? 0))),
                     Count = g.Count()
                 }).ToList();
-            keyValuePairs["month"] = dataOrder.GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
+
+            // Theo tháng trong năm hiện tại
+            var year = now.Year;
+            var monthData = dataOrder.Where(x => x.NgayTao.Year == year);
+            keyValuePairs["month"] = monthData
+                .GroupBy(x => new { x.NgayTao.Month, x.NgayTao.Year })
                 .Select(g => new SalesByTime
                 {
                     Month = g.Key.Month,
@@ -352,6 +415,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0) - (y?.GiamGia ?? 0))),
                     Count = g.Count()
                 }).ToList();
+
+            // Theo năm (tất cả các năm)
             keyValuePairs["year"] = dataOrder.GroupBy(x => x.NgayTao.Year)
                 .Select(g => new SalesByTime
                 {
@@ -359,9 +424,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0) - (y?.GiamGia ?? 0))),
                     Count = g.Count()
                 }).ToList();
+
             return keyValuePairs;
         }
-
         #endregion
 
         #region Khách hàng
@@ -620,16 +685,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var dataCombo = getCombosTask;
                 var dataOrder = getHoadonsTask;
                 var dataCustomer = getKhachhangsTask;
-
-                // Thống kê sản phẩm
-                /* var topProductByRevenue = dataOrder.SelectMany(h => h.Cthoadons)
-                    .GroupBy(ct => new { ct.MaCtsp, ct.MaCtspNavigation?.MaSpNavigation.TenSanPham })
-                    .Select(g => new TopProduct
-                    {
-                        ProductId = g.Key.MaCtsp ?? 0,
-                        ProductName = g.Key.TenSanPham ?? string.Empty,
-                        Revenue = g.Sum(ct => (ct.Gia * ct.SoLuong) - ct.GiamGia)
-                    }).OrderByDescending(x => x.Revenue).ToList(); */
 
                 var topProducts = GetTopProducts(dataOrder, dataProduct, dataCategory);
                 var topCustomers = GetTopCustomers(dataOrder);

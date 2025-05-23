@@ -1,11 +1,11 @@
-import { OrderStatusStatistics, RevenueByTime } from './subStatistics'
+import { RevenueByTime } from './subStatistics'
 export default class OrderSummaryResponse {
   constructor() {
     this.totalCustomers = 0 // Tổng số khách hàng
     this.totalProducts = 0 // Tổng số sản phẩm được bán
     this.totalDiscount = 0.0 // Tổng số tiền giảm giá
     this.totalShippingFee = 0.0 // Tổng số tiền phí vận chuyển
-    this.orderStatusStatistics = [] // Thống kê trạng thái đơn hàng
+    this.orderStatusStatistics = {} // Thống kê trạng thái đơn hàng
     this.revenueByTimes = {} // Doanh thu theo thời gian
   }
 
@@ -20,12 +20,7 @@ export default class OrderSummaryResponse {
     response.totalShippingFee = data.totalShippingFee || 0.0
 
     // Ánh xạ thống kê trạng thái đơn hàng
-    response.orderStatusStatistics = data.orderStatusStatistics.map((status) => {
-      const orderStatus = new OrderStatusStatistics()
-      orderStatus.status = status.status || ''
-      orderStatus.count = status.count || 0
-      return orderStatus
-    })
+    response.orderStatusStatistics = data.orderStatusStatistics
 
     // Ánh xạ doanh thu theo thời gian
     response.revenueByTimes = data.revenueByTime || {} // sử dụng dữ liệu từ API một cách trực tiếp
