@@ -73,7 +73,7 @@ export default {
                 `,
               )
               .join('')
-          : '<p>Không có đơn hàng nào để hiển thị.</p>'
+          : '<p>Không có chi tiết sản phẩm trong combo này để hiển thị.</p>'
 
       div.html(orderDetailsHtml)
 

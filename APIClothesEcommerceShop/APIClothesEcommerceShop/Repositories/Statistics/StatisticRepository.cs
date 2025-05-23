@@ -643,10 +643,10 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             try
             {
                 // Lấy dữ liệu cần thiết song song để tối ưu hiệu năng
-                var getSanphamsTask = await GetSanphamsAsync();
-                var getNhanviensTask = await GetNhanviensAsync();
-                var getDanhmucchasTask = await _context.Danhmucchas.Include(x => x.Chitietdanhmucs).ToListAsync();
-                var getCombosTask = await _context.Combos
+                var dataProduct = await GetSanphamsAsync();
+                var dataEmployee = await GetNhanviensAsync();
+                var dataCategory = await _context.Danhmucchas.Include(x => x.Chitietdanhmucs).ToListAsync();
+                var dataCombo = await _context.Combos
                     .Include(c => c.Cthoadons)
                     .Select(c => new
                     {
@@ -658,14 +658,14 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
                     })
                     .ToListAsync();
-                var getHoadonsTask = await _context.Hoadons
+                var dataOrder = await _context.Hoadons
                     .Include(h => h.Cthoadons)
                         .ThenInclude(h => h.MaCtspNavigation)
                             .ThenInclude(h => h.MaSpNavigation)
                     .Include(h => h.MaKhNavigation)
                     .Include(h => h.MaCodeNavigation)
                     .ToListAsync();
-                var getKhachhangsTask = await _context.Khachhangs
+                var dataCustomer = await _context.Khachhangs
                     .Include(x => x.Hoadons)
                     .Select(kh => new
                     {
@@ -678,13 +678,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         TotalRevenue = kh.Hoadons.Sum(h => h.TienGoc)
                     })
                     .ToListAsync();
-
-                var dataProduct = getSanphamsTask;
-                var dataEmployee = getNhanviensTask;
-                var dataCategory = getDanhmucchasTask;
-                var dataCombo = getCombosTask;
-                var dataOrder = getHoadonsTask;
-                var dataCustomer = getKhachhangsTask;
 
                 var topProducts = GetTopProducts(dataOrder, dataProduct, dataCategory);
                 var topCustomers = GetTopCustomers(dataOrder);

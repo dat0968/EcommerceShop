@@ -36,11 +36,11 @@
           <div class="col-md-6">
             <!-- Khung biểu đồ -->
             <div class="chart-container">
-              <canvas id="employeeChart" v-show="!isLoading && !chartError"></canvas>
-              <div v-if="chartError" class="text-center my-4 text-danger">
+              <canvas id="employeeChart" v-show="!isLoading"></canvas>
+              <div v-show="chartError" class="text-center my-4 text-danger">
                 <span>Không thể tạo biểu đồ do thiếu hoặc lỗi dữ liệu.</span>
               </div>
-              <div v-else-if="isLoading" class="text-center my-4">
+              <div v-show="isLoading" class="text-center my-4">
                 <span>Đang tải dữ liệu...</span>
               </div>
             </div>
@@ -74,6 +74,11 @@ export default {
     }
   },
   watch: {
+    isLoading(newVal) {
+      if (!newVal) {
+        this.$nextTick(() => this.renderEmployeeChart())
+      }
+    },
     data: {
       handler() {
         this.$nextTick(() => this.renderEmployeeChart())
@@ -82,7 +87,9 @@ export default {
     },
   },
   mounted() {
-    this.renderEmployeeChart()
+    if (!this.isLoading) {
+      this.renderEmployeeChart()
+    }
   },
   methods: {
     renderEmployeeChart() {

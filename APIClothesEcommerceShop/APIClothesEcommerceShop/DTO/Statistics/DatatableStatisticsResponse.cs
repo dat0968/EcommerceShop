@@ -18,7 +18,7 @@ namespace APIClothesEcommerceShop.DTO.Statistics
             TopProducts = TopProduct ?? new();
             TopEmployees = topEmployees ?? new();
             TopCustomers = customersByLocation ?? new();
-            TopComboses = topCombosBySales ?? new();
+            TopCombos = topCombosBySales ?? new();
         }
         /// <summary>
         /// Danh sách sản phẩm bán chạy nhất
@@ -26,6 +26,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public List<TopProduct> TopProducts { get; set; } = new(); // Danh sách sản phẩm có doanh thu cao nhất
         public List<TopCustomer> TopCustomers { get; set; } = new(); // Danh sách khách hàng theo địa điểm
         public List<TopEmployee> TopEmployees { get; set; } = new();
-        public List<TopCombo> TopComboses { get; set; } = new(); // Danh sách combo có doanh số cao nhất
+        public List<TopCombo> TopCombos { get; set; } = new(); // Danh sách combo có doanh số cao nhất
     }
 }
