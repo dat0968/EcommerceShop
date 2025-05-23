@@ -1,61 +1,74 @@
 <template>
-  <div class="card" style="height: 100%">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <h5 class="card-title text-black mb-0">Doanh thu theo thời gian</h5>
-      <div class="gap-2 align-items-center" style="position: relative; display: flex">
-        <select v-model="selectedTimePeriod" @change="updateCharts" class="form-select">
-          <option value="date">Theo ngày</option>
-          <option value="month">Theo tháng</option>
-          <option value="year">Theo năm</option>
-        </select>
-        <span @click="toggleOrderStatusChart" class="icon-layers" style="cursor: pointer"></span>
-        <div
-          class="chart-container"
-          v-if="showOrderStatusChart"
-          style="position: absolute; top: 25px; left: 0"
-        >
-          <canvas id="orderStatusChart" v-if="!isLoading"></canvas>
+  <div class="row mb-4">
+    <!-- Card Thống kê Sản phẩm -->
+    <div class="col-12">
+      <div class="card m-b-30">
+        <div class="card-header bg-white">
+          <h5 class="card-title text-black mb-0">Doanh thu theo thời gian</h5>
+        </div>
+        <div class="card-body">
+          <div class="row mb-4">
+            <div class="col-md-4" v-for="item in summaryList" :key="item.label">
+              <div class="card stat-box h-100">
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title stat-label text-muted">{{ item.label }}</h5>
+                  <div class="stat-value mt-auto text-center">
+                    <h2 class="font-weight-bold">{{ item.value }}</h2>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center my-4">
+            <select v-model="selectedTimePeriod" @change="updateCharts" class="form-select">
+              <option value="date">Theo ngày</option>
+              <option value="month">Theo tháng</option>
+              <option value="year">Theo năm</option>
+            </select>
+          </div>
+
           <div v-if="isLoading" class="text-center my-4">
             <span>Đang tải dữ liệu...</span>
+          </div>
+          <div class="row g-1" v-show="!isLoading">
+            <!-- Điều chỉnh khoảng cách giữa các biểu đồ -->
+            <div class="col-12 col-md-8 border-end">
+              <canvas id="revenueChartByTime" class="m-3" width="700" height="350"></canvas>
+            </div>
+            <div class="col-12 col-md-4 border-end">
+              <canvas id="orderStatusChart" class="m-3" width="300" height="350"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="xp-chart-label">
+            <ul class="list-inline text-center">
+              <li class="list-inline-item mx-3">
+                <p class="text-black">Tổng số đơn hàng</p>
+                <h4 class="text-primary-gradient mb-3">
+                  <i class="icon-wallet mr-2"></i>{{ totalOrders }}
+                </h4>
+              </li>
+              <li class="list-inline-item mx-3">
+                <p class="text-black">Tổng doanh thu</p>
+                <h4 class="text-success-gradient mb-3">
+                  <i class="icon-wallet mr-2"></i>{{ totalRevenue }}
+                </h4>
+              </li>
+              <li class="list-inline-item mx-3">
+                <p class="text-black">Giá trị đơn hàng trung bình</p>
+                <h4 class="text-info-gradient mb-3">
+                  <i class="icon-wallet mr-2"></i>{{ averageOrderValue }}
+                </h4>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
     </div>
-    <div class="card-body flex align-items-center m-3">
-      <div class="chart-container flex align-items-center">
-        <canvas id="revenueChartByTime" v-show="!isLoading"></canvas>
-        <div v-if="isLoading" class="text-center my-4">
-          <span>Đang tải dữ liệu...</span>
-        </div>
-      </div>
-    </div>
-    <div class="card-footer">
-      <div class="xp-chart-label">
-        <ul class="list-inline text-center">
-          <li class="list-inline-item mx-3">
-            <p class="text-black">Tổng số đơn hàng</p>
-            <h4 class="text-primary-gradient mb-3">
-              <i class="icon-wallet mr-2"></i>{{ totalOrders }}
-            </h4>
-          </li>
-          <li class="list-inline-item mx-3">
-            <p class="text-black">Tổng doanh thu</p>
-            <h4 class="text-success-gradient mb-3">
-              <i class="icon-wallet mr-2"></i>{{ totalRevenue }}
-            </h4>
-          </li>
-          <li class="list-inline-item mx-3">
-            <p class="text-black">Giá trị đơn hàng trung bình</p>
-            <h4 class="text-info-gradient mb-3">
-              <i class="icon-wallet mr-2"></i>{{ averageOrderValue }}
-            </h4>
-          </li>
-        </ul>
-      </div>
-    </div>
   </div>
 </template>
-
 <script>
 import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
 import { Chart, registerables } from 'chart.js'
@@ -79,7 +92,6 @@ export default {
       selectedTimePeriod: 'date', // Mặc định là theo ngày
       revenueChartByTime: null, // Lưu trữ phiên bản biểu đồ doanh thu
       orderStatusChart: null, // Lưu trữ phiên bản biểu đồ trạng thái đơn hàng
-      showOrderStatusChart: false, // Biến để điều khiển hiển thị biểu đồ trạng thái
       totalOrders: 0, // Tổng số đơn hàng
       totalRevenue: 0, // Tổng doanh thu
       averageOrderValue: 0, // Giá trị đơn hàng trung bình
@@ -100,9 +112,6 @@ export default {
     }
   },
   methods: {
-    toggleOrderStatusChart() {
-      this.showOrderStatusChart = !this.showOrderStatusChart // Chuyển đổi trạng thái hiển thị
-    },
     updateCharts() {
       this.calculateOverviewData() // Tính toán dữ liệu tổng quan
       this.renderrevenueChartByTime()

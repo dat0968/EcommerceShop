@@ -8,7 +8,7 @@
     <div class="row align-items-stretch">
       <!-- Start XP Col -->
       <div class="col-md-12 col-lg-12 col-xl-7 m-b-30">
-        <OrderSummary :data="orderSummaryData" :is-loading="isLoading"></OrderSummary>
+        <ProductStatistic :data="productStatisticData" :is-loading="isLoading"></ProductStatistic>
       </div>
       <!-- End XP Col -->
 
@@ -34,7 +34,8 @@
     <!-- End XP Row -->
 
     <!-- End XP Row -->
-    <ProductStatistic :data="productStatisticData" :is-loading="isLoading"></ProductStatistic>
+    <OrderSummary :data="orderSummaryData" :is-loading="isLoading"></OrderSummary>
+
     <!-- End XP Row -->
 
     <!-- Start Project -->

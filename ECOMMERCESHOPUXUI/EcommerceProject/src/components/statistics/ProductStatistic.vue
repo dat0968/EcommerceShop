@@ -1,47 +1,51 @@
 <template>
-  <div class="row mb-4">
-    <!-- Card Thống kê Sản phẩm -->
-    <div class="col-12">
-      <div class="card m-b-30">
-        <div class="card-header bg-white">
-          <h5 class="card-title text-black mb-0">Thống kê Sản phẩm</h5>
+  <div class="card" style="height: 100%">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <h5 class="card-title text-black mb-0">Doanh thu theo thời gian</h5>
+      <div class="gap-2 d-flex gap-5 align-items-center" style="position: relative">
+        <div class="text-center my-4">
+          <select v-model="selectedTimePeriod" @change="updateSalesChart" class="form-select">
+            <option value="date">Theo ngày</option>
+            <option value="month">Theo tháng</option>
+            <option value="year">Theo năm</option>
+          </select>
         </div>
-        <div class="card-body">
-          <div class="row mb-4">
-            <div class="col-md-4" v-for="item in summaryList" :key="item.label">
-              <div class="card stat-box h-100">
-                <div class="card-body d-flex flex-column">
-                  <h5 class="card-title stat-label text-muted">{{ item.label }}</h5>
-                  <div class="stat-value mt-auto text-center">
-                    <h2 class="font-weight-bold">{{ item.value }}</h2>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="text-center my-4">
-            <label for="timePeriod">Chọn khoảng thời gian:</label>
-            <select v-model="selectedTimePeriod" @change="updateSalesChart" class="form-select">
-              <option value="date">Theo ngày</option>
-              <option value="month">Theo tháng</option>
-              <option value="year">Theo năm</option>
-            </select>
-          </div>
-
-          <div v-if="isLoading" class="text-center my-4">
+        <span
+          @click="toggleProductStatusChart"
+          class="icon-layers"
+          style="cursor: pointer"
+          title="Biểu đồ trạng thái sản phẩm"
+        ></span>
+        <div
+          class="border rounded-except-top-right border p-1 bg-white"
+          v-show="showProductStatusChart"
+          style="position: absolute; top: 60px; right: 0"
+        >
+          <canvas id="productChart" v-if="!isLoading"></canvas>
+          <div v-show="isLoading" class="text-center my-4">
             <span>Đang tải dữ liệu...</span>
           </div>
-          <div class="row g-1" v-show="!isLoading">
-            <!-- Điều chỉnh khoảng cách giữa các biểu đồ -->
-            <div class="col-12 col-md-8 border-end">
-              <canvas id="salesQuantityChart" class="m-3" width="700" height="350"></canvas>
-            </div>
-            <div class="col-12 col-md-4 border-end">
-              <canvas id="productChart" class="m-3" width="300" height="350"></canvas>
-            </div>
-          </div>
         </div>
+      </div>
+    </div>
+    <div class="card-body flex align-items-center m-3">
+      <div class="chart-container flex align-items-center">
+        <canvas id="salesQuantityChart" v-show="!isLoading"></canvas>
+        <div v-if="isLoading" class="text-center my-4">
+          <span>Đang tải dữ liệu...</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <div class="xp-chart-label">
+        <ul class="list-inline text-center">
+          <li class="list-inline-item mx-3" v-for="item in summaryList" :key="item.label">
+            <p class="text-black">{{ item.label }}</p>
+            <h4 class="text-primary-gradient mb-3">
+              <i class="icon-wallet mr-2"></i>{{ item.value }}
+            </h4>
+          </li>
+        </ul>
       </div>
     </div>
   </div>
@@ -69,6 +73,7 @@ export default {
       productChart: null,
       salesQuantityChart: null,
       selectedTimePeriod: 'date',
+      showProductStatusChart: false, // Biến để điều khiển hiển thị biểu đồ trạng thái
     }
   },
   computed: {
@@ -108,6 +113,9 @@ export default {
     }
   },
   methods: {
+    toggleProductStatusChart() {
+      this.showProductStatusChart = !this.showProductStatusChart // Chuyển đổi trạng thái hiển thị
+    },
     renderProductChart() {
       const canvas = document.getElementById('productChart')
       if (!canvas) return
@@ -134,7 +142,7 @@ export default {
           maintainAspectRatio: false, // Giữ tỷ lệ khung hình cho	canvas
           plugins: {
             legend: {
-              position: 'bottom',
+              position: 'right',
               labels: {
                 boxWidth: 10,
                 padding: 10,
@@ -234,8 +242,23 @@ export default {
   border-radius: 5px;
   text-align: center;
 }
+.rounded-except-top-right {
+  border-radius: 8px;
+  border-top-right-radius: 0 !important;
+}
+#salesQuantityChart {
+  width: 100%;
+  min-height: 20em;
+  max-height: 30em;
+}
+#productChart {
+  min-width: 15em;
+  width: 100%;
+  min-height: 5em;
+  max-height: 10em;
+} /* 
 canvas {
   min-height: 20em;
   max-height: 25em;
-}
+} */
 </style>
