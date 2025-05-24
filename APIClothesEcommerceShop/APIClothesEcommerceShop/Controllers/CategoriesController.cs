@@ -1,4 +1,5 @@
 ﻿using APIClothesEcommerceShop.Repositories.Category;
+using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Formats.Asn1;
@@ -10,30 +11,25 @@ namespace APIClothesEcommerceShop.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly ICategoryRepository categoryRepository;
-        public CategoriesController(ICategoryRepository categoryRepository)
+        private readonly IUnitOfWork _unit;
+        public CategoriesController(IUnitOfWork unit)
         {
-            this.categoryRepository = categoryRepository;
+            _unit = unit;
         }
         [HttpGet("GetAllCategories")]
         public async Task<IActionResult> GetAllBigCategories()
         {
             try
             {
-                var ListBigCategories = await categoryRepository.GetAllBigCategories();
+                var listCategory = await _unit.Category.GetAllCategories();
 
-                var ListSmallCategories = await categoryRepository.GetAllSmallCategories();
-                return Ok(new
-                {
-                    ListBigCategories = ListBigCategories,
-                    ListSmallCategories = ListSmallCategories
-                });
+                return Ok(listCategory);
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-            
+
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using APIClothesEcommerceShop.Models;
+﻿using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Repository;
 
 namespace APIClothesEcommerceShop.Repositories.Category
 {
-    public interface ICategoryRepository
+    public interface ICategoryRepository : IRepository<Danhmuccha>
     {
-        Task<List<Danhmuccha>> GetAllBigCategories();
-        Task<List<Danhmuccon>> GetAllSmallCategories();
+        Task<ResponseAPI<List<Danhmuccha>>> GetAllCategories();
     }
 }

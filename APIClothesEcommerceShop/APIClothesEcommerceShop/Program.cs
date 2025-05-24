@@ -74,7 +74,6 @@ builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>(
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
 builder.Services.AddScoped<ProductService>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

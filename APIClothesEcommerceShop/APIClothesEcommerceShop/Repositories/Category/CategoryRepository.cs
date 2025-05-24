@@ -1,40 +1,28 @@
 ﻿using APIClothesEcommerceShop.Data;
+using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Repository;
+using APIClothesEcommerceShop.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIClothesEcommerceShop.Repositories.Category
 {
-    public class CategoryRepository : ICategoryRepository
+    public class CategoryRepository(EcommerceShopContext db) : Repository<Danhmuccha>(db), ICategoryRepository
     {
-        private readonly EcommerceShopContext db;
-        public CategoryRepository(EcommerceShopContext db)
+        private readonly EcommerceShopContext _db = db;
+        public async Task<ResponseAPI<List<Danhmuccha>>> GetAllCategories()
         {
-            this.db = db;
-        }
-        public async Task<List<Danhmuccha>> GetAllBigCategories()
-        {
+            ResponseAPI<List<Danhmuccha>> response = new();
             try
             {
-                var GetBigCategories = await db.Danhmucchas.AsNoTracking().ToListAsync();
-                return GetBigCategories;
+                var GetBigCategories = await _db.Danhmucchas.Include(x => x.Chitietdanhmucs).AsNoTracking().ToListAsync();
+
             }
             catch (Exception ex)
             {
-                throw new Exception("Error", ex);
+                ExceptionHandler.HandleException(ex, response);
             }
-        }
-
-        public async Task<List<Danhmuccon>> GetAllSmallCategories()
-        {
-            try
-            {
-                var GetSmallCategories = await db.Danhmuccons.AsNoTracking().ToListAsync();
-                return GetSmallCategories;
-            }
-            catch(Exception ex)
-            {
-                throw new Exception("Error", ex);
-            }
+            return response;
         }
     }
 }
