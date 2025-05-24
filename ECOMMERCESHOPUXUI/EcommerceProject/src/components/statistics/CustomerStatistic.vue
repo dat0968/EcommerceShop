@@ -21,14 +21,13 @@
                   <p class="text-black">Giá trị mua hàng TB</p>
                   <h4 class="text-primary-gradient mb-3">
                     <i class="icon-wallet mr-2"></i
-                    >{{ formatCurrency(this.data?.averagePurchaseAmount) }}
+                    >{{ formatCurrency(data?.averagePurchaseAmount) }}
                   </h4>
                 </li>
                 <li class="list-inline-item mx-3">
                   <p class="text-black">Tổng giá trị mua hàng</p>
                   <h4 class="text-success-gradient mb-3">
-                    <i class="icon-wallet mr-2"></i
-                    >{{ formatCurrency(this.data?.totalPurchaseAmount) }}
+                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.totalPurchaseAmount) }}
                   </h4>
                 </li>
               </ul>
@@ -53,6 +52,7 @@
 <script>
 import { Chart, registerables } from 'chart.js'
 
+import { formatCurrency } from '@/constants/formatCurrency'
 Chart.register(...registerables)
 
 export default {
@@ -93,6 +93,7 @@ export default {
     }
   },
   methods: {
+    formatCurrency,
     renderCustomerChart() {
       const ctx = document.getElementById('customerChart').getContext('2d')
       if (this.customerChart) {
@@ -126,10 +127,6 @@ export default {
           },
         },
       })
-    },
-    formatCurrency(val) {
-      if (typeof val !== 'number') return '0'
-      return val.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
     },
   },
 }

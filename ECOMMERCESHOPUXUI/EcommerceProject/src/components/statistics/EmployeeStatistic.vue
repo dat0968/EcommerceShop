@@ -20,13 +20,13 @@
                 <li class="list-inline-item mx-3">
                   <p class="text-black">Lương trung bình</p>
                   <h4 class="text-primary-gradient mb-3">
-                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(this.data?.averageSalary) }}
+                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.averageSalary) }}
                   </h4>
                 </li>
                 <li class="list-inline-item mx-3">
                   <p class="text-black">Tổng lương</p>
                   <h4 class="text-success-gradient mb-3">
-                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(this.data?.totalSalary) }}
+                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.totalSalary) }}
                   </h4>
                 </li>
               </ul>
@@ -54,6 +54,7 @@
 <script>
 import { Chart, registerables } from 'chart.js'
 
+import { formatCurrency } from '@/constants/formatCurrency'
 Chart.register(...registerables)
 export default {
   name: 'EmployeeStatistic',
@@ -92,6 +93,7 @@ export default {
     }
   },
   methods: {
+    formatCurrency,
     renderEmployeeChart() {
       this.chartError = false
       try {
@@ -138,10 +140,6 @@ export default {
         this.chartError = true
         console.error(e)
       }
-    },
-    formatCurrency(val) {
-      if (typeof val !== 'number') return '0'
-      return val.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
     },
   },
 }

@@ -682,7 +682,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var topProducts = GetTopProducts(dataOrder, dataProduct, dataCategory);
                 var topCustomers = GetTopCustomers(dataOrder);
                 var topEmployees = GetTopEmployees(dataOrder, dataEmployee);
-                // ! Thống kê combo [bad]
+
                 var topComboss = dataCombo.OrderByDescending(x => x.SalesCount)
                     .Select(x => new TopCombo
                     {

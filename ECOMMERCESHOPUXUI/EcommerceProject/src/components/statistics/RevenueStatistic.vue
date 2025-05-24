@@ -53,6 +53,7 @@
 </template>
 
 <script>
+import { formatCurrency } from '@/constants/formatCurrency'
 export default {
   name: 'RevenueStatistic',
   props: {
@@ -80,10 +81,7 @@ export default {
     },
   },
   methods: {
-    formatCurrency(val) {
-      if (typeof val !== 'number') return '0'
-      return val.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
-    },
+    formatCurrency,
   },
 }
 </script>

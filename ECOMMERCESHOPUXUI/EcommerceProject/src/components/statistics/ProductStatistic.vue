@@ -59,6 +59,7 @@
 <script>
 import { Chart, registerables } from 'chart.js'
 
+import { formatCurrency } from '@/constants/formatCurrency'
 Chart.register(...registerables)
 
 export default {
@@ -84,9 +85,9 @@ export default {
   computed: {
     summaryList() {
       return [
-        { label: 'Tổng doanh thu', value: this.formatCurrency(this.data?.totalRevenue) },
-        { label: 'Tổng giảm giá', value: this.formatCurrency(this.data?.totalDiscount) },
-        { label: 'Giá trung bình', value: this.formatCurrency(this.data?.averagePrice) },
+        { label: 'Tổng doanh thu', value: this.formatCurrency(this.data?.totalRevenue ?? 0) },
+        { label: 'Tổng giảm giá', value: this.formatCurrency(this.data?.totalDiscount ?? 0) },
+        { label: 'Giá trung bình', value: this.formatCurrency(this.data?.averagePrice ?? 0) },
       ]
     },
   },
@@ -118,6 +119,7 @@ export default {
     }
   },
   methods: {
+    formatCurrency,
     toggleProductStatusChart() {
       this.showProductStatusChart = !this.showProductStatusChart // Chuyển đổi trạng thái hiển thị
     },
@@ -230,11 +232,6 @@ export default {
           },
         },
       })
-    },
-
-    formatCurrency(val) {
-      if (typeof val !== 'number') return '0'
-      return val.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
     },
   },
 }

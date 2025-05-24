@@ -13,18 +13,6 @@
             <span>Không có dữ liệu để hiển thị.</span>
           </div>
           <div v-else>
-            <div class="row mb-4">
-              <div class="col-md-4" v-for="item in summaryList" :key="item.label">
-                <div class="card stat-box h-100">
-                  <div class="card-body d-flex flex-column">
-                    <h5 class="card-title stat-label text-muted">{{ item.label }}</h5>
-                    <div class="stat-value mt-auto text-center">
-                      <h2 class="font-weight-bold">{{ item.value }}</h2>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
             <div class="text-center my-4">
               <select v-model="selectedTimePeriod" @change="updateCharts" class="form-select">
                 <option value="date">Theo ngày</option>
@@ -48,19 +36,19 @@
               <li class="list-inline-item mx-3">
                 <p class="text-black">Tổng số đơn hàng</p>
                 <h4 class="text-primary-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i>{{ totalOrders }}
+                  <i class="icon-wallet mr-2"></i>{{ totalOrders ?? 0 }}
                 </h4>
               </li>
               <li class="list-inline-item mx-3">
                 <p class="text-black">Tổng doanh thu</p>
                 <h4 class="text-success-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i>{{ totalRevenue }}
+                  <i class="icon-wallet mr-2"></i>{{ formatCurrency(totalRevenue ?? 0) }}
                 </h4>
               </li>
               <li class="list-inline-item mx-3">
                 <p class="text-black">Giá trị đơn hàng trung bình</p>
                 <h4 class="text-info-gradient mb-3">
-                  <i class="icon-wallet mr-2"></i>{{ averageOrderValue }}
+                  <i class="icon-wallet mr-2"></i>{{ formatCurrency(averageOrderValue ?? 0) }}
                 </h4>
               </li>
             </ul>
@@ -75,6 +63,7 @@
 import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
 import { Chart, registerables } from 'chart.js'
 
+import { formatCurrency } from '@/constants/formatCurrency'
 Chart.register(...registerables)
 
 export default {
@@ -114,6 +103,7 @@ export default {
     }
   },
   methods: {
+    formatCurrency,
     updateCharts() {
       this.calculateOverviewData() // Tính toán dữ liệu tổng quan
       this.renderrevenueChartByTime()
@@ -125,15 +115,15 @@ export default {
 
       switch (this.selectedTimePeriod) {
         case 'date': {
-          statusDataByTime = this.data.orderStatusStatistics.date
+          statusDataByTime = this.data.revenueByTimes.date
           break
         }
         case 'month': {
-          statusDataByTime = this.data.orderStatusStatistics.month
+          statusDataByTime = this.data.revenueByTimes.month
           break
         }
         case 'year': {
-          statusDataByTime = this.data.orderStatusStatistics.year
+          statusDataByTime = this.data.revenueByTimes.year
           break
         }
       }
@@ -302,11 +292,7 @@ export default {
       })
     },
   },
-  filters: {
-    currency(value) {
-      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
-    },
-  },
+  filters: {},
 }
 </script>
 
