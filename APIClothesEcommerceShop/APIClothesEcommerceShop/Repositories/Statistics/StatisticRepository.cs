@@ -353,7 +353,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                                                 .Include(x => x.Cthoadons)
                                                     .ThenInclude(x => x.MaCtspNavigation)
                                                         .ThenInclude(x => x.MaSpNavigation)
-                                                .ToListAsync();
+                                                .AsNoTracking().ToListAsync();
 
                 if (!dataMain.Any())
                 {
@@ -452,7 +452,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         TotalOrders = kh.Hoadons.Count(),
                         TotalRevenue = kh.Hoadons.Sum(h => h.TienGoc) // Tính toán doanh thu tổng
                     })
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 if (!data.Any())
                 {
@@ -553,7 +553,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                             .ThenInclude(h => h.MaSpNavigation) // Tải trước thông tin sản phẩm
                     .Include(h => h.MaKhNavigation) // Tải trước thông tin khách hàng
                     .Include(h => h.MaCodeNavigation)
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 if (!data.Any())
                 {
@@ -609,7 +609,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
                     })
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 if (!data.Any())
                 {
@@ -645,7 +645,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 // Lấy dữ liệu cần thiết song song để tối ưu hiệu năng
                 var dataProduct = await GetSanphamsAsync();
                 var dataEmployee = await GetNhanviensAsync();
-                var dataCategory = await _context.Danhmucchas.Include(x => x.Chitietdanhmucs).ToListAsync();
+                var dataCategory = await _context.Danhmucchas.Include(x => x.Chitietdanhmucs).AsNoTracking().ToListAsync();
                 var dataCombo = await _context.Combos
                     .Include(c => c.Cthoadons)
                     .Select(c => new
@@ -657,14 +657,14 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
                     })
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
                 var dataOrder = await _context.Hoadons
                     .Include(h => h.Cthoadons)
                         .ThenInclude(h => h.MaCtspNavigation)
                             .ThenInclude(h => h.MaSpNavigation)
                     .Include(h => h.MaKhNavigation)
                     .Include(h => h.MaCodeNavigation)
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
                 var dataCustomer = await _context.Khachhangs
                     .Include(x => x.Hoadons)
                     .Select(kh => new
@@ -677,7 +677,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         TotalOrders = kh.Hoadons.Count(),
                         TotalRevenue = kh.Hoadons.Sum(h => h.TienGoc)
                     })
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 var topProducts = GetTopProducts(dataOrder, dataProduct, dataCategory);
                 var topCustomers = GetTopCustomers(dataOrder);
@@ -724,7 +724,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                                         .ThenInclude(x => x.MaSpNavigation)
                                 .Include(x => x.MaKhNavigation)
                                 .Include(x => x.MaCodeNavigation)
-                                .ToListAsync();
+                                .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -741,7 +741,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 data = await _context.Sanphams
                                 .Include(x => x.Chitietsanphams)
                                 .Include(x => x.Chitietdanhmucs)
-                                .ToListAsync();
+                                .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -757,7 +757,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             {
                 data = await _context.Khachhangs
                                 .Include(x => x.Hoadons)
-                                .ToListAsync();
+                                .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -774,7 +774,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 data = await _context.Nhanviens
                                 .Include(x => x.Hoadons)
                                 .Include(x => x.MaChucVuNavigation)
-                                .ToListAsync();
+                                .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -793,7 +793,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                                     .ThenInclude(x => x.MaHdNavigation)
                                 .Include(x => x.Chitietcombohoadons)
                                     .ThenInclude(x => x.MaComboNavigation)
-                                .ToListAsync();
+                                .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
@@ -811,7 +811,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 data = await _context.Chitietcombohoadons
                                 .Include(x => x.MaComboNavigation)
                                 .Include(x => x.MaHdNavigation)
-                                .ToListAsync();
+                                .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)
             {
