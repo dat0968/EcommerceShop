@@ -13,11 +13,12 @@ namespace APIClothesEcommerceShop.DTO
         public T? Data { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
 
-        public void SetSuccessResponse(string? message = "Dữ liệu đã xử lí thành công!", int statusCode = 200)
+        public void SetSuccessResponse(string? message = "Dữ liệu đã xử lí thành công!", int statusCode = 200, T? data = null)
         {
             this.Success = true;
             this.StatusCode = statusCode;
             this.Message = message ?? "Dữ liệu đã xử lí thành công!";
+            if (data != null) this.Data = data;
         }
 
         public void SetData(T dataSet)

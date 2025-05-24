@@ -1,4 +1,5 @@
-﻿using APIClothesEcommerceShop.Repositories.Category;
+﻿using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ namespace APIClothesEcommerceShop.Controllers
         {
             try
             {
-                var listCategory = await _unit.Category.GetAllCategories();
+                var listCategory = await _unit.Category.GetAllCategoriesAsync();
 
                 return Ok(listCategory);
             }
@@ -30,6 +31,84 @@ namespace APIClothesEcommerceShop.Controllers
                 throw new Exception(ex.Message);
             }
 
+        }
+        [HttpGet("GetCategoryById/{id}")]
+        public async Task<IActionResult> GetCategoryById(int id)
+        {
+            var result = await _unit.Category.GetCategoryByIdAsync(id);
+            return Ok(result);
+        }
+
+        [HttpPost("UpsertCategory")]
+        public async Task<IActionResult> UpsertCategory([FromBody] Danhmuccha category)
+        {
+            var result = await _unit.Category.UpsertCategoryAsync(category);
+            return Ok(result);
+        }
+
+        [HttpDelete("DeleteCategory/{id}")]
+        public async Task<IActionResult> DeleteCategory(int id)
+        {
+            var result = await _unit.Category.DeleteCategoryAsync(id);
+            return Ok(result);
+        }
+
+        // Danh mục con
+        [HttpGet("GetAllSubCategories")]
+        public async Task<IActionResult> GetAllSubCategories()
+        {
+            var result = await _unit.Category.GetAllSubCategoriesAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("GetSubCategoryById/{id}")]
+        public async Task<IActionResult> GetSubCategoryById(int id)
+        {
+            var result = await _unit.Category.GetSubCategoryByIdAsync(id);
+            return Ok(result);
+        }
+
+        [HttpPost("UpsertSubCategory")]
+        public async Task<IActionResult> UpsertSubCategory([FromBody] Danhmuccon subCategory)
+        {
+            var result = await _unit.Category.UpsertSubCategoryAsync(subCategory);
+            return Ok(result);
+        }
+
+        [HttpDelete("DeleteSubCategory/{id}")]
+        public async Task<IActionResult> DeleteSubCategory(int id)
+        {
+            var result = await _unit.Category.DeleteSubCategoryAsync(id);
+            return Ok(result);
+        }
+
+        // Chi tiết danh mục
+        [HttpGet("GetAllCategoryDetails")]
+        public async Task<IActionResult> GetAllCategoryDetails()
+        {
+            var result = await _unit.Category.GetAllCategoryDetailsAsync();
+            return Ok(result);
+        }
+
+        [HttpGet("GetCategoryDetailById")]
+        public async Task<IActionResult> GetCategoryDetailById(int maDanhMucCha, int maDanhMucCon, int maSp)
+        {
+            var result = await _unit.Category.GetCategoryDetailByIdAsync(maDanhMucCha, maDanhMucCon, maSp);
+            return Ok(result);
+        }
+
+        [HttpPost("UpsertCategoryDetail")]
+        public async Task<IActionResult> UpsertCategoryDetail([FromBody] Chitietdanhmuc detail)
+        {
+            var result = await _unit.Category.UpsertCategoryDetailAsync(detail);
+            return Ok(result);
+        }
+
+        [HttpDelete("DeleteCategoryDetail")]
+        public async Task<IActionResult> DeleteCategoryDetail(int maDanhMucCha, int maDanhMucCon, int maSp)
+        {
+            var result = await _unit.Category.DeleteCategoryDetailAsync(maDanhMucCha, maDanhMucCon, maSp);
+            return Ok(result);
         }
     }
 }
