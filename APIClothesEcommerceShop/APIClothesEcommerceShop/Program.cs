@@ -1,7 +1,9 @@
 using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.Repositories.CategoryDetails;
+using APIClothesEcommerceShop.Repositories.Coupon;
 using APIClothesEcommerceShop.Repositories.Customer;
 using APIClothesEcommerceShop.Repositories.ImageProduct;
+using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
 using APIClothesEcommerceShop.Repositories.Staff;
@@ -70,6 +72,7 @@ builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
+builder.Services.AddScoped<IMaCouponRepository, MaCouponRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

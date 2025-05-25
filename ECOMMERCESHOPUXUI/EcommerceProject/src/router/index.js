@@ -11,6 +11,7 @@ import checkout from '../views/customer/Checkout.vue'
 import statistics from '../views/admin/statistics/statistics.vue'
 import customerManagement from '../views/admin/Customer/CustomerManagement.vue'
 import staffManagement from '../views/admin/Staff/StaffManagement.vue'
+import couponManagement from '../views/admin/Coupon/indexCoupon.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -34,10 +35,11 @@ const router = createRouter({
         {path: '', name: 'statistics', component: statistics},
         {path: 'customer', name: 'CustomerManagement', component: customerManagement},
         {path: 'staff', name: 'StaffManagement', component: staffManagement},
+        {path: 'coupon', name: 'couponManagement', component: couponManagement},
       ]
     }
   ],
-  sensitive: false 
+  sensitive: false
 })
 
 export default router

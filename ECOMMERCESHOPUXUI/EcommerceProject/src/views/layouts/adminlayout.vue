@@ -120,6 +120,11 @@ onMounted(() => {
                   <i class="icon-people"></i><span class="font-color" >Nhân Viên</span>
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink to="/admin/coupon">
+                  <i class="icon-people"></i><span class="font-color" >Coupon</span>
+                </RouterLink>
+              </li>
             </ul>
           </div>
           <!-- End XP Navigationbar -->
@@ -243,7 +248,7 @@ onMounted(() => {
           <!-- End XP Row -->
         </div>
         <!-- End XP Topbar -->
-        <!-- 
+        <!--
         <statistics /> -->
 
         <RouterView />

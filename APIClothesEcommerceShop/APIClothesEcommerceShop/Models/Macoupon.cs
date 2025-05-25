@@ -7,13 +7,13 @@ public partial class Macoupon
 {
     public string MaCode { get; set; } = null!;
 
-    public string MoTa { get; set; } = null!;
+    public string? MoTa { get; set; } = null!;
 
-    public decimal PhanTramGiam { get; set; }
+    public decimal? PhanTramGiam { get; set; }
 
-    public int SoTienGiam { get; set; }
+    public int? SoTienGiam { get; set; }
 
-    public int DonHangToiThieu { get; set; }
+    public int? DonHangToiThieu { get; set; }
 
     public DateTime NgayBatDau { get; set; }
 
