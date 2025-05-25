@@ -26,14 +26,54 @@
                   :is-visible="!hasRevenueChartData"
                   overlay-content="Không có dữ liệu doanh thu để thống kê biểu đồ."
                 />
-                <canvas id="revenueChartByTime" class="m-3" width="700" height="350"></canvas>
+                <canvas
+                  id="revenueChartByDay"
+                  class="m-3"
+                  v-if="selectedTimePeriod === 'date'"
+                  width="700"
+                  height="350"
+                ></canvas>
+                <canvas
+                  id="revenueChartByMonth"
+                  class="m-3"
+                  v-if="selectedTimePeriod === 'month'"
+                  width="700"
+                  height="350"
+                ></canvas>
+                <canvas
+                  id="revenueChartByYear"
+                  class="m-3"
+                  v-if="selectedTimePeriod === 'year'"
+                  width="700"
+                  height="350"
+                ></canvas>
               </div>
               <div class="col-12 col-md-4 border-end position-relative">
                 <Overlay
                   :is-visible="!hasOrderStatusChartData"
-                  overlay-content="Không có đơn hàng trong khoảng thời gian này"
+                  overlay-content="Không có dữ liệu doanh thu để thống kê biểu đồ."
                 />
-                <canvas id="orderStatusChart" class="m-3" width="300" height="350"></canvas>
+                <canvas
+                  id="orderStatusChartByDay"
+                  v-if="selectedTimePeriod === 'date'"
+                  width="300"
+                  height="350"
+                  class="m-3"
+                ></canvas>
+                <canvas
+                  id="orderStatusChartByMonth"
+                  v-if="selectedTimePeriod === 'month'"
+                  width="300"
+                  height="350"
+                  class="m-3"
+                ></canvas>
+                <canvas
+                  id="orderStatusChartByYear"
+                  v-if="selectedTimePeriod === 'year'"
+                  width="300"
+                  height="350"
+                  class="m-3"
+                ></canvas>
               </div>
             </div>
           </div>
@@ -68,8 +108,6 @@
 </template>
 
 <script>
-import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
-
 import Overlay from '../common/Overlay.vue'
 
 import { Chart, registerables } from 'chart.js'
@@ -81,7 +119,7 @@ export default {
   components: { Overlay },
   props: {
     data: {
-      type: OrderSummaryResponse,
+      type: Object,
       required: true,
     },
     isLoading: {
@@ -120,8 +158,7 @@ export default {
     updateCharts() {
       this.calculateOverviewData()
       this.checkChartData()
-      this.renderrevenueChartByTime()
-      this.renderOrderStatusChart()
+      this.renderCharts()
     },
     calculateOverviewData() {
       var statusDataByTime
@@ -170,8 +207,21 @@ export default {
       this.hasOrderStatusChartData =
         statusData && statusData.length > 0 && statusData.some((item) => item.count > 0)
     },
-    renderrevenueChartByTime() {
-      const ctx = document.getElementById('revenueChartByTime')
+    renderCharts() {
+      // Dựa vào selectedTimePeriod, render các biểu đồ tương ứng
+      if (this.selectedTimePeriod === 'date') {
+        this.renderRevenueChart('revenueChartByDay')
+        this.renderOrderStatusChart('orderStatusChartByDay')
+      } else if (this.selectedTimePeriod === 'month') {
+        this.renderRevenueChart('revenueChartByMonth')
+        this.renderOrderStatusChart('orderStatusChartByMonth')
+      } else if (this.selectedTimePeriod === 'year') {
+        this.renderRevenueChart('revenueChartByYear')
+        this.renderOrderStatusChart('orderStatusChartByYear')
+      }
+    },
+    renderRevenueChart(chartId) {
+      const ctx = document.getElementById(chartId)
 
       const context = ctx.getContext('2d')
       if (this.revenueChartByTime) {
@@ -249,8 +299,8 @@ export default {
         },
       })
     },
-    renderOrderStatusChart() {
-      const ctx = document.getElementById('orderStatusChart')
+    renderOrderStatusChart(chartId) {
+      const ctx = document.getElementById(chartId)
 
       const context = ctx.getContext('2d')
       if (this.orderStatusChart) {

@@ -38,7 +38,9 @@
           <span>Đang tải dữ liệu...</span>
         </div>
         <div v-else>
-          <canvas id="salesQuantityChart"></canvas>
+          <canvas id="salesQuantityChartByDay" v-if="selectedTimePeriod === 'date'"></canvas>
+          <canvas id="salesQuantityChartByMonth" v-if="selectedTimePeriod === 'month'"></canvas>
+          <canvas id="salesQuantityChartByYear" v-if="selectedTimePeriod === 'year'"></canvas>
         </div>
       </div>
     </div>
@@ -163,7 +165,16 @@ export default {
       })
     },
     updateSalesChart() {
-      const canvas = document.getElementById('salesQuantityChart')
+      let canvasId = ''
+      if (this.selectedTimePeriod === 'date') {
+        canvasId = 'salesQuantityChartByDay'
+      } else if (this.selectedTimePeriod === 'month') {
+        canvasId = 'salesQuantityChartByMonth'
+      } else if (this.selectedTimePeriod === 'year') {
+        canvasId = 'salesQuantityChartByYear'
+      }
+
+      const canvas = document.getElementById(canvasId)
       if (!canvas) return
       const ctx = canvas.getContext('2d')
       if (this.salesQuantityChart) {
@@ -175,6 +186,7 @@ export default {
       let revenueData = []
       let quantityData = []
 
+      // Lấy dữ liệu theo khoảng thời gian đã chọn
       if (this.selectedTimePeriod === 'date') {
         salesData = this.data.salesByTimes?.date || []
         labels = salesData.map((item) => item.date.split('T')[0])

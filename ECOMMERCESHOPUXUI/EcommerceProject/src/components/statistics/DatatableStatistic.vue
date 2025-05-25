@@ -53,7 +53,6 @@
 import cardDiscordInvite from '@/components/ui/cardDiscordInvite.vue'
 import cardMap from '@/components/ui/cardMap.vue'
 
-import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 import ProductTable from '@/components/statistics/datatables/ProductTable.vue'
 import CustomerTable from '@/components/statistics/datatables/CustomerTable.vue'
 import EmployeeTable from '@/components/statistics/datatables/EmployeeTable.vue'
@@ -71,7 +70,7 @@ export default {
   },
   props: {
     data: {
-      type: DatatableStatisticsResponse,
+      type: Object,
       required: true,
     },
     isLoading: {
@@ -101,11 +100,7 @@ export default {
   watch: {
     isLoading() {},
     data: {
-      handler() {
-        if (!this.isLoading) {
-          this.$nextTick(() => this.renderCustomerChart())
-        }
-      },
+      handler() {},
       deep: true,
     },
   },

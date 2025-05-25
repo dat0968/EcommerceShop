@@ -3,13 +3,12 @@
 </template>
 
 <script>
-import ComboStatisticsResponse from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
 export default {
   name: 'ComboStatistic',
   components: {},
   props: {
     data: {
-      type: ComboStatisticsResponse,
+      type: Object,
       required: true,
     },
   },
