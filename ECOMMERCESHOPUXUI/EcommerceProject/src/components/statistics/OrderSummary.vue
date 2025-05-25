@@ -21,11 +21,59 @@
               </select>
             </div>
             <div class="row g-1">
-              <div class="col-12 col-md-8 border-end">
-                <canvas id="revenueChartByTime" class="m-3" width="700" height="350"></canvas>
+              <div class="col-12 col-md-8 border-end position-relative">
+                <Overlay
+                  :is-visible="!hasRevenueChartData"
+                  overlay-content="Không có dữ liệu doanh thu để thống kê biểu đồ."
+                />
+                <canvas
+                  id="revenueChartByDay"
+                  class="m-3"
+                  v-if="selectedTimePeriod === 'date'"
+                  width="700"
+                  height="350"
+                ></canvas>
+                <canvas
+                  id="revenueChartByMonth"
+                  class="m-3"
+                  v-if="selectedTimePeriod === 'month'"
+                  width="700"
+                  height="350"
+                ></canvas>
+                <canvas
+                  id="revenueChartByYear"
+                  class="m-3"
+                  v-if="selectedTimePeriod === 'year'"
+                  width="700"
+                  height="350"
+                ></canvas>
               </div>
-              <div class="col-12 col-md-4 border-end">
-                <canvas id="orderStatusChart" class="m-3" width="300" height="350"></canvas>
+              <div class="col-12 col-md-4 border-end position-relative">
+                <Overlay
+                  :is-visible="!hasOrderStatusChartData"
+                  overlay-content="Không có dữ liệu doanh thu để thống kê biểu đồ."
+                />
+                <canvas
+                  id="orderStatusChartByDay"
+                  v-if="selectedTimePeriod === 'date'"
+                  width="300"
+                  height="350"
+                  class="m-3"
+                ></canvas>
+                <canvas
+                  id="orderStatusChartByMonth"
+                  v-if="selectedTimePeriod === 'month'"
+                  width="300"
+                  height="350"
+                  class="m-3"
+                ></canvas>
+                <canvas
+                  id="orderStatusChartByYear"
+                  v-if="selectedTimePeriod === 'year'"
+                  width="300"
+                  height="350"
+                  class="m-3"
+                ></canvas>
               </div>
             </div>
           </div>
@@ -60,17 +108,18 @@
 </template>
 
 <script>
-import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
-import { Chart, registerables } from 'chart.js'
+import Overlay from '../common/Overlay.vue'
 
+import { Chart, registerables } from 'chart.js'
 import { formatCurrency } from '@/constants/formatCurrency'
 Chart.register(...registerables)
 
 export default {
   name: 'OrderSummary',
+  components: { Overlay },
   props: {
     data: {
-      type: OrderSummaryResponse,
+      type: Object,
       required: true,
     },
     isLoading: {
@@ -80,12 +129,14 @@ export default {
   },
   data() {
     return {
-      selectedTimePeriod: 'date', // Mặc định là theo ngày
-      revenueChartByTime: null, // Lưu trữ phiên bản biểu đồ doanh thu
-      orderStatusChart: null, // Lưu trữ phiên bản biểu đồ trạng thái đơn hàng
-      totalOrders: 0, // Tổng số đơn hàng
-      totalRevenue: 0, // Tổng doanh thu
-      averageOrderValue: 0, // Giá trị đơn hàng trung bình
+      selectedTimePeriod: 'date',
+      revenueChartByTime: null,
+      orderStatusChart: null,
+      totalOrders: 0,
+      totalRevenue: 0,
+      averageOrderValue: 0,
+      hasRevenueChartData: true,
+      hasOrderStatusChartData: true,
     }
   },
   watch: {
@@ -105,14 +156,12 @@ export default {
   methods: {
     formatCurrency,
     updateCharts() {
-      this.calculateOverviewData() // Tính toán dữ liệu tổng quan
-      this.renderrevenueChartByTime()
-      this.renderOrderStatusChart()
+      this.calculateOverviewData()
+      this.checkChartData()
+      this.renderCharts()
     },
     calculateOverviewData() {
       var statusDataByTime
-      // console.log(this.data)
-
       switch (this.selectedTimePeriod) {
         case 'date': {
           statusDataByTime = this.data.revenueByTimes.date
@@ -127,39 +176,75 @@ export default {
           break
         }
       }
-      this.totalOrders = statusDataByTime.reduce((acc, item) => acc + item.count, 0) // Tổng số đơn hàng
-      this.totalRevenue = statusDataByTime.reduce((acc, item) => acc + item.revenue, 0) // Tổng doanh thu
-      this.averageOrderValue = this.totalOrders > 0 ? this.totalRevenue / this.totalOrders : 0 // Giá trị đơn hàng trung bình
+      this.totalOrders = statusDataByTime.reduce((acc, item) => acc + item.count, 0)
+      this.totalRevenue = statusDataByTime.reduce((acc, item) => acc + item.revenue, 0)
+      this.averageOrderValue = this.totalOrders > 0 ? this.totalRevenue / this.totalOrders : 0
     },
-    renderrevenueChartByTime() {
-      const ctx = document.getElementById('revenueChartByTime').getContext('2d')
+    checkChartData() {
+      // Kiểm tra dữ liệu doanh thu
+      let revenueData = []
+      if (this.selectedTimePeriod === 'date') {
+        revenueData = this.data.revenueByTimes['date']
+      } else if (this.selectedTimePeriod === 'month') {
+        revenueData = this.data.revenueByTimes['month']
+      } else {
+        revenueData = this.data.revenueByTimes['year']
+      }
+      this.hasRevenueChartData =
+        revenueData &&
+        revenueData.length > 0 &&
+        revenueData.some((item) => item.revenue > 0 || item.count > 0)
 
-      // Hủy biểu đồ hiện tại nếu nó đã tồn tại
+      // Kiểm tra dữ liệu trạng thái đơn hàng
+      let statusData = []
+      if (this.selectedTimePeriod === 'date') {
+        statusData = this.data.orderStatusStatistics['date']
+      } else if (this.selectedTimePeriod === 'month') {
+        statusData = this.data.orderStatusStatistics['month']
+      } else {
+        statusData = this.data.orderStatusStatistics['year']
+      }
+      this.hasOrderStatusChartData =
+        statusData && statusData.length > 0 && statusData.some((item) => item.count > 0)
+    },
+    renderCharts() {
+      // Dựa vào selectedTimePeriod, render các biểu đồ tương ứng
+      if (this.selectedTimePeriod === 'date') {
+        this.renderRevenueChart('revenueChartByDay')
+        this.renderOrderStatusChart('orderStatusChartByDay')
+      } else if (this.selectedTimePeriod === 'month') {
+        this.renderRevenueChart('revenueChartByMonth')
+        this.renderOrderStatusChart('orderStatusChartByMonth')
+      } else if (this.selectedTimePeriod === 'year') {
+        this.renderRevenueChart('revenueChartByYear')
+        this.renderOrderStatusChart('orderStatusChartByYear')
+      }
+    },
+    renderRevenueChart(chartId) {
+      const ctx = document.getElementById(chartId)
+
+      const context = ctx.getContext('2d')
       if (this.revenueChartByTime) {
         this.revenueChartByTime.destroy()
       }
 
       let revenueData, countData, labels
-
-      // Tùy thuộc vào khoảng thời gian đã chọn, chúng ta lấy doanh thu và số lượng
       if (this.selectedTimePeriod === 'date') {
         revenueData = this.data.revenueByTimes['date'].map((item) => item.revenue)
         countData = this.data.revenueByTimes['date'].map((item) => item.count)
-        labels = this.data.revenueByTimes['date'].map((item) => item.date.split('T')[0]) // Chỉ lấy ngày
+        labels = this.data.revenueByTimes['date'].map((item) => item.date.split('T')[0])
       } else if (this.selectedTimePeriod === 'month') {
         revenueData = this.data.revenueByTimes['month'].map((item) => item.revenue)
         countData = this.data.revenueByTimes['month'].map((item) => item.count)
         labels = this.data.revenueByTimes['month'].map((item) => `${item.month}/${item.year}`)
       } else {
-        // Theo năm
         revenueData = this.data.revenueByTimes['year'].map((item) => item.revenue)
         countData = this.data.revenueByTimes['year'].map((item) => item.count)
         labels = this.data.revenueByTimes['year'].map((item) => item.year)
       }
 
-      // Khởi tạo biểu đồ mới
-      this.revenueChartByTime = new Chart(ctx, {
-        type: 'bar', // Sử dụng bar cho doanh thu
+      this.revenueChartByTime = new Chart(context, {
+        type: 'bar',
         data: {
           labels: labels,
           datasets: [
@@ -169,8 +254,8 @@ export default {
               backgroundColor: 'rgba(75, 192, 192, 0.2)',
               borderColor: 'rgba(75, 192, 192, 1)',
               borderWidth: 1,
-              type: 'line', // Dữ liệu doanh thu sẽ là đường
-              yAxisID: 'y-revenue', // Gán trục y cho doanh thu
+              type: 'line',
+              yAxisID: 'y-revenue',
             },
             {
               label: 'Số lượng đơn hàng',
@@ -178,8 +263,8 @@ export default {
               backgroundColor: 'rgba(255, 99, 132, 0.2)',
               borderColor: 'rgba(255, 99, 132, 1)',
               borderWidth: 1,
-              type: 'bar', // Dữ liệu số lượng đơn sẽ là cột
-              yAxisID: 'y-count', // Gán trục y cho số lượng
+              type: 'bar',
+              yAxisID: 'y-count',
             },
           ],
         },
@@ -194,7 +279,6 @@ export default {
               },
             },
             'y-count': {
-              // Trục y cho số lượng đơn hàng
               beginAtZero: true,
               position: 'right',
               title: {
@@ -215,14 +299,13 @@ export default {
         },
       })
     },
-    renderOrderStatusChart() {
-      const ctx = document.getElementById('orderStatusChart').getContext('2d')
+    renderOrderStatusChart(chartId) {
+      const ctx = document.getElementById(chartId)
 
-      // Hủy biểu đồ hiện tại nếu nó đã tồn tại
+      const context = ctx.getContext('2d')
       if (this.orderStatusChart) {
         this.orderStatusChart.destroy()
       }
-      // console.log(this.data.orderStatusStatistics)
 
       var statusDataByTime
       switch (this.selectedTimePeriod) {
@@ -239,13 +322,12 @@ export default {
           break
         }
       }
-      // console.log(statusDataByTime)
 
       const statusData = statusDataByTime.map((item) => item.count)
       const statusLabels = statusDataByTime.map((item) => item.status)
 
-      this.orderStatusChart = new Chart(ctx, {
-        type: 'pie', // Thay đổi loại biểu đồ thành 'pie'
+      this.orderStatusChart = new Chart(context, {
+        type: 'pie',
         data: {
           labels: statusLabels,
           datasets: [
@@ -279,13 +361,13 @@ export default {
               callbacks: {
                 label: function (tooltipItem) {
                   const label = tooltipItem.label || ''
-                  const value = tooltipItem.raw || 0 // Giá trị tương ứng
-                  return `${label}: ${value}` // Định dạng label với giá trị
+                  const value = tooltipItem.raw || 0
+                  return `${label}: ${value}`
                 },
               },
             },
             legend: {
-              position: 'right', // Thiết lập vị trí legend ở bên phải
+              position: 'right',
             },
           },
         },

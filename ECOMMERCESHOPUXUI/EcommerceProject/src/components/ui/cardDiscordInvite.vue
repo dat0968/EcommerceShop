@@ -1,58 +1,64 @@
 <template>
-  <div class="invite-card">
-    <h2>Bạn được mời tham gia vào Server!</h2>
-    <p>Nhấn vào để được điều hướng đến lời mới của bạn.</p>
-    <a href="https://discord.gg/NHhJtRuB" target="_blank">Vào ngay!</a>
+  <div class="card-discord-invite">
+    <div class="card-header">
+      <h3>Bạn được mời tham gia vào Server!</h3>
+    </div>
+    <div class="card-body">
+      <p>Nhấn vào để được điều hướng đến lời mời của bạn.</p>
+      <a href="https://discord.gg/NHhJtRuB" target="_blank" rel="noopener" class="invite-link"
+        >Vào ngay!</a
+      >
+    </div>
   </div>
 </template>
 
 <script>
 export default {
   name: 'CardDiscordInvite',
-  components: {},
-  props: {},
-  data() {
-    return {}
-  },
-  computed: {},
-  watch: {},
-  mounted() {},
-  methods: {},
 }
 </script>
 
 <style scoped>
-/* Add your CSS styles here */
-.invite-card {
-  /* Style the card container */
-  width: 100%;
-  padding: 20px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
+.card-discord-invite {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.card-header {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
   text-align: center;
 }
-.invite-card h2 {
-  /* Style the card title */
-  margin-bottom: 10px;
-  color: #333;
+.card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
-.invite-card p {
-  /* Style the card description */
+.card-body {
+  padding: 20px;
+  text-align: center;
+}
+.card-body p {
   margin-bottom: 15px;
   font-size: 14px;
   color: #555;
 }
-.invite-card a {
-  /* Style the invite link button */
+.invite-link {
   display: inline-block;
   padding: 10px 20px;
-  background-color: #007bff;
+  background-color: #5865f2;
   color: white;
   text-decoration: none;
   border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s;
 }
-.invite-card a:hover {
-  /* Add a hover effect */
-  background-color: #0056b3;
+.invite-link:hover {
+  background-color: #404eed;
 }
 </style>

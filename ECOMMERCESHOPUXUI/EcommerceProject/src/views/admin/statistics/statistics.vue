@@ -48,9 +48,9 @@
   </div>
   <!-- End XP Contentbar -->
 
-  <div class="">
+  <!-- <div class="">
     <ComboStatistic :data="comboStatisticsaryData" :is-loading="isLoading"></ComboStatistic>
-  </div>
+  </div> -->
 </template>
 
 <script>
@@ -72,7 +72,7 @@ import ProductStatistic from '@/components/statistics/ProductStatistic.vue'
 import CustomerStatistic from '@/components/statistics/CustomerStatistic.vue'
 import EmployeeStatistic from '@/components/statistics/EmployeeStatistic.vue'
 import RevenueStatistic from '@/components/statistics/RevenueStatistic.vue'
-import ComboStatistic from '@/components/statistics/ComboStatistic.vue'
+// import ComboStatistic from '@/components/statistics/ComboStatistic.vue'
 import DatatableStatistic from '@/components/statistics/DatatableStatistic.vue'
 
 export default {
@@ -83,7 +83,7 @@ export default {
     CustomerStatistic,
     EmployeeStatistic,
     RevenueStatistic,
-    ComboStatistic,
+    // ComboStatistic,
     DatatableStatistic,
   },
   props: {},
@@ -102,57 +102,102 @@ export default {
   computed: {},
   watch: {},
   async mounted() {
+    this.isLoading = true
+
+    const CACHE_KEY = 'statisticsData'
+    const CACHE_EXPIRE = 5 * 60 * 1000 // 5 phút
+
+    let cached = await localStorage.getItem(CACHE_KEY)
+    let now = Date.now()
+    if (cached) {
+      try {
+        const parsed = await JSON.parse(cached)
+        const isExpired = parsed.expire && parsed.expire < now
+        if (!isExpired) {
+          this.orderSummaryData = await parsed.orderSummaryData
+          this.productStatisticData = await parsed.productStatisticData
+          this.customerStatisticsData = await parsed.customerStatisticsData
+          this.employeeStatisticsData = await parsed.employeeStatisticsData
+          this.revenueStatisticData = await parsed.revenueStatisticData
+          this.comboStatisticsaryData = await parsed.comboStatisticsaryData
+          this.datatableStatisticsResponse = await parsed.datatableStatisticsResponse
+          this.isLoading = false
+          return // Dừng nếu dữ liệu không hết hạn
+        }
+        localStorage.removeItem(CACHE_KEY) // Xóa cache nếu hết hạn
+      } catch (e) {
+        localStorage.removeItem(CACHE_KEY)
+        console.error(e)
+      }
+    }
+
+    // Nếu không có cache hoặc cache đã hết hạn
     let errorMessage = ''
     let errorLogs = []
-    this.loading = true
+
     try {
       await this.loadOrderSummaryData()
     } catch (error) {
-      errorMessage += 'Đơn hàng.'
+      errorMessage += 'Đơn hàng. '
       errorLogs.push(error)
     }
     try {
       await this.loadProductStatisticsData()
     } catch (error) {
-      errorMessage += 'Sản phẩm.'
+      errorMessage += 'Sản phẩm. '
       errorLogs.push(error)
     }
     try {
       await this.loadCustomerStatisticsData()
     } catch (error) {
-      errorMessage += 'Khách hàng.'
+      errorMessage += 'Khách hàng. '
       errorLogs.push(error)
     }
     try {
       await this.loadEmployeeStatisticsData()
     } catch (error) {
-      errorMessage += 'Nhân viên.'
+      errorMessage += 'Nhân viên. '
       errorLogs.push(error)
     }
     try {
       await this.loadRevenueStatisticsData()
     } catch (error) {
-      errorMessage += 'Doanh thu.'
+      errorMessage += 'Doanh thu. '
       errorLogs.push(error)
     }
-    try {
+    /* try {
       await this.loadComboStatisticsData()
     } catch (error) {
-      errorMessage += 'Combo.'
+      errorMessage += 'Combo. '
       errorLogs.push(error)
-    }
+    } */
     try {
       await this.loadDatatableData()
     } catch (error) {
-      errorMessage += 'Datatable.'
+      errorMessage += 'Datatable. '
       errorLogs.push(error)
     }
 
-    if (errorMessage != '') {
+    if (errorMessage !== '') {
       toastr.error('Hiện không thể load dữ liệu: ' + errorMessage)
       console.warn(errorLogs)
     }
-    this.isLoading = false
+    // Lưu cache với thời gian hết hạn
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({
+        orderSummaryData: JSON.parse(JSON.stringify(this.orderSummaryData)), // Chuyển đổi thành đối tượng thường
+        productStatisticData: JSON.parse(JSON.stringify(this.productStatisticData)),
+        customerStatisticsData: JSON.parse(JSON.stringify(this.customerStatisticsData)),
+        employeeStatisticsData: JSON.parse(JSON.stringify(this.employeeStatisticsData)),
+        revenueStatisticData: JSON.parse(JSON.stringify(this.revenueStatisticData)),
+        comboStatisticsaryData: JSON.parse(JSON.stringify(this.comboStatisticsaryData)),
+        datatableStatisticsResponse: JSON.parse(JSON.stringify(this.datatableStatisticsResponse)),
+        expire: now + CACHE_EXPIRE,
+      }),
+    )
+
+    this.isLoading = false // Chuyển trạng thái loading sau khi hoàn thành
   },
   methods: {
     async loadOrderSummaryData() {

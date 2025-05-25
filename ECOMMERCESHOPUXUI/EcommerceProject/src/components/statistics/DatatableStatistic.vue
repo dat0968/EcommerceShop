@@ -5,7 +5,7 @@
   <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
     <span>Không có dữ liệu để hiển thị.</span>
   </div>
-  <div v-else class="row">
+  <div v-else class="row align-items-stretch">
     <div class="col-md-12 col-lg-8 col-xl-8 align-self-center">
       <div class="card bg-white m-b-30">
         <div class="card-header px-3 bg-white d-flex justify-content-between align-items-center">
@@ -43,6 +43,7 @@
     </div>
 
     <div class="col-md-12 col-lg-4 col-xl-4">
+      <cardMap class="mb-3" />
       <cardDiscordInvite />
     </div>
   </div>
@@ -50,8 +51,8 @@
 
 <script>
 import cardDiscordInvite from '@/components/ui/cardDiscordInvite.vue'
+import cardMap from '@/components/ui/cardMap.vue'
 
-import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 import ProductTable from '@/components/statistics/datatables/ProductTable.vue'
 import CustomerTable from '@/components/statistics/datatables/CustomerTable.vue'
 import EmployeeTable from '@/components/statistics/datatables/EmployeeTable.vue'
@@ -65,10 +66,11 @@ export default {
     EmployeeTable,
     ComboTable,
     cardDiscordInvite,
+    cardMap,
   },
   props: {
     data: {
-      type: DatatableStatisticsResponse,
+      type: Object,
       required: true,
     },
     isLoading: {
@@ -98,11 +100,7 @@ export default {
   watch: {
     isLoading() {},
     data: {
-      handler() {
-        if (!this.isLoading) {
-          this.$nextTick(() => this.renderCustomerChart())
-        }
-      },
+      handler() {},
       deep: true,
     },
   },
