@@ -29,12 +29,13 @@
       </div>
     </div>
     <div class="card-body flex align-items-center m-3">
-      <div class="chart-container flex align-items-center">
+      <div class="chart-container flex align-items-center position-relative">
+        <Overlay
+          :is-visible="!hasSalesChartData && !isLoading"
+          overlay-content="Không có dữ liệu để hiển thị biểu đồ."
+        />
         <div v-if="isLoading" class="text-center my-4">
           <span>Đang tải dữ liệu...</span>
-        </div>
-        <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
-          <span>Không có dữ liệu để hiển thị.</span>
         </div>
         <div v-else>
           <canvas id="salesQuantityChart"></canvas>
@@ -58,12 +59,13 @@
 
 <script>
 import { Chart, registerables } from 'chart.js'
-
 import { formatCurrency } from '@/constants/formatCurrency'
+import Overlay from '../common/Overlay.vue'
 Chart.register(...registerables)
 
 export default {
   name: 'ProductStatistic',
+  components: { Overlay },
   props: {
     data: {
       type: Object,
@@ -79,7 +81,8 @@ export default {
       productChart: null,
       salesQuantityChart: null,
       selectedTimePeriod: 'date',
-      showProductStatusChart: false, // Biến để điều khiển hiển thị biểu đồ trạng thái
+      showProductStatusChart: false,
+      hasSalesChartData: true,
     }
   },
   computed: {
@@ -121,7 +124,7 @@ export default {
   methods: {
     formatCurrency,
     toggleProductStatusChart() {
-      this.showProductStatusChart = !this.showProductStatusChart // Chuyển đổi trạng thái hiển thị
+      this.showProductStatusChart = !this.showProductStatusChart
     },
     renderProductChart() {
       const canvas = document.getElementById('productChart')
@@ -146,7 +149,7 @@ export default {
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false, // Giữ tỷ lệ khung hình cho	canvas
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               position: 'right',
@@ -167,10 +170,10 @@ export default {
         this.salesQuantityChart.destroy()
       }
 
-      let salesData
-      let labels
-      let revenueData
-      let quantityData
+      let salesData = []
+      let labels = []
+      let revenueData = []
+      let quantityData = []
 
       if (this.selectedTimePeriod === 'date') {
         salesData = this.data.salesByTimes?.date || []
@@ -187,6 +190,19 @@ export default {
         labels = salesData.map((item) => item.year)
         revenueData = salesData.map((item) => item.revenue)
         quantityData = salesData.map((item) => item.count)
+      }
+
+      // Kiểm tra dữ liệu để hiển thị overlay
+      this.hasSalesChartData =
+        salesData &&
+        salesData.length > 0 &&
+        (revenueData.some((v) => v > 0) || quantityData.some((v) => v > 0))
+
+      // Nếu không có dữ liệu, tạo biểu đồ trắng với khung hình
+      if (!this.hasSalesChartData) {
+        labels = ['']
+        revenueData = [0]
+        quantityData = [0]
       }
 
       this.salesQuantityChart = new Chart(ctx, {
@@ -211,7 +227,7 @@ export default {
               backgroundColor: 'rgba(255, 206, 86, 0.7)',
               borderColor: 'rgba(255, 206, 86, 1)',
               borderWidth: 1,
-              yAxisID: 'y1', // Sử dụng trục y thứ hai cho số lượng
+              yAxisID: 'y1',
             },
           ],
         },
@@ -226,7 +242,7 @@ export default {
               beginAtZero: true,
               position: 'right',
               grid: {
-                drawOnChartArea: false, // Không vẽ lưới cho trục bên phải
+                drawOnChartArea: false,
               },
             },
           },
@@ -236,31 +252,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.stat-box {
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-}
-.rounded-except-top-right {
-  border-radius: 8px;
-  border-top-right-radius: 0 !important;
-}
-#salesQuantityChart {
-  width: 100%;
-  min-height: 20em;
-  max-height: 30em;
-}
-#productChart {
-  min-width: 15em;
-  width: 100%;
-  min-height: 5em;
-  max-height: 10em;
-} /* 
-canvas {
-  min-height: 20em;
-  max-height: 25em;
-} */
-</style>
