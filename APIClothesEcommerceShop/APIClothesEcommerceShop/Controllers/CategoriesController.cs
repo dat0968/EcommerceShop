@@ -1,4 +1,7 @@
-﻿using APIClothesEcommerceShop.Models;
+﻿using APIClothesEcommerceShop.DTO.Categories.CategoryChild;
+using APIClothesEcommerceShop.DTO.Categories.CategoryDetail;
+using APIClothesEcommerceShop.DTO.Categories.CategoryParent;
+using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Http;
@@ -40,12 +43,11 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpPost("UpsertCategory")]
-        public async Task<IActionResult> UpsertCategory([FromBody] Danhmuccha category)
+        public async Task<IActionResult> UpsertCategory(int maDanhMucCon, [FromBody] CategoryParentRequestDTO categoryDto)
         {
-            var result = await _unit.Category.UpsertCategoryAsync(category);
+            var result = await _unit.Category.UpsertCategoryAsync(maDanhMucCon, categoryDto);
             return Ok(result);
         }
-
         [HttpDelete("DeleteCategory/{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
@@ -69,9 +71,9 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpPost("UpsertSubCategory")]
-        public async Task<IActionResult> UpsertSubCategory([FromBody] Danhmuccon subCategory)
+        public async Task<IActionResult> UpsertSubCategory(int maDanhMucCon, [FromBody] CategoryChildRequestDTO subCategoryDto)
         {
-            var result = await _unit.Category.UpsertSubCategoryAsync(subCategory);
+            var result = await _unit.Category.UpsertSubCategoryAsync(maDanhMucCon, subCategoryDto);
             return Ok(result);
         }
 
@@ -98,14 +100,14 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpPost("UpsertCategoryDetail")]
-        public async Task<IActionResult> UpsertCategoryDetail([FromBody] Chitietdanhmuc detail)
+        public async Task<IActionResult> UpsertCategoryDetail([FromBody] CategoryDetailRequestDTO detailDto)
         {
-            var result = await _unit.Category.UpsertCategoryDetailAsync(detail);
+            var result = await _unit.Category.UpsertCategoryDetailAsync(detailDto);
             return Ok(result);
         }
 
         [HttpDelete("DeleteCategoryDetail")]
-        public async Task<IActionResult> DeleteCategoryDetail(int maDanhMucCha, int maDanhMucCon, int maSp)
+        public async Task<IActionResult> DeleteCategoryDetail([FromQuery] int maDanhMucCha, [FromQuery] int maDanhMucCon, [FromQuery] int maSp)
         {
             var result = await _unit.Category.DeleteCategoryDetailAsync(maDanhMucCha, maDanhMucCon, maSp);
             return Ok(result);

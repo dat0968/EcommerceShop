@@ -1,22 +1,46 @@
 ﻿using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.DTO.Categories;
+using APIClothesEcommerceShop.DTO.Categories.CategoryParent;
+using APIClothesEcommerceShop.DTO.Categories.CategoryChild;
+using APIClothesEcommerceShop.DTO.Categories.CategoryDetail;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Repository;
 using APIClothesEcommerceShop.Utils;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace APIClothesEcommerceShop.Repositories.Category
 {
     public class CategoryRepository(EcommerceShopContext db) : Repository<Danhmuccha>(db), ICategoryRepository
     {
         private readonly EcommerceShopContext _db = db;
-        public async Task<ResponseAPI<List<Danhmuccha>>> GetAllCategoriesAsync()
+
+        public async Task<ResponseAPI<List<CategoryResponseDTO>>> GetAllCategoriesAsync()
         {
-            ResponseAPI<List<Danhmuccha>> response = new();
+            ResponseAPI<List<CategoryResponseDTO>> response = new();
             try
             {
-                var dataMain = base.GetAllAsync(includeProperties: "Chitietdanhmucs.MaDanhMucConNavigation,Chitietdanhmucs.MaSpNavigation").Result.ToList();
-                response.SetSuccessResponse(data: dataMain);
+                var dataMain = await _db.Chitietdanhmucs
+                    .Include(x => x.MaDanhMucChaNavigation)
+                    .Include(x => x.MaDanhMucConNavigation)
+                    .Include(x => x.MaSpNavigation)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var result = dataMain.Select(x => new CategoryResponseDTO
+                {
+                    MaDanhMucCha = x.MaDanhMucCha,
+                    TenDanhMucCha = x.MaDanhMucChaNavigation.TenDanhMucCha,
+                    MaDanhMucCon = x.MaDanhMucCon,
+                    TenDanhMucCon = x.MaDanhMucConNavigation.TenDanhMucCon,
+                    MaSp = x.MaSp,
+                    TenSanPham = x.MaSpNavigation.TenSanPham,
+                    IsActiveDanhMucCha = x.MaDanhMucChaNavigation.IsActive,
+                    IsActiveDanhMucCon = x.MaDanhMucConNavigation.IsActive
+                }).ToList();
+
+                response.SetSuccessResponse(data: result);
             }
             catch (Exception ex)
             {
@@ -27,18 +51,25 @@ namespace APIClothesEcommerceShop.Repositories.Category
 
         #region [Danh mục cha]
         // Xem chi tiết một danh mục cha
-        public async Task<ResponseAPI<Danhmuccha>> GetCategoryByIdAsync(int id)
+        public async Task<ResponseAPI<CategoryParentResponseDTO>> GetCategoryByIdAsync(int id)
         {
-            ResponseAPI<Danhmuccha> response = new();
+            ResponseAPI<CategoryParentResponseDTO> response = new();
             try
             {
                 var category = await _db.Danhmucchas
-                    .Include(x => x.Chitietdanhmucs)
                     .FirstOrDefaultAsync(x => x.MaDanhMucCha == id);
                 if (category == null)
                     response.SetErrorResponse("Không tìm thấy danh mục cha.");
                 else
-                    response.SetSuccessResponse(data: category);
+                {
+                    var dto = new CategoryParentResponseDTO
+                    {
+                        MaDanhMucCha = category.MaDanhMucCha,
+                        TenDanhMucCha = category.TenDanhMucCha,
+                        IsActive = category.IsActive
+                    };
+                    response.SetSuccessResponse(data: dto);
+                }
             }
             catch (Exception ex)
             {
@@ -48,26 +79,41 @@ namespace APIClothesEcommerceShop.Repositories.Category
         }
 
         // Thêm mới hoặc cập nhật danh mục cha (Upsert)
-        public async Task<ResponseAPI<Danhmuccha>> UpsertCategoryAsync(Danhmuccha category)
+        public async Task<ResponseAPI<CategoryParentResponseDTO>> UpsertCategoryAsync(int id, CategoryParentRequestDTO categoryDto)
         {
-            ResponseAPI<Danhmuccha> response = new();
+            ResponseAPI<CategoryParentResponseDTO> response = new();
             try
             {
-                var existingCategory = await _db.Danhmucchas.FindAsync(category.MaDanhMucCha);
+                var existingCategory = await _db.Danhmucchas.FindAsync(id);
                 if (existingCategory == null)
                 {
-                    // Thêm mới
-                    _db.Danhmucchas.Add(category);
+                    var newCategory = new Danhmuccha
+                    {
+                        TenDanhMucCha = categoryDto.TenDanhMucCha,
+                        IsActive = categoryDto.IsActive
+                    };
+                    _db.Danhmucchas.Add(newCategory);
                     await _db.SaveChangesAsync();
-                    response.SetSuccessResponse(data: category, message: "Thêm danh mục cha thành công.");
+                    var dto = new CategoryParentResponseDTO
+                    {
+                        MaDanhMucCha = newCategory.MaDanhMucCha,
+                        TenDanhMucCha = newCategory.TenDanhMucCha,
+                        IsActive = newCategory.IsActive
+                    };
+                    response.SetSuccessResponse(data: dto, message: "Thêm danh mục cha thành công.");
                 }
                 else
                 {
-                    // Cập nhật
-                    existingCategory.TenDanhMucCha = category.TenDanhMucCha;
-                    existingCategory.IsActive = category.IsActive;
+                    existingCategory.TenDanhMucCha = categoryDto.TenDanhMucCha;
+                    existingCategory.IsActive = categoryDto.IsActive;
                     await _db.SaveChangesAsync();
-                    response.SetSuccessResponse(data: existingCategory, message: "Cập nhật danh mục cha thành công.");
+                    var dto = new CategoryParentResponseDTO
+                    {
+                        MaDanhMucCha = existingCategory.MaDanhMucCha,
+                        TenDanhMucCha = existingCategory.TenDanhMucCha,
+                        IsActive = existingCategory.IsActive
+                    };
+                    response.SetSuccessResponse(data: dto, message: "Cập nhật danh mục cha thành công.");
                 }
             }
             catch (Exception ex)
@@ -106,16 +152,23 @@ namespace APIClothesEcommerceShop.Repositories.Category
         #endregion
 
         #region [Danh mục con]
-        public async Task<ResponseAPI<List<Danhmuccon>>> GetAllSubCategoriesAsync()
+        public async Task<ResponseAPI<List<CategoryChildResponseDTO>>> GetAllSubCategoriesAsync()
         {
-            ResponseAPI<List<Danhmuccon>> response = new();
+            ResponseAPI<List<CategoryChildResponseDTO>> response = new();
             try
             {
                 var data = await _db.Danhmuccons
-                    .Include(x => x.Chitietdanhmucs)
                     .AsNoTracking()
                     .ToListAsync();
-                response.SetSuccessResponse(data: data);
+
+                var result = data.Select(x => new CategoryChildResponseDTO
+                {
+                    MaDanhMucCon = x.MaDanhMucCon,
+                    TenDanhMucCon = x.TenDanhMucCon,
+                    IsActive = x.IsActive
+                }).ToList();
+
+                response.SetSuccessResponse(data: result);
             }
             catch (Exception ex)
             {
@@ -124,18 +177,25 @@ namespace APIClothesEcommerceShop.Repositories.Category
             return response;
         }
 
-        public async Task<ResponseAPI<Danhmuccon>> GetSubCategoryByIdAsync(int id)
+        public async Task<ResponseAPI<CategoryChildResponseDTO>> GetSubCategoryByIdAsync(int id)
         {
-            ResponseAPI<Danhmuccon> response = new();
+            ResponseAPI<CategoryChildResponseDTO> response = new();
             try
             {
                 var subCategory = await _db.Danhmuccons
-                    .Include(x => x.Chitietdanhmucs)
                     .FirstOrDefaultAsync(x => x.MaDanhMucCon == id);
                 if (subCategory == null)
                     response.SetErrorResponse("Không tìm thấy danh mục con.");
                 else
-                    response.SetSuccessResponse(data: subCategory);
+                {
+                    var dto = new CategoryChildResponseDTO
+                    {
+                        MaDanhMucCon = subCategory.MaDanhMucCon,
+                        TenDanhMucCon = subCategory.TenDanhMucCon,
+                        IsActive = subCategory.IsActive
+                    };
+                    response.SetSuccessResponse(data: dto);
+                }
             }
             catch (Exception ex)
             {
@@ -144,24 +204,41 @@ namespace APIClothesEcommerceShop.Repositories.Category
             return response;
         }
 
-        public async Task<ResponseAPI<Danhmuccon>> UpsertSubCategoryAsync(Danhmuccon subCategory)
+        public async Task<ResponseAPI<CategoryChildResponseDTO>> UpsertSubCategoryAsync(int id, CategoryChildRequestDTO subCategoryDto)
         {
-            ResponseAPI<Danhmuccon> response = new();
+            ResponseAPI<CategoryChildResponseDTO> response = new();
             try
             {
-                var existing = await _db.Danhmuccons.FindAsync(subCategory.MaDanhMucCon);
+                var existing = await _db.Danhmuccons.FindAsync(id);
                 if (existing == null)
                 {
-                    _db.Danhmuccons.Add(subCategory);
+                    var newSubCategory = new Danhmuccon
+                    {
+                        TenDanhMucCon = subCategoryDto.TenDanhMucCon,
+                        IsActive = subCategoryDto.IsActive
+                    };
+                    _db.Danhmuccons.Add(newSubCategory);
                     await _db.SaveChangesAsync();
-                    response.SetSuccessResponse(data: subCategory, message: "Thêm danh mục con thành công.");
+                    var dto = new CategoryChildResponseDTO
+                    {
+                        MaDanhMucCon = newSubCategory.MaDanhMucCon,
+                        TenDanhMucCon = newSubCategory.TenDanhMucCon,
+                        IsActive = newSubCategory.IsActive
+                    };
+                    response.SetSuccessResponse(data: dto, message: "Thêm danh mục con thành công.");
                 }
                 else
                 {
-                    existing.TenDanhMucCon = subCategory.TenDanhMucCon;
-                    existing.IsActive = subCategory.IsActive;
+                    existing.TenDanhMucCon = subCategoryDto.TenDanhMucCon;
+                    existing.IsActive = subCategoryDto.IsActive;
                     await _db.SaveChangesAsync();
-                    response.SetSuccessResponse(data: existing, message: "Cập nhật danh mục con thành công.");
+                    var dto = new CategoryChildResponseDTO
+                    {
+                        MaDanhMucCon = existing.MaDanhMucCon,
+                        TenDanhMucCon = existing.TenDanhMucCon,
+                        IsActive = existing.IsActive
+                    };
+                    response.SetSuccessResponse(data: dto, message: "Cập nhật danh mục con thành công.");
                 }
             }
             catch (Exception ex)
@@ -200,18 +277,23 @@ namespace APIClothesEcommerceShop.Repositories.Category
 
         #region [Chi tiết danh mục]
 
-        public async Task<ResponseAPI<List<Chitietdanhmuc>>> GetAllCategoryDetailsAsync()
+        public async Task<ResponseAPI<List<CategoryDetailResponseDTO>>> GetAllCategoryDetailsAsync()
         {
-            ResponseAPI<List<Chitietdanhmuc>> response = new();
+            ResponseAPI<List<CategoryDetailResponseDTO>> response = new();
             try
             {
                 var data = await _db.Chitietdanhmucs
-                    .Include(x => x.MaDanhMucChaNavigation)
-                    .Include(x => x.MaDanhMucConNavigation)
-                    .Include(x => x.MaSpNavigation)
                     .AsNoTracking()
                     .ToListAsync();
-                response.SetSuccessResponse(data: data);
+
+                var result = data.Select(x => new CategoryDetailResponseDTO
+                {
+                    MaDanhMucCha = x.MaDanhMucCha,
+                    MaDanhMucCon = x.MaDanhMucCon,
+                    MaSp = x.MaSp
+                }).ToList();
+
+                response.SetSuccessResponse(data: result);
             }
             catch (Exception ex)
             {
@@ -220,20 +302,25 @@ namespace APIClothesEcommerceShop.Repositories.Category
             return response;
         }
 
-        public async Task<ResponseAPI<Chitietdanhmuc>> GetCategoryDetailByIdAsync(int maDanhMucCha, int maDanhMucCon, int maSp)
+        public async Task<ResponseAPI<CategoryDetailResponseDTO>> GetCategoryDetailByIdAsync(int maDanhMucCha, int maDanhMucCon, int maSp)
         {
-            ResponseAPI<Chitietdanhmuc> response = new();
+            ResponseAPI<CategoryDetailResponseDTO> response = new();
             try
             {
                 var detail = await _db.Chitietdanhmucs
-                    .Include(x => x.MaDanhMucChaNavigation)
-                    .Include(x => x.MaDanhMucConNavigation)
-                    .Include(x => x.MaSpNavigation)
                     .FirstOrDefaultAsync(x => x.MaDanhMucCha == maDanhMucCha && x.MaDanhMucCon == maDanhMucCon && x.MaSp == maSp);
                 if (detail == null)
                     response.SetErrorResponse("Không tìm thấy chi tiết danh mục.");
                 else
-                    response.SetSuccessResponse(data: detail);
+                {
+                    var dto = new CategoryDetailResponseDTO
+                    {
+                        MaDanhMucCha = detail.MaDanhMucCha,
+                        MaDanhMucCon = detail.MaDanhMucCon,
+                        MaSp = detail.MaSp
+                    };
+                    response.SetSuccessResponse(data: dto);
+                }
             }
             catch (Exception ex)
             {
@@ -242,24 +329,42 @@ namespace APIClothesEcommerceShop.Repositories.Category
             return response;
         }
 
-        public async Task<ResponseAPI<Chitietdanhmuc>> UpsertCategoryDetailAsync(Chitietdanhmuc detail)
+        public async Task<ResponseAPI<CategoryDetailResponseDTO>> UpsertCategoryDetailAsync(CategoryDetailRequestDTO detailDto)
         {
-            ResponseAPI<Chitietdanhmuc> response = new();
+            ResponseAPI<CategoryDetailResponseDTO> response = new();
             try
             {
                 var existing = await _db.Chitietdanhmucs
-                    .FirstOrDefaultAsync(x => x.MaDanhMucCha == detail.MaDanhMucCha && x.MaDanhMucCon == detail.MaDanhMucCon && x.MaSp == detail.MaSp);
+                    .FirstOrDefaultAsync(x => x.MaDanhMucCha == detailDto.MaDanhMucCha && x.MaDanhMucCon == detailDto.MaDanhMucCon && x.MaSp == detailDto.MaSp);
                 if (existing == null)
                 {
-                    _db.Chitietdanhmucs.Add(detail);
+                    var newDetail = new Chitietdanhmuc
+                    {
+                        MaDanhMucCha = detailDto.MaDanhMucCha,
+                        MaDanhMucCon = detailDto.MaDanhMucCon,
+                        MaSp = detailDto.MaSp
+                    };
+                    _db.Chitietdanhmucs.Add(newDetail);
                     await _db.SaveChangesAsync();
-                    response.SetSuccessResponse(data: detail, message: "Thêm chi tiết danh mục thành công.");
+                    var dto = new CategoryDetailResponseDTO
+                    {
+                        MaDanhMucCha = newDetail.MaDanhMucCha,
+                        MaDanhMucCon = newDetail.MaDanhMucCon,
+                        MaSp = newDetail.MaSp
+                    };
+                    response.SetSuccessResponse(data: dto, message: "Thêm chi tiết danh mục thành công.");
                 }
                 else
                 {
                     // Nếu có thêm thuộc tính thì cập nhật ở đây
                     await _db.SaveChangesAsync();
-                    response.SetSuccessResponse(data: existing, message: "Chi tiết danh mục đã tồn tại.");
+                    var dto = new CategoryDetailResponseDTO
+                    {
+                        MaDanhMucCha = existing.MaDanhMucCha,
+                        MaDanhMucCon = existing.MaDanhMucCon,
+                        MaSp = existing.MaSp
+                    };
+                    response.SetSuccessResponse(data: dto, message: "Chi tiết danh mục đã tồn tại.");
                 }
             }
             catch (Exception ex)
