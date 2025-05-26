@@ -35,6 +35,12 @@ namespace APIClothesEcommerceShop.Controllers
             }
 
         }
+        [HttpGet("GetAllParentCategories")]
+        public async Task<IActionResult> GetAllParentCategories()
+        {
+            var result = await _unit.Category.GetCategoryParentAsync();
+            return Ok(result);
+        }
         [HttpGet("GetCategoryById/{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {

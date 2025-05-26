@@ -10,8 +10,10 @@ namespace APIClothesEcommerceShop.Repositories.Category
 {
     public interface ICategoryRepository : IRepository<Danhmuccha>
     {
-        // Danh mục cha
+        // Lấy toàn bộ dữ liệu 
         Task<ResponseAPI<List<CategoryResponseDTO>>> GetAllCategoriesAsync();
+        // Danh mục cha
+        Task<ResponseAPI<List<CategoryParentResponseDTO>>> GetCategoryParentAsync();
         Task<ResponseAPI<CategoryParentResponseDTO>> GetCategoryByIdAsync(int id);
         Task<ResponseAPI<CategoryParentResponseDTO>> UpsertCategoryAsync(int id, CategoryParentRequestDTO categoryDto);
         Task<ResponseAPI<dynamic>> DeleteCategoryAsync(int id);

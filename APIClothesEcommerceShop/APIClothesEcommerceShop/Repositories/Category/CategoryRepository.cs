@@ -50,6 +50,26 @@ namespace APIClothesEcommerceShop.Repositories.Category
         }
 
         #region [Danh mục cha]
+        // Danh sách dữ liệu danh mục cha
+        public async Task<ResponseAPI<List<CategoryParentResponseDTO>>> GetCategoryParentAsync()
+        {
+            ResponseAPI<List<CategoryParentResponseDTO>> response = new();
+            try
+            {
+                var category = await _db.Danhmucchas.AsNoTracking().ToListAsync();
+                if (category == null || category.Count == 0)
+                    throw new Exception("Dữ liệu danh mục cha không tìm thấy trong hệ thống.");
+                else
+                {
+                    response.SetSuccessResponse(data: category.Select(x => x.ToCategoryParentResponseDTO()).ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
         // Xem chi tiết một danh mục cha
         public async Task<ResponseAPI<CategoryParentResponseDTO>> GetCategoryByIdAsync(int id)
         {
