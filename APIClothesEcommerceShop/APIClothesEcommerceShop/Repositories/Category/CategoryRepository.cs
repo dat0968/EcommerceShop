@@ -22,6 +22,8 @@ namespace APIClothesEcommerceShop.Repositories.Category
                     .Include(x => x.MaDanhMucChaNavigation)
                     .Include(x => x.MaDanhMucConNavigation)
                     .Include(x => x.MaSpNavigation)
+                        .ThenInclude(sp => sp.Chitietsanphams)
+                            .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .AsNoTracking()
                     .ToListAsync();
 
@@ -33,6 +35,17 @@ namespace APIClothesEcommerceShop.Repositories.Category
                     TenDanhMucCon = x.MaDanhMucConNavigation.TenDanhMucCon,
                     MaSp = x.MaSp,
                     TenSanPham = x.MaSpNavigation.TenSanPham,
+                    MoTa = x.MaSpNavigation.MoTa,
+                    DetailProducts = x.MaSpNavigation.Chitietsanphams.Select(ctsp => new DtProduct
+                    {
+                        MaCtsp = ctsp.MaCtsp,
+                        KichThuoc = ctsp.KichThuoc,
+                        MauSac = ctsp.MauSac,
+                        SoLuongTon = ctsp.SoLuongTon,
+                        DonGia = ctsp.DonGia,
+                        IsActive = ctsp.IsActive,
+                        ImageUrl = ctsp.Hinhanhs.FirstOrDefault()?.TenHinhAnh ?? string.Empty
+                    }).ToList(),
                     IsActiveDanhMucCha = x.MaDanhMucChaNavigation.IsActive,
                     IsActiveDanhMucCon = x.MaDanhMucConNavigation.IsActive
                 }).ToList();
