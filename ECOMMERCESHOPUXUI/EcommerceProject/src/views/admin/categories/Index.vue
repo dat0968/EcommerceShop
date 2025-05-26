@@ -1,5 +1,5 @@
 <template>
-  <div class="container pt-5">
+  <div style="margin-top: 100px" class="xp-contentbar">
     <!-- Breadcrumb trạng thái -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
@@ -13,7 +13,7 @@
       <div class="col-md-3">
         <div class="card">
           <div class="card-header">
-            {{ isEdit ? 'Cập nhật danh mục' : 'Thêm danh mục' }}
+            {{ isEdit ? 'Cập nhật danh mục cha' : 'Thêm danh mục cha' }}
           </div>
           <div class="card-body">
             <form @submit.prevent="onSubmit">
@@ -109,7 +109,7 @@ export default {
         tenDanhMucCha: '',
         isActive: true,
       },
-      breadcrumbText: 'Thêm mới danh mục',
+      breadcrumbText: 'Quản lý danh mục danh mục',
       datatable: null,
     }
   },

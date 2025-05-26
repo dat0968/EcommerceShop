@@ -22,15 +22,13 @@ import 'bootstrap-datepicker'
 //import '../../assets/admin/plugins/datepicker/i18n/datepicker.en.js'
 import 'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'
 import '../../assets/Admin/js/main.js'
-import statistics from '../admin/statistics/statistics.vue'
-import products from '../admin/products/index.vue'
 import { onMounted } from 'vue'
 
 onMounted(() => {
   // Khởi tạo dropdown menu
   const dropdownToggle = document.querySelector('.xp-userprofile .dropdown-toggle')
   const dropdownMenu = document.querySelector('.xp-userprofile .dropdown-menu')
-  
+
   if (dropdownToggle && dropdownMenu) {
     dropdownToggle.addEventListener('click', (e) => {
       e.preventDefault()
@@ -75,6 +73,13 @@ onMounted(() => {
               <li>
                 <RouterLink to="/Admin/Product">
                   <i class="icon-speedometer"></i><span>Quản lý sản phẩm</span>
+                </RouterLink>
+              </li>
+            </ul>
+            <ul class="xp-vertical-menu">
+              <li>
+                <RouterLink to="/Admin/Category">
+                  <i class="icon-notebook"></i><span>Quản lý danh mục</span>
                 </RouterLink>
               </li>
             </ul>
@@ -246,7 +251,6 @@ onMounted(() => {
         <!-- End XP Topbar -->
 
         <router-view />
-
       </div>
       <!-- End XP Rightbar -->
     </div>
@@ -306,7 +310,7 @@ export default {}
   min-width: 200px;
   padding: 0;
   border: none;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-top: 10px;
   display: none;
