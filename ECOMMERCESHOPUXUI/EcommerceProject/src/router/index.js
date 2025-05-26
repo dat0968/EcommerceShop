@@ -9,6 +9,7 @@ import cart from '../views/customer/Cart.vue'
 import checkout from '../views/customer/Checkout.vue'
 import statistics from '../views/admin/statistics/statistics.vue'
 import products from '../views/admin/products/index.vue'
+import Index from '@/views/admin/categories/Index.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -16,22 +17,23 @@ const router = createRouter({
       path: '/',
       component: LayoutCustomer,
       children: [
-        {path: '', name: home, component: home},
-        {path: '/Shop', name: shop, component: shop},
-        {path: '/Product/:id', name: detailProduct, component: detailProduct},
-        {path: '/Combo/:id', name: detailCombo, component: detailCombo},
-        {path: '/Cart', name: cart, component: cart},
-        {path: '/Checkout', name: checkout, component: checkout}
-      ]
+        { path: '', name: home, component: home },
+        { path: '/Shop', name: shop, component: shop },
+        { path: '/Product/:id', name: detailProduct, component: detailProduct },
+        { path: '/Combo/:id', name: detailCombo, component: detailCombo },
+        { path: '/Cart', name: cart, component: cart },
+        { path: '/Checkout', name: checkout, component: checkout },
+      ],
     },
     {
       path: '/Admin',
       component: LayoutAdmin,
       children: [
-        {path: '/Admin', name: statistics, component: statistics},
-        {path: '/Admin/Product', name: products, component: products}
-      ]
-    }
+        { path: '/Admin', name: statistics, component: statistics },
+        { path: '/Admin/Category', name: Index, component: Index },
+        { path: '/Admin/Product', name: products, component: products },
+      ],
+    },
   ],
 })
 
