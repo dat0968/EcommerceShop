@@ -37,14 +37,14 @@ class ResponseAPI {
   }
 
   // Phương thức kiểm tra và hiển thị thông báo
-  static handleNotification(response) {
+  static handleNotification(response, isShowNotification = true) {
     const responseJson = this.fromJson(response) // Tạo instance từ JSON
 
     if (responseJson.success) {
-      toastr.success(responseJson.message || 'Thành công!') // Hiển thị thông báo thành công
+      if (isShowNotification) toastr.success(responseJson.message || 'Thành công!') // Hiển thị thông báo thành công
       return false // Nếu thành công, trả về "false"
     } else {
-      toastr.info(responseJson.message || 'Thao tác thất bại!') // Hiển thị thông báo thất bại
+      if (isShowNotification) toastr.info(responseJson.message || 'Thao tác thất bại!') // Hiển thị thông báo thất bại
       return true // Nếu thất bại, trả về "true"
     }
   }
