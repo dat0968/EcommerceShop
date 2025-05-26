@@ -189,8 +189,9 @@ import ConfigsRequest from '@/models/ConfigsRequest'
 import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
-import { defaultLanguageDatatable } from '@/utils/configsDatatable'
+import * as configsDt from '@/utils/configsDatatable.js'
 import ResponseAPI from '@/models/ResponseAPI'
+import { formatCurrency } from '@/constants/formatCurrency'
 
 export default {
   name: 'CategoryIndex',
@@ -392,6 +393,7 @@ export default {
         this.datatable = $('#datatableCategories').DataTable({
           data: vm.filteredCategories,
           columns: [
+            configsDt.defaultTdToShowDetail,
             { data: 'maSp', title: 'Mã sản phẩm', className: 'text-center' },
             { data: 'tenSanPham', title: 'Tên sản phẩm', className: 'text-center' },
             {
@@ -404,9 +406,51 @@ export default {
             },
           ],
           destroy: true,
-          language: defaultLanguageDatatable,
+          language: configsDt.defaultLanguageDatatable,
+          initComplete: () => {
+            configsDt.attachDetailsControl(`#datatableCategories`, this.formatDetails.bind(this))
+          },
         })
       })
+    },
+    formatDetails(rowData) {
+      const div = $('<div/>').addClass('loading').text('Loading...')
+      const detailProduct = this.listCategories.find((x) => x.maSp == rowData.maSp)
+
+      const detailsHtml = `
+        <div class="container">
+            <div class="row p-1">Mô tả: ${detailProduct.moTa}
+              <br/>
+              <hr/>  
+            </div>
+            <div class="row mb-3 justify-content-between detail-list">
+                ${
+                  detailProduct.detailProducts && detailProduct.detailProducts.length > 0
+                    ? detailProduct.detailProducts
+                        .map(
+                          (detail) => `
+                                <div class="col-sm-12 col-md-6 p-3 detail-item">
+                                    <div class="row border p-1 rounded bg-light">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <img src="${detail.imageUrl || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
+                                        </div>
+                                        <div class="col-8">
+                                            <div class="text-primary flex flex-flow-column justify-content-between"><span class="col-auto">Màu: ${detail.mauSac || '-'}</span> | <span class="col-auto">Size: ${detail.kichThuoc || '-'}</span></div>
+                                            <p><strong>Giá:</strong> <span class="text-danger">${formatCurrency(detail.donGia || 0)}</span></p>
+                                            <p><strong>Số lượng tồn:</strong> <span class="text-warning">${detail.soLuongTon}</span></p>
+                                            <p><strong>Trạng thái:</strong> <span class="${detail.isActive ? 'text-success' : 'text-danger'}">${detail.isActive ? 'Đang bán' : 'Ngừng bán'}</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `,
+                        )
+                        .join('')
+                    : '<p>Không có biến thể nào để hiển thị.</p>'
+                }
+            </div>
+        </div>`
+      div.html(detailsHtml)
+      return div
     },
     reloadDataTable() {
       if (this.datatable) {
@@ -451,7 +495,7 @@ export default {
             },
           ],
           destroy: true,
-          language: defaultLanguageDatatable,
+          language: configsDt.defaultLanguageDatatable,
         })
 
         $('#datatableParent tbody')
@@ -509,7 +553,7 @@ export default {
             },
           ],
           destroy: true,
-          language: defaultLanguageDatatable,
+          language: configsDt.defaultLanguageDatatable,
         })
 
         $('#datatableChild tbody')
