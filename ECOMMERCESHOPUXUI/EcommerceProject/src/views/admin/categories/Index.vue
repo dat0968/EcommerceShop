@@ -79,21 +79,7 @@
           id="datatableCategories"
           class="table table-bordered table-striped"
           style="width: 100%"
-        >
-          <thead>
-            <tr>
-              <th>Mã mục cha</th>
-              <th>Tên mục cha</th>
-              <th>Mã mục con</th>
-              <th>Tên mục con</th>
-              <th>Mã sản phẩm</th>
-              <th>Tên sản phẩm</th>
-              <th>Tình trạng mục cha</th>
-              <th>Tình trạng mục con</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-        </table>
+        ></table>
       </div>
     </div>
   </div>
@@ -105,6 +91,7 @@ import ConfigsRequest from '@/models/ConfigsRequest'
 import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
+import { defaultLanguageDatatable } from '@/utils/configsDatatable'
 
 export default {
   name: 'CategoryIndex',
@@ -167,7 +154,7 @@ export default {
       this.reloadDataTable()
     },
     onFilterChange() {
-      this.selectedMaDanhMucCon = ''
+      // this.selectedMaDanhMucCon = ''
       this.reloadDataTable()
     },
     onEdit(cate) {
@@ -233,33 +220,12 @@ export default {
         this.datatable = $('#datatableCategories').DataTable({
           data: vm.filteredCategories,
           columns: [
-            { data: 'maDanhMucCha', title: 'Mã mục cha' },
-            { data: 'tenDanhMucCha', title: 'Tên mục cha' },
-            { data: 'maDanhMucCon', title: 'Mã mục con' },
-            { data: 'tenDanhMucCon', title: 'Tên mục con' },
-            { data: 'maSp', title: 'Mã sản phẩm' },
-            { data: 'tenSanPham', title: 'Tên sản phẩm' },
-            {
-              data: 'isActiveDanhMucCha',
-              title: 'Tình trạng mục cha',
-              render: function (data) {
-                return data
-                  ? '<span class="badge bg-success">Hoạt động</span>'
-                  : '<span class="badge bg-secondary">Không hoạt động</span>'
-              },
-            },
-            {
-              data: 'isActiveDanhMucCon',
-              title: 'Tình trạng mục con',
-              render: function (data) {
-                return data
-                  ? '<span class="badge bg-success">Hoạt động</span>'
-                  : '<span class="badge bg-secondary">Không hoạt động</span>'
-              },
-            },
+            { data: 'maSp', title: 'Mã sản phẩm', className: 'text-center' },
+            { data: 'tenSanPham', title: 'Tên sản phẩm', className: 'text-center' },
             {
               data: null,
               title: 'Hành động',
+              className: 'text-center',
               orderable: false,
               render: function (data, type, row) {
                 return `
@@ -270,9 +236,7 @@ export default {
             },
           ],
           destroy: true,
-          language: {
-            url: '//cdn.datatables.net/plug-ins/1.10.21/i18n/Vietnamese.json',
-          },
+          language: defaultLanguageDatatable,
         })
 
         // Sự kiện cho nút Sửa/Xóa
