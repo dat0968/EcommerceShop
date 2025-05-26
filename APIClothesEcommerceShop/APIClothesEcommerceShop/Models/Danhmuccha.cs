@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using APIClothesEcommerceShop.DTO.Categories.CategoryParent;
+using APIClothesEcommerceShop.DTO.Categories;
 
 namespace APIClothesEcommerceShop.Models;
 

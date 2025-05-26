@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace APIClothesEcommerceShop.DTO.Categories.CategoryChild
+namespace APIClothesEcommerceShop.DTO.Categories
 {
     public class CategoryChildResponseDTO
     {

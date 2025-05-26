@@ -1,6 +1,5 @@
-﻿using APIClothesEcommerceShop.DTO.Categories.CategoryChild;
-using APIClothesEcommerceShop.DTO.Categories.CategoryDetail;
-using APIClothesEcommerceShop.DTO.Categories.CategoryParent;
+﻿using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.DTO.Categories;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
@@ -11,6 +10,10 @@ using System.Linq.Expressions;
 
 namespace APIClothesEcommerceShop.Controllers
 {
+    /// <summary>
+    /// Quản lý danh mục sản phẩm (bao gồm danh mục cha, con và chi tiết).
+    /// Danh mục cha là danh mục lớn nhất, danh mục con là danh mục nhỏ hơn thuộc về danh mục cha. (fake)
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
@@ -20,27 +23,41 @@ namespace APIClothesEcommerceShop.Controllers
         {
             _unit = unit;
         }
+
+        /// <summary>
+        /// Lấy toàn bộ danh sách chi tiết danh mục sản phẩm (bao gồm cha, con, sản phẩm).
+        /// </summary>
+        [ProducesResponseType(typeof(ResponseAPI<List<CategoryResponseDTO>>), StatusCodes.Status200OK)]
         [HttpGet("GetAllCategories")]
         public async Task<IActionResult> GetAllBigCategories()
         {
             try
             {
                 var listCategory = await _unit.Category.GetAllCategoriesAsync();
-
                 return Ok(listCategory);
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
-
         }
+
+        /// <summary>
+        /// Lấy danh sách tất cả danh mục cha.
+        /// </summary>
+        [ProducesResponseType(typeof(ResponseAPI<List<CategoryParentResponseDTO>>), StatusCodes.Status200OK)]
         [HttpGet("GetAllParentCategories")]
         public async Task<IActionResult> GetAllParentCategories()
         {
             var result = await _unit.Category.GetCategoryParentAsync();
             return Ok(result);
         }
+
+        /// <summary>
+        /// Lấy thông tin danh mục cha theo mã.
+        /// </summary>
+        /// <param name="id">Mã danh mục cha</param>
+        [ProducesResponseType(typeof(ResponseAPI<CategoryParentResponseDTO>), StatusCodes.Status200OK)]
         [HttpGet("GetCategoryById/{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
@@ -48,12 +65,24 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Thêm mới hoặc cập nhật danh mục cha.
+        /// </summary>
+        /// <param name="maDanhMucCha">Mã danh mục cha (0 nếu thêm mới)</param>
+        /// <param name="categoryDto">Thông tin danh mục cha</param>
+        [ProducesResponseType(typeof(ResponseAPI<CategoryParentResponseDTO>), StatusCodes.Status200OK)]
         [HttpPost("UpsertCategory")]
-        public async Task<IActionResult> UpsertCategory(int maDanhMucCon, [FromBody] CategoryParentRequestDTO categoryDto)
+        public async Task<IActionResult> UpsertCategory(int maDanhMucCha, [FromBody] CategoryParentRequestDTO categoryDto)
         {
-            var result = await _unit.Category.UpsertCategoryAsync(maDanhMucCon, categoryDto);
+            var result = await _unit.Category.UpsertCategoryAsync(maDanhMucCha, categoryDto);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Xóa danh mục cha theo mã.
+        /// </summary>
+        /// <param name="id">Mã danh mục cha</param>
+        [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
         [HttpDelete("DeleteCategory/{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
@@ -62,6 +91,11 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         // Danh mục con
+
+        /// <summary>
+        /// Lấy danh sách tất cả danh mục con.
+        /// </summary>
+        [ProducesResponseType(typeof(ResponseAPI<List<CategoryChildResponseDTO>>), StatusCodes.Status200OK)]
         [HttpGet("GetAllSubCategories")]
         public async Task<IActionResult> GetAllSubCategories()
         {
@@ -69,6 +103,11 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Lấy thông tin danh mục con theo mã.
+        /// </summary>
+        /// <param name="id">Mã danh mục con</param>
+        [ProducesResponseType(typeof(ResponseAPI<CategoryChildResponseDTO>), StatusCodes.Status200OK)]
         [HttpGet("GetSubCategoryById/{id}")]
         public async Task<IActionResult> GetSubCategoryById(int id)
         {
@@ -76,6 +115,12 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Thêm mới hoặc cập nhật danh mục con.
+        /// </summary>
+        /// <param name="maDanhMucCon">Mã danh mục con (0 nếu thêm mới)</param>
+        /// <param name="subCategoryDto">Thông tin danh mục con</param>
+        [ProducesResponseType(typeof(ResponseAPI<CategoryChildResponseDTO>), StatusCodes.Status200OK)]
         [HttpPost("UpsertSubCategory")]
         public async Task<IActionResult> UpsertSubCategory(int maDanhMucCon, [FromBody] CategoryChildRequestDTO subCategoryDto)
         {
@@ -83,6 +128,11 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Xóa danh mục con theo mã.
+        /// </summary>
+        /// <param name="id">Mã danh mục con</param>
+        [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
         [HttpDelete("DeleteSubCategory/{id}")]
         public async Task<IActionResult> DeleteSubCategory(int id)
         {
@@ -91,6 +141,11 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         // Chi tiết danh mục
+
+        /// <summary>
+        /// Lấy danh sách tất cả chi tiết danh mục (liên kết cha, con, sản phẩm).
+        /// </summary>
+        [ProducesResponseType(typeof(ResponseAPI<List<CategoryResponseDTO>>), StatusCodes.Status200OK)]
         [HttpGet("GetAllCategoryDetails")]
         public async Task<IActionResult> GetAllCategoryDetails()
         {
@@ -98,6 +153,13 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Lấy chi tiết danh mục theo mã cha, mã con, mã sản phẩm.
+        /// </summary>
+        /// <param name="maDanhMucCha">Mã danh mục cha</param>
+        /// <param name="maDanhMucCon">Mã danh mục con</param>
+        /// <param name="maSp">Mã sản phẩm</param>
+        [ProducesResponseType(typeof(ResponseAPI<CategoryDetailResponseDTO>), StatusCodes.Status200OK)]
         [HttpGet("GetCategoryDetailById")]
         public async Task<IActionResult> GetCategoryDetailById(int maDanhMucCha, int maDanhMucCon, int maSp)
         {
@@ -105,6 +167,11 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Thêm mới hoặc cập nhật chi tiết danh mục.
+        /// </summary>
+        /// <param name="detailDto">Thông tin chi tiết danh mục</param>
+        [ProducesResponseType(typeof(ResponseAPI<CategoryDetailResponseDTO>), StatusCodes.Status200OK)]
         [HttpPost("UpsertCategoryDetail")]
         public async Task<IActionResult> UpsertCategoryDetail([FromBody] CategoryDetailRequestDTO detailDto)
         {
@@ -112,6 +179,13 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Xóa chi tiết danh mục theo mã cha, mã con, mã sản phẩm.
+        /// </summary>
+        /// <param name="maDanhMucCha">Mã danh mục cha</param>
+        /// <param name="maDanhMucCon">Mã danh mục con</param>
+        /// <param name="maSp">Mã sản phẩm</param>
+        [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
         [HttpDelete("DeleteCategoryDetail")]
         public async Task<IActionResult> DeleteCategoryDetail([FromQuery] int maDanhMucCha, [FromQuery] int maDanhMucCon, [FromQuery] int maSp)
         {
