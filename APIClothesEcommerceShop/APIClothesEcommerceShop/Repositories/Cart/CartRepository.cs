@@ -36,15 +36,18 @@ namespace APIClothesEcommerceShop.Repositories.Cart
             }
         }
 
-        public async Task DeleteCart(int id)
+        public async Task DeleteCart(int IdCart)
         {
             try
             {
-                var FindCart = await db.Giohangs.FindAsync(id);
+                var FindCart = await db.Giohangs.FirstOrDefaultAsync(p => p.Id == IdCart);
                 if(FindCart == null)
                 {
                     throw new Exception("Not found Cart");
                 }
+
+                db.Remove(FindCart);
+                await db.SaveChangesAsync();
             }catch (Exception ex)
             {
                 throw new Exception("Error", ex);

@@ -20,11 +20,9 @@ namespace APIClothesEcommerceShop.Repositories.Cart_DetailCombo
                 if(FindCart_Combodetails != null)
                 {
                     // Cập nhật số lượng của giỏ hàng_chitiecombo
-                    FindCart_Combodetails.SoLuong += model.SoLuong;
                     var Cart_Combodetails = await UpdateCart_DetailCombo(FindCart_Combodetails.MaGioHang, model.SoLuong);
                     return Cart_Combodetails;
                 }
-
                 else if(FindCart_Combodetails == null)
                 {
                     db.Giohangctcombos.Add(model);
@@ -55,6 +53,23 @@ namespace APIClothesEcommerceShop.Repositories.Cart_DetailCombo
             }
         }
 
+        public async Task<List<Giohangctcombo>> DetailsCart_DetailCombo(int MaGioHang)
+        {
+            try
+            {
+                var FindDetailsCart_DetailCombo = await db.Giohangctcombos.AsNoTracking().Where(p => p.MaGioHang == MaGioHang).ToListAsync();
+                if (FindDetailsCart_DetailCombo == null)
+                {
+                    throw new Exception("Error Not Found DetailsCart_DetailCombo");
+                }
+                return FindDetailsCart_DetailCombo;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
+        }
+
         public async Task<Giohangctcombo> UpdateCart_DetailCombo(int MaGioHang, int Quantity)
         {
             try
@@ -65,7 +80,7 @@ namespace APIClothesEcommerceShop.Repositories.Cart_DetailCombo
                     throw new Exception("Not found Cart_DetailsCombo");
                 }
                 FindCart_ComboDetails.SoLuong += Quantity;
-                db.Update(FindCart_ComboDetails);
+                db.Giohangctcombos.Update(FindCart_ComboDetails);
                 await db.SaveChangesAsync();
                 return FindCart_ComboDetails;
             }
