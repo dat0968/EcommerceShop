@@ -19,27 +19,9 @@ namespace APIClothesEcommerceShop.Repositories.Order
         {
             try
             {
-                var NewOrder = new Hoadon
-                {
-                    MaKh = model.MaKh,
-                    MaNv = model.MaNv,
-                    MaCode = model.MaCode,
-                    NgayTao = model.NgayTao,
-                    BatDauGiao = model.BatDauGiao,
-                    NgayNhan = model.NgayNhan,
-                    DiaChiNhanHang = model.DiaChiNhanHang,
-                    NgayThanhToan = model.NgayThanhToan,
-                    HinhThucTt = model.HinhThucTt,
-                    TinhTrang = model.TinhTrang,
-                    MoTa = model.MoTa,
-                    HoTen = model.HoTen,
-                    IsActive = true,
-                    PhiVanChuyen = model.PhiVanChuyen,
-                    TienGoc = model.TienGoc,
-                };
-                db.Hoadons.Add(NewOrder);
+                db.Hoadons.Add(model);
                 await db.SaveChangesAsync();
-                return NewOrder;
+                return model;
             }
             catch (Exception ex)
             {

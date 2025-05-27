@@ -8,6 +8,6 @@ namespace APIClothesEcommerceShop.Repositories.Cart
         Task<List<CartResponseDTO>> GetAll();
         Task<Giohang> AddCart(Giohang model);
         Task<Giohang> UpdateCart(int id, int Quantity);
-        Task DeleteCart(int id);
+        Task DeleteCart(int IdCart);
     }
 }
