@@ -12,13 +12,21 @@ using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
 using APIClothesEcommerceShop.Services;
 using APIClothesEcommerceShop.Repositories.Staff;
+using APIClothesEcommerceShop.Repositories.Statistics;
+using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using VNPAY.NET;
+using APIClothesEcommerceShop.Repositories.DbInitializer;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<EcommerceShopContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
+});
 
 // Add services to the container.
 
@@ -50,6 +58,12 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", securitySchema);
 
+    #region Format thêm comment lên môi action
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
+    #endregion
+
     var securityRequirement = new OpenApiSecurityRequirement
                 {
                     { securitySchema, new[] { "Bearer" } }
@@ -57,10 +71,6 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityRequirement(securityRequirement);
 
-});
-builder.Services.AddDbContext<EcommerceShopContext>(options =>
-{
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
 });
 builder.Services.AddCors(options =>
 {
@@ -86,6 +96,11 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
+
+builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -102,6 +117,26 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
 
+SeedDatabaes();
+
 app.MapControllers();
 
 app.Run();
+
+#region Func tạo CConstantsL 
+void SeedDatabaes()
+{
+    using (var seedScope = app.Services.CreateScope())
+    {
+        var dbInitializer = seedScope.ServiceProvider.GetRequiredService<IDbInitializer>();
+        try
+        {
+            dbInitializer.InitializeDb();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error: " + ex.Message);
+        }
+    }
+}
+#endregion
