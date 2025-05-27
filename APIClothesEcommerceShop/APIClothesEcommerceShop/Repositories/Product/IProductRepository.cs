@@ -5,7 +5,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
 {
     public interface IProductRepository
     {
-        Task<List<ProductResponseDTO>> GetAll();
+        Task<List<ProductResponseDTO>> GetAll(string? search, string? selectedCategory, string? sortByPrice);
         Task<ProductResponseDTO> GetById(int id);
         Task<Sanpham> Add(Sanpham model);
         Task<Sanpham> Update(Sanpham model);

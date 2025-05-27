@@ -10,7 +10,6 @@ namespace APIClothesEcommerceShop.DTO.Product
     {
         public string TenSanPham { get; set; } = null!;
         public string? MoTa { get; set; }
-        public bool? IsActive { get; set; }
 
         public virtual ICollection<CategoryDetailsResponseDTO> CategoryDetails { get; set; } = new List<CategoryDetailsResponseDTO>();
 

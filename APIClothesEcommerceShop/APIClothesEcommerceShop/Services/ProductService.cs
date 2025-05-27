@@ -124,7 +124,7 @@ namespace APIClothesEcommerceShop.Services
                 // Cập nhật hoặc thêm mới chi tiết sản phẩm
                 foreach(var detail in model.ProductDetails)
                 {
-                    if (FindProductDetailsId.Contains(detail.MaCtsp.Value))
+                    if (detail.MaCtsp != null && FindProductDetailsId.Contains(detail.MaCtsp.Value))
                     {
                         var UpdateProductDetails = new Chitietsanpham
                         {
@@ -134,6 +134,7 @@ namespace APIClothesEcommerceShop.Services
                             IsActive = true,
                             SoLuongTon = detail.SoLuongTon,
                             DonGia = detail.DonGia,
+                            MaSp = id,
                         };
                         await productDetailsRepository.Update(UpdateProductDetails);
 
@@ -170,7 +171,7 @@ namespace APIClothesEcommerceShop.Services
                             {
                                 var NewImage = new Hinhanh
                                 {
-                                    MaCtsp = detail.MaCtsp.Value,
+                                    MaCtsp = NewProductDetails.MaCtsp,
                                     TenHinhAnh = image.TenHinhAnh,
                                 };
                                 await imageProductRepository.Add(NewImage);

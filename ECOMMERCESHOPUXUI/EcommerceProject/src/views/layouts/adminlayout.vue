@@ -24,13 +24,14 @@ import 'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'
 import '../../assets/Admin/js/main.js'
 import statistics from '../admin/statistics/statistics.vue'
 import products from '../admin/products/index.vue'
+import CustomerManagement from '../admin/Customer/CustomerManagement.vue'
 import { onMounted } from 'vue'
 
 onMounted(() => {
   // Khởi tạo dropdown menu
   const dropdownToggle = document.querySelector('.xp-userprofile .dropdown-toggle')
   const dropdownMenu = document.querySelector('.xp-userprofile .dropdown-menu')
-  
+
   if (dropdownToggle && dropdownMenu) {
     dropdownToggle.addEventListener('click', (e) => {
       e.preventDefault()
@@ -56,32 +57,71 @@ onMounted(() => {
         <div class="xp-sidebar">
           <!-- Start XP Logobar -->
           <div class="xp-logobar text-center">
-            <a href="index.html" class="xp-logo"
-              ><img src="../../assets/admin/images/logo.svg" class="img-fluid" alt="logo"
-            /></a>
+            <svg viewBox="0 0 700 250" role="img" aria-label="Angel soft curvy logo with wings and animated gradient">
+              <defs>
+                <linearGradient id="start" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="20%" stop-color="#EC4E79">
+                    <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;" dur="6s"
+                      repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="40%" stop-color="#ABA2B7">
+                    <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;" dur="6s"
+                      repeatCount="indefinite" />
+                  </stop>
+                  <stop offset="55%" stop-color="#5CCAE7">
+                    <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;" dur="6s"
+                      repeatCount="indefinite" />
+                  </stop>
+                </linearGradient>
+              </defs>
+
+              <!-- Left wing - smooth curves -->
+              <path class="wing left" d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z" />
+              <path class="wing left" d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
+                opacity="0.5" />
+
+              <!-- Right wing - smooth curves -->
+              <path class="wing right" d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z" />
+              <path class="wing right" d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
+                opacity="0.5" />
+
+              <!-- Angel text with soft cursive font -->
+              <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
+                Angel
+              </text>
+            </svg>
           </div>
           <!-- End XP Logobar -->
 
           <!-- Start XP Navigationbar -->
-          <div class="xp-navigationbar">
-            <ul class="xp-vertical-menu">
+          <div class="xp-navigationbar"  >
+            <ul class="xp-vertical-menu"  style="color: black;">
               <li>
-                <RouterLink to="/Admin">
-                  <i class="icon-speedometer"></i><span>Thống kê</span>
+                <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
+                  <i class="icon-speedometer"></i><span class="font-color" >Thống kê</span>
                 </RouterLink>
               </li>
-            </ul>
-            <ul class="xp-vertical-menu">
               <li>
                 <RouterLink to="/Admin/Product">
                   <i class="icon-speedometer"></i><span>Quản lý sản phẩm</span>
                 </RouterLink>
               </li>
-            </ul>
-            <ul class="xp-vertical-menu">
               <li>
-                <RouterLink>
-                  <i class="icon-speedometer"></i><span>Quản lý combo</span>
+                <RouterLink to="/Admin/Order">
+                  <i class="icon-speedometer"></i><span>Quản lý đơn hàng</span>
+                </RouterLink>
+                <RouterLink to="/admin/combo">
+                  <i class="icon-basket"></i><span class="font-color" >Quản lý combo</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/admin/customer">
+                  <i class="icon-people"></i><span class="font-color" >Khách hàng</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/admin/staff">
+                  <i class="icon-people"></i><span class="font-color" >Nhân Viên</span>
                 </RouterLink>
               </li>
             </ul>
@@ -95,7 +135,7 @@ onMounted(() => {
       <!-- Start XP Rightbar -->
       <div class="xp-rightbar">
         <!-- Start XP Topbar -->
-        <div class="xp-topbar">
+        <div class="xp-topbar" style="background-color: rgb(169, 162, 221);">
           <!-- Start XP Row -->
           <div class="row">
             <!-- Start XP Col -->
@@ -124,11 +164,9 @@ onMounted(() => {
                             </div>
                           </li>
                           <li class="media xp-msg">
-                            <img
-                              class="mr-3 align-self-center rounded-circle"
+                            <img class="mr-3 align-self-center rounded-circle"
                               src="../../assets/admin/images/topbar/user-message-1.jpg"
-                              alt="Generic placeholder image"
-                            />
+                              alt="Generic placeholder image" />
                             <div class="media-body">
                               <a href="#">
                                 <h5 class="mt-0 mb-1 font-14">
@@ -136,19 +174,15 @@ onMounted(() => {
                                 </h5>
                                 <p class="mb-0 font-13">
                                   Thank you for attending...<span
-                                    class="badge badge-pill badge-success float-right"
-                                    >2</span
-                                  >
+                                    class="badge badge-pill badge-success float-right">2</span>
                                 </p>
                               </a>
                             </div>
                           </li>
                           <li class="media xp-msg">
-                            <img
-                              class="mr-3 align-self-center rounded-circle"
+                            <img class="mr-3 align-self-center rounded-circle"
                               src="../../assets/admin/images/topbar/user-message-2.jpg"
-                              alt="Generic placeholder image"
-                            />
+                              alt="Generic placeholder image" />
                             <div class="media-body">
                               <a href="#">
                                 <h5 class="mt-0 mb-1 font-14">
@@ -156,19 +190,15 @@ onMounted(() => {
                                 </h5>
                                 <p class="mb-0 font-13">
                                   Hey no worries! Trust me...<span
-                                    class="badge badge-pill badge-success float-right"
-                                    >3</span
-                                  >
+                                    class="badge badge-pill badge-success float-right">3</span>
                                 </p>
                               </a>
                             </div>
                           </li>
                           <li class="media xp-msg">
-                            <img
-                              class="mr-3 align-self-center rounded-circle"
+                            <img class="mr-3 align-self-center rounded-circle"
                               src="../../assets/admin/images/topbar/user-message-3.jpg"
-                              alt="Generic placeholder image"
-                            />
+                              alt="Generic placeholder image" />
                             <div class="media-body">
                               <a href="#">
                                 <h5 class="mt-0 mb-1 font-14">
@@ -176,9 +206,7 @@ onMounted(() => {
                                 </h5>
                                 <p class="mb-0 font-13">
                                   Remedies for colic? i don't...<span
-                                    class="badge badge-pill badge-success float-right"
-                                    >5</span
-                                  >
+                                    class="badge badge-pill badge-success float-right">5</span>
                                 </p>
                               </a>
                             </div>
@@ -197,42 +225,17 @@ onMounted(() => {
 
                   <li class="list-inline-item mr-0">
                     <div class="dropdown xp-userprofile">
-                      <a
-                        class="dropdown-toggle"
-                        href="#"
-                        role="button"
-                        id="xp-userprofile"
-                        data-toggle="dropdown"
-                        aria-haspopup="true"
-                        aria-expanded="false"
-                        ><img
-                          src="../../assets/admin/images/topbar/user.jpg"
-                          alt="user-profile"
-                          class="rounded-circle img-fluid" /><span class="xp-user-live"></span
-                      ></a>
+                      <a class="dropdown-toggle" href="#" role="button" id="xp-userprofile" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false"><img src="../../assets/admin/images/topbar/user.jpg"
+                          alt="user-profile" class="rounded-circle img-fluid" /><span class="xp-user-live"></span></a>
 
-                      <div
-                        class="dropdown-menu dropdown-menu-right"
-                        aria-labelledby="xp-userprofile"
-                      >
-                        <a class="dropdown-item py-3 text-white text-center font-16" href="#"
-                          >Welcome, John Doe</a
-                        >
-                        <a class="dropdown-item" href="#"
-                          ><i class="icon-user text-primary mr-2"></i> Profile</a
-                        >
-                        <a class="dropdown-item" href="#"
-                          ><i class="icon-wallet text-success mr-2"></i> Billing</a
-                        >
-                        <a class="dropdown-item" href="#"
-                          ><i class="icon-settings text-warning mr-2"></i> Setting</a
-                        >
-                        <a class="dropdown-item" href="#"
-                          ><i class="icon-lock text-info mr-2"></i> Lock Screen</a
-                        >
-                        <a class="dropdown-item" href="#"
-                          ><i class="icon-power text-danger mr-2"></i> Logout</a
-                        >
+                      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="xp-userprofile">
+                        <a class="dropdown-item py-3 text-white text-center font-16" href="#">Welcome, John Doe</a>
+                        <a class="dropdown-item" href="#"><i class="icon-user text-primary mr-2"></i> Profile</a>
+                        <a class="dropdown-item" href="#"><i class="icon-wallet text-success mr-2"></i> Billing</a>
+                        <a class="dropdown-item" href="#"><i class="icon-settings text-warning mr-2"></i> Setting</a>
+                        <a class="dropdown-item" href="#"><i class="icon-lock text-info mr-2"></i> Lock Screen</a>
+                        <a class="dropdown-item" href="#"><i class="icon-power text-danger mr-2"></i> Logout</a>
                       </div>
                     </div>
                   </li>
@@ -244,7 +247,8 @@ onMounted(() => {
           <!-- End XP Row -->
         </div>
         <!-- End XP Topbar -->
-
+        <!-- 
+        <statistics /> -->
         <router-view />
 
       </div>
@@ -285,7 +289,7 @@ export default {}
 }
 
 .xp-userprofile img:hover {
-  border-color: #e94560;
+  border-color: #6c00bd;
 }
 
 .xp-userprofile .dropdown-toggle {
@@ -306,7 +310,7 @@ export default {}
   min-width: 200px;
   padding: 0;
   border: none;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-top: 10px;
   display: none;
@@ -329,7 +333,7 @@ export default {}
 }
 
 .xp-userprofile .dropdown-item:first-child {
-  background: #e94560;
+  background: #6c00bd;
   color: #fff;
   font-weight: 500;
   border-radius: 8px 8px 0 0;
@@ -341,7 +345,7 @@ export default {}
 
 .xp-userprofile .dropdown-item:hover {
   background: #f8f9fa;
-  color: #e94560;
+  color: #6c00bd;
 }
 
 .xp-userprofile .dropdown-item i {
@@ -351,11 +355,107 @@ export default {}
 }
 
 .xp-userprofile .dropdown-item:last-child {
-  color: #dc3545;
+  color: #6c00bd;
 }
 
 .xp-userprofile .dropdown-item:last-child:hover {
-  background: #dc3545;
+  background: #6c00bd;
   color: #fff;
+}
+
+svg {
+  max-width: 700px;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.angel-text {
+  fill: url(#start);
+  stroke: #a78bfa;
+  stroke-width: 1.3;
+  filter: drop-shadow(2px 2px 4px rgba(167, 139, 250, 0.6));
+  font-family: 'Allura', cursive;
+  font-weight: 400;
+  font-size: 140px;
+  letter-spacing: 6px;
+  paint-order: stroke fill;
+  user-select: none;
+}
+
+.wing {
+  fill: url(#start);
+  opacity: 0.7;
+  filter: drop-shadow(1px 1px 3px rgba(167, 139, 250, 0.3));
+  transform-origin: center;
+  animation: gentleFloat 4.5s ease-in-out infinite;
+  shape-rendering: geometricPrecision;
+}
+
+.wing.right {
+  animation-delay: 0.25s;
+}
+
+@keyframes gentleFloat {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: translateY(-7px) rotate(4deg);
+    opacity: 0.85;
+  }
+}
+
+/* Thay thế CSS hiện tại với đoạn này */
+
+/* Định dạng menu không được chọn */
+.xp-vertical-menu li a {
+  color: #8a98ac;
+  display: block;
+  padding: 12px 15px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  position: relative;
+  text-decoration: none;
+}
+
+/* Định dạng khi hover menu */
+.xp-vertical-menu li a:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+/* Định dạng menu đang được chọn (active) */
+.xp-vertical-menu li a.router-link-active,
+.xp-vertical-menu li a.router-link-exact-active {
+  color: #ffffff;
+  background-image: linear-gradient(to right,#5E72EB,
+  #FF9190);
+  border-left: 4px solid #fff;
+}
+
+/* Hiệu ứng khi menu active */
+.xp-vertical-menu li a.router-link-active i,
+.xp-vertical-menu li a.router-link-exact-active i {
+  color: #ffffff;
+}
+
+/* Điều chỉnh icon và text trong menu */
+.xp-vertical-menu li a i {
+  margin-right: 10px;
+  font-size: 16px;
+  vertical-align: middle;
+  width: 20px;
+  display: inline-block;
+  text-align: center;
+}
+.font-color {
+  color: rgb(70, 12, 12);
+  font-weight: bold;
+  font-size: 1rem;
 }
 </style>

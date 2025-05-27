@@ -1,0 +1,242 @@
+﻿using APIClothesEcommerceShop.Data;
+using APIClothesEcommerceShop.DTO.ComboDetails_Orders;
+using APIClothesEcommerceShop.DTO.Order;
+using APIClothesEcommerceShop.DTO.OrderDetails;
+using APIClothesEcommerceShop.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Net.NetworkInformation;
+
+namespace APIClothesEcommerceShop.Repositories.Order
+{
+    public class OrderRepository : IOrderRepository
+    {
+        private readonly EcommerceShopContext db; 
+        public OrderRepository(EcommerceShopContext db)
+        {
+            this.db = db;
+        }
+        public async Task<Hoadon> CreateOrder(Hoadon model)
+        {
+            try
+            {
+                var NewOrder = new Hoadon
+                {
+                    MaKh = model.MaKh,
+                    MaNv = model.MaNv,
+                    MaCode = model.MaCode,
+                    NgayTao = model.NgayTao,
+                    BatDauGiao = model.BatDauGiao,
+                    NgayNhan = model.NgayNhan,
+                    DiaChiNhanHang = model.DiaChiNhanHang,
+                    NgayThanhToan = model.NgayThanhToan,
+                    HinhThucTt = model.HinhThucTt,
+                    TinhTrang = model.TinhTrang,
+                    MoTa = model.MoTa,
+                    HoTen = model.HoTen,
+                    IsActive = true,
+                    PhiVanChuyen = model.PhiVanChuyen,
+                    TienGoc = model.TienGoc,
+                };
+                db.Hoadons.Add(NewOrder);
+                await db.SaveChangesAsync();
+                return NewOrder;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
+        }
+        public async Task CancelOrders(int oderId, string selectedCancelStatus, string reasonCancel)
+        {
+            await db.Database.BeginTransactionAsync();
+            try
+            {
+                // Cập nhật trạng thái Đã hủy hoặc Hoàn trả/Hoàn tiền cho đơn hàng
+                var existingHoaDon = db.Hoadons.Local.FirstOrDefault(p => p.MaHd == oderId) ?? await db.Hoadons.FindAsync(oderId);
+                if (existingHoaDon == null)
+                {
+                    throw new Exception($"Không tìm thấy Hoadon với Id {oderId}");
+                }
+                existingHoaDon.TinhTrang = selectedCancelStatus;
+                existingHoaDon.LyDoHuy = reasonCancel;
+                db.Hoadons.Update(existingHoaDon);
+                // Hoàn lại số lượng sản phẩm mua lẻ trong hóa đơn
+                var checkDetailOrder = db.Cthoadons.Where(p => p.MaHd == existingHoaDon.MaHd).ToList();
+                if (!checkDetailOrder.Any())
+                {
+                    throw new Exception($"Không tìm thấy CTHoadon với Id {existingHoaDon.MaHd}");
+                }
+                foreach (var detail in checkDetailOrder)
+                {
+                    if (detail.MaCombo == null)
+                    {
+                        var findDetailproduct = db.Chitietsanphams.Local.FirstOrDefault(p => p.MaCtsp == detail.MaCtsp) ?? await db.Chitietsanphams.FindAsync(detail.MaCtsp);
+                        if (findDetailproduct == null)
+                        {
+                            throw new Exception($"Không tìm thấy CTSP với Id {detail.MaCtsp}");
+                        }
+                        findDetailproduct.SoLuongTon += detail.SoLuong;
+                        db.Chitietsanphams.Update(findDetailproduct);
+                    }
+                    else
+                    {
+                        //Hoàn lại số lượng sản phẩm mua trong combo trong hóa đơn
+                        var checkDetailOrderCombo = db.Chitietcombohoadons.Where(p => p.MaHd == existingHoaDon.MaHd && p.MaCombo == detail.MaCombo).ToList();
+                        foreach (var detailComboOder in checkDetailOrderCombo)
+                        {
+                            var findDetailproduct = db.Chitietsanphams.Local.FirstOrDefault(p => p.MaCtsp == detailComboOder.MaCtsp) ?? await db.Chitietsanphams.FindAsync(detailComboOder.MaCtsp);
+                            if (findDetailproduct == null)
+                            {
+                                throw new Exception($"Không tìm thấy CTSP với Id {detailComboOder.MaCtsp}");
+                            }
+                            findDetailproduct.SoLuongTon += detailComboOder.SoLuong;
+                            db.Chitietsanphams.Update(findDetailproduct);
+                        }
+                        //Hoàn lại số lượng combo
+                        var findCombo = db.Combos.Local.FirstOrDefault(p => p.MaCombo == detail.MaCombo) ?? await db.Combos.FindAsync(detail.MaCombo);
+                        if (findCombo == null)
+                        {
+                            throw new Exception($"Không tìm thấy combo với Id {detail.MaCombo}");
+                        }
+                        findCombo.SoLuong += detail.SoLuong;
+                        db.Combos.Update(findCombo);
+                    }
+                }
+                //Hoàn lại mã coupon
+                if (!string.IsNullOrEmpty(existingHoaDon.MaCode))
+                {
+                    var findCoupon = db.Macoupons.Local.FirstOrDefault(p => p.MaCode == existingHoaDon.MaCode) ?? await db.Macoupons.FirstOrDefaultAsync(p => p.MaCode == existingHoaDon.MaCode);
+                    if (findCoupon == null)
+                    {
+                        throw new Exception($"Không tìm mã coupon {existingHoaDon.MaCode}");
+                    }
+                    findCoupon.SoLuongDaDung -= 1;
+                    db.Macoupons.Update(findCoupon);
+                }
+                await db.SaveChangesAsync();
+                await db.Database.CommitTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                await db.Database.RollbackTransactionAsync();
+                throw new Exception("Lỗi", ex);
+            }
+        }
+
+
+        public async Task<List<OrderResponseDTO>> GetAll(string? search, string? filter)
+        {
+            var ListOrder = await db.Hoadons.AsNoTracking().Select(order => new OrderResponseDTO
+            {
+                MaHd = order.MaHd,
+                MaKh = order.MaKh,
+                MaNv = order.MaNv,
+                TenNv = order.MaNvNavigation != null ? order.MaNvNavigation.HoTen : null,
+                MaCode = order.MaCode,
+                NgayNhan = order.NgayNhan,
+                NgayTao = order.NgayTao,
+                NgayThanhToan = order.NgayThanhToan,
+                BatDauGiao = order.BatDauGiao,
+                DiaChiNhanHang = order.DiaChiNhanHang,
+                HinhThucTt = order.HinhThucTt,
+                TinhTrang = order.TinhTrang,
+                MoTa = order.MoTa,
+                HoTen = order.HoTen,
+                Sdt = order.Sdt,
+                LyDoHuy = order.LyDoHuy,
+                PhiVanChuyen = order.PhiVanChuyen,
+                TienGoc = order.TienGoc,
+                Chitietcombohoadons = order.Chitietcombohoadons.Select(ctcb => new ComboDetails_OrdersResponseDTO
+                {
+                    MaHd = ctcb.MaHd,
+                    MaCtsp = ctcb.MaCtsp,
+                    MaCombo = ctcb.MaCombo,
+                    SoLuong = ctcb.SoLuong,
+                    DonGia = ctcb.DonGia,
+                }).ToList(),
+                Cthoadons = order.Cthoadons.Select(cthd => new OrderDetailsResponseDTO
+                {
+                    Id = cthd.Id,
+                    TenSanPham = cthd.MaCtspNavigation.MaSpNavigation.TenSanPham,
+                    BienThe = $"Màu: {cthd.MaCtspNavigation.MauSac} - Kích thước: {cthd.MaCtspNavigation.KichThuoc}",
+                    MaHd = cthd.MaHd,
+                    MaCtsp = cthd.MaCtsp,
+                    MaCombo = cthd.MaCombo,
+                    SoLuong = cthd.SoLuong,
+                    Gia = cthd.Gia,
+                    GiamGia = cthd.GiamGia,
+                }).ToList()
+            }).ToListAsync();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                ListOrder = ListOrder.Where(p => p.MaHd.ToString().Contains(search.ToLower()) || p.HoTen.ToLower().Contains(search.ToLower())).ToList();
+            }
+            if (!string.IsNullOrEmpty(filter))
+            {
+                ListOrder = ListOrder.Where(p => p.TinhTrang.ToLower().Contains(filter.ToLower())).ToList();
+            }
+            return ListOrder;
+        }
+
+        public async Task UpdateStatusOrders(int id, string status, int MaNv, string paymentmethod, string? reasonCancel)
+        {
+            try
+            {
+                var FindOrder = await db.Hoadons.FindAsync(id);
+                if (FindOrder == null)
+                {
+                    throw new Exception("Not found Order");
+                }
+
+                if(status.ToLower() != "chờ xác nhận")
+                {
+                    FindOrder.MaNv = MaNv;
+                }
+                if(status.ToLower() == "đã giao cho đơn vị vận chuyển")
+                {
+                    FindOrder.BatDauGiao = DateTime.Now;
+                }
+                if (paymentmethod.ToLower() == "cod")
+                {
+                    if (FindOrder.NgayNhan == null)
+                    {
+                        if (status.ToLower() == "đã nhận" || (status.ToLower() == "đã thanh toán"))
+                        {
+                            FindOrder.NgayNhan = DateTime.Now;
+                        }
+                    }
+                    if(FindOrder.NgayThanhToan == null)
+                    {
+                        if (status.ToLower() == "đã thanh toán")
+                        {
+                            FindOrder.NgayThanhToan = DateTime.Now;
+                        }
+                    }
+                }
+                if (paymentmethod.ToLower() == "vnpay")
+                {
+                    if (FindOrder.NgayNhan == null)
+                    {
+                        if (status.ToLower() == "đã nhận")
+                        {
+                            FindOrder.NgayNhan = DateTime.Now;
+                        }
+                    }
+                }
+                if(paymentmethod.ToLower() == "đã hủy" || paymentmethod.ToLower() == "hoàn trả/hoàn tiền")
+                {
+                    await CancelOrders(id, paymentmethod, reasonCancel);
+                }
+                FindOrder.TinhTrang = status;
+                db.Hoadons.Update(FindOrder);
+                await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
+
+        }
+    }
+}
