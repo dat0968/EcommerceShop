@@ -6,15 +6,17 @@ const listBigCategories = ref([])
 const listSmallCategories = ref([])
 const hasVariants = ref(false)
 const mainImages = ref([])
+const multiImages = ref([])
 const mainImagePreviews = ref([])
-
+const isSubmitting = ref(false)
 const props = defineProps({
   listBigCategories: Object,
   listSmallCategories: Object,
 })
+// Định nghĩa emit
+const emit = defineEmits(['update-success'])
 listBigCategories.value = props.listBigCategories
 listSmallCategories.value = props.listSmallCategories
-
 watch(
   () => props.listSmallCategories,
   (newVal) => {
@@ -106,6 +108,7 @@ function addProductDetail() {
 
 async function submitProduct() {
   try {
+    isSubmitting.value = true
     // Validate cho sản phẩm không có biến thể
     if (!hasVariants.value) {
       if (!product.value.tenSanPham.trim()) {
@@ -119,7 +122,16 @@ async function submitProduct() {
         Swal.fire('Vui lòng nhập đơn giá là một giá trị lớn hơn 0', '', 'error')
         return
       }
-      if (detailsproductSingle.value.productDetails[0].length === 0) {
+
+      if (
+        !detailsproductSingle.value.productDetails[0].soLuongTon ||
+        detailsproductSingle.value.productDetails[0].soLuongTon <= 0
+      ) {
+        Swal.fire('Vui lòng nhập số lượng tồn là một giá trị lớn hơn 0', '', 'error')
+        return
+      }
+
+      if (detailsproductSingle.value.productDetails[0].images.length === 0) {
         Swal.fire('Vui lòng chọn ít nhất một ảnh cho sản phẩm', '', 'error')
         return
       }
@@ -128,6 +140,17 @@ async function submitProduct() {
         ...detail,
         images: [...detail.images],
       }))
+      for (const file of mainImages.value) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const responseImage = await fetch(getUrlAPI.value + '/UploadImages', {
+          method: 'POST',
+          body: formData,
+        })
+        if (!responseImage.ok) {
+          throw new Error(`Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`)
+        }
+      }
     }
     // Validate cho sản phẩm có biến thể
     else {
@@ -175,18 +198,32 @@ async function submitProduct() {
         Swal.fire(`Đã xuất hiện nhiều biến thể giống nhau, vui lòng kiểm tra lại`, '', 'error')
         return
       }
-    }
 
-    // Kiểm tra ảnh cho từng chi tiết sản phẩm
-    product.value.productDetails.forEach((p, index) => {
-      if (p.images.length == 0) {
-        Swal.fire(`Biến thể số ${index + 1} thiếu hình ảnh`, '', 'error')
-        return
+      for (const file of multiImages.value) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const responseImage = await fetch(getUrlAPI.value + '/UploadImages', {
+          method: 'POST',
+          body: formData,
+        })
+        if (!responseImage.ok) {
+          throw new Error(`Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`)
+        }
       }
-    })
-
+      let hasError = false
+      // Kiểm tra ảnh cho từng chi tiết sản phẩm
+      product.value.productDetails.forEach((p, index) => {
+        if (p.images.length == 0) {
+          Swal.fire(`Biến thể số ${index + 1} thiếu hình ảnh`, '', 'error')
+          hasError = true
+        }
+      })
+    }
+    if (hasError) {
+      return // Ngăn chặn cập nhật nếu có lỗi
+    }
     // Kiểm tra danh mục có bị trống không
-    for (let i = 0; i < product.value.categoryDetails; i++) {
+    for (let i = 0; i < product.value.categoryDetails.length; i++) {
       const detailCategories = product.value.categoryDetails[i]
       if (detailCategories.maDanhMucCha == 0) {
         Swal.fire(`Vui lòng chọn danh mục cha cặp danh mục thứ ${i + 1}`, '', 'error')
@@ -209,17 +246,6 @@ async function submitProduct() {
       return
     }
 
-    // Upload file lên server
-    const formData = new FormData()
-    formData.append('file', file)
-    const responseImage = await fetch(getApiUrl + '/UploadImage', {
-      method: 'POST',
-      body: formData,
-    })
-    if (!responseImage.ok) {
-      throw new Error(`Lỗi khi upload ảnh: ${response.status} ${response.statusText}`)
-    }
-
     const response = await fetch(`${getUrlAPI.value}/Products`, {
       method: 'POST',
       headers: {
@@ -229,11 +255,39 @@ async function submitProduct() {
     })
     const result = await response.json()
     if (result.success) {
-      Swal.fire('Thêm sản phẩm thành công', '', 'success')
+      Swal.fire({
+        title: 'Thêm sản phẩm thành công',
+        icon: 'success',
+        timer: 1500, // 2000 ms = 2 giây
+        showConfirmButton: false, // ẩn nút OK
+        timerProgressBar: true, // hiển thị thanh tiến trình
+      })
+      setTimeout(() => {
+        const modalElement = document.querySelector('.btn-close')
+        modalElement.click()
+        product.value = {
+          tenSanPham: '',
+          isActive: true,
+          categoryDetails: [{ maDanhMucCha: 0, maDanhMucCon: 0 }],
+          productDetails: [
+            {
+              kichThuoc: '',
+              mauSac: '',
+              soLuongTon: 0,
+              donGia: 0,
+              images: [],
+            },
+          ],
+        }
+        // Emit event khi cập nhật thành công
+        emit('update-success')
+      }, 1500)
     }
     console.log(product.value)
   } catch (error) {
     console.log(error)
+  } finally {
+    isSubmitting.value = false
   }
 }
 
@@ -243,6 +297,7 @@ function handleMultipleImages(event, index) {
 
   Array.from(files).forEach((file) => {
     const preview = URL.createObjectURL(file)
+    multiImages.value.push(file)
     // product.value.productDetails[index].images.push({ preview, file })
     detailsproductHasVariants.value.productDetails[index].images.push({
       preview,
@@ -349,7 +404,20 @@ function removeCategoryDetail(index) {
               class="form-control"
             />
           </div>
-
+          <!-- Số lượng sản phẩm - chỉ hiển thị khi không có biến thể -->
+          <div class="mb-3" v-if="!hasVariants">
+            <label class="form-label"
+              >Số lượng tồn
+              <span style="color: red; font-style: italic"
+                >(dành cho sản phẩm không có biến thể)</span
+              ></label
+            >
+            <input
+              v-model="detailsproductSingle.productDetails[0].soLuongTon"
+              type="number"
+              class="form-control"
+            />
+          </div>
           <!-- Ảnh sản phẩm chính - chỉ hiển thị khi không có biến thể -->
           <div class="mb-3" v-if="!hasVariants">
             <label class="form-label"
@@ -517,7 +585,16 @@ function removeCategoryDetail(index) {
 
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-          <button class="btn btn-primary" @click="submitProduct">Lưu</button>
+          <!-- <button class="btn btn-primary" @click="submitProduct">Lưu</button> -->
+          <button @click="submitProduct" :disabled="isSubmitting" class="btn btn-primary">
+            <span
+              v-if="isSubmitting"
+              class="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            ></span>
+            {{ isSubmitting ? 'Đang xử lý...' : 'Thêm sản phẩm' }}
+          </button>
         </div>
       </div>
     </div>

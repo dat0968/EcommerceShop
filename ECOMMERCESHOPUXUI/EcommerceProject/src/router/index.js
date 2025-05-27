@@ -1,3 +1,4 @@
+// Cấu hình router được sửa lỗi
 import { createRouter, createWebHistory } from 'vue-router'
 import LayoutCustomer from '../views/layouts/customerlayout.vue'
 import LayoutAdmin from '../views/layouts/adminlayout.vue'
@@ -10,6 +11,9 @@ import checkout from '../views/customer/Checkout.vue'
 import statistics from '../views/admin/statistics/statistics.vue'
 import products from '../views/admin/products/index.vue'
 import Index from '@/views/admin/categories/Index.vue'
+import orders from '../views/admin/orders/index.vue'
+import customerManagement from '../views/admin/Customer/CustomerManagement.vue'
+import staffManagement from '../views/admin/Staff/StaffManagement.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -17,24 +21,30 @@ const router = createRouter({
       path: '/',
       component: LayoutCustomer,
       children: [
-        { path: '', name: home, component: home },
-        { path: '/Shop', name: shop, component: shop },
-        { path: '/Product/:id', name: detailProduct, component: detailProduct },
-        { path: '/Combo/:id', name: detailCombo, component: detailCombo },
-        { path: '/Cart', name: cart, component: cart },
-        { path: '/Checkout', name: checkout, component: checkout },
-      ],
+        {path: '', name: 'home', component: home},
+        {path: 'shop', name: 'shop', component: shop},
+        {path: 'product/:id', name: 'detailProduct', component: detailProduct},
+        {path: 'combo/:id', name: 'detailCombo', component: detailCombo},
+        {path: 'cart', name: 'cart', component: cart},
+        {path: 'checkout', name: 'checkout', component: checkout},
+        {path: 'customer', name: 'CustomerManagement', component: customerManagement},
+      ]
     },
     {
-      path: '/Admin',
+      path: '/admin',
       component: LayoutAdmin,
       children: [
-        { path: '/Admin', name: statistics, component: statistics },
-        { path: '/Admin/Category', name: Index, component: Index },
-        { path: '/Admin/Product', name: products, component: products },
-      ],
-    },
+        {path: '/Admin', name: statistics, component: statistics},
+          { path: '/Admin/Product', name: products, component: products },
+          { path: '/Admin/Category', name: Index, component: Index },
+        {path: '/Admin/Order', name: orders, component: orders},
+        {path: '', name: 'statistics', component: statistics},
+        {path: 'customer', name: 'CustomerManagement', component: customerManagement},
+        {path: 'staff', name: 'StaffManagement', component: staffManagement},
+      ]
+    }
   ],
+  sensitive: false 
 })
 
 export default router
