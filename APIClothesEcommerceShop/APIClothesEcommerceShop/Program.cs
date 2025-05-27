@@ -3,6 +3,7 @@ using APIClothesEcommerceShop.Repositories.Cart;
 using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.CategoryDetails;
+using APIClothesEcommerceShop.Repositories.Customer;
 using APIClothesEcommerceShop.Repositories.ImageProduct;
 using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Repositories.OrderComboDetails;
@@ -10,6 +11,7 @@ using APIClothesEcommerceShop.Repositories.OrderDetails;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
 using APIClothesEcommerceShop.Services;
+using APIClothesEcommerceShop.Repositories.Staff;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
@@ -20,7 +22,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+// Add services to the container.
+builder.Services.AddControllers(options =>
+{
+    // Vô hi?u hóa validate t? ??ng ?? tránh thông báo l?i m?c ??nh
+    options.ModelValidatorProviders.Clear();
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -77,6 +84,8 @@ builder.Services.AddScoped<IOrderDetails, OrderDetails>();
 builder.Services.AddScoped<IOrderComboDetails, OrderComboDetails>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -91,6 +100,7 @@ app.UseRouting();
 app.UseCors("MyPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
 

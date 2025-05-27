@@ -608,7 +608,8 @@ namespace APIClothesEcommerceShop.Migrations
                         .IsRequired()
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
-
+                    b.Property<string>("HinhDaiDien")
+                        .HasColumnType("text");
                     b.Property<string>("HoTen")
                         .IsRequired()
                         .HasMaxLength(40)

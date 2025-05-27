@@ -55,37 +55,37 @@ namespace APIClothesEcommerceShop.Services
                 throw new Exception("Error", ex);
             }          
         }
-        public async Task UpdateToCart(int MaGioHang, int? MaCombo, int Quantity)
-        {
-            try
-            {
-                await db.Database.BeginTransactionAsync();
-                // Cập nhật giỏ hàng
-                var UpdateCart = await cartRepository.UpdateCart(MaGioHang, Quantity);
+        //public async Task UpdateToCart(int MaGioHang, int? MaCombo, int Quantity)
+        //{
+        //    try
+        //    {
+        //        await db.Database.BeginTransactionAsync();
+        //        // Cập nhật giỏ hàng
+        //        var UpdateCart = await cartRepository.UpdateCart(MaGioHang, Quantity);
 
-                // Cập nhật Chitietgiohang_combo
-                if(MaCombo != null)
-                {
-                    foreach (var item in model.Giohangctcombos)
-                    {
-                        var NewDetail = new Giohangctcombo
-                        {
-                            MaCtsp = item.MaCtsp,
-                            MaGioHang = NewCart.Id,
-                            SoLuong = NewCart.SoLuong * NewCart.SoLuong,
-                            DonGia = NewCart.DonGia,
-                        };
-                        NewDetail = await cart_DetailComboRepository.AddCart_DetailCombo(NewDetail);
-                    }
-                }
+        //        // Cập nhật Chitietgiohang_combo
+        //        if(MaCombo != null)
+        //        {
+        //            foreach (var item in model.Giohangctcombos)
+        //            {
+        //                var NewDetail = new Giohangctcombo
+        //                {
+        //                    MaCtsp = item.MaCtsp,
+        //                    MaGioHang = NewCart.Id,
+        //                    SoLuong = NewCart.SoLuong * NewCart.SoLuong,
+        //                    DonGia = NewCart.DonGia,
+        //                };
+        //                NewDetail = await cart_DetailComboRepository.AddCart_DetailCombo(NewDetail);
+        //            }
+        //        }
 
-                await db.Database.CommitTransactionAsync();
-            }
-            catch (Exception ex)
-            {
-                await db.Database.RollbackTransactionAsync();
-                throw new Exception("Error", ex);
-            }
-        }
+        //        await db.Database.CommitTransactionAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await db.Database.RollbackTransactionAsync();
+        //        throw new Exception("Error", ex);
+        //    }
+        //}
     }
 }

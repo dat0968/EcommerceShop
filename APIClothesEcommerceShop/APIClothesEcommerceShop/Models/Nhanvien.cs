@@ -33,6 +33,8 @@ public partial class Nhanvien
 
     public int MaChucVu { get; set; }
 
+    public string? HinhDaiDien { get; set; }
+
     public virtual ICollection<Hoadon> Hoadons { get; set; } = new List<Hoadon>();
 
     public virtual Chucvu MaChucVuNavigation { get; set; } = null!;
