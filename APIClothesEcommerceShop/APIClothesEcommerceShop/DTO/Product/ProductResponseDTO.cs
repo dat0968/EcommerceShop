@@ -8,10 +8,9 @@ namespace APIClothesEcommerceShop.DTO.Product
         public string TenSanPham { get; set; } = null!;
 
         public string? MoTa { get; set; }
+        public bool? HasVariants { get; set; }  
         public string KhoangGia { get; set; }
         public int SoLuong { get; set; }
-
-        public bool? IsActive { get; set; }
         public virtual ICollection<CategoryDetailsResponseDTO> CategoryDetails { get; set; } = new List<CategoryDetailsResponseDTO>();
         public virtual ICollection<ProductDetailResponseDTO> ProductDetails { get; set; } = new List<ProductDetailResponseDTO>();
     }

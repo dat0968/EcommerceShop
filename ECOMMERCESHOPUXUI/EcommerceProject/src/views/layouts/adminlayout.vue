@@ -80,8 +80,8 @@ onMounted(() => {
             </ul>
             <ul class="xp-vertical-menu">
               <li>
-                <RouterLink>
-                  <i class="icon-speedometer"></i><span>Quản lý combo</span>
+                <RouterLink to="/Admin/Order">
+                  <i class="icon-speedometer"></i><span>Quản lý đơn hàng</span>
                 </RouterLink>
               </li>
             </ul>

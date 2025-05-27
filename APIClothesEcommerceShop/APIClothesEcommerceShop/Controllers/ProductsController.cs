@@ -21,13 +21,13 @@ namespace APIClothesEcommerceShop.Controllers
             this.ProductRepository = ProductRepository;
         }
         [HttpGet]
-        public async Task<IActionResult> Index(int page = 1)
+        public async Task<IActionResult> Index(string? search, string? selectedCategory, string? sortByPrice, int page = 1)
         {
             try
             {
                 page = page < 1 ? 1 : page;
                 int pagesize = 10;
-                var ListProduct = await ProductRepository.GetAll();
+                var ListProduct = await ProductRepository.GetAll(search, selectedCategory, sortByPrice);
                 var ListProductByPage = ListProduct.Skip((page - 1) * pagesize).Take(pagesize);
                 return Ok(new
                 {
@@ -51,6 +51,39 @@ namespace APIClothesEcommerceShop.Controllers
                 {
                     Success = true,
                     Data = ListProduct
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.InnerException);
+            }
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Edit([FromRoute] int id, [FromBody] ProductResquestDTO model)
+        {
+            try
+            {
+                var Product = await productService.UpdateProduct(id, model);
+                return Ok(new
+                {
+                    Success = true,
+                    Data = Product
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.InnerException);
+            }
+        }
+        [HttpPut("{id}/Cancel")]
+        public async Task<IActionResult> Delete([FromRoute] int id)
+        {
+            try
+            {
+                await ProductRepository.Cancel(id);
+                return Ok(new
+                {
+                    Success = true,
                 });
             }
             catch (Exception ex)
