@@ -1,9 +1,9 @@
 <template>
-  <div style="margin-top: 100px" class="xp-contentbar">
+  <div style="margin-top: 90px" class="xp-contentbar">
     <!-- Breadcrumb trạng thái -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item active">Quản lý danh mục</li>
+        <li class="breadcrumb-item active h5">Quản lý danh mục</li>
       </ol>
     </nav>
     <!-- Chọn chế độ -->
@@ -79,8 +79,8 @@
 
     <!-- Chế độ quản lý danh mục cha -->
     <div v-show="focusMode === 'parent'" class="row">
-      <div class="col-md-3">
-        <div class="card mb-3">
+      <div class="col-lg-3 col-md-3 col-sm-12 position-relative">
+        <div class="card position-sticky start-0 top-5" style="margin-top: 5rem">
           <div class="card-header">
             {{ isEditParent ? 'Cập nhật danh mục cha' : 'Thêm danh mục cha' }}
           </div>
@@ -131,8 +131,8 @@
 
     <!-- Chế độ quản lý danh mục con -->
     <div v-show="focusMode === 'child'" class="row">
-      <div class="col-md-3">
-        <div class="card">
+      <div class="col-lg-3 col-md-3 col-sm-12 position-relative">
+        <div class="card position-sticky start-0 top-5" style="margin-top: 5rem">
           <div class="card-header">
             {{ isEditChild ? 'Cập nhật danh mục con' : 'Thêm danh mục con' }}
           </div>
@@ -429,8 +429,8 @@ export default {
                     ? detailProduct.detailProducts
                         .map(
                           (detail) => `
-                                <div class="col-sm-12 col-md-6 p-3 detail-item">
-                                    <div class="row border p-1 rounded bg-light">
+                                <div class="col-sm-12 col-md-6 col-lg-4 detail-item">
+                                    <div class="row border m-1 p-4 shadow rounded bg-white">
                                         <div class="col-4 d-flex align-items-center">
                                             <img src="${detail.imageUrl || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
                                         </div>
