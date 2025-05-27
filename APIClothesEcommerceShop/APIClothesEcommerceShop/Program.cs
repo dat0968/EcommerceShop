@@ -23,9 +23,15 @@ using APIClothesEcommerceShop.Repositories.DbInitializer;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/* 
+Cấu hình kết nối đến database
+EcommerceShopConnect_TD - Data Source=NGUYENTHANHDATP
+EcommerceShopConnect_PM - Data Source=DESKTOP..PHAMHAU
+EcommerceShopConnect_Dot - Data Source=.;
+ */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_Dot"));
 });
 
 // Add services to the container.
