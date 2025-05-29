@@ -1,3 +1,4 @@
+
 // Cấu hình router được sửa lỗi
 import { createRouter, createWebHistory } from 'vue-router'
 import LayoutCustomer from '../views/layouts/customerlayout.vue'
@@ -13,6 +14,14 @@ import products from '../views/admin/products/index.vue'
 import orders from '../views/admin/orders/index.vue'
 import customerManagement from '../views/admin/Customer/CustomerManagement.vue'
 import staffManagement from '../views/admin/Staff/StaffManagement.vue'
+import Login from '../views/accounts/Login.vue'
+import LoginStaff from '../views/accounts/LoginStaff.vue'
+import Register from '../views/accounts/Register.vue'
+import ForgotPassword from '../views/accounts/ForgotPassword.vue'
+import ForgotPasswordStaff from '../views/accounts/ForgotPasswordStaff.vue'
+import ResetPasswordCustomer from '../views/accounts/ResetPasswordCustomer.vue'
+import ResetPasswordStaff from '../views/accounts/ResetPasswordStaff.vue'
+import GoogleLoginSuccess from '../views/accounts/GoogleLoginSuccess.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -40,7 +49,47 @@ const router = createRouter({
         {path: 'customer', name: 'CustomerManagement', component: customerManagement},
         {path: 'staff', name: 'StaffManagement', component: staffManagement},
       ]
-    }
+    },
+     {
+      path: '/Login',
+      name: 'Login',
+      component: Login,
+    },
+    {
+      path: '/LoginStaff',
+      name: 'LoginStaff',
+      component: LoginStaff,
+    },
+    {
+      path: '/Register',
+      name: 'Register',
+      component: Register,
+    },
+    {
+      path: '/ForgotPassword',
+      name: 'ForgotPassword',
+      component: ForgotPassword,
+    },
+    {
+      path: '/ForgotPasswordStaff',
+      name: 'ForgotPasswordStaff',
+      component: ForgotPasswordStaff,
+    },
+    {
+      path: '/GoogleLoginSuccess',
+      name: 'GoogleLoginSuccess',
+      component: GoogleLoginSuccess,
+    },
+    {
+      path: '/ResetPasswordCustomer',
+      name: 'ResetPasswordCustomer',
+      component: ResetPasswordCustomer,
+    },
+    {
+      path: '/ResetPasswordStaff',
+      name: 'ResetPasswordStaff',
+      component: ResetPasswordStaff,
+    },
   ],
   sensitive: false 
 })

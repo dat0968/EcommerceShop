@@ -245,7 +245,6 @@ async function submitProduct() {
       )
       return
     }
-
     const response = await fetch(`${getUrlAPI.value}/Products`, {
       method: 'POST',
       headers: {

@@ -4,42 +4,72 @@
     <footer class="footer">
       <div class="container">
         <div class="row justify-content-center">
+          <!-- Cột thông tin chính -->
           <div class="col-lg-4 col-md-6 col-sm-7">
-            <div class="footer__about text-center" style="margin-top: 30px;">
-              <svg viewBox="0 0 700 250" role="img" aria-label="Angel soft curvy logo with wings and animated gradient">
+            <div class="footer__about text-center" style="margin-top: 30px">
+              <svg
+                viewBox="0 0 700 250"
+                role="img"
+                aria-label="Angel soft curvy logo with wings and animated gradient"
+              >
                 <defs>
                   <linearGradient id="start" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="20%" stop-color="#EC4E79">
-                      <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;" dur="6s"
-                        repeatCount="indefinite" />
+                      <animate
+                        attributeName="stop-color"
+                        values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;"
+                        dur="6s"
+                        repeatCount="indefinite"
+                      />
                     </stop>
                     <stop offset="40%" stop-color="#ABA2B7">
-                      <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;" dur="6s"
-                        repeatCount="indefinite" />
+                      <animate
+                        attributeName="stop-color"
+                        values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;"
+                        dur="6s"
+                        repeatCount="indefinite"
+                      />
                     </stop>
                     <stop offset="55%" stop-color="#5CCAE7">
-                      <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;" dur="6s"
-                        repeatCount="indefinite" />
+                      <animate
+                        attributeName="stop-color"
+                        values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;"
+                        dur="6s"
+                        repeatCount="indefinite"
+                      />
                     </stop>
                   </linearGradient>
                 </defs>
 
-                <!-- Left wing - smooth curves -->
-                <path class="wing left" d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z" />
-                <path class="wing left" d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
-                  opacity="0.5" />
+                <path
+                  class="wing left"
+                  d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z"
+                />
+                <path
+                  class="wing left"
+                  d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
+                  opacity="0.5"
+                />
+                <path
+                  class="wing right"
+                  d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z"
+                />
+                <path
+                  class="wing right"
+                  d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
+                  opacity="0.5"
+                />
 
-                <!-- Right wing - smooth curves -->
-                <path class="wing right" d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z" />
-                <path class="wing right" d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
-                  opacity="0.5" />
-
-                <!-- Angel text with soft cursive font -->
-                <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
+                <text
+                  x="50%"
+                  y="60%"
+                  dominant-baseline="middle"
+                  text-anchor="middle"
+                  class="angel-text"
+                >
                   Angel
                 </text>
               </svg>
-
               <div class="footer__payment">
                 <a href="#"><img src="../../assets/img/payment/payment-1.png" alt="" /></a>
                 <a href="#"><img src="../../assets/img/payment/payment-2.png" alt="" /></a>
@@ -49,8 +79,10 @@
               </div>
             </div>
           </div>
+
+          <!-- Cột liên kết nhanh -->
           <div class="col-lg-2 col-md-3 col-sm-5">
-            <div class="footer__widget text-center">
+            <div class="footer__widget text-center mt-4 mt-lg-0">
               <h6>Liên kết nhanh</h6>
               <ul>
                 <li><a href="#">Giới thiệu</a></li>
@@ -60,8 +92,10 @@
               </ul>
             </div>
           </div>
+
+          <!-- Cột tài khoản -->
           <div class="col-lg-2 col-md-3 col-sm-4">
-            <div class="footer__widget text-center">
+            <div class="footer__widget text-center mt-4 mt-lg-0">
               <h6>Tài khoản</h6>
               <ul>
                 <li><a href="#">Tài khoản của tôi</a></li>
@@ -71,11 +105,11 @@
               </ul>
             </div>
           </div>
-
         </div>
       </div>
     </footer>
     <!-- Footer Section End -->
+
     <!-- Search Begin -->
     <div class="search-model">
       <div class="h-100 d-flex align-items-center justify-content-center">
@@ -112,10 +146,6 @@ export default {}
   background: linear-gradient(90deg, #ca1515, #e94560);
 }
 
-.footer__logo {
-  margin-bottom: 15px;
-}
-
 .footer__logo img {
   max-width: 120px;
 }
@@ -141,10 +171,6 @@ export default {}
 
 .footer__payment img:hover {
   transform: scale(1.1);
-}
-
-.footer__widget {
-  margin-bottom: 20px;
 }
 
 .footer__widget h6 {
@@ -192,10 +218,6 @@ export default {}
 
 /* Responsive styles */
 @media (max-width: 768px) {
-  .footer {
-    padding: 40px 0;
-  }
-
   .footer__widget {
     margin-top: 30px;
   }
