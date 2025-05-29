@@ -1,6 +1,8 @@
 ﻿using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO.Order;
 using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Cart;
+using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Repositories.OrderComboDetails;
 using APIClothesEcommerceShop.Repositories.OrderDetails;
@@ -14,6 +16,8 @@ namespace APIClothesEcommerceShop.Services
         private readonly IOrderRepository orderRepository;
         private readonly IOrderDetails orderDetailsRepository;
         private readonly IOrderComboDetails orderComboDetailsRepository;
+        private readonly ICartRepository cartRepository;
+        private readonly ICart_DetailComboRepository cart_DetailComboRepository;
         public CheckoutService(EcommerceShopContext db, IOrderRepository orderRepository, IOrderDetails orderDetailsRepository, IOrderComboDetails orderComboDetailsRepository)
         {
             this.db = db;
@@ -82,6 +86,8 @@ namespace APIClothesEcommerceShop.Services
                 // Cập nhật lại số lượng mã coupon
 
 
+                // Xóa giỏ hàng của khách
+                
                 return NewOrder;
             }catch(Exception ex)
             {

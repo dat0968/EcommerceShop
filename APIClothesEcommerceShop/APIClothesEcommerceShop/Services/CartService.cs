@@ -55,37 +55,58 @@ namespace APIClothesEcommerceShop.Services
                 throw new Exception("Error", ex);
             }          
         }
-        //public async Task UpdateToCart(int MaGioHang, int? MaCombo, int Quantity)
-        //{
-        //    try
-        //    {
-        //        await db.Database.BeginTransactionAsync();
-        //        // Cập nhật giỏ hàng
-        //        var UpdateCart = await cartRepository.UpdateCart(MaGioHang, Quantity);
+        public async Task UpdateToCart(int id, CartRequestDTO model)
+        {
+            try
+            {
+                await db.Database.BeginTransactionAsync();
+                // Cập nhật giỏ hàng
+                var UpdateCart = await cartRepository.UpdateCart(id, model.SoLuong);
 
-        //        // Cập nhật Chitietgiohang_combo
-        //        if(MaCombo != null)
-        //        {
-        //            foreach (var item in model.Giohangctcombos)
-        //            {
-        //                var NewDetail = new Giohangctcombo
-        //                {
-        //                    MaCtsp = item.MaCtsp,
-        //                    MaGioHang = NewCart.Id,
-        //                    SoLuong = NewCart.SoLuong * NewCart.SoLuong,
-        //                    DonGia = NewCart.DonGia,
-        //                };
-        //                NewDetail = await cart_DetailComboRepository.AddCart_DetailCombo(NewDetail);
-        //            }
-        //        }
+                // Cập nhật Chitietgiohang_combo
+                if (model.MaCombo != null)
+                {
+                    foreach (var item in model.Giohangctcombos)
+                    {
+                        var NewDetail = new Giohangctcombo
+                        {
+                            MaCtsp = item.MaCtsp,
+                            MaGioHang = UpdateCart.Id,                           
+                            SoLuong = model.SoLuong * item.SoLuong,
+                            DonGia = item.DonGia,
+                        };
+                        NewDetail = await cart_DetailComboRepository.UpdateCart_DetailCombo(NewDetail.MaGioHang, NewDetail.SoLuong);
+                    }
+                }
 
-        //        await db.Database.CommitTransactionAsync();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await db.Database.RollbackTransactionAsync();
-        //        throw new Exception("Error", ex);
-        //    }
-        //}
+                await db.Database.CommitTransactionAsync();
+            }
+            catch (Exception ex)
+            {
+                await db.Database.RollbackTransactionAsync();
+                throw new Exception("Error", ex);
+            }
+        }
+
+        public async Task DeleteCart(int IdCart)
+        {
+            try
+            {
+                await db.Database.BeginTransactionAsync();
+                var cart_DetailCombo = await cart_DetailComboRepository.DetailsCart_DetailCombo(IdCart);
+                if(cart_DetailCombo != null)
+                {
+                    await cart_DetailComboRepository.DeleteCart_DetailCombo(IdCart);
+                }
+                await cartRepository.DeleteCart(IdCart);
+                await db.Database.CommitTransactionAsync();
+
+            }
+            catch (Exception ex)
+            {
+                await db.Database.RollbackTransactionAsync();
+                throw new Exception("Error", ex);
+            }
+        }
     }
 }

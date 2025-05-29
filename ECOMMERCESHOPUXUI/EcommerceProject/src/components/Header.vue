@@ -84,8 +84,8 @@
                     <div class="col-lg-3">
                         <div class="header__right">
                             <div class="header__right__auth">
-                                <a href="#">Đăng Nhập</a>
-                                <a href="#">Đăng Ký</a>
+                                <router-link to="/Login" class="text-primary">Đăng nhập</router-link>
+                            <router-link to="/Register" class="text-primary">Đăng ký</router-link>
                             </div>
                             <ul class="header__right__widget">
                                 <li><a href="#"><span class="icon_heart_alt"></span>
