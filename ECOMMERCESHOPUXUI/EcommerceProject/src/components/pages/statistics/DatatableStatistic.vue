@@ -53,10 +53,10 @@
 import cardDiscordInvite from '@/components/ui/cardDiscordInvite.vue'
 import cardMap from '@/components/ui/cardMap.vue'
 
-import ProductTable from '@/components/statistics/datatables/ProductTable.vue'
-import CustomerTable from '@/components/statistics/datatables/CustomerTable.vue'
-import EmployeeTable from '@/components/statistics/datatables/EmployeeTable.vue'
-import ComboTable from '@/components/statistics/datatables/ComboTable.vue'
+import ProductTable from '@/components/pages/statistics/datatables/ProductTable.vue'
+import CustomerTable from '@/components/pages/statistics/datatables/CustomerTable.vue'
+import EmployeeTable from '@/components/pages/statistics/datatables/EmployeeTable.vue'
+import ComboTable from '@/components/pages/statistics/datatables/ComboTable.vue'
 
 export default {
   name: 'DatatableStatistic',

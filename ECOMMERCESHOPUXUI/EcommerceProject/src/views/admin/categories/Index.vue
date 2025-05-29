@@ -285,15 +285,19 @@ export default {
         )
         if (ResponseAPI.handleNotification(response)) {
           alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
+        } else {
+          this.optionsParentCategory = this.optionsParentCategory.filter(
+            (x) => x.maDanhMucCha !== item.maDanhMucCha,
+          )
         }
         this.breadcrumbText = 'Đã xóa danh mục cha'
-        await this.loadOption()
+        // await this.loadOption()
         this.resetFormParent()
       }
     },
     async onSubmitParent() {
       if (this.isEditParent) {
-        await axiosConfig.postToApi(
+        const res = await axiosConfig.postToApi(
           `/categories/UpsertCategory?maDanhMucCha=${this.formParent.maDanhMucCha}`,
           {
             tenDanhMucCha: this.formParent.tenDanhMucCha,
@@ -301,9 +305,16 @@ export default {
           },
           ConfigsRequest.getSkipAuthConfig(),
         )
+        if (ResponseAPI.handleNotification(res)) {
+          alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
+          return
+        }
+        this.optionsParentCategory = this.optionsParentCategory.map((x) =>
+          x.maDanhMucCha === this.formParent.maDanhMucCha ? { ...x, ...this.formParent } : x,
+        )
         this.breadcrumbText = 'Cập nhật danh mục cha thành công'
       } else {
-        await axiosConfig.postToApi(
+        const res = await axiosConfig.postToApi(
           `/categories/UpsertCategory`,
           {
             maDanhMucCha: 0,
@@ -312,9 +323,13 @@ export default {
           },
           ConfigsRequest.getSkipAuthConfig(),
         )
+        if (ResponseAPI.handleNotification(res)) {
+          alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
+          return
+        }
         this.breadcrumbText = 'Thêm mới danh mục cha thành công'
       }
-      await this.loadOption()
+      // await this.loadOption()
       this.resetFormParent()
     },
     resetFormParent() {
@@ -342,15 +357,21 @@ export default {
         )
         if (ResponseAPI.handleNotification(response)) {
           alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
+          return
         }
+        this.optionsChildCategory = this.optionsChildCategory.filter(
+          (x) => x.maDanhMucCon !== item.maDanhMucCon,
+        )
+        this.reloadDataTableChild()
         this.breadcrumbText = 'Đã xóa danh mục con'
-        await this.loadOption()
+        // await this.loadOption()
         this.resetFormChild()
       }
     },
     async onSubmitChild() {
       if (this.isEditChild) {
-        await axiosConfig.postToApi(
+        // Cập nhật danh mục con
+        const res = await axiosConfig.postToApi(
           `/categories/UpsertSubCategory?maDanhMucCon=${this.formChild.maDanhMucCon}`,
           {
             tenDanhMucCon: this.formChild.tenDanhMucCon,
@@ -358,9 +379,18 @@ export default {
           },
           ConfigsRequest.getSkipAuthConfig(),
         )
+        if (ResponseAPI.handleNotification(res)) {
+          alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
+          return
+        }
+        this.optionsChildCategory = this.optionsChildCategory.map((x) =>
+          x.maDanhMucCon === this.formChild.maDanhMucCon ? { ...x, ...this.formChild } : x,
+        )
+        this.reloadDataTableChild()
         this.breadcrumbText = 'Cập nhật danh mục con thành công'
       } else {
-        await axiosConfig.postToApi(
+        // Thêm mới danh mục con
+        const res = await axiosConfig.postToApi(
           `/categories/UpsertSubCategory`,
           {
             maDanhMucCon: 0,
@@ -369,9 +399,19 @@ export default {
           },
           ConfigsRequest.getSkipAuthConfig(),
         )
+        if (ResponseAPI.handleNotification(res)) {
+          alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
+          return
+        }
+        this.optionsChildCategory.push({
+          maDanhMucCon: res.data.maDanhMucCon,
+          tenDanhMucCon: this.formChild.tenDanhMucCon,
+          isActive: this.formChild.isActive,
+        })
+        this.reloadDataTableChild()
         this.breadcrumbText = 'Thêm mới danh mục con thành công'
       }
-      await this.loadOption()
+      // await this.loadOption()
       this.resetFormChild()
     },
     resetFormChild() {

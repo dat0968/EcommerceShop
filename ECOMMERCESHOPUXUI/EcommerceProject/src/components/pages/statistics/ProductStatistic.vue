@@ -62,7 +62,7 @@
 <script>
 import { Chart, registerables } from 'chart.js'
 import { formatCurrency } from '@/constants/formatCurrency'
-import Overlay from '../common/Overlay.vue'
+import Overlay from '@/components/common/Overlay.vue'
 Chart.register(...registerables)
 
 export default {
