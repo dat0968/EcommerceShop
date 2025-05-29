@@ -33,7 +33,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_Dot"));
 });
 
 // Add services to the container.
@@ -91,7 +91,7 @@ builder.Services.AddCors(options =>
         ops.SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
-builder.Services.AddHttpClient(); 
+builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
