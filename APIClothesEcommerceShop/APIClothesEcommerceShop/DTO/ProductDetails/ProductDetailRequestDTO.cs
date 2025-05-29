@@ -13,7 +13,6 @@ namespace APIClothesEcommerceShop.DTO.ProductDetails
         public int SoLuongTon { get; set; }
 
         public int DonGia { get; set; }
-
         public virtual ICollection<ImageProductResponseDTO> Images { get; set; } = new List<ImageProductResponseDTO>();
     }
 }

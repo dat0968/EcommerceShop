@@ -1,0 +1,207 @@
+<script setup>
+import { ref } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import Swal from 'sweetalert2';
+import { GetApiUrl } from '../../constants/api.js';
+import Cookies from 'js-cookie';
+const route = useRoute();
+const router = useRouter();
+const email = ref(route.query.email || '');
+const newPassword = ref('');
+const confirmPassword = ref('');
+const loginAfterReset = ref(false);
+const message = ref('');
+const success = ref(false);
+const getApiUrl = GetApiUrl();
+
+const handleResetPassword = async () => {
+  message.value = '';
+  success.value = false;
+
+  if (newPassword.value !== confirmPassword.value) {
+    success.value = false;
+    message.value = 'Mật khẩu xác nhận không khớp!';
+    await Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: message.value,
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl}/api/Account/ResetPasswordStaff`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email.value.trim(),
+        newPassword: newPassword.value,
+        loginAfterReset: loginAfterReset.value,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Lỗi HTTP ${response.status}: ${errorText || 'Không có chi tiết'}`);
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      success.value = true;
+      message.value = data.message || 'Đặt lại mật khẩu thành công!';
+      if (data.data) {
+        // Lưu token nếu đăng nhập ngay
+        Cookies.set('accessToken', data.data.accessToken, { expires: 3 / 24 });
+        Cookies.set('refreshToken', data.data.refreshToken, { expires: 3 / 24 });
+        await Swal.fire({
+          icon: 'success',
+          title: 'Thành công!',
+          text: 'Đăng nhập thành công!',
+          confirmButtonText: 'OK',
+        });
+        router.push('/'); // Chuyển hướng tới trang chính
+      } else {
+        await Swal.fire({
+          icon: 'success',
+          title: 'Thành công!',
+          text: message.value,
+          confirmButtonText: 'OK',
+        });
+        router.push('/LoginStaff');
+      }
+    } else {
+      success.value = false;
+      message.value = data.message || 'Có lỗi xảy ra, vui lòng thử lại!';
+      await Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: message.value,
+        confirmButtonText: 'OK',
+      });
+    }
+  } catch (error) {
+    console.error('Lỗi trong handleResetPassword:', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+    });
+    success.value = false;
+    message.value = error.message || 'Có lỗi xảy ra, vui lòng thử lại!';
+    await Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: message.value,
+      confirmButtonText: 'OK',
+    });
+  }
+};
+</script>
+
+<template>
+  <div>
+    <div class="xp-authenticate-bg"></div>
+    <div id="xp-container" class="xp-container">
+      <div class="container">
+        <div class="row vh-100 align-items-center">
+          <div class="col-lg-12">
+            <div class="xp-auth-box">
+              <div class="card">
+                <div class="card-body">
+                  <h3 class="text-center mt-0 m-b-15">
+                    <a href="index.html" class="xp-web-logo">
+                      <img src="../../assets/admin/images/logo.svg" height="40" alt="logo" />
+                    </a>
+                  </h3>
+                  <div class="p-3">
+                    <form @submit.prevent="handleResetPassword">
+                      <div class="text-center mb-3">
+                        <h4 class="text-black">Đổi mật khẩu</h4>
+                        <p class="text-muted">
+                          Bạn đã nhớ lại mật khẩu?
+                          <router-link to="/LoginStaff" class="text-primary">Đăng nhập</router-link>
+                        </p>
+                      </div>
+                      <p class="text-muted text-center m-b-30">
+                        Nhập mật khẩu mới cho tài khoản của bạn
+                      </p>
+                      <div v-if="message" :class="['alert', success ? 'alert-success' : 'alert-danger', 'text-center']">
+                        {{ message }}
+                      </div>
+                      <div class="form-group">
+                        <input
+                          v-model="email"
+                          type="email"
+                          class="form-control"
+                          id="email"
+                          placeholder="Email"
+                          required
+                          disabled
+                        />
+                      </div>
+                      <div class="form-group">
+                        <input
+                          v-model="newPassword"
+                          type="password"
+                          class="form-control"
+                          id="newPassword"
+                          placeholder="Nhập mật khẩu mới"
+                          required
+                        />
+                      </div>
+                      <div class="form-group">
+                        <input
+                          v-model="confirmPassword"
+                          type="password"
+                          class="form-control"
+                          id="confirmPassword"
+                          placeholder="Xác nhận mật khẩu mới"
+                          required
+                        />
+                      </div>
+                      <div class="form-group form-check">
+                        <input
+                          v-model="loginAfterReset"
+                          type="checkbox"
+                          class="form-check-input"
+                          id="loginAfterReset"
+                        />
+                        <label class="form-check-label" for="loginAfterReset">Đăng nhập ngay sau khi đổi mật khẩu</label>
+                      </div>
+                      <button type="submit" class="btn btn-primary btn-rounded btn-lg btn-block">
+                        Đổi mật khẩu
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.alert-success {
+  margin-bottom: 15px;
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+.alert-danger {
+  margin-bottom: 15px;
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+.text-primary {
+  color: #007bff;
+  text-decoration: none;
+}
+.text-primary:hover {
+  text-decoration: underline;
+}
+</style>
