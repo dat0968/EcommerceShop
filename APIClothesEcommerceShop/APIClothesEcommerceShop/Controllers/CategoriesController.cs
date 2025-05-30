@@ -28,8 +28,8 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy toàn bộ danh sách chi tiết danh mục sản phẩm (bao gồm cha, con, sản phẩm).
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryResponseDTO>>), StatusCodes.Status200OK)]
-        [HttpGet("GetAllCategories")]
-        public async Task<IActionResult> GetAllBigCategories()
+        [HttpGet("")]
+        public async Task<IActionResult> GetCategories()
         {
             try
             {
@@ -46,7 +46,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy danh sách tất cả danh mục cha.
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryParentResponseDTO>>), StatusCodes.Status200OK)]
-        [HttpGet("GetAllParentCategories")]
+        [HttpGet("parents")]
         public async Task<IActionResult> GetAllParentCategories()
         {
             var result = await _unit.Category.GetCategoryParentAsync();
@@ -58,7 +58,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục cha</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryParentResponseDTO>), StatusCodes.Status200OK)]
-        [HttpGet("GetCategoryById/{id}")]
+        [HttpGet("parent/{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
             var result = await _unit.Category.GetCategoryByIdAsync(id);
@@ -71,7 +71,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCha">Mã danh mục cha (0 nếu thêm mới)</param>
         /// <param name="categoryDto">Thông tin danh mục cha</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryParentResponseDTO>), StatusCodes.Status200OK)]
-        [HttpPost("UpsertCategory")]
+        [HttpPost("parent/{maDanhMucCha}")]
         public async Task<IActionResult> UpsertCategory(int maDanhMucCha, [FromBody] CategoryParentRequestDTO categoryDto)
         {
             var result = await _unit.Category.UpsertCategoryAsync(maDanhMucCha, categoryDto);
@@ -83,7 +83,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục cha</param>
         [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
-        [HttpDelete("DeleteCategory/{id}")]
+        [HttpDelete("parent/{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var result = await _unit.Category.DeleteCategoryAsync(id);
@@ -96,7 +96,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy danh sách tất cả danh mục con.
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryChildResponseDTO>>), StatusCodes.Status200OK)]
-        [HttpGet("GetAllSubCategories")]
+        [HttpGet("childs")]
         public async Task<IActionResult> GetAllSubCategories()
         {
             var result = await _unit.Category.GetAllSubCategoriesAsync();
@@ -108,7 +108,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục con</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryChildResponseDTO>), StatusCodes.Status200OK)]
-        [HttpGet("GetSubCategoryById/{id}")]
+        [HttpGet("child/{id}")]
         public async Task<IActionResult> GetSubCategoryById(int id)
         {
             var result = await _unit.Category.GetSubCategoryByIdAsync(id);
@@ -121,7 +121,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCon">Mã danh mục con (0 nếu thêm mới)</param>
         /// <param name="subCategoryDto">Thông tin danh mục con</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryChildResponseDTO>), StatusCodes.Status200OK)]
-        [HttpPost("UpsertSubCategory")]
+        [HttpPost("child/{maDanhMucCon}")]
         public async Task<IActionResult> UpsertSubCategory(int maDanhMucCon, [FromBody] CategoryChildRequestDTO subCategoryDto)
         {
             var result = await _unit.Category.UpsertSubCategoryAsync(maDanhMucCon, subCategoryDto);
@@ -133,7 +133,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục con</param>
         [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
-        [HttpDelete("DeleteSubCategory/{id}")]
+        [HttpDelete("child/{id}")]
         public async Task<IActionResult> DeleteSubCategory(int id)
         {
             var result = await _unit.Category.DeleteSubCategoryAsync(id);
@@ -146,7 +146,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy danh sách tất cả chi tiết danh mục (liên kết cha, con, sản phẩm).
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryResponseDTO>>), StatusCodes.Status200OK)]
-        [HttpGet("GetAllCategoryDetails")]
+        [HttpGet("details")]
         public async Task<IActionResult> GetAllCategoryDetails()
         {
             var result = await _unit.Category.GetAllCategoryDetailsAsync();
@@ -160,7 +160,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCon">Mã danh mục con</param>
         /// <param name="maSp">Mã sản phẩm</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryDetailResponseDTO>), StatusCodes.Status200OK)]
-        [HttpGet("GetCategoryDetailById")]
+        [HttpGet("detail")]
         public async Task<IActionResult> GetCategoryDetailById(int maDanhMucCha, int maDanhMucCon, int maSp)
         {
             var result = await _unit.Category.GetCategoryDetailByIdAsync(maDanhMucCha, maDanhMucCon, maSp);
@@ -172,7 +172,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="detailDto">Thông tin chi tiết danh mục</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryDetailResponseDTO>), StatusCodes.Status200OK)]
-        [HttpPost("UpsertCategoryDetail")]
+        [HttpPost("detail")]
         public async Task<IActionResult> UpsertCategoryDetail([FromBody] CategoryDetailRequestDTO detailDto)
         {
             var result = await _unit.Category.UpsertCategoryDetailAsync(detailDto);
@@ -186,7 +186,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCon">Mã danh mục con</param>
         /// <param name="maSp">Mã sản phẩm</param>
         [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
-        [HttpDelete("DeleteCategoryDetail")]
+        [HttpDelete("detail")]
         public async Task<IActionResult> DeleteCategoryDetail([FromQuery] int maDanhMucCha, [FromQuery] int maDanhMucCon, [FromQuery] int maSp)
         {
             var result = await _unit.Category.DeleteCategoryDetailAsync(maDanhMucCha, maDanhMucCon, maSp);

@@ -245,13 +245,13 @@ export default {
   methods: {
     async loadOption() {
       const resOptionParen = await axiosConfig.getFromApi(
-        '/categories/GetAllParentCategories',
+        '/categories/parents',
         ConfigsRequest.getSkipAuthConfig(),
       )
       this.optionsParentCategory = resOptionParen.data
 
       const resOptionChild = await axiosConfig.getFromApi(
-        '/categories/GetAllSubCategories',
+        '/categories/childs',
         ConfigsRequest.getSkipAuthConfig(),
       )
       this.optionsChildCategory = resOptionChild.data
@@ -259,10 +259,7 @@ export default {
       this.reloadDataTableChild()
     },
     async getCategories() {
-      const res = await axiosConfig.getFromApi(
-        '/categories/GetAllCategories',
-        ConfigsRequest.getSkipAuthConfig(),
-      )
+      const res = await axiosConfig.getFromApi('/categories', ConfigsRequest.getSkipAuthConfig())
       this.listCategories = res.data
       this.reloadDataTable()
     },
@@ -280,7 +277,7 @@ export default {
     async onDeleteParent(item) {
       if (confirm('Bạn có chắc chắn muốn xóa danh mục cha này?')) {
         const response = await axiosConfig.deleteFromApi(
-          `/categories/DeleteCategory/${item.maDanhMucCha}`,
+          `/categories/parent/${item.maDanhMucCha}`,
           ConfigsRequest.getSkipAuthConfig(),
         )
         if (ResponseAPI.handleNotification(response)) {
@@ -298,7 +295,7 @@ export default {
     async onSubmitParent() {
       if (this.isEditParent) {
         const res = await axiosConfig.postToApi(
-          `/categories/UpsertCategory?maDanhMucCha=${this.formParent.maDanhMucCha}`,
+          `/categories/parent/${this.formParent.maDanhMucCha}`,
           {
             tenDanhMucCha: this.formParent.tenDanhMucCha,
             isActive: this.formParent.isActive,
@@ -310,12 +307,12 @@ export default {
           return
         }
         this.optionsParentCategory = this.optionsParentCategory.map((x) =>
-          x.maDanhMucCha === this.formParent.maDanhMucCha ? { ...x, ...this.formParent } : x,
+          x.maDanhMucCha === this.formParent.maDanhMucCha ? res.data : x,
         )
         this.breadcrumbText = 'Cập nhật danh mục cha thành công'
       } else {
         const res = await axiosConfig.postToApi(
-          `/categories/UpsertCategory`,
+          `/categories/parent/0`,
           {
             maDanhMucCha: 0,
             tenDanhMucCha: this.formParent.tenDanhMucCha,
@@ -327,6 +324,7 @@ export default {
           alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
           return
         }
+        this.optionsParentCategory.push(res.data)
         this.breadcrumbText = 'Thêm mới danh mục cha thành công'
       }
       // await this.loadOption()
@@ -352,7 +350,7 @@ export default {
     async onDeleteChild(item) {
       if (confirm('Bạn có chắc chắn muốn xóa danh mục con này?')) {
         const response = await axiosConfig.deleteFromApi(
-          `/categories/DeleteSubCategory/${item.maDanhMucCon}`,
+          `/categories/child/${item.maDanhMucCon}`,
           ConfigsRequest.getSkipAuthConfig(),
         )
         if (ResponseAPI.handleNotification(response)) {
@@ -372,7 +370,7 @@ export default {
       if (this.isEditChild) {
         // Cập nhật danh mục con
         const res = await axiosConfig.postToApi(
-          `/categories/UpsertSubCategory?maDanhMucCon=${this.formChild.maDanhMucCon}`,
+          `/categories/child/${this.formChild.maDanhMucCon}`,
           {
             tenDanhMucCon: this.formChild.tenDanhMucCon,
             isActive: this.formChild.isActive,
@@ -384,14 +382,14 @@ export default {
           return
         }
         this.optionsChildCategory = this.optionsChildCategory.map((x) =>
-          x.maDanhMucCon === this.formChild.maDanhMucCon ? { ...x, ...this.formChild } : x,
+          x.maDanhMucCon === this.formChild.maDanhMucCon ? res.data : x,
         )
         this.reloadDataTableChild()
         this.breadcrumbText = 'Cập nhật danh mục con thành công'
       } else {
         // Thêm mới danh mục con
         const res = await axiosConfig.postToApi(
-          `/categories/UpsertSubCategory`,
+          `/categories/child/0`,
           {
             maDanhMucCon: 0,
             tenDanhMucCon: this.formChild.tenDanhMucCon,
@@ -403,11 +401,7 @@ export default {
           alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
           return
         }
-        this.optionsChildCategory.push({
-          maDanhMucCon: res.data.maDanhMucCon,
-          tenDanhMucCon: this.formChild.tenDanhMucCon,
-          isActive: this.formChild.isActive,
-        })
+        this.optionsChildCategory.push(res.data)
         this.reloadDataTableChild()
         this.breadcrumbText = 'Thêm mới danh mục con thành công'
       }
