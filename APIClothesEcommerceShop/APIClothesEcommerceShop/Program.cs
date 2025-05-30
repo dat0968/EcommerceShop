@@ -28,6 +28,8 @@ using APIClothesEcommerceShop.Repositories.Account;
 using Humanizer.Configuration;
 using VNPAY.NET;
 using APIClothesEcommerceShop.Repositories.DbInitializer;
+using APIClothesEcommerceShop.Services.EmailService.GoogleSenderService;
+using APIClothesEcommerceShop.Services.EmailService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +99,8 @@ builder.Services.AddCors(options =>
         ops.SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
+#region [Dependency Injection]
+// Cấu hình DI cho các repository và service
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
@@ -113,7 +117,9 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
+#endregion
 
+#region [Dependency Injection cho các repository]
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
@@ -121,6 +127,15 @@ builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
+#endregion
+
+#region [Dependency Injection cho các service]
+// Tin nhắn 
+builder.Services.AddScoped<GoogleSenderService>();
+var emailSettings = builder.Configuration.GetSection("GoogleEmailSetting");
+builder.Services.Configure<GoogleEmailSetting>(emailSettings);
+
+// JWT Authentication
 var SecretKey = builder.Configuration["JWT:SecretKey"];
 var SecretKeyBytes = Encoding.UTF8.GetBytes(SecretKey);
 builder.Services.AddAuthentication(options =>
@@ -145,6 +160,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = googleAuth["ClientId"];
     options.ClientSecret = googleAuth["ClientSecret"];
 });
+#endregion
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
