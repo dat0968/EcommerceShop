@@ -816,6 +816,9 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<bool>("DaThich")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("DanhGiaId")
+                        .HasColumnType("int");
+
                     b.Property<int>("IdDanhGia")
                         .HasColumnType("int");
 
@@ -823,6 +826,8 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DanhGiaId");
 
                     b.HasIndex("IdDanhGia");
 
@@ -1052,8 +1057,12 @@ namespace APIClothesEcommerceShop.Migrations
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.YeuThich", b =>
                 {
-                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", "DanhGia")
+                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", null)
                         .WithMany("YeuThichs")
+                        .HasForeignKey("DanhGiaId");
+
+                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", "DanhGia")
+                        .WithMany()
                         .HasForeignKey("IdDanhGia")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1061,7 +1070,7 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "KhachHang")
                         .WithMany()
                         .HasForeignKey("IdKhachHang")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("DanhGia");

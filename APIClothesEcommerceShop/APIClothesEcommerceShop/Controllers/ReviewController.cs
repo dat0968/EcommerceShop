@@ -1,0 +1,37 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using APIClothesEcommerceShop.Repositories.UnitOfWork;
+using Microsoft.AspNetCore.Mvc;
+
+namespace APIClothesEcommerceShop.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ReviewController : ControllerBase
+    {
+        private readonly IUnitOfWork _unit;
+        public ReviewController(IUnitOfWork unit)
+        {
+            _unit = unit;
+        }
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetReviewsByProductId(int productId)
+        {
+            try
+            {
+                var reviews = await _unit.Review.GetAsync(x => x.IdSanPham == productId);
+                if (reviews == null)
+                {
+                    return NotFound(new { Success = false, Message = "No reviews found for this product." });
+                }
+                return Ok(new { Success = true, Data = reviews });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Success = false, Message = ex.Message });
+            }
+        }
+    }
+}

@@ -48,8 +48,8 @@ async function detectAvailableApi(paths = API_PATHS) {
     'Không tìm thấy API endpoint khả dụng! Vui lòng kiểm tra lại cấu hình hoặc kết nối mạng.',
     'Lỗi kết nối API',
   )
-
-  throw new Error('Không tìm thấy API endpoint khả dụng!')
+  console.error('Không tìm thấy API endpoint khả dụng!')
+  return null // Trả về null nếu không tìm thấy endpoint khả dụng
 }
 
 // Khởi tạo axiosClient với baseURL tạm thời

@@ -434,6 +434,18 @@ public partial class EcommerceShopContext : DbContext
             entity.Property(e => e.TenSanPham).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<YeuThich>()
+            .HasOne(y => y.KhachHang)
+            .WithMany()
+            .HasForeignKey(y => y.IdKhachHang)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<YeuThich>()
+            .HasOne(y => y.DanhGia)
+            .WithMany()
+            .HasForeignKey(y => y.IdDanhGia)
+            .OnDelete(DeleteBehavior.Cascade);
+
         OnModelCreatingPartial(modelBuilder);
     }
 

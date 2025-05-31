@@ -35,14 +35,39 @@ namespace APIClothesEcommerceShop.Controllers
                     Data = ListProductByPage,
                     ToTalPages = (int)Math.Ceiling((double)ListProduct.Count() / pagesize),
                 });
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.InnerException);
             }
         }
-
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Details([FromRoute] int id)
+        {
+            try
+            {
+                var Product = await ProductRepository.GetById(id);
+                if (Product == null)
+                {
+                    return NotFound(new
+                    {
+                        Success = false,
+                        Message = "Product not found"
+                    });
+                }
+                return Ok(new
+                {
+                    Success = true,
+                    Data = Product
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.InnerException);
+            }
+        }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody]ProductResquestDTO model)
+        public async Task<IActionResult> Create([FromBody] ProductResquestDTO model)
         {
             try
             {

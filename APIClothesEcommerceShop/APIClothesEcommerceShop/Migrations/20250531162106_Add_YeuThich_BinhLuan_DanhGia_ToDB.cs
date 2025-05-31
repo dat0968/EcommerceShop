@@ -11,25 +11,20 @@ namespace APIClothesEcommerceShop.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "MoTa",
-                table: "SANPHAM",
-                type: "nvarchar(max)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(500)",
-                oldMaxLength: 500,
-                oldNullable: true);
+            migrationBuilder.AlterColumn<int>(
+                name: "ID",
+                table: "REFRESHTOKEN",
+                type: "int",
+                nullable: false,
+                oldClrType: typeof(int),
+                oldType: "int")
+                .Annotation("SqlServer:Identity", "1, 1");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "MoTa",
-                table: "COMBO",
-                type: "nvarchar(max)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(500)",
-                oldMaxLength: 500,
-                oldNullable: true);
+            migrationBuilder.AddColumn<string>(
+                name: "HinhDaiDien",
+                table: "NHANVIEN",
+                type: "text",
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "BINHLUAN",
@@ -101,11 +96,17 @@ namespace APIClothesEcommerceShop.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     DaThich = table.Column<bool>(type: "bit", nullable: false),
                     IdKhachHang = table.Column<int>(type: "int", nullable: false),
-                    IdDanhGia = table.Column<int>(type: "int", nullable: false)
+                    IdDanhGia = table.Column<int>(type: "int", nullable: false),
+                    DanhGiaId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_YEUTHICH", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_YEUTHICH_DANHGIA_DanhGiaId",
+                        column: x => x.DanhGiaId,
+                        principalTable: "DANHGIA",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_YEUTHICH_DANHGIA_IdDanhGia",
                         column: x => x.IdDanhGia,
@@ -117,7 +118,7 @@ namespace APIClothesEcommerceShop.Migrations
                         column: x => x.IdKhachHang,
                         principalTable: "KHACHHANG",
                         principalColumn: "MaKH",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -139,6 +140,11 @@ namespace APIClothesEcommerceShop.Migrations
                 name: "IX_DANHGIA_IdSanPham",
                 table: "DANHGIA",
                 column: "IdSanPham");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_YEUTHICH_DanhGiaId",
+                table: "YEUTHICH",
+                column: "DanhGiaId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_YEUTHICH_IdDanhGia",
@@ -163,25 +169,18 @@ namespace APIClothesEcommerceShop.Migrations
             migrationBuilder.DropTable(
                 name: "DANHGIA");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "MoTa",
-                table: "SANPHAM",
-                type: "nvarchar(500)",
-                maxLength: 500,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
-                oldNullable: true);
+            migrationBuilder.DropColumn(
+                name: "HinhDaiDien",
+                table: "NHANVIEN");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "MoTa",
-                table: "COMBO",
-                type: "nvarchar(500)",
-                maxLength: 500,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
-                oldNullable: true);
+            migrationBuilder.AlterColumn<int>(
+                name: "ID",
+                table: "REFRESHTOKEN",
+                type: "int",
+                nullable: false,
+                oldClrType: typeof(int),
+                oldType: "int")
+                .OldAnnotation("SqlServer:Identity", "1, 1");
         }
     }
 }
