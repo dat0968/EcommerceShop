@@ -21,23 +21,13 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet("{productId}")]
         public async Task<IActionResult> GetReviewsByProductId(int productId)
         {
-            var res = new ResponseAPI<DanhGia>();
-            try
+            var res = await _unit.Review.GetReviewsByProductIdAsync(productId);
+            if (res.Data == null)
             {
-                var reviews = await _unit.Review.GetAsync(x => x.IdSanPham == productId);
-                if (reviews == null)
-                {
-                    res.SetErrorResponse("No reviews found for this product.");
-                    return NotFound(res);
-                }
-                res.SetSuccessResponse(data: reviews);
-                return Ok(res);
+                res.SetErrorResponse("No reviews found for this product.");
+                return NotFound(res);
             }
-            catch (Exception ex)
-            {
-                res.SetErrorResponse(ex.Message);
-                return BadRequest(res);
-            }
+            return Ok(res);
         }
     }
 }

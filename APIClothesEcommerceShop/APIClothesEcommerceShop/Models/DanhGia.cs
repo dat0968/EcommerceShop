@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using APIClothesEcommerceShop.DTO.Reviews;
 
 namespace APIClothesEcommerceShop.Models
 {
@@ -36,5 +37,37 @@ namespace APIClothesEcommerceShop.Models
         [ForeignKey("IdKhachHang")]
         public virtual Khachhang? Khachhang { get; set; }
         public virtual ICollection<YeuThich> YeuThichs { get; set; } = new List<YeuThich>();
+    }
+    public static class DanhGiaExtensions
+    {
+        public static DanhGia ToDanhGia(this ReviewRequestDTO dto)
+        {
+            return new DanhGia
+            {
+                Id = dto.Id ?? 0,
+                IdKhachHang = dto.IdKhachHang,
+                IdSanPham = dto.IdSanPham,
+                HoTen = dto.HoTen,
+                Email = dto.Email,
+                NoiDung = dto.NoiDung,
+                SoSao = dto.SoSao,
+                NgayDanhGia = dto.NgayDanhGia
+            };
+        }
+        public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity)
+        {
+            return new ReviewResponseDTO
+            {
+                Id = entity.Id,
+                IdKhachHang = entity.IdKhachHang,
+                IdSanPham = entity.IdSanPham,
+                HoTen = entity.HoTen,
+                Email = entity.Email,
+                NoiDung = entity.NoiDung,
+                SoSao = entity.SoSao,
+                NgayDanhGia = entity.NgayDanhGia
+            };
+        }
+
     }
 }

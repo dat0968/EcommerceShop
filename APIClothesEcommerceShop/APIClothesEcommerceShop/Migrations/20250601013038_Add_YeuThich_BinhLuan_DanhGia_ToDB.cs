@@ -154,19 +154,6 @@ namespace APIClothesEcommerceShop.Migrations
 
             migrationBuilder.DropTable(
                 name: "DANHGIA");
-
-            migrationBuilder.DropColumn(
-                name: "HinhDaiDien",
-                table: "NHANVIEN");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "ID",
-                table: "REFRESHTOKEN",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
         }
     }
 }
