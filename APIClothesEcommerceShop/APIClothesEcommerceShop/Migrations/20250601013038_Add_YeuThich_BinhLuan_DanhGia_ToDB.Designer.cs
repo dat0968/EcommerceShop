@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    [Migration("20250531162106_Add_YeuThich_BinhLuan_DanhGia_ToDB")]
+    [Migration("20250601013038_Add_YeuThich_BinhLuan_DanhGia_ToDB")]
     partial class Add_YeuThich_BinhLuan_DanhGia_ToDB
     {
         /// <inheritdoc />

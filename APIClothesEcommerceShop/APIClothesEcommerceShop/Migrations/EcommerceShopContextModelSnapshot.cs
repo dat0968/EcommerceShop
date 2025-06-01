@@ -61,7 +61,7 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.HasIndex("IdSanPham");
 
-                    b.ToTable("BINHLUAN");
+                    b.ToTable("BINHLUAN", (string)null);
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombohoadon", b =>
@@ -299,7 +299,7 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.HasIndex("IdSanPham");
 
-                    b.ToTable("DANHGIA");
+                    b.ToTable("DANHGIA", (string)null);
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Danhmuccha", b =>
@@ -754,8 +754,11 @@ namespace APIClothesEcommerceShop.Migrations
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Refreshtoken", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("ExpiredAt")
                         .HasColumnType("datetime");
@@ -833,7 +836,7 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.HasIndex("IdKhachHang");
 
-                    b.ToTable("YEUTHICH");
+                    b.ToTable("YEUTHICH", (string)null);
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>

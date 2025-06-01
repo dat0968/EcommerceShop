@@ -11,20 +11,6 @@ namespace APIClothesEcommerceShop.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "ID",
-                table: "REFRESHTOKEN",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(int),
-                oldType: "int")
-                .Annotation("SqlServer:Identity", "1, 1");
-
-            migrationBuilder.AddColumn<string>(
-                name: "HinhDaiDien",
-                table: "NHANVIEN",
-                type: "text",
-                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "BINHLUAN",

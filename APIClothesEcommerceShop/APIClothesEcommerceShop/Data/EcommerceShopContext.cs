@@ -414,7 +414,7 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("REFRESHTOKEN");
 
             entity.Property(e => e.Id)
-                //.ValueGeneratedNever()
+                // .ValueGeneratedNever()
                 .ValueGeneratedOnAdd()
                 .HasColumnName("ID");
             entity.Property(e => e.ExpiredAt).HasColumnType("datetime");
