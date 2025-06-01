@@ -203,49 +203,49 @@ export default {
     async loadOrderSummaryData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetOrderSummary',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.orderSummaryData = OrderSummaryResponse.fromApiResponse(response.data)
     },
     async loadProductStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetProductStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.productStatisticData = ProductStatisticsResponse.fromApiResponse(response.data)
     },
     async loadCustomerStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetCustomerStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.customerStatisticsData = CustomerStatisticsResponse.fromApiResponse(response.data)
     },
     async loadEmployeeStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetEmployeeStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.employeeStatisticsData = EmployeeStatisticsResponse.fromApiResponse(response.data)
     },
     async loadRevenueStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetRevenueStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
     },
     async loadComboStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetComboStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
     },
     async loadDatatableData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetDatatableStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       // console.log(response.data)
       this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)
