@@ -3,6 +3,7 @@ using APIClothesEcommerceShop.DTO.Categories;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Formats.Asn1;
@@ -28,6 +29,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy toàn bộ danh sách chi tiết danh mục sản phẩm (bao gồm cha, con, sản phẩm).
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryResponseDTO>>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("")]
         public async Task<IActionResult> GetCategories()
         {
@@ -46,6 +48,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy danh sách tất cả danh mục cha.
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryParentResponseDTO>>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("parents")]
         public async Task<IActionResult> GetAllParentCategories()
         {
@@ -58,6 +61,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục cha</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryParentResponseDTO>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("parent/{id}")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
@@ -71,6 +75,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCha">Mã danh mục cha (0 nếu thêm mới)</param>
         /// <param name="categoryDto">Thông tin danh mục cha</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryParentResponseDTO>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpPost("parent/{maDanhMucCha}")]
         public async Task<IActionResult> UpsertCategory(int maDanhMucCha, [FromBody] CategoryParentRequestDTO categoryDto)
         {
@@ -83,6 +88,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục cha</param>
         [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpDelete("parent/{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
@@ -96,6 +102,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy danh sách tất cả danh mục con.
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryChildResponseDTO>>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("childs")]
         public async Task<IActionResult> GetAllSubCategories()
         {
@@ -108,6 +115,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục con</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryChildResponseDTO>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("child/{id}")]
         public async Task<IActionResult> GetSubCategoryById(int id)
         {
@@ -121,6 +129,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCon">Mã danh mục con (0 nếu thêm mới)</param>
         /// <param name="subCategoryDto">Thông tin danh mục con</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryChildResponseDTO>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpPost("child/{maDanhMucCon}")]
         public async Task<IActionResult> UpsertSubCategory(int maDanhMucCon, [FromBody] CategoryChildRequestDTO subCategoryDto)
         {
@@ -133,6 +142,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="id">Mã danh mục con</param>
         [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpDelete("child/{id}")]
         public async Task<IActionResult> DeleteSubCategory(int id)
         {
@@ -146,6 +156,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// Lấy danh sách tất cả chi tiết danh mục (liên kết cha, con, sản phẩm).
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryResponseDTO>>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("details")]
         public async Task<IActionResult> GetAllCategoryDetails()
         {
@@ -160,6 +171,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCon">Mã danh mục con</param>
         /// <param name="maSp">Mã sản phẩm</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryDetailResponseDTO>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("detail")]
         public async Task<IActionResult> GetCategoryDetailById(int maDanhMucCha, int maDanhMucCon, int maSp)
         {
@@ -172,6 +184,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="detailDto">Thông tin chi tiết danh mục</param>
         [ProducesResponseType(typeof(ResponseAPI<CategoryDetailResponseDTO>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpPost("detail")]
         public async Task<IActionResult> UpsertCategoryDetail([FromBody] CategoryDetailRequestDTO detailDto)
         {
@@ -186,6 +199,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maDanhMucCon">Mã danh mục con</param>
         /// <param name="maSp">Mã sản phẩm</param>
         [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpDelete("detail")]
         public async Task<IActionResult> DeleteCategoryDetail([FromQuery] int maDanhMucCha, [FromQuery] int maDanhMucCon, [FromQuery] int maSp)
         {
