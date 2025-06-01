@@ -1,5 +1,10 @@
 <template>
-  <div style="margin-top: 90px" class="xp-contentbar">
+  <div style="margin-top: 90px" class="xp-contentbar position-relative">
+    <Overlay
+      :is-visible="isDisabled"
+      overlayContent="Hiện không thể kết nối tới API để quản lý."
+      isCoverPage="true"
+    />
     <!-- Breadcrumb trạng thái -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
@@ -17,6 +22,7 @@
           value="view"
           v-model="focusMode"
           autocomplete="off"
+          :disabled="isDisabled"
         />
         <label class="btn btn-outline-primary" for="mode-view">Xem chi tiết sản phẩm</label>
         <input
@@ -26,6 +32,7 @@
           value="parent"
           v-model="focusMode"
           autocomplete="off"
+          :disabled="isDisabled"
         />
         <label class="btn btn-outline-success" for="mode-parent">Quản lý danh mục cha</label>
         <input
@@ -35,6 +42,7 @@
           value="child"
           v-model="focusMode"
           autocomplete="off"
+          :disabled="isDisabled"
         />
         <label class="btn btn-outline-warning" for="mode-child">Quản lý danh mục con</label>
       </div>
@@ -184,17 +192,23 @@
 </template>
 
 <script>
-import * as axiosConfig from '@/utils/axiosClient'
-import ConfigsRequest from '@/models/ConfigsRequest'
 import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
+import Swal from 'sweetalert2'
+
+import * as axiosConfig from '@/utils/axiosClient'
+import ConfigsRequest from '@/models/ConfigsRequest'
 import * as configsDt from '@/utils/configsDatatable.js'
 import ResponseAPI from '@/models/ResponseAPI'
 import { formatCurrency } from '@/constants/formatCurrency'
+import Overlay from '@/components/common/Overlay.vue'
 
 export default {
   name: 'CategoryIndex',
+  components: {
+    Overlay,
+  },
   data() {
     return {
       listCategories: [],
@@ -220,6 +234,7 @@ export default {
       datatableParent: null,
       datatableChild: null,
       focusMode: 'view',
+      isEndpointActive: axiosConfig.isEndpointAvailable(), // Biến để kiểm tra kết nối API
     }
   },
   computed: {
@@ -234,8 +249,22 @@ export default {
         return matchCha && matchCon
       })
     },
+    isDisabled() {
+      return !this.isEndpointActive
+    },
   },
   async mounted() {
+    // Kiểm tra endpoint trước khi load dữ liệu
+    this.isEndpointActive = await axiosConfig.isEndpointAvailable?.()
+    if (!this.isEndpointActive) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Không có kết nối API',
+        text: 'Không thể kết nối tới máy chủ API. Vui lòng kiểm tra lại kết nối hoặc cấu hình endpoint.',
+        confirmButtonText: 'Đóng',
+      })
+      return
+    }
     await this.getCategories()
     await this.loadOption()
     this.initDataTable()
@@ -637,3 +666,11 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+/* Disable pointer events và opacity khi mất kết nối */
+.xp-contentbar[disabled] {
+  pointer-events: none;
+  opacity: 0.6;
+}
+</style>

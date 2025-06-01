@@ -8,8 +8,6 @@ import Cookies from 'js-cookie' // Import js-cookie
 const API_PATHS = [
   'https://localhost:7217/api', // Cái này là path https của API
   'http://localhost:5031/api', // Cái này là path http của API
-  'http://localhost:5047/api', // Cái này test 1
-  'https://localhost:7436/api', // Cái này test 2
 ]
 
 // Hàm kiểm tra endpoint khả dụng
@@ -48,8 +46,9 @@ async function detectAvailableApi(paths = API_PATHS) {
     'Không tìm thấy API endpoint khả dụng! Vui lòng kiểm tra lại cấu hình hoặc kết nối mạng.',
     'Lỗi kết nối API',
   )
+
   console.error('Không tìm thấy API endpoint khả dụng!')
-  return null // Trả về null nếu không tìm thấy endpoint khả dụng
+  return '' // Trả về chuỗi rỗng nếu không tìm thấy endpoint nào khả dụng
 }
 
 // Khởi tạo axiosClient với baseURL tạm thời
@@ -64,7 +63,7 @@ const axiosClient = axios.create({
 // Hàm khởi tạo baseURL động
 export async function initApiBaseUrl() {
   const url = await detectAvailableApi()
-  axiosClient.defaults.baseURL = url
+  axiosClient.defaults.baseURL = url ?? ''
 }
 
 // Hàm đọc accesstoken (tương tự hàm ReadToken auth.js)
@@ -237,4 +236,15 @@ async function handleCastResponse(callback, castFn) {
     return new ResponseAPI(null, false, error.message)
   }
 }
-export { getFromApi, postToApi, putToApi, patchToApi, deleteFromApi, handleCastResponse }
+function isEndpointAvailable() {
+  return axiosClient.defaults.baseURL !== '' && axiosClient.defaults.baseURL !== null
+}
+export {
+  getFromApi,
+  postToApi,
+  putToApi,
+  patchToApi,
+  deleteFromApi,
+  handleCastResponse,
+  isEndpointAvailable,
+}
