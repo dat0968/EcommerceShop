@@ -21,13 +21,13 @@ namespace APIClothesEcommerceShop.Controllers
             this.ProductRepository = ProductRepository;
         }
         [HttpGet]
-        public async Task<IActionResult> Index(string? search, string? selectedCategory, string? sortByPrice, int page = 1)
+        public async Task<IActionResult> Index(string? search, string? selectedBigCategory, string? selectedSmallCategory, string? sortByPrice, string? filterPrice, int page = 1)
         {
             try
             {
                 page = page < 1 ? 1 : page;
                 int pagesize = 10;
-                var ListProduct = await ProductRepository.GetAll(search, selectedCategory, sortByPrice);
+                var ListProduct = await ProductRepository.GetAll(search, selectedBigCategory, selectedSmallCategory, sortByPrice, filterPrice);
                 var ListProductByPage = ListProduct.Skip((page - 1) * pagesize).Take(pagesize);
                 return Ok(new
                 {

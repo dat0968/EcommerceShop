@@ -1,3 +1,98 @@
+<script setup>
+import { ref, onMounted, nextTick } from 'vue'
+import $ from 'jquery'
+import 'jquery-ui-dist/jquery-ui'
+import { RouterLink } from 'vue-router'
+
+const activeCategory = ref('collapseOne')
+const selectedPriceRange = ref(null)
+const listCategories = ref([])
+const getUrlAPI = ref('https://localhost:7217/api')
+const products = ref([])
+const search = ref('')
+const toTalPages = ref(1)
+const pageSelected = ref(1)
+const categoryBigSelected = ref('')
+const categorySmallSelected = ref('')
+const sortByPrice = ref('')
+const filterPrice = ref('')
+const fetchBigCategories = async () => {
+  const fetchAPI = await fetch(`${getUrlAPI.value}/Categories/GetAllCategories`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  if (!fetchAPI.ok) {
+    throw new Error('Failed to fetch')
+  }
+  const result = await fetchAPI.json()
+  listCategories.value = result.listBigCategories
+}
+const fetchAPIProducts = async () => {
+  try {
+    const response = await fetch(
+      `${getUrlAPI.value}/Shop?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&Category&sortByPrice=${sortByPrice.value}&filterPrice=${filterPrice.value}&page=${pageSelected.value}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+
+    if (!response.ok) throw new Error('Lỗi khi gọi API')
+
+    const result = await response.json()
+    products.value = result.data
+    toTalPages.value = result.toTalPages
+  } catch (error) {
+    console.error('Lỗi fetchAPIProducts:', error)
+  }
+}
+
+// Chuyển trang
+function ChangePage(page) {
+  if (page !== pageSelected.value && page >= 1 && page <= toTalPages.value) {
+    pageSelected.value = page
+    fetchAPIProducts()
+  }
+}
+
+// Lọc danh mục
+function selectedCategory(maDanhMucCon, maDanhMucCha) {
+  if (maDanhMucCon !== categorySmallSelected.value) {
+    categoryBigSelected.value = maDanhMucCha
+    categorySmallSelected.value = maDanhMucCon
+    fetchAPIProducts()
+  }
+}
+
+const priceRanges = [
+  { id: 0, label: 'Tất cả khoảng giá' },
+  { id: 1, label: 'Dưới 300K' },
+  { id: 2, label: '300K - 1 triệu' },
+  { id: 3, label: '1 triệu - 2 triệu' },
+  { id: 4, label: 'Trên 2 triệu' },
+]
+
+const toggleCategory = (categoryId) => {
+  activeCategory.value = activeCategory.value === categoryId ? null : categoryId
+}
+
+const selectPriceRange = (rangeId) => {
+  selectedPriceRange.value = rangeId
+  const range = priceRanges.find((r) => r.id === rangeId)
+  filterPrice.value = range.label
+  fetchAPIProducts()
+}
+
+onMounted(() => {
+  fetchBigCategories()
+  fetchAPIProducts()
+})
+</script>
+
 <template>
   <div>
     <!-- Breadcrumb Begin -->
@@ -22,112 +117,44 @@
           <div class="col-lg-3 col-md-3">
             <div class="shop__sidebar">
               <div class="sidebar__categories">
-                <div class="section-title">
-                  <h4>Loại sản phẩm</h4>
+                <div
+                  style="
+                    border-bottom: 2px solid #e7ab3c;
+                    display: inline-block;
+                    padding-bottom: 5px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                  "
+                >
+                  <h4 style="display: inline-block; margin: 0; font-weight: 600">Loại sản phẩm</h4>
                 </div>
                 <div class="categories__accordion">
                   <div class="accordion" id="accordionExample">
-                    <div class="card">
-                      <div class="card-heading" @click="toggleCategory('collapseOne')">
-                        <a href="javascript:void(0)">Women</a>
+                    <div
+                      class="card"
+                      v-for="category in listCategories"
+                      :key="category.maDanhMucCha"
+                    >
+                      <div class="card-heading" @click="toggleCategory(category.maDanhMucCha)">
+                        <a href="javascript:void(0)">{{ category.tenDanhMucCha }}</a>
                       </div>
                       <div
-                        id="collapseOne"
+                        :id="category.maDanhMucCha"
                         class="collapse"
-                        :class="{ show: activeCategory === 'collapseOne' }"
+                        :class="{ show: activeCategory === category.maDanhMucCha }"
                       >
                         <div class="card-body">
-                          <ul>
-                            <li><a href="#">Coats</a></li>
-                            <li><a href="#">Jackets</a></li>
-                            <li><a href="#">Dresses</a></li>
-                            <li><a href="#">Shirts</a></li>
-                            <li><a href="#">T-shirts</a></li>
-                            <li><a href="#">Jeans</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card">
-                      <div class="card-heading" @click="toggleCategory('collapseTwo')">
-                        <a href="javascript:void(0)">Men</a>
-                      </div>
-                      <div
-                        id="collapseTwo"
-                        class="collapse"
-                        :class="{ show: activeCategory === 'collapseTwo' }"
-                      >
-                        <div class="card-body">
-                          <ul>
-                            <li><a href="#">Coats</a></li>
-                            <li><a href="#">Jackets</a></li>
-                            <li><a href="#">Dresses</a></li>
-                            <li><a href="#">Shirts</a></li>
-                            <li><a href="#">T-shirts</a></li>
-                            <li><a href="#">Jeans</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card">
-                      <div class="card-heading" @click="toggleCategory('collapseThree')">
-                        <a href="javascript:void(0)">Kids</a>
-                      </div>
-                      <div
-                        id="collapseThree"
-                        class="collapse"
-                        :class="{ show: activeCategory === 'collapseThree' }"
-                      >
-                        <div class="card-body">
-                          <ul>
-                            <li><a href="#">Coats</a></li>
-                            <li><a href="#">Jackets</a></li>
-                            <li><a href="#">Dresses</a></li>
-                            <li><a href="#">Shirts</a></li>
-                            <li><a href="#">T-shirts</a></li>
-                            <li><a href="#">Jeans</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card">
-                      <div class="card-heading" @click="toggleCategory('collapseFour')">
-                        <a href="javascript:void(0)">Accessories</a>
-                      </div>
-                      <div
-                        id="collapseFour"
-                        class="collapse"
-                        :class="{ show: activeCategory === 'collapseFour' }"
-                      >
-                        <div class="card-body">
-                          <ul>
-                            <li><a href="#">Coats</a></li>
-                            <li><a href="#">Jackets</a></li>
-                            <li><a href="#">Dresses</a></li>
-                            <li><a href="#">Shirts</a></li>
-                            <li><a href="#">T-shirts</a></li>
-                            <li><a href="#">Jeans</a></li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="card">
-                      <div class="card-heading" @click="toggleCategory('collapseFive')">
-                        <a href="javascript:void(0)">Cosmetic</a>
-                      </div>
-                      <div
-                        id="collapseFive"
-                        class="collapse"
-                        :class="{ show: activeCategory === 'collapseFive' }"
-                      >
-                        <div class="card-body">
-                          <ul>
-                            <li><a href="#">Coats</a></li>
-                            <li><a href="#">Jackets</a></li>
-                            <li><a href="#">Dresses</a></li>
-                            <li><a href="#">Shirts</a></li>
-                            <li><a href="#">T-shirts</a></li>
-                            <li><a href="#">Jeans</a></li>
+                          <ul
+                            v-for="smallcategory in category.chitietdanhmucs"
+                            :key="smallcategory.maDanhMucCon"
+                          >
+                            <li
+                              @click="
+                                selectedCategory(smallcategory.maDanhMucCon, category.maDanhMucCha)
+                              "
+                            >
+                              <a href="#">{{ smallcategory.tenDanhMucCon }}</a>
+                            </li>
                           </ul>
                         </div>
                       </div>
@@ -136,48 +163,25 @@
                 </div>
               </div>
               <div class="sidebar__filter">
-                <div class="section-title">
-                  <h4>Khoảng giá</h4>
+                <div
+                  style="
+                    border-bottom: 2px solid #e7ab3c;
+                    display: inline-block;
+                    padding-bottom: 5px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                  "
+                >
+                  <h4 style="display: inline-block; margin: 0; font-weight: 600">Khoảng giá</h4>
                 </div>
                 <div class="price-buttons">
                   <button
                     v-for="range in priceRanges"
                     :key="range.id"
                     :class="['price-btn', { active: selectedPriceRange === range.id }]"
-                    @click="selectPriceRange(range.id)"
+                    @click="selectPriceRange(range.id, range.label)"
                   >
                     {{ range.label }}
-                  </button>
-                </div>
-              </div>
-              <div class="sidebar__sizes sidebar__box">
-                <div class="section-title">
-                  <h4>Size</h4>
-                </div>
-                <div class="size-buttons">
-                  <button
-                    v-for="size in sizes"
-                    :key="size"
-                    :class="['size-btn', { active: selectedSize === size }]"
-                    @click="selectSize(size)"
-                  >
-                    {{ size }}
-                  </button>
-                </div>
-              </div>
-              <div class="sidebar__color sidebar__box">
-                <div class="section-title">
-                  <h4>Màu</h4>
-                </div>
-                <div class="color-buttons">
-                  <button
-                    v-for="color in colors"
-                    :key="color.value"
-                    :class="['color-btn', { active: selectedColor === color.value }]"
-                    :style="{ background: color.code }"
-                    @click="selectColor(color.value)"
-                  >
-                    <span v-if="selectedColor === color.value" class="color-check">✔</span>
                   </button>
                 </div>
               </div>
@@ -185,13 +189,25 @@
           </div>
           <div class="col-lg-9 col-md-9">
             <div class="row">
-              <div class="col-lg-3 col-md-4 col-sm-6 mix men">
+              <div
+                class="col-lg-3 col-md-4 col-sm-6 mix"
+                v-for="product in products"
+                :key="product.maSp"
+              >
                 <div class="product__item">
                   <div class="product__item__pic">
                     <img
-                      src="@/assets/Customer/img/product/product-2.jpg"
-                      alt="Flowy striped skirt"
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                        product.productDetails[0].images[0].tenHinhAnh
+                      }`"
+                      alt="Hình ảnh sản phẩm"
+                      v-if="
+                        product.productDetails.length > 0 &&
+                        product.productDetails[0].images &&
+                        product.productDetails[0].images.length > 0
+                      "
                     />
+                    <span v-else class="text-muted"> Không có ảnh </span>
                     <ul class="product__hover">
                       <li>
                         <a href="@/assets/Customer/img/product/product-2.jpg" class="image-popup"
@@ -207,225 +223,34 @@
                     </ul>
                   </div>
                   <div class="product__item__text">
-                    <h6><a href="#">Flowy striped skirt</a></h6>
-                    <div class="rating">
+                    <h6>
+                      <RouterLink :to="`/product/${product.maSp}`" style="text-decoration-line: none">
+                        {{ product.tenSanPham }}
+                        <div class="product__price text-muted fw-semibold fs-7 text-danger">
+                          {{ product.khoangGia }}
+                        </div>
+                      </RouterLink>
+                    </h6>
+                    <!-- <div class="rating">
                       <i class="fa fa-star"></i>
                       <i class="fa fa-star"></i>
                       <i class="fa fa-star"></i>
                       <i class="fa fa-star"></i>
                       <i class="fa fa-star"></i>
-                    </div>
-                    <div class="product__price">$ 49.0</div>
+                    </div> -->
                   </div>
                 </div>
               </div>
-              <div class="col-lg-3 col-md-4 col-sm-6 mix accessories">
-                <div class="product__item">
-                  <div class="product__item__pic">
-                    <img src="@/assets/Customer/img/product/product-3.jpg" alt="Cotton T-Shirt" />
-                    <div class="label stockout">out of stock</div>
-                    <ul class="product__hover">
-                      <li>
-                        <a href="@/assets/Customer/img/product/product-3.jpg" class="image-popup"
-                          ><span class="arrow_expand"></span
-                        ></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_heart_alt"></span></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_bag_alt"></span></a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="product__item__text">
-                    <h6><a href="#">Cotton T-Shirt</a></h6>
-                    <div class="rating">
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                    </div>
-                    <div class="product__price">$ 59.0</div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4 col-sm-6 mix cosmetic">
-                <div class="product__item">
-                  <div class="product__item__pic">
-                    <img
-                      src="@/assets/Customer/img/product/product-4.jpg"
-                      alt="Slim striped pocket shirt"
-                    />
-                    <ul class="product__hover">
-                      <li>
-                        <a href="@/assets/Customer/img/product/product-4.jpg" class="image-popup"
-                          ><span class="arrow_expand"></span
-                        ></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_heart_alt"></span></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_bag_alt"></span></a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="product__item__text">
-                    <h6><a href="#">Slim striped pocket shirt</a></h6>
-                    <div class="rating">
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                    </div>
-                    <div class="product__price">$ 59.0</div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4 col-sm-6 mix kid">
-                <div class="product__item">
-                  <div class="product__item__pic">
-                    <img
-                      src="@/assets/Customer/img/product/product-5.jpg"
-                      alt="Fit micro corduroy shirt"
-                    />
-                    <ul class="product__hover">
-                      <li>
-                        <a href="@/assets/Customer/img/product/product-5.jpg" class="image-popup"
-                          ><span class="arrow_expand"></span
-                        ></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_heart_alt"></span></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_bag_alt"></span></a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="product__item__text">
-                    <h6><a href="#">Fit micro corduroy shirt</a></h6>
-                    <div class="rating">
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                    </div>
-                    <div class="product__price">$ 59.0</div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4 col-sm-6 mix women men kid accessories cosmetic">
-                <div class="product__item sale">
-                  <div class="product__item__pic">
-                    <img src="@/assets/Customer/img/product/product-6.jpg" alt="Tropical Kimono" />
-                    <div class="label sale">Sale</div>
-                    <ul class="product__hover">
-                      <li>
-                        <a href="@/assets/Customer/img/product/product-6.jpg" class="image-popup"
-                          ><span class="arrow_expand"></span
-                        ></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_heart_alt"></span></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_bag_alt"></span></a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="product__item__text">
-                    <h6><a href="#">Tropical Kimono</a></h6>
-                    <div class="rating">
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                    </div>
-                    <div class="product__price">$ 49.0 <span>$ 59.0</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4 col-sm-6 mix women men kid accessories cosmetic">
-                <div class="product__item">
-                  <div class="product__item__pic">
-                    <img
-                      src="@/assets/Customer/img/product/product-7.jpg"
-                      alt="Contrasting sunglasses"
-                    />
-                    <ul class="product__hover">
-                      <li>
-                        <a href="@/assets/Customer/img/product/product-7.jpg" class="image-popup"
-                          ><span class="arrow_expand"></span
-                        ></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_heart_alt"></span></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_bag_alt"></span></a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="product__item__text">
-                    <h6><a href="#">Contrasting sunglasses</a></h6>
-                    <div class="rating">
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                    </div>
-                    <div class="product__price">$ 59.0</div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-4 col-sm-6 mix women men kid accessories cosmetic">
-                <div class="product__item sale">
-                  <div class="product__item__pic">
-                    <img
-                      src="@/assets/Customer/img/product/product-8.jpg"
-                      alt="Water resistant backpack"
-                    />
-                    <div class="label">Sale</div>
-                    <ul class="product__hover">
-                      <li>
-                        <a href="@/assets/Customer/img/product/product-8.jpg" class="image-popup"
-                          ><span class="arrow_expand"></span
-                        ></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_heart_alt"></span></a>
-                      </li>
-                      <li>
-                        <a href="#"><span class="icon_bag_alt"></span></a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="product__item__text">
-                    <h6><a href="#">Water resistant backpack</a></h6>
-                    <div class="rating">
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                      <i class="fa fa-star"></i>
-                    </div>
-                    <div class="product__price">$ 49.0 <span>$ 59.0</span></div>
-                  </div>
-                </div>
+              <div v-if="products.length === 0">
+                <p style="text-align: center">Không có sản phẩm</p>
               </div>
               <div class="col-lg-12 text-center">
                 <div class="pagination__option">
-                  <a href="#">1</a>
-                  <a href="#">2</a>
-                  <a href="#">3</a>
-                  <a href="#"><i class="fa fa-angle-right"></i></a>
+                  <a @click="ChangePage(1)" href="#"><i class="fa fa-angle-left"></i></a>
+                  <a @click="ChangePage(page)" v-for="page in toTalPages" :key="page" href="#">{{
+                    page
+                  }}</a>
+                  <a @click="ChangePage(toTalPages)" href="#"><i class="fa fa-angle-right"></i></a>
                 </div>
               </div>
             </div>
@@ -436,75 +261,6 @@
     <!-- Shop Section End -->
   </div>
 </template>
-
-<script>
-import $ from 'jquery'
-import 'jquery-ui-dist/jquery-ui'
-
-export default {
-  data() {
-    return {
-      activeCategory: 'collapseOne',
-      selectedPriceRange: null,
-      priceRanges: [
-        { id: 1, label: 'Dưới 500K', min: 0, max: 500000 },
-        { id: 2, label: '500K - 1 triệu', min: 500000, max: 1000000 },
-        { id: 3, label: '1 triệu - 2 triệu', min: 1000000, max: 2000000 },
-        { id: 4, label: 'Trên 2 triệu', min: 2000000, max: 100000000 },
-      ],
-      sizes: ['XXS', 'XS', 'XS-S', 'S', 'M', 'M-L', 'L', 'XL'],
-      selectedSize: null,
-      colors: [
-        { value: 'black', code: '#222' },
-        { value: 'white', code: '#fff' },
-        { value: 'red', code: '#e74c3c' },
-        { value: 'grey', code: '#888' },
-        { value: 'blue', code: '#3498db' },
-        { value: 'beige', code: '#f5e6ca' },
-        { value: 'green', code: '#27ae60' },
-        { value: 'yellow', code: '#f1c40f' },
-      ],
-      selectedColor: null,
-    }
-  },
-  mounted() {
-    this.$nextTick(() => {
-      this.initPriceRange()
-    })
-  },
-  methods: {
-    toggleCategory(categoryId) {
-      this.activeCategory = this.activeCategory === categoryId ? null : categoryId
-    },
-    initPriceRange() {
-      const self = this
-      if (this.$refs.priceRange) {
-        $(this.$refs.priceRange).slider({
-          range: true,
-          min: 33,
-          max: 99,
-          values: [33, 99],
-          slide: function (event, ui) {
-            self.minPrice = ui.values[0]
-            self.maxPrice = ui.values[1]
-          },
-        })
-      }
-    },
-    selectPriceRange(rangeId) {
-      this.selectedPriceRange = rangeId
-      const range = this.priceRanges.find((r) => r.id === rangeId)
-      console.log('Khoảng giá đã chọn:', range)
-    },
-    selectSize(size) {
-      this.selectedSize = size
-    },
-    selectColor(color) {
-      this.selectedColor = color
-    },
-  },
-}
-</script>
 
 <style>
 .product__item__pic {

@@ -28,6 +28,7 @@ using APIClothesEcommerceShop.Repositories.Account;
 using Humanizer.Configuration;
 using VNPAY.NET;
 using APIClothesEcommerceShop.Repositories.DbInitializer;
+using APIClothesEcommerceShop.Repositories.Home;
 using APIClothesEcommerceShop.Services.EmailService.GoogleSenderService;
 using APIClothesEcommerceShop.Services.EmailService;
 
@@ -127,6 +128,7 @@ builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
+builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 #endregion
 
 #region [Dependency Injection cho các service]

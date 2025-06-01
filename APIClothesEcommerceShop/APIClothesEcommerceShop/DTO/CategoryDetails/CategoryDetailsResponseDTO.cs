@@ -5,7 +5,7 @@ namespace APIClothesEcommerceShop.DTO.CategoryDetails
     public class CategoryDetailsResponseDTO
     {
         public int MaDanhMucCha { get; set; }
-
         public int MaDanhMucCon { get; set; }
+        public string TenDanhMucCon { get; set;}
     }
 }

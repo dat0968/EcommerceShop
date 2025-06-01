@@ -37,6 +37,7 @@ namespace APIClothesEcommerceShop.Services
                 var NewProduct = new Sanpham
                 {
                     TenSanPham = model.TenSanPham,
+                    NgayTao = DateTime.Now,
                     IsActive = true,
                 };
                 NewProduct = await productRepository.Add(NewProduct);
@@ -105,6 +106,7 @@ namespace APIClothesEcommerceShop.Services
                 {
                     MaSp = id,
                     TenSanPham = model.TenSanPham,
+                    NgayTao = DateTime.Now,
                     MoTa = model.MoTa,
                     IsActive = true,
                 };

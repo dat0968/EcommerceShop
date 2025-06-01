@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250529114839_addColumnNgayTao_LuotXem_SanPham")]
+    partial class addColumnNgayTao_LuotXem_SanPham
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,92 +24,6 @@ namespace APIClothesEcommerceShop.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
-                {
-                    b.Property<int>("MaSp")
-                        .HasColumnType("int")
-                        .HasColumnName("MaSP");
-
-                    b.Property<int>("MaCombo")
-                        .HasColumnType("int");
-
-                    b.Property<bool?>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<int>("MaComboNavigationMaCombo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaSpNavigationMaSp")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("NgayBatDau")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("NgayKetThuc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("PhanTramGiam")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SoLuong")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SoTienGiam")
-                        .HasColumnType("int");
-
-                    b.HasKey("MaSp", "MaCombo");
-
-                    b.HasIndex("MaComboNavigationMaCombo");
-
-                    b.HasIndex("MaSpNavigationMaSp");
-
-                    b.ToTable("CHITIETCOMBO", (string)null);
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(54)
-                        .HasColumnType("nvarchar(54)");
-
-                    b.Property<string>("HoTen")
-                        .HasMaxLength(54)
-                        .HasColumnType("nvarchar(54)");
-
-                    b.Property<int>("IdKhachHang")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdSanPham")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("NgayBinhLuan")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NoiDung")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("ParentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdKhachHang");
-
-                    b.HasIndex("IdSanPham");
-
-                    b.ToTable("BINHLUAN", (string)null);
-                });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombohoadon", b =>
                 {
@@ -302,48 +219,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasIndex("MaHd");
 
                     b.ToTable("CTHOADON", (string)null);
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.DanhGia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(54)
-                        .HasColumnType("nvarchar(54)");
-
-                    b.Property<string>("HoTen")
-                        .HasMaxLength(54)
-                        .HasColumnType("nvarchar(54)");
-
-                    b.Property<int>("IdKhachHang")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdSanPham")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("NgayDanhGia")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NoiDung")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("SoSao")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdKhachHang");
-
-                    b.HasIndex("IdSanPham");
-
-                    b.ToTable("DANHGIA", (string)null);
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Danhmuccha", b =>
@@ -858,75 +733,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.ToTable("SANPHAM", (string)null);
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
-                        .WithMany("Chitietcombos")
-                        .HasForeignKey("MaComboNavigationMaCombo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "MaSpNavigation")
-                        .WithMany("Chitietcombos")
-                        .HasForeignKey("MaSpNavigationMaSp")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MaComboNavigation");
-
-                    b.Navigation("MaSpNavigation");
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.YeuThich", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("DaThich")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("DanhGiaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdDanhGia")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdKhachHang")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DanhGiaId");
-
-                    b.HasIndex("IdDanhGia");
-
-                    b.HasIndex("IdKhachHang");
-
-                    b.ToTable("YEUTHICH", (string)null);
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "Khachhang")
-                        .WithMany()
-                        .HasForeignKey("IdKhachHang")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "SanPham")
-                        .WithMany()
-                        .HasForeignKey("IdSanPham")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Khachhang");
-
-                    b.Navigation("SanPham");
-                });
-
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombohoadon", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
@@ -1015,25 +821,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaCtspNavigation");
 
                     b.Navigation("MaHdNavigation");
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.DanhGia", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "Khachhang")
-                        .WithMany()
-                        .HasForeignKey("IdKhachHang")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "SanPham")
-                        .WithMany()
-                        .HasForeignKey("IdSanPham")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Khachhang");
-
-                    b.Navigation("SanPham");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Giohang", b =>
@@ -1127,29 +914,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaChucVuNavigation");
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.YeuThich", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", null)
-                        .WithMany("YeuThichs")
-                        .HasForeignKey("DanhGiaId");
-
-                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", "DanhGia")
-                        .WithMany()
-                        .HasForeignKey("IdDanhGia")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "KhachHang")
-                        .WithMany()
-                        .HasForeignKey("IdKhachHang")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DanhGia");
-
-                    b.Navigation("KhachHang");
-                });
-
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietsanpham", b =>
                 {
                     b.Navigation("Chitietcombohoadons");
@@ -1172,16 +936,9 @@ namespace APIClothesEcommerceShop.Migrations
                 {
                     b.Navigation("Chitietcombohoadons");
 
-                    b.Navigation("Chitietcombos");
-
                     b.Navigation("Cthoadons");
 
                     b.Navigation("Giohangs");
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.DanhGia", b =>
-                {
-                    b.Navigation("YeuThichs");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Danhmuccha", b =>
@@ -1225,8 +982,6 @@ namespace APIClothesEcommerceShop.Migrations
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Sanpham", b =>
                 {
-                    b.Navigation("Chitietcombos");
-
                     b.Navigation("Chitietdanhmucs");
 
                     b.Navigation("Chitietsanphams");
