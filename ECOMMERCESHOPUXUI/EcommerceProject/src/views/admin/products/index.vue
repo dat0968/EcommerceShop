@@ -5,7 +5,8 @@ import EditProductModel from '../products/edit.vue'
 import DetailProductModel from '../products/details.vue'
 import Swal from 'sweetalert2'
 const search = ref('')
-const selectedCategory = ref('')
+const categoryBigSelected = ref('')
+const categorySmallSelected = ref('')
 const sortByPrice = ref('')
 const getUrlAPI = ref('https://localhost:7217/api')
 const products = ref([])
@@ -34,7 +35,7 @@ const fetchAPICategories = async () => {
 const fetchAPIProducts = async () => {
   try {
     const response = await fetch(
-      `${getUrlAPI.value}/Products?search=${search.value}&selectedCategory=${selectedCategory.value}&sortByPrice=${sortByPrice.value}&page=${pageSelected.value}`,
+      `${getUrlAPI.value}/Products?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&sortByPrice=${sortByPrice.value}&page=${pageSelected.value}`,
       {
         method: 'GET',
         headers: {
@@ -56,15 +57,13 @@ onMounted(() => {
   fetchAPIProducts()
   fetchAPICategories()
 })
-watch(pageSelected.value, () => {
-  fetchAPIProducts()
-})
 
 
 // Chuyển trang
 function ChangePage(page) {
   if (page !== pageSelected.value && page >= 1 && page <= toTalPages.value) {
     pageSelected.value = page
+    fetchAPIProducts()
   }
 }
 
@@ -128,7 +127,7 @@ async function RemoveProducts(productid) {
         />
       </div>
       <div class="col-md-4">
-        <select @change="filterProducts()" v-model="selectedCategory" class="form-select">
+        <select @change="filterProducts()" v-model="categoryBigSelected" class="form-select">
           <option value="">Tất cả danh mục</option>
           <option
             v-for="category in listBigCategories"

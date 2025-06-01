@@ -187,6 +187,10 @@ async function updateProduct() {
         })),
       }))
       for (const file of mainImages.value) {
+        if (!file || file.size === 0) {
+          Swal.fire('Tệp ảnh không hợp lệ hoặc đã bị xóa', '', 'error')
+          return
+        }
         const formData = new FormData()
         formData.append('file', file)
         const responseImage = await fetch(getUrlAPI.value + '/UploadImages', {
@@ -196,6 +200,7 @@ async function updateProduct() {
         if (!responseImage.ok) {
           throw new Error(`Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`)
         }
+        mainImages.value = [];
       }
     }
     // Validate cho sản phẩm có biến thể

@@ -1,4 +1,6 @@
 ﻿using APIClothesEcommerceShop.Data;
+using APIClothesEcommerceShop.DTO.Category;
+using APIClothesEcommerceShop.DTO.CategoryDetails;
 using APIClothesEcommerceShop.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,12 +13,32 @@ namespace APIClothesEcommerceShop.Repositories.Category
         {
             this.db = db;
         }
-        public async Task<List<Danhmuccha>> GetAllBigCategories()
+        public async Task<List<CategoryResponseDTO>> GetAllBigCategories()
         {
             try
             {
-                var GetBigCategories = await db.Danhmucchas.AsNoTracking().ToListAsync();
-                return GetBigCategories;
+                var GetBigCategories = await db.Danhmucchas
+                .Include(p => p.Chitietdanhmucs)
+                .ThenInclude(p => p.MaDanhMucConNavigation)
+                .AsNoTracking()
+                .ToListAsync();
+
+
+                var result = GetBigCategories.Select(d => new CategoryResponseDTO
+                {
+                    MaDanhMucCha = d.MaDanhMucCha,
+                    TenDanhMucCha = d.TenDanhMucCha,
+                    Chitietdanhmucs = d.Chitietdanhmucs
+                    .GroupBy(ct => ct.MaDanhMucCon)
+                    .Select(g => g.First())
+                    .Select(ct => new CategoryDetailsResponseDTO
+                    {
+                        MaDanhMucCha = ct.MaDanhMucCha,
+                        MaDanhMucCon = ct.MaDanhMucCon,
+                        TenDanhMucCon = ct.MaDanhMucConNavigation.TenDanhMucCon,
+                    }).ToList()
+                }).ToList();
+                return result;
             }
             catch (Exception ex)
             {
@@ -35,6 +57,11 @@ namespace APIClothesEcommerceShop.Repositories.Category
             {
                 throw new Exception("Error", ex);
             }
+        }
+
+        public Task<List<Danhmuccha>> GetCategories()
+        {
+            throw new NotImplementedException();
         }
     }
 }

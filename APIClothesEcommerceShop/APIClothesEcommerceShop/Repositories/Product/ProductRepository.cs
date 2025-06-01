@@ -50,7 +50,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
             }
         }
 
-        public async Task<List<ProductResponseDTO>> GetAll(string? search, string? selectedCategory, string? sortByPrice)
+        public async Task<List<ProductResponseDTO>> GetAll(string? search, string? selectedBigCategory, string? selectedSmallCategory, string? sortByPrice, string? filterPrice)
         {
             try
             {
@@ -67,6 +67,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                         : "Chưa có giá",
                         SoLuong = p.Chitietsanphams.Where(p => p.IsActive == true).Sum(p => p.SoLuongTon),
                         MoTa = p.MoTa,
+                        NgayTao = p.NgayTao,
                         HasVariants = p.Chitietsanphams.Where(p => p.IsActive == true && (string.IsNullOrEmpty(p.MauSac) == true && string.IsNullOrEmpty(p.KichThuoc) == true)).Count() > 0 ? false : true,
                         CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
                         {
@@ -92,10 +93,15 @@ namespace APIClothesEcommerceShop.Repositories.Product
                 {
                     GetProduct = GetProduct.Where(p => p.MaSp.ToString().Contains(search) || p.TenSanPham.ToLower().Contains(search.ToLower())).ToList();
                 }
-                if (!string.IsNullOrEmpty(selectedCategory))
+                if (!string.IsNullOrEmpty(selectedBigCategory))
                 {
                     GetProduct = GetProduct.Where(p => p.CategoryDetails.Any(cd =>
-                    cd.MaDanhMucCha.ToString().Contains(selectedCategory))).ToList();
+                    cd.MaDanhMucCha.ToString().Contains(selectedBigCategory))).ToList();
+                }
+                if (!string.IsNullOrEmpty(selectedSmallCategory))
+                {
+                    GetProduct = GetProduct.Where(p => p.CategoryDetails.Any(cd =>
+                    cd.MaDanhMucCon.ToString().Contains(selectedSmallCategory))).ToList();
                 }
                 if (!string.IsNullOrEmpty(sortByPrice))
                 {
@@ -108,6 +114,26 @@ namespace APIClothesEcommerceShop.Repositories.Product
                         GetProduct = GetProduct.OrderByDescending(p => p.ProductDetails.Any() ? p.ProductDetails.Min(ct => ct.DonGia) : 0).ToList();
                     }
                 }
+                switch (filterPrice?.ToLower())
+                {
+                    case "dưới 300k":
+                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) < 300000).ToList();
+                        break;
+                    case "300k - 1 triệu":
+                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) >= 300000 && p.ProductDetails.Max(ct => ct.DonGia) <= 1000000).ToList();
+                        break;
+                    case "1 triệu - 2 triệu":
+                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) >= 1000000 && p.ProductDetails.Max(ct => ct.DonGia) <= 2000000).ToList();
+                        break;
+                    case "trên 2 triệu":
+                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) >= 2000000).ToList();
+                        break;
+                    default:
+                        GetProduct = GetProduct.ToList();
+                        break;
+                }
+
+
                 return GetProduct;
             }catch(Exception ex)
             {
@@ -119,31 +145,11 @@ namespace APIClothesEcommerceShop.Repositories.Product
         {
             try
             {
-                var GetProductById = await db.Sanphams.AsNoTracking().FirstOrDefaultAsync(p => p.IsActive == true && p.MaSp == id);
-                //var GetProductById = await db.Sanphams.AsNoTracking().FirstOrDefaultAsync(p => p.IsActive == true && p.MaSp == id).Select(p => new ProductResponseDTO
-                //{
-                //    MaSp = p.MaSp,
-                //    TenSanPham = p.TenSanPham,
-                //    MoTa = p.MoTa,
-                //    CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
-                //    {
-                //        MaDanhMucCha = p.MaDanhMucCha,
-                //        MaDanhMucCon = p.MaDanhMucCon
-                //    }).ToList(),
-                //    ProductDetails = p.Chitietsanphams.Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
-                //    {
-                //        MaCtsp = p.MaCtsp,
-                //        KichThuoc = p.KichThuoc,
-                //        MauSac = p.MauSac,
-                //        SoLuongTon = p.SoLuongTon,
-                //        DonGia = p.DonGia,
-                //        Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
-                //        {
-                //            MaCtsp = p.MaCtsp,
-                //            TenHinhAnh = p.TenHinhAnh
-                //        }).ToList(),
-                //    }).ToList(),
-                //});
+                var GetProductById = await db.Sanphams.AsNoTracking()
+                    .Include(p => p.Chitietdanhmucs)
+                    .Include(p => p.Chitietsanphams)
+                    .ThenInclude(p => p.Hinhanhs)
+                    .FirstOrDefaultAsync(p => p.IsActive == true && p.MaSp == id);
                 if (GetProductById == null)
                 {
                     throw new Exception("Not Found Product");
@@ -153,6 +159,8 @@ namespace APIClothesEcommerceShop.Repositories.Product
                     MaSp = GetProductById.MaSp,
                     TenSanPham = GetProductById.TenSanPham,
                     MoTa = GetProductById.MoTa,
+                    NgayTao = GetProductById.NgayTao,
+                    LuotXem = GetProductById.LuotXem,
                     CategoryDetails = GetProductById.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
                     {
                         MaDanhMucCha = p.MaDanhMucCha,
@@ -184,9 +192,15 @@ namespace APIClothesEcommerceShop.Repositories.Product
         {
             try
             {
-                db.Sanphams.Update(model);
+                var findProduct = db.Sanphams.Local.FirstOrDefault(p => p.MaSp == model.MaSp) ?? await db.Sanphams.FirstOrDefaultAsync(p => p.MaSp == model.MaSp);
+                if (findProduct == null)
+                {
+                    throw new Exception("Sản phẩm không tồn tại");
+                }
+                db.Entry(findProduct).CurrentValues.SetValues(model);
+                //db.Sanphams.Update(model);
                 await db.SaveChangesAsync();
-                return model;
+                return findProduct;
             }
             catch (Exception ex)
             {

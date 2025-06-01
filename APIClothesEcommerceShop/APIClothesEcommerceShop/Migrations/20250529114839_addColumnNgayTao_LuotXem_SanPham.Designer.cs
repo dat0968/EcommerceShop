@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250529114839_addColumnNgayTao_LuotXem_SanPham")]
+    partial class addColumnNgayTao_LuotXem_SanPham
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,50 +24,6 @@ namespace APIClothesEcommerceShop.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
-                {
-                    b.Property<int>("MaSp")
-                        .HasColumnType("int")
-                        .HasColumnName("MaSP");
-
-                    b.Property<int>("MaCombo")
-                        .HasColumnType("int");
-
-                    b.Property<bool?>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
-                    b.Property<int>("MaComboNavigationMaCombo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaSpNavigationMaSp")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("NgayBatDau")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("NgayKetThuc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("PhanTramGiam")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SoLuong")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SoTienGiam")
-                        .HasColumnType("int");
-
-                    b.HasKey("MaSp", "MaCombo");
-
-                    b.HasIndex("MaComboNavigationMaCombo");
-
-                    b.HasIndex("MaSpNavigationMaSp");
-
-                    b.ToTable("CHITIETCOMBO", (string)null);
-                });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombohoadon", b =>
                 {
@@ -774,25 +733,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.ToTable("SANPHAM", (string)null);
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
-                        .WithMany("Chitietcombos")
-                        .HasForeignKey("MaComboNavigationMaCombo")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "MaSpNavigation")
-                        .WithMany("Chitietcombos")
-                        .HasForeignKey("MaSpNavigationMaSp")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MaComboNavigation");
-
-                    b.Navigation("MaSpNavigation");
-                });
-
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombohoadon", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
@@ -996,8 +936,6 @@ namespace APIClothesEcommerceShop.Migrations
                 {
                     b.Navigation("Chitietcombohoadons");
 
-                    b.Navigation("Chitietcombos");
-
                     b.Navigation("Cthoadons");
 
                     b.Navigation("Giohangs");
@@ -1044,8 +982,6 @@ namespace APIClothesEcommerceShop.Migrations
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Sanpham", b =>
                 {
-                    b.Navigation("Chitietcombos");
-
                     b.Navigation("Chitietdanhmucs");
 
                     b.Navigation("Chitietsanphams");

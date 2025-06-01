@@ -430,6 +430,16 @@ public partial class EcommerceShopContext : DbContext
             entity.Property(e => e.TenSanPham).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<Chitietcombo>(entity =>
+        {
+            entity.HasKey(e => new { e.MaSp, e.MaCombo });
+
+            entity.ToTable("CHITIETCOMBO");
+
+            entity.Property(e => e.MaSp).HasColumnName("MaSP");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
         OnModelCreatingPartial(modelBuilder);
     }
 
