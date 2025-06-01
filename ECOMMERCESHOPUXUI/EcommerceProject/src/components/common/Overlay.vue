@@ -8,12 +8,12 @@ Cách dùng 2: Overlay che phủ toàn trang
 <Overlay :is-visible="true" :is-cover-page="true" overlay-content="Đang tải dữ liệu..." />
 -->
 <template>
-  <div :class="['overlay', overlayClass]" v-if="isVisible">
+  <div :class="['overlay', overlayClass]" v-if="isVisible" style="z-index: 1">
     <div class="content" v-if="!imageSrc && !overlayContent">
       <p>Không có nội dung hiển thị.</p>
     </div>
     <div class="content" v-if="overlayContent">
-      <p>{{ overlayContent }}</p>
+      <h5>{{ overlayContent }}</h5>
     </div>
     <img v-if="imageSrc" :src="imageSrc" alt="Overlay image" class="overlay-image" />
   </div>

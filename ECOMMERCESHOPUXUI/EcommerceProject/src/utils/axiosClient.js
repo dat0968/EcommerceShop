@@ -49,7 +49,8 @@ async function detectAvailableApi(paths = API_PATHS) {
     'Lỗi kết nối API',
   )
 
-  throw new Error('Không tìm thấy API endpoint khả dụng!')
+  console.error('Không tìm thấy API endpoint khả dụng!')
+  return '' // Trả về chuỗi rỗng nếu không tìm thấy endpoint nào khả dụng
 }
 
 // Khởi tạo axiosClient với baseURL tạm thời
@@ -64,7 +65,7 @@ const axiosClient = axios.create({
 // Hàm khởi tạo baseURL động
 export async function initApiBaseUrl() {
   const url = await detectAvailableApi()
-  axiosClient.defaults.baseURL = url
+  axiosClient.defaults.baseURL = url ?? ''
 }
 
 // Hàm đọc accesstoken (tương tự hàm ReadToken auth.js)
@@ -237,4 +238,15 @@ async function handleCastResponse(callback, castFn) {
     return new ResponseAPI(null, false, error.message)
   }
 }
-export { getFromApi, postToApi, putToApi, patchToApi, deleteFromApi, handleCastResponse }
+function isEndpointAvailable() {
+  return axiosClient.defaults.baseURL !== '' && axiosClient.defaults.baseURL !== null
+}
+export {
+  getFromApi,
+  postToApi,
+  putToApi,
+  patchToApi,
+  deleteFromApi,
+  handleCastResponse,
+  isEndpointAvailable,
+}
