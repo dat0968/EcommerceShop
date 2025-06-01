@@ -174,11 +174,8 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error(`API Error: ${error.response.status}`, error.response.data)
-
-      // Ném lỗi để các promise khác có thể bắt được
-      throw new Error(error.response?.data?.message ?? 'Lỗi không xác định từ API.')
     }
-    throw error
+    return error.response
   },
 )
 
@@ -186,6 +183,7 @@ axiosClient.interceptors.response.use(
 const handleResponse = async (callback) => {
   try {
     const result = await callback()
+    console.log(result)
     return new ResponseAPI(result)
   } catch (error) {
     return new ResponseAPI(null, false, error.message)

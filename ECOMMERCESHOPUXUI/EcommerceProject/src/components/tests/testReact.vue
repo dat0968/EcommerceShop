@@ -2,7 +2,7 @@
   <div>
     <!-- Nút mở modal, đặt absolute góc trái -->
     <button
-      class="btn btn-primary position-absolute"
+      class="btn btn-primary position-fixed"
       style="bottom: 30px; left: 20px; z-index: 1050"
       @click="showModal = true"
     >
@@ -43,9 +43,9 @@
             <div class="col-md-7 mb-3" style="min-width: 250px">
               <h5>Nội dung chính</h5>
               <div style="max-height: 200px; overflow-y: auto">
-                <pre
-                  >{{ productData }}
-                </pre>
+                <code>
+                  <pre>{{ productData }} </pre>
+                </code>
               </div>
             </div>
             <!-- Cột phụ -->
@@ -55,16 +55,23 @@
                 <div class="col-12 mb-3">
                   <h6>Nội dung phụ</h6>
                   <div style="max-height: 80px; overflow-y: auto">
-                    <pre>{{ reviewProduct }}</pre>
+                    <code class="language-js line-numbers" data-prismjs-copy="Copy">
+                      <pre>
+                      {{ reviewProduct }}
+                    </pre
+                      >
+                    </code>
                   </div>
                 </div>
                 <!-- Đánh giá -->
                 <div class="col-12">
                   <h6>Đánh giá</h6>
                   <div style="max-height: 80px; overflow-y: auto">
-                    <pre>
-                        {{ commentsProduct }}
-                    </pre>
+                    <code>
+                      <pre>
+                          {{ commentsProduct }}
+                      </pre>
+                    </code>
                   </div>
                 </div>
               </div>

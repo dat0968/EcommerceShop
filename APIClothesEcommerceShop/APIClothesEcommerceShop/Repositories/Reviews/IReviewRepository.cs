@@ -7,12 +7,12 @@ using APIClothesEcommerceShop.Repositories.Repository;
 
 namespace APIClothesEcommerceShop.Repositories.Reviews
 {
-    public interface IReviewRepository : IRepository<BinhLuan>
+    public interface IReviewRepository : IRepository<DanhGia>
     {
-        Task<IEnumerable<BinhLuan>> GetReviewsByProductIdAsync(int productId);
-        Task<BinhLuan> GetReviewByIdAsync(int reviewId);
-        Task AddReviewAsync(BinhLuan review);
-        Task UpdateReviewAsync(BinhLuan review);
+        Task<IEnumerable<DanhGia>> GetReviewsByProductIdAsync(int productId);
+        Task<DanhGia> GetReviewByIdAsync(int reviewId);
+        Task AddReviewAsync(DanhGia review);
+        Task UpdateReviewAsync(DanhGia review);
         Task DeleteReviewAsync(int reviewId);
     }
 }

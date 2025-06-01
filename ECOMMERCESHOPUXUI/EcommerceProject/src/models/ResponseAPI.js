@@ -7,6 +7,7 @@ class ResponseAPI {
       success: false,
       message: 'Phản hồi không xác định',
       data: null,
+      errors: [],
     },
   ) {
     // console.log(callBackResult)
@@ -15,6 +16,7 @@ class ResponseAPI {
     this.success = callBackResult?.success || false // Trạng thái thành công/chưa thành công
     this.message = callBackResult?.message || 'Phản hồi không xác định' // Thông báo phản hồi từ backend
     this.data = callBackResult?.data || null // Payload dữ liệu trả về từ backend
+    this.errors = callBackResult?.errors || [] // Danh sách lỗi nếu có
   }
 
   static empty() {
@@ -23,6 +25,7 @@ class ResponseAPI {
       success: false,
       message: 'Phản hồi rỗng',
       data: null,
+      errors: [],
     })
   }
 
@@ -33,6 +36,7 @@ class ResponseAPI {
       success: json?.success || false,
       message: json?.message || '',
       data: json?.data || null,
+      errors: json?.errors || [],
     })
   }
 

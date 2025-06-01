@@ -9,11 +9,11 @@ using APIClothesEcommerceShop.Repositories.Repository;
 
 namespace APIClothesEcommerceShop.Repositories.Reviews
 {
-    public class ReviewRepository(EcommerceShopContext db) : Repository<BinhLuan>(db), IReviewRepository
+    public class ReviewRepository(EcommerceShopContext db) : Repository<DanhGia>(db), IReviewRepository
     {
         private readonly EcommerceShopContext _db = db;
 
-        public Task AddReviewAsync(BinhLuan review)
+        public Task AddReviewAsync(DanhGia review)
         {
             throw new NotImplementedException();
         }
@@ -24,17 +24,17 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         }
 
 
-        public Task<BinhLuan> GetReviewByIdAsync(int reviewId)
+        public Task<DanhGia> GetReviewByIdAsync(int reviewId)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<BinhLuan>> GetReviewsByProductIdAsync(int productId)
+        public Task<IEnumerable<DanhGia>> GetReviewsByProductIdAsync(int productId)
         {
             throw new NotImplementedException();
         }
 
-        public Task UpdateReviewAsync(BinhLuan review)
+        public Task UpdateReviewAsync(DanhGia review)
         {
             throw new NotImplementedException();
         }
