@@ -8,8 +8,6 @@ import Cookies from 'js-cookie' // Import js-cookie
 const API_PATHS = [
   'https://localhost:7217/api', // Cái này là path https của API
   'http://localhost:5031/api', // Cái này là path http của API
-  'http://localhost:5047/api', // Cái này test 1
-  'https://localhost:7436/api', // Cái này test 2
 ]
 
 // Hàm kiểm tra endpoint khả dụng
