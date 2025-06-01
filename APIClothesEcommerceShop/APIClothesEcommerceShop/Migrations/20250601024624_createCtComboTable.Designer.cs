@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250601024624_createCtComboTable")]
+    partial class createCtComboTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,8 +25,6 @@ namespace APIClothesEcommerceShop.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
                 {
                     b.Property<int>("MaSp")
@@ -68,49 +69,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.ToTable("CHITIETCOMBO", (string)null);
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(54)
-                        .HasColumnType("nvarchar(54)");
-
-                    b.Property<string>("HoTen")
-                        .HasMaxLength(54)
-                        .HasColumnType("nvarchar(54)");
-
-                    b.Property<int>("IdKhachHang")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdSanPham")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("NgayBinhLuan")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NoiDung")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("ParentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IdKhachHang");
-
-                    b.HasIndex("IdSanPham");
-
-                    b.ToTable("BINHLUAN", (string)null);
-                });
-
->>>>>>> a52e198 (feat: Enhance Product Details and Shop Views)
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombohoadon", b =>
                 {
                     b.Property<int>("MaHd")
@@ -697,8 +655,10 @@ namespace APIClothesEcommerceShop.Migrations
                         .IsRequired()
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
+
                     b.Property<string>("HinhDaiDien")
                         .HasColumnType("text");
+
                     b.Property<string>("HoTen")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -757,8 +717,11 @@ namespace APIClothesEcommerceShop.Migrations
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Refreshtoken", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("ExpiredAt")
                         .HasColumnType("datetime");
@@ -814,8 +777,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.ToTable("SANPHAM", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
@@ -835,57 +796,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaSpNavigation");
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.YeuThich", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("DaThich")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("DanhGiaId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdDanhGia")
-                        .HasColumnType("int");
-
-                    b.Property<int>("IdKhachHang")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DanhGiaId");
-
-                    b.HasIndex("IdDanhGia");
-
-                    b.HasIndex("IdKhachHang");
-
-                    b.ToTable("YEUTHICH", (string)null);
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "Khachhang")
-                        .WithMany()
-                        .HasForeignKey("IdKhachHang")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "SanPham")
-                        .WithMany()
-                        .HasForeignKey("IdSanPham")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Khachhang");
-
-                    b.Navigation("SanPham");
-                });
-
->>>>>>> a52e198 (feat: Enhance Product Details and Shop Views)
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombohoadon", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")

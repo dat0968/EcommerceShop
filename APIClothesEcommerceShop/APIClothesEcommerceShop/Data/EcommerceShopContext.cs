@@ -430,6 +430,31 @@ public partial class EcommerceShopContext : DbContext
             entity.Property(e => e.TenSanPham).HasMaxLength(100);
         });
 
+<<<<<<< HEAD
+=======
+        modelBuilder.Entity<Chitietcombo>(entity =>
+        {
+            entity.HasKey(e => new { e.MaSp, e.MaCombo });
+
+            entity.ToTable("CHITIETCOMBO");
+
+            entity.Property(e => e.MaSp).HasColumnName("MaSP");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
+
+        modelBuilder.Entity<YeuThich>()
+            .HasOne(y => y.KhachHang)
+            .WithMany()
+            .HasForeignKey(y => y.IdKhachHang)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<YeuThich>()
+            .HasOne(y => y.DanhGia)
+            .WithMany()
+            .HasForeignKey(y => y.IdDanhGia)
+            .OnDelete(DeleteBehavior.Cascade);
+
+>>>>>>> a52e198 (feat: Enhance Product Details and Shop Views)
         OnModelCreatingPartial(modelBuilder);
     }
 
