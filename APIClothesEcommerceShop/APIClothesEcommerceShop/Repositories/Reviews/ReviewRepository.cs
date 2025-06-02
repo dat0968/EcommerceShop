@@ -13,13 +13,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace APIClothesEcommerceShop.Repositories.Reviews
 {
-    public class ReviewRepository(EcommerceShopContext db) : Repository<DanhGia>(db), IReviewRepository
+    public class ReviewRepository : Repository<DanhGia>, IReviewRepository
     {
-        private readonly EcommerceShopContext _db = db;
+        private readonly EcommerceShopContext _db;
+
+        public ReviewRepository(EcommerceShopContext db) : base(db)
+        {
+            _db = db;
+        }
 
         public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int productId, int? userId = null)
         {
-            ResponseAPI<IEnumerable<ReviewResponseDTO>> response = new();
+            var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
             try
             {
                 IQueryable<DanhGia> query = _db.DanhGias.Where(r => r.IdSanPham == productId);
@@ -29,83 +34,67 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     query = query.Where(r => r.IdKhachHang == userId.Value);
                 }
 
-                IEnumerable<ReviewResponseDTO> reviews = await query.Select(r => r.ToReviewResponseDTO()).ToListAsync();
+                var reviews = await query.Select(r => r.ToReviewResponseDTO()).ToListAsync();
 
                 response.SetSuccessResponse(data: reviews, message: "Lấy danh sách đánh giá thành công");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
             }
-            finally
-            {
-
-            }
             return response;
         }
-        public async Task<ResponseAPI<ReviewResponseDTO>> AddReviewAsync(ReviewRequestDTO review)
+
+        #region [Upsert Review]
+        public async Task<ResponseAPI<ReviewResponseDTO>> UpsertReviewAsync(ReviewRequestDTO review, int userId)
         {
-            ResponseAPI<ReviewResponseDTO> response = new();
+            var response = new ResponseAPI<ReviewResponseDTO>();
             try
             {
-                DanhGia danhGia = review.ToDanhGia();
-                await _db.DanhGias.AddAsync(danhGia);
-                await _db.SaveChangesAsync();
-
-                response.Data = danhGia.ToReviewResponseDTO();
-                response.SetSuccessResponse(data: danhGia.ToReviewResponseDTO(), message: "Thêm đánh giá thành công");
-            }
-            catch (System.Exception ex)
-            {
-                ExceptionHandler.HandleException(ex, response);
-            }
-            finally
-            {
-
-            }
-            return response;
-        }
-        public async Task<ResponseAPI<ReviewResponseDTO>> UpdateReviewAsync(ReviewRequestDTO review)
-        {
-            ResponseAPI<ReviewResponseDTO> response = new();
-            try
-            {
-                DanhGia? existingReview = await _db.DanhGias.FindAsync(review.Id);
-                if (existingReview == null)
+                var existingReview = await _db.DanhGias.FirstOrDefaultAsync(r => r.IdKhachHang == userId && r.IdSanPham == review.IdSanPham);
+                if (existingReview != null)
                 {
-                    throw new KeyNotFoundException("Đánh giá không tồn tại");
+                    UpdateExistingReview(existingReview, review);
+                    await _db.SaveChangesAsync();
+
+                    response.Data = existingReview.ToReviewResponseDTO();
+                    response.SetSuccessResponse(data: response.Data, message: "Cập nhật đánh giá thành công");
                 }
+                else
+                {
+                    review.IdKhachHang = userId; // Gán IdKhachHang từ userId
+                    review.NgayDanhGia = DateTime.Now; // Gán ngày đánh giá hiện tại
+                    var newReview = review.ToDanhGia();
+                    await _db.DanhGias.AddAsync(newReview);
+                    await _db.SaveChangesAsync();
 
-                existingReview.IdKhachHang = review.IdKhachHang;
-                existingReview.IdSanPham = review.IdSanPham;
-                existingReview.HoTen = review.HoTen;
-                existingReview.Email = review.Email;
-                existingReview.NoiDung = review.NoiDung;
-                existingReview.SoSao = review.SoSao;
-                existingReview.NgayDanhGia = DateTime.Now;
-
-                _db.DanhGias.Update(existingReview);
-                await _db.SaveChangesAsync();
-
-                response.Data = existingReview.ToReviewResponseDTO();
-                response.SetSuccessResponse(data: existingReview.ToReviewResponseDTO(), message: "Cập nhật đánh giá thành công");
+                    response.Data = newReview.ToReviewResponseDTO();
+                    response.SetSuccessResponse(data: response.Data, message: "Thêm đánh giá thành công");
+                }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
             }
-            finally
-            {
-
-            }
             return response;
         }
+
+        private void UpdateExistingReview(DanhGia existingReview, ReviewRequestDTO review)
+        {
+            existingReview.HoTen = review.HoTen;
+            existingReview.Email = review.Email;
+            existingReview.NoiDung = review.NoiDung;
+            existingReview.SoSao = review.SoSao;
+            existingReview.NgayDanhGia = DateTime.Now; // không nhất thiết phải có IdKhachHang hay IdSanPham ở đây nữa
+        }
+        #endregion
+
         public async Task<ResponseAPI<string>> DeleteReviewAsync(int reviewId)
         {
-            ResponseAPI<string> response = new();
+            var response = new ResponseAPI<string>();
             try
             {
-                DanhGia? review = await _db.DanhGias.FindAsync(reviewId);
+                var review = await _db.DanhGias.FindAsync(reviewId);
                 if (review == null)
                 {
                     throw new KeyNotFoundException("Đánh giá không tồn tại");
@@ -116,13 +105,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 response.SetSuccessResponse(message: "Xóa đánh giá thành công");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
-            }
-            finally
-            {
-
             }
             return response;
         }
