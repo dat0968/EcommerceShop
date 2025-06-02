@@ -1,6 +1,5 @@
 <script setup>
-
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -8,12 +7,10 @@ const getUrlAPI = ref('https://localhost:7217/api')
 const id = route.params.id
 const product = ref({})
 const allImages = ref([])
-const maxSlide = ref(1)
 const currentSlider = ref(1)
 const colors = ref([])
-const sizes = ref([])
-const selectedColor = ref(0) 
-const selectedSize = ref(0) 
+const selectedColor = ref('')
+const selectedSize = ref('')
 // Call Api ProductDetails
 const fetchAPI = async () => {
   const response = await fetch(`${getUrlAPI.value}/Shop/Product/${id}`, {
@@ -32,15 +29,55 @@ const fetchAPI = async () => {
       allImages.value.push(image)
     })
   })
+  // Xử lý moTa để thêm xuống dòng và định dạng
+  if (product.value.moTa) {
+    product.value.moTa = product.value.moTa
+      .replace(/\*\*([^*]+)\*\*/g, '<br><strong>$1</strong><br>') // Chuyển **...** thành <strong> và thêm <br> trước/sau
+      .replace(/\n/g, '<br>') // Chuyển các ký tự xuống dòng \n thành <br>
+  }
+  colors.value = [
+    ...new Set(
+      product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== '')
+    ),
+  ]
 
-  product.value.productDetails.forEach((element) => {
-    colors.value.push(element.mauSac)
-  })
-
-  product.value.productDetails.forEach((element) => {
-    sizes.value.push(element.kichThuoc)
-  })
+  selectedColor.value = colors.value[0]
+  console.log(product.value)
 }
+const sizes = computed(() => {
+  if (!product.value || !product.value.productDetails) return []
+
+  const filtered = product.value.productDetails
+    .filter((p) => p.mauSac && p.mauSac.toLowerCase() === selectedColor.value.toLowerCase())
+    .map((p) => p.kichThuoc)
+
+  return [...new Set(filtered)]
+})
+
+watch(sizes, (newSizes) => {
+  if (newSizes.length > 0) {
+    selectedSize.value = newSizes[0]
+  }
+})
+const originalPrice = computed(() => {
+  if (!product.value || !product.value.productDetails) return 0
+  var match = product.value.productDetails.find(
+    (p) =>
+      (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+  )
+  return match ? match.donGia : 0
+})
+
+const maxQuantity = computed(() => {
+  if (!product.value || !product.value.productDetails) return 0
+  var match = product.value.productDetails.find(
+    (p) =>
+      (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+  )
+  return match ? match.soLuongTon : 'Hết hàng'
+})
 
 const chunkSize = 4
 const slideChunks = computed(() => {
@@ -50,8 +87,7 @@ const slideChunks = computed(() => {
   }
   return chunks
 })
-maxSlide.value = computed(() => slideChunks.value.length)
-
+const maxSlide = computed(() => slideChunks.value.length || 1)
 const prevImage = () => {
   currentSlider.value = currentSlider.value === 1 ? maxSlide.value : currentSlider.value - 1
 }
@@ -60,23 +96,22 @@ const nextImage = () => {
   currentSlider.value = currentSlider.value === maxSlide.value ? 1 : currentSlider.value + 1
 }
 
-
-
-
- 
-
 const selectColor = (color) => {
-  selectedColor.value = color 
+  selectedColor.value = color
 }
 
-
 const selectSize = (size) => {
-  selectedSize.value = size 
+  selectedSize.value = size
 }
 const currentImage = ref(1)
 
 onMounted(() => {
   fetchAPI()
+  // Cuộn lên đầu trang
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth', // Cuộn mượt mà
+  })
   // Initialize Owl Carousel
   const owl = $('.product__details__pic__slider').owlCarousel({
     items: 1,
@@ -115,16 +150,17 @@ const changeImage = (index) => {
         <div class="row">
           <div class="col-lg-6">
             <div class="product__details__pic">
-              <div style="position: relative" class="product__details__slider__content">
+              <div
+                style="position: relative; margin-bottom: 20px"
+                class="product__details__slider__content"
+              >
                 <div class="product__details__pic__slider owl-carousel">
                   <div v-for="(image, index) in allImages" :key="index">
                     <img
                       v-if="index + 1 == currentImage"
                       :data-hash="`product-${index}`"
                       class="product__big__img"
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                        image.tenHinhAnh
-                      }`"
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
                       alt=""
                     />
                   </div>
@@ -133,7 +169,7 @@ const changeImage = (index) => {
               <!-- Thumbnail ảnh nhỏ nằm dưới ảnh lớn -->
               <div
                 class="product__details__thumbnails d-flex justify-content-center col-lg-6"
-                style="max-width: 100%; display: flex; justify-content: center"
+                style="max-width: 100%; display: flex; justify-content: center; margin: 20px"
               >
                 <div class="carousel slide w-100">
                   <div class="carousel-inner">
@@ -193,12 +229,12 @@ const changeImage = (index) => {
           <div class="col-lg-6">
             <div class="product__details__text">
               <h3>
-                {{ product.tenSanPham }} <span>Số lượng: {{ 0 }}</span>
+                {{ product.tenSanPham }} <span>Còn: {{ maxQuantity }} sản phẩm</span>
               </h3>
-              <div class="product__details__price">{{ 0 }}</div>
+              <div class="product__details__price">{{ originalPrice }}</div>
               <div class="product__details__button">
                 <div class="quantity">
-                  <span>Số lượng: {{ 0 }}</span>
+                  <span>Số lượng:</span>
                   <div class="pro-qty">
                     <input type="text" value="1" />
                   </div>
@@ -217,13 +253,13 @@ const changeImage = (index) => {
               </div>
               <div class="product__details__widget">
                 <ul>
-                  <li style="display: flex; align-items: center">
+                  <li style="display: flex; align-items: center" v-if="colors.length > 0">
                     <span style="min-width: 120px">Màu:</span>
                     <div class="color__checkbox" style="display: flex; gap: 8px">
                       <button
                         v-for="(color, index) in colors"
                         :key="index"
-                        :class="['btn', 'btn-light', { active: selectedColor === index }]"
+                        :class="['btn', 'btn-light', { active: selectedColor === color }]"
                         @click="selectColor(color)"
                         style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
                       >
@@ -231,13 +267,13 @@ const changeImage = (index) => {
                       </button>
                     </div>
                   </li>
-                  <li style="display: flex; align-items: center">
+                  <li style="display: flex; align-items: center" v-if="sizes.length > 0">
                     <span style="min-width: 120px">Kích thước:</span>
                     <div class="size__checkbox" style="display: flex; gap: 8px">
                       <button
                         v-for="(size, index) in sizes"
                         :key="index"
-                        :class="['btn', 'btn-light', { active: selectedSize === index }]"
+                        :class="['btn', 'btn-light', { active: selectedSize === size }]"
                         @click="selectSize(size)"
                         style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
                       >
@@ -258,9 +294,7 @@ const changeImage = (index) => {
               </ul>
               <div class="tab-content">
                 <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                  <p>
-                    {{ product.moTa }}
-                  </p>
+                  <p v-html="product.moTa"></p>
                 </div>
               </div>
             </div>

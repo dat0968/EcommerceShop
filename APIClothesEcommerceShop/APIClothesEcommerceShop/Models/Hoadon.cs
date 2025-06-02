@@ -7,7 +7,7 @@ public partial class Hoadon
 {
     public int MaHd { get; set; }
 
-    public int MaKh { get; set; }
+    public int? MaKh { get; set; }
 
     public int? MaNv { get; set; }
 

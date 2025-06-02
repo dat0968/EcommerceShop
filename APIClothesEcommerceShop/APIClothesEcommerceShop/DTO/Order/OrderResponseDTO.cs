@@ -8,7 +8,7 @@ namespace APIClothesEcommerceShop.DTO.Order
     {
         public int MaHd { get; set; }
 
-        public int MaKh { get; set; }
+        public int? MaKh { get; set; }
 
         public int? MaNv { get; set; }
         public string? TenNv { get; set; }

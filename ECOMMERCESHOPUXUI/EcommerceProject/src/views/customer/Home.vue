@@ -137,7 +137,7 @@ onMounted(() => {
               <div class="categories__text">
                 <h1>Thời trang nữ</h1>
                 <p>Khám phá phong cách thời trang dành riêng cho phái đẹp.</p>
-                <router-link style="text-decoration-line: none" to='/Shop'>Mua ngay</router-link>
+                <router-link style="text-decoration-line: none" to="/Shop">Mua ngay</router-link>
               </div>
             </div>
           </div>
@@ -151,7 +151,9 @@ onMounted(() => {
                   <div class="categories__text">
                     <h4>Thời trang nam</h4>
                     <p>Đậm chất nam tính, phong cách lịch lãm</p>
-                    <router-link style="text-decoration-line: none" to='/Shop'>Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
@@ -163,7 +165,9 @@ onMounted(() => {
                   <div class="categories__text">
                     <h4>Thời trang trẻ em</h4>
                     <p>Phong cách năng động, dễ thương cho bé yêu</p>
-                    <router-link style="text-decoration-line: none" to='/Shop'>Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
@@ -175,7 +179,9 @@ onMounted(() => {
                   <div class="categories__text">
                     <h4>Giày dép</h4>
                     <p>Bước đi phong cách, vững vàng mỗi ngày</p>
-                    <router-link style="text-decoration-line: none" to='/Shop'>Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
@@ -187,7 +193,9 @@ onMounted(() => {
                   <div class="categories__text">
                     <h4>Phụ kiện</h4>
                     <p>Hoàn thiện phong cách với hàng trăm phụ kiện hot</p>
-                    <router-link style="text-decoration-line: none" to='/Shop'>Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
@@ -201,9 +209,16 @@ onMounted(() => {
     <!-- Product Section Begin -->
     <section class="product spad">
       <div class="container">
-        <div class="row" style="text-align: center;">
+        <div class="row" style="text-align: center">
           <div class="col-lg-4 col-md-4">
-            <div style="border-bottom: 2px solid #e7ab3c; display: inline-block; padding-bottom: 5px; margin-bottom: 50px;">
+            <div
+              style="
+                border-bottom: 2px solid #e7ab3c;
+                display: inline-block;
+                padding-bottom: 5px;
+                margin-bottom: 50px;
+              "
+            >
               <h4>Sản phẩm mới nhất</h4>
             </div>
           </div>
@@ -239,7 +254,12 @@ onMounted(() => {
               </div>
               <div class="product__item__text">
                 <h6>
-                  <a style="text-decoration-line: none" href="#">{{ item.tenSanPham }}</a>
+                  <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none">
+                    {{ item.tenSanPham }}
+                    <div class="product__price text-muted fw-semibold fs-6 text-danger">
+                      {{ item.khoangGia }}
+                    </div>
+                  </router-link>
                 </h6>
                 <!-- <div class="rating">
                   <i class="fa fa-star"></i>
@@ -248,9 +268,6 @@ onMounted(() => {
                   <i class="fa fa-star"></i>
                   <i class="fa fa-star"></i>
                 </div> -->
-                <div class="product__price text-muted fw-semibold fs-6 text-danger">
-                  {{ item.khoangGia }}
-                </div>
               </div>
             </div>
           </div>
@@ -312,11 +329,18 @@ onMounted(() => {
                     class="img-fluid"
                   />
                 </div>
-                <div class="trend__item__text">
-                  <h6>{{ item.tenSanPham }}</h6>
-                  <div class="product__price text-danger fw-semibold fs-7">
-                    {{ item.khoangGia }}
-                  </div>
+                <div class="trend__item__text text-center mt-2">
+                  <h6>
+                    <router-link
+                      :to="`/product/${item.maSp}`"
+                      style="text-decoration-line: none; color: black"
+                    >
+                      {{ item.tenSanPham }}
+                      <div class="product__price text-danger fw-semibold fs-7">
+                        {{ item.khoangGia }}
+                      </div>
+                    </router-link>
+                  </h6>
                 </div>
               </div>
             </div>
@@ -338,10 +362,17 @@ onMounted(() => {
                   />
                 </div>
                 <div class="trend__item__text text-center mt-2">
-                  <h6 class="mb-1">{{ item.tenSanPham }}</h6>
-                  <div class="product__price text-danger fw-semibold fs-7">
-                    {{ item.khoangGia }}
-                  </div>
+                  <h6>
+                    <router-link
+                      :to="`/product/${item.maSp}`"
+                      style="text-decoration-line: none; color: black"
+                    >
+                      {{ item.tenSanPham }}
+                      <div class="product__price text-danger fw-semibold fs-7">
+                        {{ item.khoangGia }}
+                      </div>
+                    </router-link>
+                  </h6>
                 </div>
               </div>
             </div>
@@ -356,7 +387,7 @@ onMounted(() => {
                 <div class="trend__item__pic">
                   <img src="../../assets/img/trend/f-1.jpg" alt="" class="img-fluid" />
                 </div>
-                <div class="trend__item__text text-center">
+                <div class="trend__item__text text-center mt-2">
                   <h6 class="mb-1">Bow wrap skirt</h6>
                   <!-- <div class="rating">
                     <i class="fa fa-star"></i>
