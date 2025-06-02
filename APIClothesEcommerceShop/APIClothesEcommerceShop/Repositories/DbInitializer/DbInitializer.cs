@@ -18,11 +18,7 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
         public void InitializeDb()
         {
             // _db.Database.EnsureCreated();
-            var isCreateCombo = _db.Combos.Any();
-            if (!isCreateCombo)
-            {
-                InitCombo(3);
-            }
+            InitTestAccount();
         }
         private void InitCombo(int numCreate, int? idOrder = null)
         {
@@ -69,6 +65,91 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
                 combo.GiaCombo = (int)(tongGia * 0.9);
 
                 _db.Combos.Add(combo);
+            }
+
+            _db.SaveChanges();
+        }
+
+        private void InitTestAccount()
+        {
+            // Kiểm tra nếu đã có tài khoản mẫu thì không tạo lại
+            if (!_db.Khachhangs.Any(kh => kh.Email == "customer.demo@email.com"))
+            {
+                var customer = new Khachhang
+                {
+                    HoTen = "Khách Hàng Demo",
+                    TenTaiKhoan = "customer.demo",
+                    Email = "customer.demo@email.com",
+                    MatKhau = new HashPassword.PasswordHasher().HashPassword("CustomerDemo@123"),
+                    NgayTao = DateTime.Now,
+                    IsActive = true,
+                    TinhTrang = "Đang hoạt động",
+                    Sdt = "0900000001",
+                    DiaChi = "123 Đường Demo, Quận 1, TP.HCM",
+                    Cccd = "123456789012",
+                    NgaySinh = DateOnly.FromDateTime(DateTime.Now.AddYears(-20)),
+                    GioiTinh = "Nam",
+                    HinhDaiDien = null
+                };
+                _db.Khachhangs.Add(customer);
+            }
+
+            if (!_db.Nhanviens.Any(nv => nv.Email == "staff6real.demo@email.com"))
+            {
+                // Lấy mã chức vụ đầu tiên hoặc tạo mới nếu chưa có
+                var chucVu = _db.Chucvus.Skip(1).FirstOrDefault() ?? new Chucvu { TenChucVu = "Nhân viên" };
+                if (chucVu.MaChucVu == 0)
+                {
+                    _db.Chucvus.Add(chucVu);
+                    _db.SaveChanges();
+                }
+
+                var staff = new Nhanvien
+                {
+                    HoTen = "Nhân Viên Demo Real",
+                    TenTaiKhoan = "staff6real.demo",
+                    Email = "staff6real.demo@email.com",
+                    MatKhau = "staff6realDemo@123", // Nhân viên không mã hóa mật khẩu như AccountRepository
+                    NgayVaoLam = DateOnly.FromDateTime(DateTime.Now),
+                    IsActive = true,
+                    TinhTrang = "Đang hoạt động",
+                    Sdt = "0900060002",
+                    DiaChi = "666 Đường Demo, Quận 6, TP.Bình Hòa",
+                    Cccd = "423456689012",
+                    NgaySinh = DateOnly.FromDateTime(DateTime.Now.AddYears(-26)),
+                    GioiTinh = "Nữ",
+                    MaChucVu = chucVu.MaChucVu
+                };
+                _db.Nhanviens.Add(staff);
+            }
+
+            if (!_db.Nhanviens.Any(nv => nv.Email == "staff.demo@email.com"))
+            {
+                // Lấy mã chức vụ đầu tiên hoặc tạo mới nếu chưa có
+                var chucVu = _db.Chucvus.FirstOrDefault() ?? new Chucvu { TenChucVu = "Nhân viên" };
+                if (chucVu.MaChucVu == 0)
+                {
+                    _db.Chucvus.Add(chucVu);
+                    _db.SaveChanges();
+                }
+
+                var staff = new Nhanvien
+                {
+                    HoTen = "Nhân Viên Demo",
+                    TenTaiKhoan = "staff.demo",
+                    Email = "staff.demo@email.com",
+                    MatKhau = "StaffDemo@123", // Nhân viên không mã hóa mật khẩu như AccountRepository
+                    NgayVaoLam = DateOnly.FromDateTime(DateTime.Now),
+                    IsActive = true,
+                    TinhTrang = "Đang hoạt động",
+                    Sdt = "0900000002",
+                    DiaChi = "143 Đường Demo, Quận 1, TP.HCM",
+                    Cccd = "423456789012",
+                    NgaySinh = DateOnly.FromDateTime(DateTime.Now.AddYears(-21)),
+                    GioiTinh = "Nam",
+                    MaChucVu = chucVu.MaChucVu
+                };
+                _db.Nhanviens.Add(staff);
             }
 
             _db.SaveChanges();

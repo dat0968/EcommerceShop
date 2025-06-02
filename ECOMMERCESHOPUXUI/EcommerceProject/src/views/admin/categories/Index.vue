@@ -275,20 +275,20 @@ export default {
     async loadOption() {
       const resOptionParen = await axiosConfig.getFromApi(
         '/categories/parents',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.optionsParentCategory = resOptionParen.data
 
       const resOptionChild = await axiosConfig.getFromApi(
         '/categories/childs',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.optionsChildCategory = resOptionChild.data
       this.reloadDataTableParent()
       this.reloadDataTableChild()
     },
     async getCategories() {
-      const res = await axiosConfig.getFromApi('/categories', ConfigsRequest.getSkipAuthConfig())
+      const res = await axiosConfig.getFromApi('/categories', ConfigsRequest.takeAuth())
       this.listCategories = res.data
       this.reloadDataTable()
     },
@@ -307,7 +307,7 @@ export default {
       if (confirm('Bạn có chắc chắn muốn xóa danh mục cha này?')) {
         const response = await axiosConfig.deleteFromApi(
           `/categories/parent/${item.maDanhMucCha}`,
-          ConfigsRequest.getSkipAuthConfig(),
+          ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotification(response)) {
           alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
@@ -329,7 +329,7 @@ export default {
             tenDanhMucCha: this.formParent.tenDanhMucCha,
             isActive: this.formParent.isActive,
           },
-          ConfigsRequest.getSkipAuthConfig(),
+          ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotification(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
@@ -347,7 +347,7 @@ export default {
             tenDanhMucCha: this.formParent.tenDanhMucCha,
             isActive: this.formParent.isActive,
           },
-          ConfigsRequest.getSkipAuthConfig(),
+          ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotification(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
@@ -380,7 +380,7 @@ export default {
       if (confirm('Bạn có chắc chắn muốn xóa danh mục con này?')) {
         const response = await axiosConfig.deleteFromApi(
           `/categories/child/${item.maDanhMucCon}`,
-          ConfigsRequest.getSkipAuthConfig(),
+          ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotification(response)) {
           alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
@@ -404,7 +404,7 @@ export default {
             tenDanhMucCon: this.formChild.tenDanhMucCon,
             isActive: this.formChild.isActive,
           },
-          ConfigsRequest.getSkipAuthConfig(),
+          ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotification(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
@@ -424,7 +424,7 @@ export default {
             tenDanhMucCon: this.formChild.tenDanhMucCon,
             isActive: this.formChild.isActive,
           },
-          ConfigsRequest.getSkipAuthConfig(),
+          ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotification(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
