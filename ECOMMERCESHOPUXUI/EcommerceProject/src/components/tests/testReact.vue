@@ -52,28 +52,9 @@
             <div class="col-md-5" style="min-width: 200px">
               <div class="row">
                 <!-- Nội dung phụ -->
-                <div class="col-12 mb-3">
-                  <h6>Nội dung phụ</h6>
-                  <div style="max-height: 80px; overflow-y: auto">
-                    <code class="language-js line-numbers" data-prismjs-copy="Copy">
-                      <pre>
-                      {{ reviewProduct }}
-                    </pre
-                      >
-                    </code>
-                  </div>
-                </div>
+                <ReviewTestSub :reviewProduct="reviewProduct" :is-loading="isLoading" />
                 <!-- Đánh giá -->
-                <div class="col-12">
-                  <h6>Đánh giá</h6>
-                  <div style="max-height: 80px; overflow-y: auto">
-                    <code>
-                      <pre>
-                          {{ commentsProduct }}
-                      </pre>
-                    </code>
-                  </div>
-                </div>
+                <CommentTestSub :commentsProduct="commentsProduct" :is-loading="isLoading" />
               </div>
             </div>
           </div>
@@ -86,23 +67,36 @@
 <script>
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
+import ReviewTestSub from './subTestReact/ReviewTestSub.vue'
+import CommentTestSub from './subTestReact/CommentTestSub.vue'
 export default {
   name: 'TestReaction',
+  components: { ReviewTestSub, CommentTestSub },
   data() {
     return {
       showModal: false,
+      isLoading: true,
       inputValue: 1,
       productData: {},
       reviewProduct: {},
       commentsProduct: {},
     }
   },
+  computed: {},
   methods: {
     async onSubmit() {
-      // Xử lý submit ở đây, ví dụ alert hoặc emit
-      await this.loadProductData()
-      await this.loadReviewProduct()
-      await this.loadCommentsProduct()
+      try {
+        this.isLoading = true
+        // Xử lý submit ở đây, ví dụ alert hoặc emit
+        await this.loadProductData()
+        await this.loadReviewProduct()
+        await this.loadCommentsProduct()
+      } catch (error) {
+        console.error('Error during submit:', error)
+      } finally {
+        this.showModal = true
+        this.isLoading = false
+      }
     },
     async loadProductData() {
       const res = await axiosConfig
@@ -124,20 +118,12 @@ export default {
       }
     },
     async loadReviewProduct() {
-      const res = await axiosConfig
-        .getFromApi(`/Review/${this.inputValue}`, ConfigsRequest.getSkipAuthConfig())
-        .then((response) => {
-          if (response) {
-            return response
-          }
-          return response
-        })
-        .catch((error) => {
-          console.error('Error fetching product data:', error)
-          return {}
-        })
+      const res = await axiosConfig.getFromApi(
+        `/Review/${this.inputValue}`,
+        ConfigsRequest.getSkipAuthConfig(),
+      )
       if (res && res.data) {
-        this.reviewProduct = res.data
+        this.reviewProduct = res
       } else {
         this.reviewProduct = res
       }

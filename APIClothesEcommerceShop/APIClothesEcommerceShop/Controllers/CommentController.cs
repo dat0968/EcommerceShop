@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.DTO.Comment;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
@@ -18,26 +19,18 @@ namespace APIClothesEcommerceShop.Controllers
         {
             _unit = unit;
         }
+        [ProducesResponseType(typeof(ResponseAPI<IEnumerable<CommentResponseDTO>>), 200)]
         [HttpGet("{productId}")]
         public async Task<IActionResult> GetCommentsByProductId(int productId)
         {
-            ResponseAPI<BinhLuan> res = new();
-            try
+            ResponseAPI<IEnumerable<CommentResponseDTO>> res = new();
+            var comments = await _unit.Comment.GetCommentsByProductIdAsync(productId);
+            if (comments == null)
             {
-                var comments = await _unit.Comment.GetAsync(x => x.IdSanPham == productId);
-                if (comments == null)
-                {
-                    res.SetErrorResponse("No comments found for this product.");
-                    return NotFound(res);
-                }
-                res.SetSuccessResponse(data: comments);
-                return Ok(res);
+                res.SetErrorResponse("No comments found for this product.");
+                return NotFound(res);
             }
-            catch (Exception ex)
-            {
-                res.SetErrorResponse(ex.Message);
-                return BadRequest(res);
-            }
+            return Ok(res);
         }
     }
 }
