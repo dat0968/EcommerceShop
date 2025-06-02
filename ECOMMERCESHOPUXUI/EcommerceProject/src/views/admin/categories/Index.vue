@@ -309,7 +309,7 @@ export default {
           `/categories/parent/${item.maDanhMucCha}`,
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(response)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(response)) {
           alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
         } else {
           this.optionsParentCategory = this.optionsParentCategory.filter(
@@ -331,7 +331,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
           return
         }
@@ -349,7 +349,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
           return
         }
@@ -382,7 +382,7 @@ export default {
           `/categories/child/${item.maDanhMucCon}`,
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(response)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(response)) {
           alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
           return
         }
@@ -406,7 +406,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
           return
         }
@@ -426,7 +426,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) {
           alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
           return
         }

@@ -36,15 +36,13 @@ export default {
       type: Boolean,
       default: true,
     },
-    currentUserId: {
-      type: Number,
+    isUserLoggedIn: {
+      type: Boolean,
       default: null,
     },
   },
   data() {
-    return {
-      isUserLoggedIn: this.currentUserId !== null,
-    }
+    return {}
   },
   computed: {
     sortedComments() {

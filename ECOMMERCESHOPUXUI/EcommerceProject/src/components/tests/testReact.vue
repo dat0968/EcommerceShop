@@ -52,9 +52,19 @@
             <div class="col-md-5" style="min-width: 200px">
               <div class="row">
                 <!-- Nội dung phụ -->
-                <ReviewTestSub :reviewProduct="reviewProduct" :is-loading="isLoading" />
+                <ReviewTestSub
+                  :productData="productData"
+                  :reviewProduct="reviewProduct"
+                  :is-loading="isLoading"
+                  :is-user-logged-in="isUserLoggedIn"
+                />
                 <!-- Đánh giá -->
-                <CommentTestSub :commentsProduct="commentsProduct" :is-loading="isLoading" />
+                <CommentTestSub
+                  :reviewProduct="reviewProduct"
+                  :commentsProduct="commentsProduct"
+                  :is-loading="isLoading"
+                  :is-user-logged-in="isUserLoggedIn"
+                />
               </div>
             </div>
           </div>
@@ -69,6 +79,7 @@ import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 import ReviewTestSub from './subTestReact/ReviewTestSub.vue'
 import CommentTestSub from './subTestReact/CommentTestSub.vue'
+import authService from '@/services/authService'
 export default {
   name: 'TestReaction',
   components: { ReviewTestSub, CommentTestSub },
@@ -80,6 +91,7 @@ export default {
       productData: {},
       reviewProduct: {},
       commentsProduct: {},
+      isUserLoggedIn: !authService.isExpiredSessionAccess(),
     }
   },
   computed: {},

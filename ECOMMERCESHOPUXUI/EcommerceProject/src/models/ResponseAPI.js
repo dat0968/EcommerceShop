@@ -41,7 +41,7 @@ class ResponseAPI {
   }
 
   // Phương thức kiểm tra và hiển thị thông báo
-  static handleNotification(response, isShowNotification = true) {
+  static handleNotificationAndIsFailResponse(response, isShowNotification = true) {
     const responseJson = this.fromJson(response) // Tạo instance từ JSON
 
     if (responseJson.success) {
