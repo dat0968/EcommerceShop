@@ -29,7 +29,7 @@ namespace APIClothesEcommerceShop.Models
         [Range(1, 5)]
         public int SoSao { get; set; } = 0;
 
-        public DateTime NgayDanhGia { get; set; } = DateTime.Now;
+        public DateTime? NgayDanhGia { get; set; } = DateTime.Now;
 
         [ForeignKey("IdSanPham")]
         public virtual Sanpham? SanPham { get; set; }
@@ -65,7 +65,7 @@ namespace APIClothesEcommerceShop.Models
                 Email = entity.Email,
                 NoiDung = entity.NoiDung,
                 SoSao = entity.SoSao,
-                NgayDanhGia = entity.NgayDanhGia
+                NgayDanhGia = entity.NgayDanhGia ?? DateTime.UtcNow
             };
         }
 

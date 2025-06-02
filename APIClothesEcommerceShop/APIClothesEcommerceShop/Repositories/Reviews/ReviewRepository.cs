@@ -89,12 +89,12 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         }
         #endregion
 
-        public async Task<ResponseAPI<string>> DeleteReviewAsync(int reviewId)
+        public async Task<ResponseAPI<string>> DeleteReviewAsync(int productId, int userId)
         {
             var response = new ResponseAPI<string>();
             try
             {
-                var review = await _db.DanhGias.FindAsync(reviewId);
+                var review = await _db.DanhGias.FirstOrDefaultAsync(x => x.IdSanPham == productId && x.IdKhachHang == userId);
                 if (review == null)
                 {
                     throw new KeyNotFoundException("Đánh giá không tồn tại");

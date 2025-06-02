@@ -47,9 +47,21 @@ namespace APIClothesEcommerceShop.Controllers
                     Message = "Invalid review data."
                 });
             }
-
-            var userId = int.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? "0");
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var res = await _unit.Review.UpsertReviewAsync(review, userId);
+            if (!res.Success)
+            {
+                return StatusCode(res.StatusCode, res);
+            }
+            return Ok(res);
+        }
+        [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
+        [Authorize(Roles = "Customer")]
+        [HttpDelete("{productId}")]
+        public async Task<IActionResult> DeleteReview(int productId)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var res = await _unit.Review.DeleteReviewAsync(productId, userId);
             if (!res.Success)
             {
                 return StatusCode(res.StatusCode, res);

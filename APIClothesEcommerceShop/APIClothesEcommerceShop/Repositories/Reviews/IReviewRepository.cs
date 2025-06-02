@@ -13,6 +13,6 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     {
         Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int productId, int? userId = null);
         Task<ResponseAPI<ReviewResponseDTO>> UpsertReviewAsync(ReviewRequestDTO review, int userId);
-        Task<ResponseAPI<string>> DeleteReviewAsync(int reviewId);
+        Task<ResponseAPI<string>> DeleteReviewAsync(int reviewId, int userId);
     }
 }
