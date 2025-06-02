@@ -29,12 +29,20 @@ using Humanizer.Configuration;
 using VNPAY.NET;
 using APIClothesEcommerceShop.Repositories.DbInitializer;
 using APIClothesEcommerceShop.Repositories.Home;
+using APIClothesEcommerceShop.Services.EmailService.GoogleSenderService;
+using APIClothesEcommerceShop.Services.EmailService;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/* 
+Cấu hình kết nối đến database
+EcommerceShopConnect_TD - Data Source=NGUYENTHANHDATP
+EcommerceShopConnect_PM - Data Source=DESKTOP..PHAMHAU
+EcommerceShopConnect_Dot - Data Source=.;
+ */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
 });
 
 // Add services to the container.
@@ -42,7 +50,7 @@ builder.Services.AddDbContext<EcommerceShopContext>(options =>
 // Add services to the container.
 builder.Services.AddControllers(options =>
 {
-    // V� hi?u h�a validate t? ??ng ?? tr�nh th�ng b�o l?i m?c ??nh
+    // Vô hi?u hóa validate t? ??ng ?? tránh thông báo l?i m?c ??nh
     options.ModelValidatorProviders.Clear();
 });
 
@@ -92,7 +100,9 @@ builder.Services.AddCors(options =>
         ops.SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
-builder.Services.AddHttpClient(); 
+#region [Dependency Injection]
+// Cấu hình DI cho các repository và service
+builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
@@ -100,7 +110,6 @@ builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>(
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
 builder.Services.AddScoped<ProductService>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IVnpay, Vnpay>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();
@@ -109,7 +118,9 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
+#endregion
 
+#region [Dependency Injection cho các repository]
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
@@ -118,6 +129,15 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+#endregion
+
+#region [Dependency Injection cho các service]
+// Tin nhắn 
+builder.Services.AddScoped<GoogleSenderService>();
+var emailSettings = builder.Configuration.GetSection("GoogleEmailSetting");
+builder.Services.Configure<GoogleEmailSetting>(emailSettings);
+
+// JWT Authentication
 var SecretKey = builder.Configuration["JWT:SecretKey"];
 var SecretKeyBytes = Encoding.UTF8.GetBytes(SecretKey);
 builder.Services.AddAuthentication(options =>
@@ -142,6 +162,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = googleAuth["ClientId"];
     options.ClientSecret = googleAuth["ClientSecret"];
 });
+#endregion
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

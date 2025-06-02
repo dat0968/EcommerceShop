@@ -57,36 +57,70 @@ onMounted(() => {
         <div class="xp-sidebar">
           <!-- Start XP Logobar -->
           <div class="xp-logobar text-center">
-            <svg viewBox="0 0 700 250" role="img" aria-label="Angel soft curvy logo with wings and animated gradient">
+            <svg
+              viewBox="0 0 700 250"
+              role="img"
+              aria-label="Angel soft curvy logo with wings and animated gradient"
+            >
               <defs>
                 <linearGradient id="start" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="20%" stop-color="#EC4E79">
-                    <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;" dur="6s"
-                      repeatCount="indefinite" />
+                    <animate
+                      attributeName="stop-color"
+                      values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;"
+                      dur="6s"
+                      repeatCount="indefinite"
+                    />
                   </stop>
                   <stop offset="40%" stop-color="#ABA2B7">
-                    <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;" dur="6s"
-                      repeatCount="indefinite" />
+                    <animate
+                      attributeName="stop-color"
+                      values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;"
+                      dur="6s"
+                      repeatCount="indefinite"
+                    />
                   </stop>
                   <stop offset="55%" stop-color="#5CCAE7">
-                    <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;" dur="6s"
-                      repeatCount="indefinite" />
+                    <animate
+                      attributeName="stop-color"
+                      values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;"
+                      dur="6s"
+                      repeatCount="indefinite"
+                    />
                   </stop>
                 </linearGradient>
               </defs>
 
               <!-- Left wing - smooth curves -->
-              <path class="wing left" d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z" />
-              <path class="wing left" d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
-                opacity="0.5" />
+              <path
+                class="wing left"
+                d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z"
+              />
+              <path
+                class="wing left"
+                d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
+                opacity="0.5"
+              />
 
               <!-- Right wing - smooth curves -->
-              <path class="wing right" d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z" />
-              <path class="wing right" d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
-                opacity="0.5" />
+              <path
+                class="wing right"
+                d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z"
+              />
+              <path
+                class="wing right"
+                d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
+                opacity="0.5"
+              />
 
               <!-- Angel text with soft cursive font -->
-              <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
+              <text
+                x="50%"
+                y="60%"
+                dominant-baseline="middle"
+                text-anchor="middle"
+                class="angel-text"
+              >
                 Angel
               </text>
             </svg>
@@ -94,11 +128,11 @@ onMounted(() => {
           <!-- End XP Logobar -->
 
           <!-- Start XP Navigationbar -->
-          <div class="xp-navigationbar"  >
-            <ul class="xp-vertical-menu"  style="color: black;">
+          <div class="xp-navigationbar">
+            <ul class="xp-vertical-menu" style="color: black">
               <li>
                 <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
-                  <i class="icon-speedometer"></i><span class="font-color" >Thống kê</span>
+                  <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
                 </RouterLink>
               </li>
               <li>
@@ -107,21 +141,25 @@ onMounted(() => {
                 </RouterLink>
               </li>
               <li>
-                <RouterLink to="/Admin/Order">
-                  <i class="icon-speedometer"></i><span>Quản lý đơn hàng</span>
+                <RouterLink to="/Admin/Category">
+                  <i class="icon-notebook"></i><span>Quản lý danh mục</span>
                 </RouterLink>
+              </li>
+            </ul>
+            <ul class="xp-vertical-menu">
+              <li>
                 <RouterLink to="/admin/combo">
-                  <i class="icon-basket"></i><span class="font-color" >Quản lý combo</span>
+                  <i class="icon-basket"></i><span class="font-color">Quản lý combo</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/admin/customer">
-                  <i class="icon-people"></i><span class="font-color" >Khách hàng</span>
+                  <i class="icon-people"></i><span class="font-color">Khách hàng</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/admin/staff">
-                  <i class="icon-people"></i><span class="font-color" >Nhân Viên</span>
+                  <i class="icon-people"></i><span class="font-color">Nhân Viên</span>
                 </RouterLink>
               </li>
             </ul>
@@ -135,7 +173,7 @@ onMounted(() => {
       <!-- Start XP Rightbar -->
       <div class="xp-rightbar">
         <!-- Start XP Topbar -->
-        <div class="xp-topbar" style="background-color: rgb(169, 162, 221);">
+        <div class="xp-topbar" style="background-color: rgb(169, 162, 221)">
           <!-- Start XP Row -->
           <div class="row">
             <!-- Start XP Col -->
@@ -164,9 +202,11 @@ onMounted(() => {
                             </div>
                           </li>
                           <li class="media xp-msg">
-                            <img class="mr-3 align-self-center rounded-circle"
+                            <img
+                              class="mr-3 align-self-center rounded-circle"
                               src="../../assets/admin/images/topbar/user-message-1.jpg"
-                              alt="Generic placeholder image" />
+                              alt="Generic placeholder image"
+                            />
                             <div class="media-body">
                               <a href="#">
                                 <h5 class="mt-0 mb-1 font-14">
@@ -174,15 +214,19 @@ onMounted(() => {
                                 </h5>
                                 <p class="mb-0 font-13">
                                   Thank you for attending...<span
-                                    class="badge badge-pill badge-success float-right">2</span>
+                                    class="badge badge-pill badge-success float-right"
+                                    >2</span
+                                  >
                                 </p>
                               </a>
                             </div>
                           </li>
                           <li class="media xp-msg">
-                            <img class="mr-3 align-self-center rounded-circle"
+                            <img
+                              class="mr-3 align-self-center rounded-circle"
                               src="../../assets/admin/images/topbar/user-message-2.jpg"
-                              alt="Generic placeholder image" />
+                              alt="Generic placeholder image"
+                            />
                             <div class="media-body">
                               <a href="#">
                                 <h5 class="mt-0 mb-1 font-14">
@@ -190,15 +234,19 @@ onMounted(() => {
                                 </h5>
                                 <p class="mb-0 font-13">
                                   Hey no worries! Trust me...<span
-                                    class="badge badge-pill badge-success float-right">3</span>
+                                    class="badge badge-pill badge-success float-right"
+                                    >3</span
+                                  >
                                 </p>
                               </a>
                             </div>
                           </li>
                           <li class="media xp-msg">
-                            <img class="mr-3 align-self-center rounded-circle"
+                            <img
+                              class="mr-3 align-self-center rounded-circle"
                               src="../../assets/admin/images/topbar/user-message-3.jpg"
-                              alt="Generic placeholder image" />
+                              alt="Generic placeholder image"
+                            />
                             <div class="media-body">
                               <a href="#">
                                 <h5 class="mt-0 mb-1 font-14">
@@ -206,7 +254,9 @@ onMounted(() => {
                                 </h5>
                                 <p class="mb-0 font-13">
                                   Remedies for colic? i don't...<span
-                                    class="badge badge-pill badge-success float-right">5</span>
+                                    class="badge badge-pill badge-success float-right"
+                                    >5</span
+                                  >
                                 </p>
                               </a>
                             </div>
@@ -225,17 +275,42 @@ onMounted(() => {
 
                   <li class="list-inline-item mr-0">
                     <div class="dropdown xp-userprofile">
-                      <a class="dropdown-toggle" href="#" role="button" id="xp-userprofile" data-toggle="dropdown"
-                        aria-haspopup="true" aria-expanded="false"><img src="../../assets/admin/images/topbar/user.jpg"
-                          alt="user-profile" class="rounded-circle img-fluid" /><span class="xp-user-live"></span></a>
+                      <a
+                        class="dropdown-toggle"
+                        href="#"
+                        role="button"
+                        id="xp-userprofile"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        ><img
+                          src="../../assets/admin/images/topbar/user.jpg"
+                          alt="user-profile"
+                          class="rounded-circle img-fluid" /><span class="xp-user-live"></span
+                      ></a>
 
-                      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="xp-userprofile">
-                        <a class="dropdown-item py-3 text-white text-center font-16" href="#">Welcome, John Doe</a>
-                        <a class="dropdown-item" href="#"><i class="icon-user text-primary mr-2"></i> Profile</a>
-                        <a class="dropdown-item" href="#"><i class="icon-wallet text-success mr-2"></i> Billing</a>
-                        <a class="dropdown-item" href="#"><i class="icon-settings text-warning mr-2"></i> Setting</a>
-                        <a class="dropdown-item" href="#"><i class="icon-lock text-info mr-2"></i> Lock Screen</a>
-                        <a class="dropdown-item" href="#"><i class="icon-power text-danger mr-2"></i> Logout</a>
+                      <div
+                        class="dropdown-menu dropdown-menu-right"
+                        aria-labelledby="xp-userprofile"
+                      >
+                        <a class="dropdown-item py-3 text-white text-center font-16" href="#"
+                          >Welcome, John Doe</a
+                        >
+                        <a class="dropdown-item" href="#"
+                          ><i class="icon-user text-primary mr-2"></i> Profile</a
+                        >
+                        <a class="dropdown-item" href="#"
+                          ><i class="icon-wallet text-success mr-2"></i> Billing</a
+                        >
+                        <a class="dropdown-item" href="#"
+                          ><i class="icon-settings text-warning mr-2"></i> Setting</a
+                        >
+                        <a class="dropdown-item" href="#"
+                          ><i class="icon-lock text-info mr-2"></i> Lock Screen</a
+                        >
+                        <a class="dropdown-item" href="#"
+                          ><i class="icon-power text-danger mr-2"></i> Logout</a
+                        >
                       </div>
                     </div>
                   </li>
@@ -250,7 +325,6 @@ onMounted(() => {
         <!-- 
         <statistics /> -->
         <router-view />
-
       </div>
       <!-- End XP Rightbar -->
     </div>
@@ -397,7 +471,6 @@ svg {
 }
 
 @keyframes gentleFloat {
-
   0%,
   100% {
     transform: translateY(0) rotate(0deg);
@@ -433,8 +506,7 @@ svg {
 .xp-vertical-menu li a.router-link-active,
 .xp-vertical-menu li a.router-link-exact-active {
   color: #ffffff;
-  background-image: linear-gradient(to right,#5E72EB,
-  #FF9190);
+  background-image: linear-gradient(to right, #5e72eb, #ff9190);
   border-left: 4px solid #fff;
 }
 

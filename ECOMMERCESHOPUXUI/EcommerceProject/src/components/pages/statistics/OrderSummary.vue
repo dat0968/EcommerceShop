@@ -108,7 +108,7 @@
 </template>
 
 <script>
-import Overlay from '../common/Overlay.vue'
+import Overlay from '@/components/common/Overlay.vue'
 
 import { Chart, registerables } from 'chart.js'
 import { formatCurrency } from '@/constants/formatCurrency'

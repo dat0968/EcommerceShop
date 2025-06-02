@@ -1,11 +1,17 @@
-import defaultImage from '@/assets/default/default.jpeg' // Import ảnh
+import defaultImage from '@/assets/default/default.jpg' // Import ảnh
 
 const replaceBrokenImages = () => {
   const checkAndReplace = (img) => {
     if (!img.dataset.checked) {
       img.dataset.checked = 'true'
       img.onerror = () => {
-        img.src = defaultImage // Sử dụng URL đã import
+        // Nếu đã là ảnh mặc định mà vẫn lỗi thì không thay nữa
+        if (img.src !== defaultImage) {
+          img.src = defaultImage
+        } else {
+          // Đã thử thay ảnh mặc định mà vẫn lỗi, bỏ qua không thay nữa
+          img.onerror = null
+        }
       }
     }
   }

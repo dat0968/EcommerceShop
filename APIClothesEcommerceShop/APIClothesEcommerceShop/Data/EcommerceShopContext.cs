@@ -50,7 +50,7 @@ public partial class EcommerceShopContext : DbContext
 
     public virtual DbSet<Sanpham> Sanphams { get; set; }
 
-    
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

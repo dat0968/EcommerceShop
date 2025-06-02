@@ -62,12 +62,12 @@ export default {
                     ? detailProduct.detailTopProducts
                         .map(
                           (detail) => `
-                                <div class="col-5 detail-item">
-                                    <div class="row border p-2 bg-light">
-                                        <div class="col-md-4 d-flex align-items-center">
+                                <div class="col-sm-12 col-md-6 p-3 detail-item">
+                                    <div class="row border p-1 rounded bg-light">
+                                        <div class="col-4 d-flex align-items-center">
                                             <img src="${detail.hinhAnh || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-8">
                                             <div class="text-primary flex flex-flow-column justify-content-between"><span class="col-auto">Màu: ${detail.mauSac || '-'}</span> | <span class="col-auto">Size: ${detail.kichThuoc || '-'}</span></div>
                                             <p><strong>Giá:</strong> <span class="text-danger">${formatCurrency(detail.donGia || 0)}</span></p>
                                             <p><strong>Số lượng tồn:</strong> <span class="text-warning">${detail.soLuongTon}</span></p>

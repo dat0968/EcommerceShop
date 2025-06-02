@@ -67,13 +67,13 @@ import RevenueStatisticsResponse from '@/models/dtos/statisticsDtos/revenueStati
 import ComboStatisticsResponse from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
 import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 
-import OrderSummary from '@/components/statistics/OrderSummary.vue'
-import ProductStatistic from '@/components/statistics/ProductStatistic.vue'
-import CustomerStatistic from '@/components/statistics/CustomerStatistic.vue'
-import EmployeeStatistic from '@/components/statistics/EmployeeStatistic.vue'
-import RevenueStatistic from '@/components/statistics/RevenueStatistic.vue'
-// import ComboStatistic from '@/components/statistics/ComboStatistic.vue'
-import DatatableStatistic from '@/components/statistics/DatatableStatistic.vue'
+import OrderSummary from '@/components/pages/statistics/OrderSummary.vue'
+import ProductStatistic from '@/components/pages/statistics/ProductStatistic.vue'
+import CustomerStatistic from '@/components/pages/statistics/CustomerStatistic.vue'
+import EmployeeStatistic from '@/components/pages/statistics/EmployeeStatistic.vue'
+import RevenueStatistic from '@/components/pages/statistics/RevenueStatistic.vue'
+// import ComboStatistic from '@/components/pages/statistics/ComboStatistic.vue'
+import DatatableStatistic from '@/components/pages/statistics/DatatableStatistic.vue'
 
 export default {
   name: 'StatisticsView',
@@ -203,49 +203,49 @@ export default {
     async loadOrderSummaryData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetOrderSummary',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.orderSummaryData = OrderSummaryResponse.fromApiResponse(response.data)
     },
     async loadProductStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetProductStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.productStatisticData = ProductStatisticsResponse.fromApiResponse(response.data)
     },
     async loadCustomerStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetCustomerStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.customerStatisticsData = CustomerStatisticsResponse.fromApiResponse(response.data)
     },
     async loadEmployeeStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetEmployeeStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.employeeStatisticsData = EmployeeStatisticsResponse.fromApiResponse(response.data)
     },
     async loadRevenueStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetRevenueStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
     },
     async loadComboStatisticsData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetComboStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
     },
     async loadDatatableData() {
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetDatatableStatistics',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.takeAuth(),
       )
       // console.log(response.data)
       this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)

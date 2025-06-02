@@ -1,17 +1,70 @@
 import axios from 'axios'
+import toastr from 'toastr'
 import { jwtDecode } from 'jwt-decode'
 import ResponseAPI from '@/models/ResponseAPI'
 import ConfigsRequest from '@/models/ConfigsRequest'
 import router from '@/router/index'
 import Cookies from 'js-cookie' // Import js-cookie
-// Base Axios Client
+const API_PATHS = [
+  'https://localhost:7217/api', // Cái này là path https của API
+  'http://localhost:5031/api', // Cái này là path http của API
+]
+
+// Hàm kiểm tra endpoint khả dụng
+async function detectAvailableApi(paths = API_PATHS) {
+  // Kiểm tra xem đã có baseUrl trong localStorage chưa
+  const storedBaseUrl = localStorage.getItem('apiBaseUrl')
+  if (storedBaseUrl) {
+    // Nếu có, kiểm tra xem nó có khả dụng không
+    try {
+      const res = await axios.options(storedBaseUrl + '/Health', { timeout: 1000 })
+      console.info(`API endpoint ${storedBaseUrl} khả dụng!`, `[${res.status}]`)
+      return storedBaseUrl // Trả về baseURL đã lưu
+    } catch (e) {
+      console.info(`API endpoint ${storedBaseUrl} không khả dụng:`, e.message)
+      // Nếu không khả dụng, xóa khỏi localStorage
+      localStorage.removeItem('apiBaseUrl')
+    }
+  }
+  // Nếu không có baseUrl trong localStorage hoặc nó không khả dụng, thử các endpoint khác
+  console.info('Đang kiểm tra các API endpoint khả dụng...')
+  // Duyệt qua từng endpoint trong mảng paths
+  for (const path of paths) {
+    try {
+      // Gửi request OPTIONS để kiểm tra CORS và server
+      const res = await axios.options(path + '/Health', { timeout: 1000 })
+      console.info(`API endpoint ${path} khả dụng!`, `[${res.status}]`)
+      localStorage.setItem('apiBaseUrl', path) // Lưu vào localStorage
+      return path
+    } catch (e) {
+      // Nếu bị lỗi, thử endpoint tiếp theo
+      console.info(`API endpoint ${path} không khả dụng:`, e.message)
+      continue
+    }
+  }
+  toastr.error(
+    'Không tìm thấy API endpoint khả dụng! Vui lòng kiểm tra lại cấu hình hoặc kết nối mạng.',
+    'Lỗi kết nối API',
+  )
+
+  console.error('Không tìm thấy API endpoint khả dụng!')
+  return '' // Trả về chuỗi rỗng nếu không tìm thấy endpoint nào khả dụng
+}
+
+// Khởi tạo axiosClient với baseURL tạm thời
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:5031/api', // Thay bằng base URL của API bạn
-  timeout: 500000, // Giới hạn timeout (ms)
+  baseURL: localStorage.getItem('apiBaseUrl') ?? API_PATHS[0],
+  timeout: 500000,
   headers: {
     'Content-Type': 'application/json',
   },
 })
+
+// Hàm khởi tạo baseURL động
+export async function initApiBaseUrl() {
+  const url = await detectAvailableApi()
+  axiosClient.defaults.baseURL = url ?? ''
+}
 
 // Hàm đọc accesstoken (tương tự hàm ReadToken auth.js)
 export function ReadToken(token) {
@@ -183,4 +236,15 @@ async function handleCastResponse(callback, castFn) {
     return new ResponseAPI(null, false, error.message)
   }
 }
-export { getFromApi, postToApi, putToApi, patchToApi, deleteFromApi, handleCastResponse }
+function isEndpointAvailable() {
+  return axiosClient.defaults.baseURL !== '' && axiosClient.defaults.baseURL !== null
+}
+export {
+  getFromApi,
+  postToApi,
+  putToApi,
+  patchToApi,
+  deleteFromApi,
+  handleCastResponse,
+  isEndpointAvailable,
+}

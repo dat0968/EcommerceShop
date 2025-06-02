@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-
 const route = useRoute()
 const getUrlAPI = ref('https://localhost:7217/api')
 const id = route.params.id
@@ -29,6 +28,7 @@ const fetchAPI = async () => {
       allImages.value.push(image)
     })
   })
+
   // Xử lý moTa để thêm xuống dòng và định dạng
   if (product.value.moTa) {
     product.value.moTa = product.value.moTa
@@ -79,6 +79,7 @@ const maxQuantity = computed(() => {
   return match ? match.soLuongTon : 'Hết hàng'
 })
 
+
 const chunkSize = 4
 const slideChunks = computed(() => {
   const chunks = []
@@ -87,6 +88,7 @@ const slideChunks = computed(() => {
   }
   return chunks
 })
+
 const maxSlide = computed(() => slideChunks.value.length || 1)
 const prevImage = () => {
   currentSlider.value = currentSlider.value === 1 ? maxSlide.value : currentSlider.value - 1
@@ -95,6 +97,7 @@ const prevImage = () => {
 const nextImage = () => {
   currentSlider.value = currentSlider.value === maxSlide.value ? 1 : currentSlider.value + 1
 }
+
 
 const selectColor = (color) => {
   selectedColor.value = color
@@ -107,11 +110,13 @@ const currentImage = ref(1)
 
 onMounted(() => {
   fetchAPI()
+
   // Cuộn lên đầu trang
   window.scrollTo({
     top: 0,
     behavior: 'smooth', // Cuộn mượt mà
   })
+
   // Initialize Owl Carousel
   const owl = $('.product__details__pic__slider').owlCarousel({
     items: 1,
@@ -259,7 +264,7 @@ const changeImage = (index) => {
                       <button
                         v-for="(color, index) in colors"
                         :key="index"
-                        :class="['btn', 'btn-light', { active: selectedColor === color }]"
+                        :class="['btn', 'btn-light', { active: selectedColor === index }]"
                         @click="selectColor(color)"
                         style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
                       >
@@ -273,7 +278,7 @@ const changeImage = (index) => {
                       <button
                         v-for="(size, index) in sizes"
                         :key="index"
-                        :class="['btn', 'btn-light', { active: selectedSize === size }]"
+                        :class="['btn', 'btn-light', { active: selectedSize === index }]"
                         @click="selectSize(size)"
                         style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
                       >

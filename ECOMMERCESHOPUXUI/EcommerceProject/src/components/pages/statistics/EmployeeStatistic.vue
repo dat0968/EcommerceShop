@@ -3,7 +3,7 @@
     <!-- Khung dữ liệu tóm tắt và biểu đồ -->
     <div class="card m-b-30">
       <div class="card-header bg-white">
-        <h5 class="card-title text-black mb-0">Tổng quan lương nhân viên</h5>
+        <h5 class="card-title text-black mb-0">Tổng quan lương nhân viên (Raw)</h5>
       </div>
       <div class="card-body">
         <div v-if="isLoading" class="text-center my-4">

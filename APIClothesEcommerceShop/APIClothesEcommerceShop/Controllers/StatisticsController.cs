@@ -6,6 +6,7 @@ using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.Statistics;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.Statistics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIClothesEcommerceShop.Controllers
@@ -28,6 +29,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<ProductStatisticsResponse>), 200)]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetProductStatistics()
         {
@@ -51,6 +53,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<CustomerStatisticsResponse>), 200)]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetCustomerStatistics()
         {
@@ -66,6 +69,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<EmployeeStatisticsResponse>), 200)]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetEmployeeStatistics()
         {
@@ -81,6 +85,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<RevenueStatisticsResponse>), 200)]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetRevenueStatistics()
         {
@@ -96,6 +101,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<OrderSummaryResponse>), 200)]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetOrderSummary()
         {
@@ -111,6 +117,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<ComboStatisticsResponse>), 200)]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetComboStatistics()
         {
@@ -126,6 +133,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<DatatableStatisticsResponse>), 200)]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetDatatableStatistics()
         {
