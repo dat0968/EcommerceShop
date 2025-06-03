@@ -269,7 +269,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                             .Take(3)
                             .Select(o => new OrderRecentTopUser(
                                 o.MaHd,
-                                o.MaKh,
+                                o.MaKh ?? 0,
                                 o.MaKhNavigation?.HoTen ?? "N/A",
                                 o.MaNv,
                                 o.MaCode,

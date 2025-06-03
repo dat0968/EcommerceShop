@@ -13,6 +13,7 @@
     <PackageReference Include="itext7" Version="7.2.5" />
     <PackageReference Include="iTextSharp" Version="5.5.13.4" />
     <PackageReference Include="Markdig" Version="0.41.1" />
+    <PackageReference Include="Microsoft.ML" Version="5.0.0-preview.1.25127.4" />
   </ItemGroup>
 
   <ItemGroup>

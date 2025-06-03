@@ -10,7 +10,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
 {
     public class OrderRepository : IOrderRepository
     {
-        private readonly EcommerceShopContext db; 
+        private readonly EcommerceShopContext db;
         public OrderRepository(EcommerceShopContext db)
         {
             this.db = db;
@@ -111,7 +111,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
             var ListOrder = await db.Hoadons.AsNoTracking().Select(order => new OrderResponseDTO
             {
                 MaHd = order.MaHd,
-                MaKh = order.MaKh,
+                MaKh = order.MaKh.Value,
                 MaNv = order.MaNv,
                 TenNv = order.MaNvNavigation != null ? order.MaNvNavigation.HoTen : null,
                 MaCode = order.MaCode,
@@ -171,11 +171,11 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     throw new Exception("Not found Order");
                 }
 
-                if(status.ToLower() != "chờ xác nhận")
+                if (status.ToLower() != "chờ xác nhận")
                 {
                     FindOrder.MaNv = MaNv;
                 }
-                if(status.ToLower() == "đã giao cho đơn vị vận chuyển")
+                if (status.ToLower() == "đã giao cho đơn vị vận chuyển")
                 {
                     FindOrder.BatDauGiao = DateTime.Now;
                 }
@@ -188,7 +188,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                             FindOrder.NgayNhan = DateTime.Now;
                         }
                     }
-                    if(FindOrder.NgayThanhToan == null)
+                    if (FindOrder.NgayThanhToan == null)
                     {
                         if (status.ToLower() == "đã thanh toán")
                         {
@@ -206,7 +206,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                         }
                     }
                 }
-                if(paymentmethod.ToLower() == "đã hủy" || paymentmethod.ToLower() == "hoàn trả/hoàn tiền")
+                if (paymentmethod.ToLower() == "đã hủy" || paymentmethod.ToLower() == "hoàn trả/hoàn tiền")
                 {
                     await CancelOrders(id, paymentmethod, reasonCancel);
                 }

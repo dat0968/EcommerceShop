@@ -27,7 +27,7 @@ namespace APIClothesEcommerceShop.Services
             {
                 userId = p.MaHdNavigation.MaKh.Value,
                 productId = p.MaCtsp.Value,
-                Label = p.MaHdNavigation.TinhTrang.ToLower() == "đã thanh toán" ? 1.0f : 0.0f  
+                Label = p.MaHdNavigation.TinhTrang.ToLower() == "đã thanh toán" ? 1.0f : 0.0f
             });
 
             // Nạp dữ liệu từ một danh sách hoặc mảng vào một IDataView - định dạng dữ liệu mà ML.NET sử dụng để xử lý
@@ -38,14 +38,14 @@ namespace APIClothesEcommerceShop.Services
             IEstimator<ITransformer> estimator = mlContext.Transforms.Conversion.MapValueToKey(outputColumnName: "userId", inputColumnName: "userId")
             .Append(mlContext.Transforms.Conversion.MapValueToKey(outputColumnName: "productId", inputColumnName: "productId"));
 
-            var options = new MatrixFactorizationTrainer.Options
+            /* var options = new MatrixFactorizationTrainer.Options
             {
                 MatrixColumnIndexColumnName = "userId", // Cột là User
                 MatrixRowIndexColumnName = "productId", // Hàng là Product
                 LabelColumnName = "Label", // giá trị tương tác
                 NumberOfIterations = 20,
                 ApproximationRank = 100
-            };
+            }; */
 
 
         }
