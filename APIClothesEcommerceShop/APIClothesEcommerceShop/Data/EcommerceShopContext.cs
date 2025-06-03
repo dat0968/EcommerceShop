@@ -52,10 +52,9 @@ public partial class EcommerceShopContext : DbContext
 
     public virtual DbSet<DanhGia> DanhGias { get; set; }
 
-    public virtual DbSet<BinhLuan> BinhLuans { get; set; }
+    // ? public virtual DbSet<BinhLuan> BinhLuans { get; set; }
 
-    public virtual DbSet<YeuThich> YeuThichs { get; set; }
-
+    /* ? public virtual DbSet<YeuThich> YeuThichs { get; set; } */
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Chitietcombohoadon>(entity =>
@@ -444,7 +443,7 @@ public partial class EcommerceShopContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
-        modelBuilder.Entity<YeuThich>()
+        /* ? modelBuilder.Entity<YeuThich>()
             .HasOne(y => y.KhachHang)
             .WithMany()
             .HasForeignKey(y => y.IdKhachHang)
@@ -454,7 +453,7 @@ public partial class EcommerceShopContext : DbContext
             .HasOne(y => y.DanhGia)
             .WithMany()
             .HasForeignKey(y => y.IdDanhGia)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade); */
 
         OnModelCreatingPartial(modelBuilder);
     }

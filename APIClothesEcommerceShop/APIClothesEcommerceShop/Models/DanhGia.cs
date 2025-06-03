@@ -36,7 +36,8 @@ namespace APIClothesEcommerceShop.Models
 
         [ForeignKey("IdKhachHang")]
         public virtual Khachhang? Khachhang { get; set; }
-        public virtual ICollection<YeuThich> YeuThichs { get; set; } = new List<YeuThich>();
+
+        // ? public virtual ICollection<YeuThich> YeuThichs { get; set; } = new List<YeuThich>();
     }
     public static class DanhGiaExtensions
     {

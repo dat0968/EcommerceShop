@@ -27,32 +27,34 @@ namespace APIClothesEcommerceShop.Repositories.Comments
 
         public Task<ResponseAPI<IEnumerable<CommentResponseDTO>>> GetCommentsByProductIdAsync(int productId)
         {
-            ResponseAPI<IEnumerable<CommentResponseDTO>> response = new();
-            try
-            {
-                var comments = _db.BinhLuans
-                    .Where(c => c.IdSanPham == productId)
-                    .Select(c => new CommentResponseDTO
-                    {
-                        Id = c.Id,
-                        IdSanPham = c.IdSanPham,
-                        IdKhachHang = c.IdKhachHang,
-                        HoTen = c.HoTen,
-                        Email = c.Email,
-                        NoiDung = c.NoiDung,
-                        NgayBinhLuan = c.NgayBinhLuan,
-                        ParentId = c.ParentId
-                    })
-                    .ToList();
+            throw new NotImplementedException();
 
-                response.SetSuccessResponse(data: comments);
-            }
-            catch (Exception ex)
-            {
-                response.SetErrorResponse(ex.Message);
-            }
+            // ResponseAPI<IEnumerable<CommentResponseDTO>> response = new();
+            // try
+            // {
+            //     var comments = _db.BinhLuans
+            //         .Where(c => c.IdSanPham == productId)
+            //         .Select(c => new CommentResponseDTO
+            //         {
+            //             Id = c.Id,
+            //             IdSanPham = c.IdSanPham,
+            //             IdKhachHang = c.IdKhachHang,
+            //             HoTen = c.HoTen,
+            //             Email = c.Email,
+            //             NoiDung = c.NoiDung,
+            //             NgayBinhLuan = c.NgayBinhLuan,
+            //             ParentId = c.ParentId
+            //         })
+            //         .ToList();
 
-            return Task.FromResult(response);
+            //     response.SetSuccessResponse(data: comments);
+            // }
+            // catch (Exception ex)
+            // {
+            //     response.SetErrorResponse(ex.Message);
+            // }
+
+            // return Task.FromResult(response);
         }
 
         public Task UpdateCommentAsync(BinhLuan comment)

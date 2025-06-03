@@ -19,7 +19,7 @@ namespace APIClothesEcommerceShop.Models
         [ForeignKey("IdKhachHang")]
         public virtual Khachhang KhachHang { get; set; } = null!;
 
-        [ForeignKey("IdDanhGia")]
-        public virtual DanhGia DanhGia { get; set; } = null!;
+        // [ForeignKey("IdDanhGia")]
+        // public virtual DanhGia DanhGia { get; set; } = null!;
     }
 }
