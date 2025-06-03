@@ -13,10 +13,10 @@ namespace APIClothesEcommerceShop.Models
         [Key]
         public int Id { get; set; }
         public bool DaThich { get; set; } = false;
-        public int IdKhachHang { get; set; }
+        public int MaKh { get; set; }
         public int IdDanhGia { get; set; }
 
-        [ForeignKey("IdKhachHang")]
+        [ForeignKey("MaKh")]
         public virtual Khachhang KhachHang { get; set; } = null!;
 
         // [ForeignKey("IdDanhGia")]

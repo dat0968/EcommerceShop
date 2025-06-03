@@ -38,7 +38,7 @@ namespace APIClothesEcommerceShop.Repositories.Comments
             //         {
             //             Id = c.Id,
             //             IdSanPham = c.IdSanPham,
-            //             IdKhachHang = c.IdKhachHang,
+            //             MaKh = c.MaKh,
             //             HoTen = c.HoTen,
             //             Email = c.Email,
             //             NoiDung = c.NoiDung,

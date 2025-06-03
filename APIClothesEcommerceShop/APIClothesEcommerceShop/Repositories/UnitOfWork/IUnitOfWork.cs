@@ -14,7 +14,7 @@ namespace APIClothesEcommerceShop.Repositories.UnitOfWork
         Task SaveAsync();
         ICategoryRepository Category { get; }
         IReviewRepository Review { get; }
-        ICommentRepository Comment { get; }
-        IWishlistRepository Wishlist { get; }
+        // ICommentRepository Comment { get; }
+        // IWishlistRepository Wishlist { get; }
     }
 }

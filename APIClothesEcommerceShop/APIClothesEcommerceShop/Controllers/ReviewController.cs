@@ -37,9 +37,9 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpPost("{productId}")]
-        public async Task<IActionResult> UpsertReview(int productId, [FromBody] ReviewRequestDTO review)
+        public async Task<IActionResult> AddReview(int productId, [FromBody] ReviewRequestDTO review)
         {
-            if (review == null || review.IdSanPham != productId)
+            if (review == null || review.MaCtsp != productId)
             {
                 return BadRequest(new ResponseAPI<ReviewResponseDTO>
                 {
@@ -48,20 +48,47 @@ namespace APIClothesEcommerceShop.Controllers
                 });
             }
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var res = await _unit.Review.UpsertReviewAsync(review, userId);
+            review.MaKh = userId;
+
+            var res = await _unit.Review.AddReviewForItemInOrderAsync(review);
             if (!res.Success)
             {
                 return StatusCode(res.StatusCode, res);
             }
             return Ok(res);
         }
+
+        [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
+        [Authorize(Roles = "Customer")]
+        [HttpPut("{productId}")]
+        public async Task<IActionResult> UpdateReview(int productId, [FromBody] ReviewRequestDTO review)
+        {
+            if (review == null || review.MaCtsp != productId)
+            {
+                return BadRequest(new ResponseAPI<ReviewResponseDTO>
+                {
+                    Success = false,
+                    Message = "Invalid review data."
+                });
+            }
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            review.MaKh = userId;
+
+            var res = await _unit.Review.UpdateReviewAsync(review);
+            if (!res.Success)
+            {
+                return StatusCode(res.StatusCode, res);
+            }
+            return Ok(res);
+        }
+
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpDelete("{productId}")]
         public async Task<IActionResult> DeleteReview(int productId)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var res = await _unit.Review.DeleteReviewAsync(productId, userId);
+            var res = await _unit.Review.RemoveAsync(productId, userId);
             if (!res.Success)
             {
                 return StatusCode(res.StatusCode, res);

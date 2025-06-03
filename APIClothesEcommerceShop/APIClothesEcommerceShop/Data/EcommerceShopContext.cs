@@ -446,7 +446,7 @@ public partial class EcommerceShopContext : DbContext
         /* ? modelBuilder.Entity<YeuThich>()
             .HasOne(y => y.KhachHang)
             .WithMany()
-            .HasForeignKey(y => y.IdKhachHang)
+            .HasForeignKey(y => y.MaKh)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<YeuThich>()

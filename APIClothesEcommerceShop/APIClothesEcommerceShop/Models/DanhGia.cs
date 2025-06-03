@@ -14,31 +14,35 @@ namespace APIClothesEcommerceShop.Models
         [Key]
         public int Id { get; set; }
 
-        public int IdKhachHang { get; set; } = 0;
-        public int IdSanPham { get; set; } = 0;
-        [MaxLength(54)]
-        public string? HoTen { get; set; } = string.Empty;
-
-        [EmailAddress]
-        [MaxLength(54)]
-        public string? Email { get; set; } = string.Empty;
+        public int MaKh { get; set; }  // Liên kết với khách hàng
+        public int MaHd { get; set; }  // Liên kết với hóa đơn đã mua
+        public int? MaCtsp { get; set; } // Liên kết với sản phẩm trong hóa đơn (nếu có)
+        public int? MaCombo { get; set; } // Liên kết với combo trong hóa đơn (nếu có)
 
         [MaxLength(500)]
         public string NoiDung { get; set; } = string.Empty;
 
         [Range(1, 5)]
-        public int SoSao { get; set; } = 0;
+        public int SoSao { get; set; }
 
-        public DateTime? NgayDanhGia { get; set; } = DateTime.Now;
+        public DateTime NgayDanhGia { get; set; } = DateTime.UtcNow;
 
-        [ForeignKey("IdSanPham")]
-        public virtual Sanpham? SanPham { get; set; }
+        public string? ShopPhanHoi { get; set; } = null;
 
-        [ForeignKey("IdKhachHang")]
-        public virtual Khachhang? Khachhang { get; set; }
+        [ForeignKey("MaKh")]
+        public virtual Khachhang? KhachHang { get; set; }
 
-        // ? public virtual ICollection<YeuThich> YeuThichs { get; set; } = new List<YeuThich>();
+        [ForeignKey("MaHd")]
+        public virtual Hoadon? Hoadon { get; set; }
+
+        [ForeignKey("MaCtsp")]
+        public virtual Chitietsanpham? ChitietSanPham { get; set; }
+
+        [ForeignKey("MaCombo")]
+        public virtual Combo? Combo { get; set; }
     }
+
+
     public static class DanhGiaExtensions
     {
         public static DanhGia ToDanhGia(this ReviewRequestDTO dto)
@@ -46,29 +50,31 @@ namespace APIClothesEcommerceShop.Models
             return new DanhGia
             {
                 Id = dto.Id ?? 0,
-                IdKhachHang = dto.IdKhachHang,
-                IdSanPham = dto.IdSanPham,
-                HoTen = dto.HoTen,
-                Email = dto.Email,
+                MaKh = dto.MaKh,
+                MaHd = dto.MaHd,
+                MaCtsp = dto.MaCtsp,
+                MaCombo = dto.MaCombo,
                 NoiDung = dto.NoiDung,
                 SoSao = dto.SoSao,
                 NgayDanhGia = dto.NgayDanhGia
             };
         }
+
         public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity)
         {
             return new ReviewResponseDTO
             {
                 Id = entity.Id,
-                IdKhachHang = entity.IdKhachHang,
-                IdSanPham = entity.IdSanPham,
-                HoTen = entity.HoTen,
-                Email = entity.Email,
+                MaKh = entity.MaKh,
+                MaHd = entity.MaHd,
+                MaCtsp = entity.MaCtsp,
+                MaCombo = entity.MaCombo,
                 NoiDung = entity.NoiDung,
                 SoSao = entity.SoSao,
-                NgayDanhGia = entity.NgayDanhGia ?? DateTime.UtcNow
+                NgayDanhGia = entity.NgayDanhGia,
+                ShopPhanHoi = entity.ShopPhanHoi
             };
         }
-
     }
+
 }

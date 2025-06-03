@@ -8,17 +8,15 @@ namespace APIClothesEcommerceShop.DTO.Reviews
     public class ReviewResponseDTO
     {
         public int Id { get; set; }
-
-        public int IdKhachHang { get; set; } = 0;
-        public int IdSanPham { get; set; } = 0;
-        public string? HoTen { get; set; } = string.Empty;
-
-        public string? Email { get; set; } = string.Empty;
+        public int MaKh { get; set; } = 0;
+        public int MaHd { get; set; }
+        public int? MaCtsp { get; set; } = null;
+        public int? MaCombo { get; set; } = null;
 
         public string NoiDung { get; set; } = string.Empty;
-
         public int SoSao { get; set; } = 0;
 
         public DateTime NgayDanhGia { get; set; } = DateTime.Now;
+        public string? ShopPhanHoi { get; set; } = null;
     }
 }

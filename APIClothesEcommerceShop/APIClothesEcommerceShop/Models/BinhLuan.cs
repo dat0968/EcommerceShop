@@ -14,7 +14,7 @@ namespace APIClothesEcommerceShop.Models
         public int Id { get; set; }
 
         public int IdSanPham { get; set; }
-        public int IdKhachHang { get; set; } = 0;
+        public int MaKh { get; set; } = 0;
 
         [MaxLength(54)]
         public string? HoTen { get; set; } = string.Empty;
@@ -29,7 +29,7 @@ namespace APIClothesEcommerceShop.Models
         [ForeignKey("IdSanPham")]
         public virtual Sanpham? SanPham { get; set; }
 
-        [ForeignKey("IdKhachHang")]
+        [ForeignKey("MaKh")]
         public virtual Khachhang? Khachhang { get; set; }
 
         public int ParentId { get; set; } = 0;

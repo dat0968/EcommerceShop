@@ -11,8 +11,10 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 {
     public interface IReviewRepository : IRepository<DanhGia>
     {
-        Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int productId, int? userId = null);
-        Task<ResponseAPI<ReviewResponseDTO>> UpsertReviewAsync(ReviewRequestDTO review, int userId);
-        Task<ResponseAPI<string>> DeleteReviewAsync(int reviewId, int userId);
+        Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int productId);
+        Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsOfItemByOrderIdAsync(int orderId, int userId);
+        Task<ResponseAPI<ReviewResponseDTO>> AddReviewForItemInOrderAsync(ReviewRequestDTO entity);
+        Task<ResponseAPI<string>> UpdateReviewAsync(ReviewRequestDTO entity);
+        Task<ResponseAPI<string>> RemoveAsync(int reviewId, int userId);
     }
 }

@@ -10,7 +10,7 @@ namespace APIClothesEcommerceShop.DTO.Comment
         public int? Id { get; set; }
 
         public int IdSanPham { get; set; }
-        public int IdKhachHang { get; set; } = 0;
+        public int MaKh { get; set; } = 0;
 
         public string? HoTen { get; set; } = string.Empty;
 

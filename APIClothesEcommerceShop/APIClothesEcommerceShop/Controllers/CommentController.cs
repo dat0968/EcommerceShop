@@ -23,14 +23,14 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet("{productId}")]
         public async Task<IActionResult> GetCommentsByProductId(int productId)
         {
-            ResponseAPI<IEnumerable<CommentResponseDTO>> res = new();
-            var comments = await _unit.Comment.GetCommentsByProductIdAsync(productId);
-            if (comments == null)
-            {
-                res.SetErrorResponse("No comments found for this product.");
-                return NotFound(res);
-            }
-            return Ok(res);
+            // ResponseAPI<IEnumerable<CommentResponseDTO>> res = new();
+            // var comments = await _unit.Comment.GetCommentsByProductIdAsync(productId);
+            // if (comments == null)
+            // {
+            //     res.SetErrorResponse("No comments found for this product.");
+            //     return NotFound(res);
+            // }
+            return Ok();
         }
     }
 }
