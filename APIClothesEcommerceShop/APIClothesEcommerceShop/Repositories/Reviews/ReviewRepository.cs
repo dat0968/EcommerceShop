@@ -51,6 +51,40 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
+        public async Task<ResponseAPI<Hoadon>> GetOrderWithDetailItemAndReviewByOrderIdAsync(int orderId, int userId)
+        {
+            ResponseAPI<Hoadon> response = new();
+            try
+            {
+                if (orderId <= 0)
+                {
+                    throw new ArgumentException("Thông số dữ liệu đơn hàng không hợp lệ");
+                }
+
+                if (userId <= 0)
+                {
+                    throw new ArgumentException("Thông số dữ liệu người dùng không hợp lệ");
+                }
+
+                Hoadon? hoadon = await _db.Hoadons
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(cthd => cthd.MaDanhGiaNavigation)
+                    .Include(h => h.Chitietcombohoadons)
+                        .ThenInclude(ctcbo => ctcbo.MaDanhGiaNavigation)
+                    .FirstOrDefaultAsync(h => h.MaHd == orderId && h.MaKh == userId);
+
+                if (hoadon == null)
+                {
+                    throw new KeyNotFoundException("Không có đánh giá nào cho các sản phẩm trong hóa đơn này");
+                }
+                response.SetSuccessResponse(data: hoadon, message: "Lấy danh sách đánh giá thành công");
+            }
+            catch (System.Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
         public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsOfItemByOrderIdAsync(int orderId, int userId)
         {
             ResponseAPI<IEnumerable<ReviewResponseDTO>> response = new();

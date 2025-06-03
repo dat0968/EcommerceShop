@@ -19,6 +19,7 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
         {
             // _db.Database.EnsureCreated();
             InitTestAccount();
+            // InitTestOrder(3);
         }
         private void InitCombo(int numCreate, int? idOrder = null)
         {
@@ -153,6 +154,100 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
             }
 
             _db.SaveChanges();
+        }
+
+        private void InitTestOrder(int numCreate, string username = "customer.demo")
+        {
+            var khachHang = _db.Khachhangs.FirstOrDefault(kh => kh.TenTaiKhoan == username);
+            if (khachHang == null) return;
+
+            var sanphams = _db.Sanphams.ToList();
+            var chitietsanphams = _db.Chitietsanphams.ToList();
+            var random = new Random();
+
+            for (int i = 1; i <= numCreate; i++)
+            {
+                // Tạo hóa đơn mới
+                var hoadon = new Hoadon
+                {
+                    MaKh = khachHang.MaKh,
+                    NgayTao = DateTime.Now,
+                    DiaChiNhanHang = "123 Đường Demo, Quận 1, TP.HCM",
+                    HoTen = khachHang.HoTen,
+                    Sdt = khachHang.Sdt ?? "0900000001",
+                    PhiVanChuyen = 20000,
+                    TienGoc = 0, // Sẽ tính sau
+                    HinhThucTt = "VnPay",
+                    TinhTrang = "Chờ xử lý",
+                    IsActive = true
+                };
+
+                int tongTien = 0;
+
+                // Chọn ngẫu nhiên 1-3 sản phẩm cho hóa đơn này
+                var ctspInOrder = chitietsanphams.Take(random.Next(1, 4)).ToList();
+                List<Cthoadon> cthdInOrder = new();
+                foreach (var ctsp in ctspInOrder)
+                {
+                    int soLuong = random.Next(1, 5);
+                    int donGia = ctsp.DonGia;
+
+                    Cthoadon newCtHd = (new Cthoadon
+                    {
+                        MaCtsp = ctsp.MaCtsp,
+                        SoLuong = soLuong,
+                        Gia = donGia
+                    });
+
+                    tongTien += donGia * soLuong;
+
+                    cthdInOrder.Add(newCtHd);
+                }
+
+                var ctcbos = _db.Combos
+                    .Take(random.Next(1, 3))
+                    .ToList();
+                List<Chitietcombohoadon> ctcboInOrders = new();
+                foreach (var combo in ctcbos)
+                {
+                    int soLuong = random.Next(1, 3);
+                    int donGia = combo.GiaCombo;
+
+                    Chitietcombohoadon ctcbo = (new Chitietcombohoadon
+                    {
+                        MaCtsp = chitietsanphams.FirstOrDefault()?.MaCtsp ?? 3, // Combo không có mã chi tiết sản phẩm
+                        SoLuong = soLuong,
+                        DonGia = donGia,
+                        MaCombo = combo.MaCombo // Gán ID của combo
+                    });
+
+                    tongTien += donGia * soLuong;
+                    ctcboInOrders.Add(ctcbo);
+                }
+
+                // Gán tổng tiền là tổng giá các sản phẩm giảm 10%
+                hoadon.TienGoc = (tongTien);
+
+                _db.Hoadons.Add(hoadon);
+                _db.SaveChanges();
+
+                foreach (var cthd in cthdInOrder)
+                {
+                    cthd.MaHd = hoadon.MaHd;
+                }
+
+                foreach (var ctcbo in ctcboInOrders)
+                {
+                    ctcbo.MaHd = hoadon.MaHd;
+                }
+
+                _db.AddRange(cthdInOrder);
+                _db.AddRange(ctcboInOrders);
+                _db.SaveChanges();
+
+                Console.WriteLine($">>> Đã tạo hóa đơn {hoadon.MaHd} cho khách hàng {khachHang.HoTen} với tổng tiền {hoadon.TienGoc} VNĐ");
+            }
+
         }
     }
 }

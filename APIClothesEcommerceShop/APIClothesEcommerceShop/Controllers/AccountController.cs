@@ -53,7 +53,17 @@ namespace APIClothesEcommerceShop.Controllers
             return await _accountRepository.LoginCustomer(model);
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// {
+        ///   "email_TenTaiKhoan": "staff.demo",
+        ///   "matKhau": "StaffDemo@123"
+        /// }
+        /// </remarks>
         [HttpPost("LoginStaff")]
         public async Task<IActionResult> LoginStaff(LoginDTO model)
         {

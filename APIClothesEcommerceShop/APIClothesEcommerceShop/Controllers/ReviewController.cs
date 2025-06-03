@@ -34,6 +34,32 @@ namespace APIClothesEcommerceShop.Controllers
             }
             return Ok(res);
         }
+        [ProducesResponseType(typeof(ResponseAPI<Hoadon>), 200)]
+        [HttpGet("orders/{orderId}")]
+        public async Task<IActionResult> GetOrderWithReviews(int orderId = 0)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var res = await _unit.Review.GetOrderWithDetailItemAndReviewByOrderIdAsync(orderId, userId);
+            /* if (res.Data == null || !res.Data.Any())
+            {
+                res.SetErrorResponse("No reviews found.");
+                return NotFound(res);
+            } */
+            return Ok(res);
+        }
+        // [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
+        // [HttpGet]
+        // public async Task<IActionResult> GetAllReviews(int orderId = 0)
+        // {
+        //     var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        //     var res = await _unit.Review.GetReviewsOfItemByOrderIdAsync(orderId, userId);
+        //     /* if (res.Data == null || !res.Data.Any())
+        //     {
+        //         res.SetErrorResponse("No reviews found.");
+        //         return NotFound(res);
+        //     } */
+        //     return Ok(res);
+        // }
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpPost]
