@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace APIClothesEcommerceShop.Models;
 
@@ -20,4 +21,7 @@ public partial class Chitietcombohoadon
     public virtual Chitietsanpham MaCtspNavigation { get; set; } = null!;
 
     public virtual Hoadon MaHdNavigation { get; set; } = null!;
+    public int? MaDanhGia { get; set; }
+    [ForeignKey("MaDanhGia")]
+    public virtual DanhGia MaDanhGiaNavigation { get; set; } = null!;
 }

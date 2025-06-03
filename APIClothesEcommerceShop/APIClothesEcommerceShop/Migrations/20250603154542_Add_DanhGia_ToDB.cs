@@ -11,6 +11,18 @@ namespace APIClothesEcommerceShop.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<int>(
+                name: "MaDanhGia",
+                table: "CTHOADON",
+                type: "int",
+                nullable: true);
+
+            migrationBuilder.AddColumn<int>(
+                name: "MaDanhGia",
+                table: "CHITIETCOMBOHOADON",
+                type: "int",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "DANHGIA",
                 columns: table => new
@@ -54,6 +66,16 @@ namespace APIClothesEcommerceShop.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_CTHOADON_MaDanhGia",
+                table: "CTHOADON",
+                column: "MaDanhGia");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CHITIETCOMBOHOADON_MaDanhGia",
+                table: "CHITIETCOMBOHOADON",
+                column: "MaDanhGia");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DANHGIA_MaCombo",
                 table: "DANHGIA",
                 column: "MaCombo");
@@ -72,13 +94,51 @@ namespace APIClothesEcommerceShop.Migrations
                 name: "IX_DANHGIA_MaKh",
                 table: "DANHGIA",
                 column: "MaKh");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_CHITIETCOMBOHOADON_DANHGIA_MaDanhGia",
+                table: "CHITIETCOMBOHOADON",
+                column: "MaDanhGia",
+                principalTable: "DANHGIA",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_CTHOADON_DANHGIA_MaDanhGia",
+                table: "CTHOADON",
+                column: "MaDanhGia",
+                principalTable: "DANHGIA",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_CHITIETCOMBOHOADON_DANHGIA_MaDanhGia",
+                table: "CHITIETCOMBOHOADON");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_CTHOADON_DANHGIA_MaDanhGia",
+                table: "CTHOADON");
+
             migrationBuilder.DropTable(
                 name: "DANHGIA");
+
+            migrationBuilder.DropIndex(
+                name: "IX_CTHOADON_MaDanhGia",
+                table: "CTHOADON");
+
+            migrationBuilder.DropIndex(
+                name: "IX_CHITIETCOMBOHOADON_MaDanhGia",
+                table: "CHITIETCOMBOHOADON");
+
+            migrationBuilder.DropColumn(
+                name: "MaDanhGia",
+                table: "CTHOADON");
+
+            migrationBuilder.DropColumn(
+                name: "MaDanhGia",
+                table: "CHITIETCOMBOHOADON");
         }
     }
 }

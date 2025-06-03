@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    [Migration("20250603075003_Add_DanhGia_ToDB")]
+    [Migration("20250603154542_Add_DanhGia_ToDB")]
     partial class Add_DanhGia_ToDB
     {
         /// <inheritdoc />
@@ -85,6 +85,9 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<int>("DonGia")
                         .HasColumnType("int");
 
+                    b.Property<int?>("MaDanhGia")
+                        .HasColumnType("int");
+
                     b.Property<int>("SoLuong")
                         .HasColumnType("int");
 
@@ -94,6 +97,8 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasIndex("MaCombo");
 
                     b.HasIndex("MaCtsp");
+
+                    b.HasIndex("MaDanhGia");
 
                     b.ToTable("CHITIETCOMBOHOADON", (string)null);
                 });
@@ -246,6 +251,9 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("int")
                         .HasColumnName("MaCTSP");
 
+                    b.Property<int?>("MaDanhGia")
+                        .HasColumnType("int");
+
                     b.Property<int>("MaHd")
                         .HasColumnType("int")
                         .HasColumnName("MaHD");
@@ -259,6 +267,8 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasIndex("MaCombo");
 
                     b.HasIndex("MaCtsp");
+
+                    b.HasIndex("MaDanhGia");
 
                     b.HasIndex("MaHd");
 
@@ -490,7 +500,7 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("char(20)")
                         .IsFixedLength();
 
-                    b.Property<int>("MaKh")
+                    b.Property<int?>("MaKh")
                         .HasColumnType("int")
                         .HasColumnName("MaKH");
 
@@ -857,6 +867,10 @@ namespace APIClothesEcommerceShop.Migrations
                         .IsRequired()
                         .HasConstraintName("FK__CHITIETCO__MaCTS__66603565");
 
+                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", "MaDanhGiaNavigation")
+                        .WithMany()
+                        .HasForeignKey("MaDanhGia");
+
                     b.HasOne("APIClothesEcommerceShop.Models.Hoadon", "MaHdNavigation")
                         .WithMany("Chitietcombohoadons")
                         .HasForeignKey("MaHd")
@@ -866,6 +880,8 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaComboNavigation");
 
                     b.Navigation("MaCtspNavigation");
+
+                    b.Navigation("MaDanhGiaNavigation");
 
                     b.Navigation("MaHdNavigation");
                 });
@@ -920,6 +936,10 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasForeignKey("MaCtsp")
                         .HasConstraintName("FK__CTHOADON__MaCTSP__6B24EA82");
 
+                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", "MaDanhGiaNavigation")
+                        .WithMany()
+                        .HasForeignKey("MaDanhGia");
+
                     b.HasOne("APIClothesEcommerceShop.Models.Hoadon", "MaHdNavigation")
                         .WithMany("Cthoadons")
                         .HasForeignKey("MaHd")
@@ -929,6 +949,8 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaComboNavigation");
 
                     b.Navigation("MaCtspNavigation");
+
+                    b.Navigation("MaDanhGiaNavigation");
 
                     b.Navigation("MaHdNavigation");
                 });
@@ -1029,7 +1051,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "MaKhNavigation")
                         .WithMany("Hoadons")
                         .HasForeignKey("MaKh")
-                        .IsRequired()
                         .HasConstraintName("FK__HOADON__MaKH__60A75C0F");
 
                     b.HasOne("APIClothesEcommerceShop.Models.Nhanvien", "MaNvNavigation")
