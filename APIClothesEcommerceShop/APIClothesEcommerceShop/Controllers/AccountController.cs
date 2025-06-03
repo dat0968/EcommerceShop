@@ -36,14 +36,24 @@ namespace APIClothesEcommerceShop.Controllers
             return await _accountRepository.Register(model);
         }
 
-            
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// {
+        /// "email_TenTaiKhoan": "customer.demo",
+        /// "matKhau": "CustomerDemo@123"
+        /// }
+        /// </remarks>
         [HttpPost("LoginCustomer")]
         public async Task<IActionResult> LoginCustomer(LoginDTO model)
         {
             return await _accountRepository.LoginCustomer(model);
         }
 
-           
+
         [HttpPost("LoginStaff")]
         public async Task<IActionResult> LoginStaff(LoginDTO model)
         {
@@ -56,21 +66,21 @@ namespace APIClothesEcommerceShop.Controllers
             return await _accountRepository.Logout(refreshToken);
         }
 
-         
+
         [HttpGet("ForgotPasswordCustomer")]
         public async Task<IActionResult> ForgotPasswordCustomer(string email)
         {
             return await _accountRepository.ForgotPasswordCustomer(email);
         }
 
-           
+
         [HttpGet("ForgotPasswordStaff")]
         public async Task<IActionResult> ForgotPasswordStaff(string email)
         {
             return await _accountRepository.ForgotPasswordStaff(email);
         }
 
-           
+
         [HttpGet("VerifyResetPasswordCode")]
         public async Task<IActionResult> VerifyResetPasswordCode(string email, string code)
         {
@@ -87,7 +97,7 @@ namespace APIClothesEcommerceShop.Controllers
         {
             return await _accountRepository.ResetPasswordStaff(model.Email, model.NewPassword, model.LoginAfterReset);
         }
-      
+
         [HttpPost("RenewAccessToken")]
         public async Task<IActionResult> RenewToken([FromBody] PersonalInformationDTO model)
         {
@@ -100,14 +110,14 @@ namespace APIClothesEcommerceShop.Controllers
             await _accountRepository.LoginGoogle();
         }
 
-        
+
         [HttpGet("GoogleResponse")]
         public async Task<IActionResult> GoogleResponse()
         {
             return await _accountRepository.GoogleResponse();
         }
 
-      
+
         [HttpGet("checkCCCD")]
         public async Task<IActionResult> CheckCCCD(string cccd)
         {
@@ -136,7 +146,7 @@ namespace APIClothesEcommerceShop.Controllers
             return await _accountRepository.SendVerificationCode(email);
         }
 
-      
+
         [HttpGet("VerifyEmail")]
         public async Task<IActionResult> VerifyEmail(string email, string code)
         {

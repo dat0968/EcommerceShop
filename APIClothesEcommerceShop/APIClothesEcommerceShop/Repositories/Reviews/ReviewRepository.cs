@@ -122,7 +122,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     throw new ArgumentException("Nội dung đánh giá không được để trống");
                 }
 
-                if ((entity.MaCombo == 0 && entity.MaCtsp == 0) || (entity.MaCombo != null && entity.MaCtsp != null))
+                if ((entity.MaCombo == 0 && entity.MaCtsp == 0) || (entity.MaCombo != 0 && entity.MaCtsp != 0))
                 {
                     throw new ArgumentException("Phải cung cấp mã sản phẩm hoặc mã combo, nhưng không được cả hai");
                 }
@@ -171,6 +171,11 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 if (string.IsNullOrWhiteSpace(entity.NoiDung))
                 {
                     throw new ArgumentException("Nội dung đánh giá không được để trống");
+                }
+
+                if ((entity.MaCombo == 0 && entity.MaCtsp == 0) || (entity.MaCombo != 0 && entity.MaCtsp != 0))
+                {
+                    throw new ArgumentException("Phải cung cấp mã sản phẩm hoặc mã combo, nhưng không được cả hai");
                 }
 
                 if (entity.SoSao < 1 || entity.SoSao > 5)

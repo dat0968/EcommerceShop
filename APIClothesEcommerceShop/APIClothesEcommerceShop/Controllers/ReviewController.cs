@@ -36,10 +36,10 @@ namespace APIClothesEcommerceShop.Controllers
         }
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
-        [HttpPost("{productId}")]
-        public async Task<IActionResult> AddReview(int productId, [FromBody] ReviewRequestDTO review)
+        [HttpPost]
+        public async Task<IActionResult> AddReview([FromBody] ReviewRequestDTO review)
         {
-            if (review == null || review.MaCtsp != productId)
+            if (review == null)
             {
                 return BadRequest(new ResponseAPI<ReviewResponseDTO>
                 {
@@ -60,10 +60,10 @@ namespace APIClothesEcommerceShop.Controllers
 
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
-        [HttpPut("{productId}")]
-        public async Task<IActionResult> UpdateReview(int productId, [FromBody] ReviewRequestDTO review)
+        [HttpPut]
+        public async Task<IActionResult> UpdateReview([FromBody] ReviewRequestDTO review)
         {
-            if (review == null || review.MaCtsp != productId)
+            if (review == null)
             {
                 return BadRequest(new ResponseAPI<ReviewResponseDTO>
                 {
