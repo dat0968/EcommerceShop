@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    [Migration("20250604064242_Add_DanhGia_ToDB")]
+    [Migration("20250604144211_Add_DanhGia_ToDB")]
     partial class Add_DanhGia_ToDB
     {
         /// <inheritdoc />
@@ -283,6 +283,9 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("NgayDanhGia")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NgayPhanHoi")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NoiDung")

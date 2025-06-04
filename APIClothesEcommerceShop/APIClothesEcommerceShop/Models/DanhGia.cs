@@ -24,6 +24,7 @@ namespace APIClothesEcommerceShop.Models
         public DateTime NgayDanhGia { get; set; } = DateTime.UtcNow;
 
         public string? ShopPhanHoi { get; set; } = string.Empty;
+        public DateTime? NgayPhanHoi { get; set; } = null;
 
         // Liên kết với cho SanPham
         public int? MaSp { get; set; }
@@ -81,10 +82,12 @@ namespace APIClothesEcommerceShop.Models
             {
                 Id = entity.Id,
                 MaKh = entity.MaKh,
+                TenKhachHang = entity.KhachHang?.HoTen ?? "Khách hàng không xác định",
                 NoiDung = entity.NoiDung,
                 SoSao = entity.SoSao,
                 NgayDanhGia = entity.NgayDanhGia,
                 ShopPhanHoi = entity.ShopPhanHoi,
+                NgayPhanHoi = entity.NgayPhanHoi,
                 MaSp = entity.MaSp, // Nếu cần thì thêm mã sản phẩm
                 MaCombo = entity.MaCombo // Nếu cần thì thêm mã combo
             };

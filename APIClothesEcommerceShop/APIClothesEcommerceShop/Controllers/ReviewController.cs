@@ -23,10 +23,23 @@ namespace APIClothesEcommerceShop.Controllers
             _unit = unit;
         }
         [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
-        [HttpGet("{productId}")]
+        [HttpGet("products/{productId}")]
         public async Task<IActionResult> GetReviewsByProductId(int productId)
         {
             var res = await _unit.Review.GetReviewsByProductIdAsync(productId);
+            if (res.Data == null)
+            {
+                res.SetErrorResponse("No reviews found for this product.");
+                return NotFound(res);
+            }
+            return Ok(res);
+        }
+
+        [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
+        [HttpGet("combos/{comboId}")]
+        public async Task<IActionResult> GetReviewsByComboId(int comboId)
+        {
+            var res = await _unit.Review.GetReviewsByComboIdAsync(comboId);
             if (res.Data == null)
             {
                 res.SetErrorResponse("No reviews found for this product.");
@@ -41,30 +54,12 @@ namespace APIClothesEcommerceShop.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var res = await _unit.Review.GetOrderWithDetailItemAndReviewByOrderIdAsync(orderId, userId);
-            /* if (res.Data == null || !res.Data.Any())
-            {
-                res.SetErrorResponse("No reviews found.");
-                return NotFound(res);
-            } */
             return Ok(res);
         }
-        // [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
-        // [HttpGet]
-        // public async Task<IActionResult> GetAllReviews(int orderId = 0)
-        // {
-        //     var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-        //     var res = await _unit.Review.GetReviewsOfItemByOrderIdAsync(orderId, userId);
-        //     /* if (res.Data == null || !res.Data.Any())
-        //     {
-        //         res.SetErrorResponse("No reviews found.");
-        //         return NotFound(res);
-        //     } */
-        //     return Ok(res);
-        // }
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        public async Task<IActionResult> AddReview([FromBody] ReviewRequestDTO review)
+        public async Task<IActionResult> AddReview([FromBody] ReviewRequestDTO review, bool isProduct = true)
         {
             if (review == null)
             {
@@ -77,7 +72,7 @@ namespace APIClothesEcommerceShop.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             review.MaKh = userId;
 
-            var res = await _unit.Review.AddReviewForItemInOrderAsync(review);
+            var res = await _unit.Review.AddReviewForItemInOrderAsync(review, isProduct);
             if (!res.Success)
             {
                 return StatusCode(res.StatusCode, res);
@@ -88,7 +83,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpPut]
-        public async Task<IActionResult> UpdateReview([FromBody] ReviewRequestDTO review)
+        public async Task<IActionResult> UpdateReview([FromBody] ReviewRequestDTO review, bool isProduct = true)
         {
             if (review == null)
             {
@@ -101,7 +96,7 @@ namespace APIClothesEcommerceShop.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             review.MaKh = userId;
 
-            var res = await _unit.Review.UpdateReviewAsync(review);
+            var res = await _unit.Review.UpdateReviewAsync(review, isProduct);
             if (!res.Success)
             {
                 return StatusCode(res.StatusCode, res);
@@ -121,6 +116,14 @@ namespace APIClothesEcommerceShop.Controllers
                 return StatusCode(res.StatusCode, res);
             }
             return Ok(res);
+        }
+
+        [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllReview()
+        {
+            var reviews = await _unit.Review.GetAllReviewDtoAsync();
+            return Ok(reviews);
         }
     }
 }

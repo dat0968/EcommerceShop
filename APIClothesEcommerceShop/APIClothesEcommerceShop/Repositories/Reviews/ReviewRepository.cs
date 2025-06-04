@@ -21,6 +21,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             _db = db;
         }
 
+        // #region [REVIEW METHODS FOR PRODUCTS AND COMBOS ONLY FOR CUSTOMERS]
+        #region [Lấy danh sách đánh giá của sản phẩm]
         public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int maSp)
         {
             var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
@@ -51,7 +53,42 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
+        #endregion
 
+        #region  [Lấy danh sách đánh giá của sản phẩm]
+        public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByComboIdAsync(int maCombo)
+        {
+            var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
+            if (maCombo <= 0)
+            {
+                response.SetErrorResponse("Mã combo không hợp lệ");
+                return response;
+            }
+
+            try
+            {
+                var reviews = await _db.DanhGias
+                    .Where(r => r.MaCombo == maCombo)
+                    .Select(r => r.ToReviewResponseDTO())
+                    .ToListAsync();
+
+                if (!reviews.Any())
+                {
+                    response.SetErrorResponse("Không có đánh giá nào cho combo này");
+                    return response;
+                }
+
+                response.SetSuccessResponse(data: reviews, message: "Lấy danh sách đánh giá thành công");
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+        #endregion
+
+        #region [Lấy danh sách sản phẩm và combo trong hóa đơn cùng với đánh giá của người riêng người dùng theo số hóa đơn]
         public async Task<ResponseAPI<OrderWithReview>> GetOrderWithDetailItemAndReviewByOrderIdAsync(int orderId, int userId)
         {
             var response = new ResponseAPI<OrderWithReview>();
@@ -91,8 +128,10 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
+        #endregion
 
-        public async Task<ResponseAPI<ReviewResponseDTO>> AddReviewForItemInOrderAsync(ReviewRequestDTO entity)
+        #region [Thêm đánh giá cho sản phẩm hoặc combo]
+        public async Task<ResponseAPI<ReviewResponseDTO>> AddReviewForItemInOrderAsync(ReviewRequestDTO entity, bool isProduct)
         {
             var response = new ResponseAPI<ReviewResponseDTO>();
             if (entity == null)
@@ -106,15 +145,29 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 ValidateReviewRequest(entity);
 
                 // Kiểm tra xem đánh giá đã tồn tại chưa
-                var existingReview = await _db.DanhGias
+                DanhGia? existingReview = new();
+                if (isProduct)
+                {
+                    existingReview = await _db.DanhGias
                     .FirstOrDefaultAsync(r => r.MaKh == entity.MaKh &&
-                                              (r.MaSp == entity.MaSp || r.MaCombo == entity.MaCombo));
-
-                // if (existingReview != null)
-                // {
-                //     response.SetErrorResponse("Bạn đã đánh giá sản phẩm hoặc combo này rồi.");
-                //     return response;
-                // }
+                                              (r.MaSp == entity.MaSp));
+                    if (existingReview != null)
+                    {
+                        response.SetErrorResponse("Bạn đã đánh giá sản phẩm này rồi, vui lòng chỉ sửa thông tin.");
+                        return response;
+                    }
+                }
+                else
+                {
+                    existingReview = await _db.DanhGias
+                    .FirstOrDefaultAsync(r => r.MaKh == entity.MaKh &&
+                                              (r.MaCombo == entity.MaCombo));
+                    if (existingReview != null)
+                    {
+                        response.SetErrorResponse("Bạn đã đánh giá combo này rồi, vui lòng chỉ sửa thông tin.");
+                        return response;
+                    }
+                }
 
                 // Thêm đánh giá vào cơ sở dữ liệu
                 var reviewTransform = entity.ToDanhGia();
@@ -128,8 +181,10 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
+        #endregion
 
-        public async Task<ResponseAPI<string>> UpdateReviewAsync(ReviewRequestDTO entity)
+        #region [Cập nhập đánh giá sản phẩm hoặc combo]
+        public async Task<ResponseAPI<string>> UpdateReviewAsync(ReviewRequestDTO entity, bool isProduct)
         {
             var response = new ResponseAPI<string>();
             if (entity == null)
@@ -142,10 +197,26 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 ValidateReviewRequest(entity);
 
-                var existingReview = await _db.DanhGias.FindAsync(entity.Id);
-                if (existingReview == null)
-                    throw new Exception("Đánh giá không tồn tại");
 
+                // Kiểm tra xem đánh giá đã tồn tại chưa
+                DanhGia? existingReview = new();
+                if (isProduct)
+                {
+                    existingReview = await _db.DanhGias
+                    .FirstOrDefaultAsync(r => r.MaKh == entity.MaKh &&
+                                              (r.MaSp == entity.MaSp));
+                }
+                else
+                {
+                    existingReview = await _db.DanhGias
+                    .FirstOrDefaultAsync(r => r.MaKh == entity.MaKh &&
+                                              (r.MaCombo == entity.MaCombo));
+                }
+                if (existingReview == null)
+                {
+                    response.SetErrorResponse("Đánh giá không tồn tại, vui lòng thêm mới đánh giá trước");
+                    return response;
+                }
                 // Cập nhật thông tin đánh giá
                 existingReview.NoiDung = entity.NoiDung;
                 existingReview.SoSao = entity.SoSao;
@@ -162,7 +233,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
+        #endregion
 
+        #region [Xóa đánh giá sản phẩm hoặc combo]
         public async Task<ResponseAPI<string>> RemoveAsync(int reviewId, int userId)
         {
             var response = new ResponseAPI<string>();
@@ -192,12 +265,89 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
+        #endregion
 
+        #region [PRIVATE METHODS]
+        #region [Kiểm tra tính hợp lệ của yêu cầu đánh giá]
         private void ValidateReviewRequest(ReviewRequestDTO entity)
         {
             if (entity.MaKh <= 0) throw new ArgumentException("Mã khách hàng không hợp lệ");
             if (string.IsNullOrWhiteSpace(entity.NoiDung)) throw new ArgumentException("Nội dung đánh giá không được để trống");
             if (entity.SoSao < 1 || entity.SoSao > 5) throw new ArgumentOutOfRangeException(nameof(entity.SoSao), "Số sao phải nằm trong khoảng từ 1 đến 5");
         }
+        #endregion
+        #endregion
+        // #endregion
+
+
+        #region [REVIEW METHODS FOR PRODUCTS AND COMBOS ONLY FOR STAFFS]
+        /// <summary>
+        /// Lấy tất cả đánh giá dưới dạng danh sách DTO
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetAllReviewDtoAsync()
+        {
+            var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
+            try
+            {
+                var reviews = await _db.DanhGias
+                    .Include(r => r.KhachHang) // Bao gồm thông tin khách hàng
+                    .Select(r => r.ToReviewResponseDTO())
+                    .ToListAsync();
+
+                if (!reviews.Any())
+                {
+                    response.SetErrorResponse("Không có đánh giá nào");
+                    return response;
+                }
+
+                response.SetSuccessResponse(data: reviews, message: "Lấy danh sách đánh giá thành công");
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+
+        public async Task<ResponseAPI<string>> UpdateShopReplyAsync(int[] reviewIds, string replyContent)
+        {
+            var response = new ResponseAPI<string>();
+            if (reviewIds == null || reviewIds.Length == 0 || string.IsNullOrWhiteSpace(replyContent))
+            {
+                response.SetErrorResponse("Thông tin đánh giá hoặc nội dung phản hồi không hợp lệ");
+                return response;
+            }
+
+            try
+            {
+                var reviews = await _db.DanhGias
+                    .Where(r => reviewIds.Contains(r.Id))
+                    .ToListAsync();
+
+                if (!reviews.Any())
+                {
+                    response.SetErrorResponse("Không tìm thấy đánh giá nào để cập nhật phản hồi");
+                    return response;
+                }
+
+                foreach (var review in reviews)
+                {
+                    review.ShopPhanHoi = replyContent;
+                    review.NgayPhanHoi = DateTime.UtcNow;
+                }
+
+                _db.DanhGias.UpdateRange(reviews);
+                await _db.SaveChangesAsync();
+
+                response.SetSuccessResponse(data: "Cập nhật phản hồi thành công", message: "Cập nhật phản hồi thành công");
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+        #endregion
     }
 }

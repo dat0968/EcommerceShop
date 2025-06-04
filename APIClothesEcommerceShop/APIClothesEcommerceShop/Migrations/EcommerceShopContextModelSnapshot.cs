@@ -282,6 +282,9 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<DateTime>("NgayDanhGia")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("NgayPhanHoi")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("NoiDung")
                         .IsRequired()
                         .HasMaxLength(500)
