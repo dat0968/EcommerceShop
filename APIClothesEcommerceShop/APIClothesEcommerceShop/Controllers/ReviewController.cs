@@ -125,5 +125,25 @@ namespace APIClothesEcommerceShop.Controllers
             var reviews = await _unit.Review.GetAllReviewDtoAsync();
             return Ok(reviews);
         }
+
+        [HttpPut("shop-response")]
+        public async Task<IActionResult> ResponseToReview([FromBody] int[] listId, string responseContent)
+        {
+            if (listId == null || listId.Length == 0 || string.IsNullOrEmpty(responseContent))
+            {
+                return BadRequest(new ResponseAPI<string>
+                {
+                    Success = false,
+                    Message = "Invalid input data."
+                });
+            }
+
+            var res = await _unit.Review.UpdateShopReplyAsync(listId, responseContent);
+            if (!res.Success)
+            {
+                return StatusCode(res.StatusCode, res);
+            }
+            return Ok(res);
+        }
     }
 }

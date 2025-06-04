@@ -4,7 +4,7 @@
     <button
       class="btn btn-primary position-fixed"
       style="bottom: 30px; left: 20px; z-index: 1050"
-      @click="showModal = true"
+      @click="showModal = !showModal"
     >
       Mở đánh giá
     </button>
@@ -14,59 +14,193 @@
     <!-- Modal card -->
     <div
       v-if="showModal"
-      class="position-fixed top-50 start-50 translate-middle"
-      style="z-index: 1051; min-width: 600px; max-width: 90vw; max-height: 90vh; overflow: auto"
+      class="bg-white border-rounded p-3 position-fixed top-50 start-50 translate-middle"
+      style="z-index: 1051; min-width: 700px; max-width: 95vw; max-height: 95vh; overflow: auto"
     >
-      <div class="card shadow">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <span>Đánh giá sản phẩm</span>
-          <button class="btn-close" @click="showModal = false"></button>
+      <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: activeTab === 'product' }"
+            href="#"
+            @click.prevent="activeTab = 'product'"
+            >Sản phẩm/Combo</a
+          >
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            :class="{ active: activeTab === 'order' }"
+            href="#"
+            @click.prevent="activeTab = 'order'"
+            >Hóa đơn của tôi</a
+          >
+        </li>
+      </ul>
+
+      <!-- Tab 1: Sản phẩm/Combo -->
+      <div v-if="activeTab === 'product'">
+        <h5>Thông tin sản phẩm/combo & đánh giá</h5>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label>Mã sản phẩm:</label>
+            <input
+              v-model.number="productId"
+              type="number"
+              class="form-control"
+              placeholder="Nhập mã sản phẩm"
+            />
+          </div>
+          <div class="col-md-6">
+            <label>Mã combo:</label>
+            <input
+              v-model.number="comboId"
+              type="number"
+              class="form-control"
+              placeholder="Nhập mã combo"
+            />
+          </div>
         </div>
-        <div class="card-body">
-          <!-- Form nhập số -->
-          <form @submit.prevent="onSubmit" class="mb-3">
-            <div class="input-group">
-              <input
-                type="number"
-                class="form-control"
-                v-model.number="inputValue"
-                placeholder="Nhập số lượng"
-                min="1"
-                required
-              />
-              <button class="btn btn-success" type="submit">Gửi</button>
+        <div class="mb-3">
+          <button class="btn btn-info me-2" @click="getProductReviews">
+            Lấy đánh giá sản phẩm
+          </button>
+          <button class="btn btn-info me-2" @click="getComboReviews">Lấy đánh giá combo</button>
+        </div>
+        <div class="mb-3">
+          <label>Nội dung đánh giá:</label>
+          <input v-model="reviewForm.noiDung" class="form-control" placeholder="Nội dung..." />
+          <label class="mt-2">Số sao:</label>
+          <select v-model.number="reviewForm.soSao" class="form-control">
+            <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <button class="btn btn-success me-2" @click="addReview">Thêm đánh giá</button>
+          <button class="btn btn-warning me-2" @click="updateReview">Cập nhật đánh giá</button>
+          <button class="btn btn-danger" @click="deleteReview">Xóa đánh giá</button>
+        </div>
+        <div class="mb-3">
+          <strong>Danh sách đánh giá:</strong>
+          <ul class="list-group">
+            <li v-for="review in result.data" :key="review.id" class="list-group-item">
+              <strong>Nội dung:</strong> {{ review.noiDung }} <br />
+              <strong>Số sao:</strong> {{ review.soSao }} <br />
+              <strong>Ngày đánh giá:</strong> {{ new Date(review.ngayDanhGia).toLocaleString() }}
+              <br />
+              <strong>Phản hồi của shop:</strong>
+              {{ review.shopPhanHoi ? review.shopPhanHoi : 'Chưa có phản hồi' }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tab 2: Hóa đơn của tôi -->
+      <div v-else>
+        <div v-if="!isUserLoggedIn" class="alert alert-warning">
+          Vui lòng <RouterLink to="/Login">đăng nhập</RouterLink> để xem hóa đơn và đánh giá.
+        </div>
+        <div v-else>
+          <h5>Thông tin hóa đơn & đánh giá</h5>
+          <div class="mb-3">
+            <label>Mã hóa đơn:</label>
+            <input
+              v-model.number="orderId"
+              type="number"
+              class="form-control"
+              placeholder="Nhập mã hóa đơn"
+            />
+            <button class="btn btn-info mt-2" @click="getOrderDetail">Xem hóa đơn</button>
+          </div>
+          <div v-if="orderDetail">
+            <div class="mb-2">
+              <strong>Thông tin hóa đơn:</strong>
+              <ul class="list-group">
+                <li class="list-group-item"><strong>Mã hóa đơn:</strong> {{ orderDetail.maHd }}</li>
+                <li class="list-group-item">
+                  <strong>Ngày tạo:</strong> {{ new Date(orderDetail.ngayTao).toLocaleString() }}
+                </li>
+                <li class="list-group-item"><strong>Khách:</strong> {{ orderDetail.hoTen }}</li>
+                <li class="list-group-item">
+                  <strong>Địa chỉ:</strong> {{ orderDetail.diaChiNhanHang }}
+                </li>
+                <li class="list-group-item">
+                  <strong>Tình trạng:</strong> {{ orderDetail.tinhTrang }}
+                </li>
+              </ul>
             </div>
-          </form>
-          <!-- Nội dung chia 2 cột -->
-          <div class="row" style="overflow-x: auto">
-            <!-- Cột nội dung chính -->
-            <div class="col-md-7 mb-3" style="min-width: 250px">
-              <h5>Nội dung chính</h5>
-              <div style="max-height: 200px; overflow-y: auto">
-                <code>
-                  <pre>{{ productData }} </pre>
-                </code>
+            <div>
+              <strong>Sản phẩm trong hóa đơn:</strong>
+              <div
+                v-for="prod in orderDetail.products"
+                :key="prod.id"
+                class="border rounded p-2 mb-2"
+              >
+                <div>Mã sản phẩm: {{ prod.maSp }} | Số lượng: {{ prod.soLuong }}</div>
+                <div>Đánh giá: {{ prod.soSao > 0 ? prod.soSao + ' sao' : 'Chưa đánh giá' }}</div>
+                <div>Nội dung: {{ prod.noiDung }}</div>
+                <div>
+                  <label>Nội dung đánh giá:</label>
+                  <input
+                    v-model="prod._editNoiDung"
+                    class="form-control"
+                    placeholder="Nội dung..."
+                  />
+                  <label class="mt-2">Số sao:</label>
+                  <select v-model.number="prod._editSoSao" class="form-control">
+                    <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
+                  </select>
+                  <button
+                    class="btn btn-success btn-sm me-2 mt-2"
+                    @click="submitOrderProductReview(prod)"
+                  >
+                    Lưu
+                  </button>
+                  <button
+                    class="btn btn-danger btn-sm mt-2"
+                    @click="deleteOrderProductReview(prod)"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+              <strong>Combo trong hóa đơn:</strong>
+              <div
+                v-for="combo in orderDetail.combos"
+                :key="combo.maCombo"
+                class="border rounded p-2 mb-2"
+              >
+                <div>Mã combo: {{ combo.maCombo }} | Số lượng: {{ combo.soLuong }}</div>
+                <div>Đánh giá: {{ combo.soSao > 0 ? combo.soSao + ' sao' : 'Chưa đánh giá' }}</div>
+                <div>Nội dung: {{ combo.noiDung }}</div>
+                <div>
+                  <label>Nội dung đánh giá:</label>
+                  <input
+                    v-model="combo._editNoiDung"
+                    class="form-control"
+                    placeholder="Nội dung..."
+                  />
+                  <label class="mt-2">Số sao:</label>
+                  <select v-model.number="combo._editSoSao" class="form-control">
+                    <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
+                  </select>
+                  <button
+                    class="btn btn-success btn-sm me-2 mt-2"
+                    @click="submitOrderComboReview(combo)"
+                  >
+                    Lưu
+                  </button>
+                  <button class="btn btn-danger btn-sm mt-2" @click="deleteOrderComboReview(combo)">
+                    Xóa
+                  </button>
+                </div>
               </div>
             </div>
-            <!-- Cột phụ -->
-            <div class="col-md-5" style="min-width: 200px">
-              <div class="row">
-                <!-- Nội dung phụ -->
-                <ReviewTestSub
-                  :productData="productData"
-                  :reviewProduct="reviewProduct"
-                  :is-loading="isLoading"
-                  :is-user-logged-in="isUserLoggedIn"
-                />
-                <!-- Đánh giá -->
-                <CommentTestSub
-                  :reviewProduct="reviewProduct"
-                  :commentsProduct="commentsProduct"
-                  :is-loading="isLoading"
-                  :is-user-logged-in="isUserLoggedIn"
-                />
-              </div>
-            </div>
+          </div>
+          <div v-else-if="orderResult">
+            <pre class="bg-light p-2" style="max-height: 200px; overflow: auto">{{
+              orderResult
+            }}</pre>
           </div>
         </div>
       </div>
@@ -77,86 +211,243 @@
 <script>
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
-import ReviewTestSub from './subTestReact/ReviewTestSub.vue'
-import CommentTestSub from './subTestReact/CommentTestSub.vue'
 import authService from '@/services/authService'
+import ResponseAPI from '@/models/ResponseAPI'
 export default {
   name: 'TestReaction',
-  components: { ReviewTestSub, CommentTestSub },
   data() {
     return {
       showModal: false,
-      isLoading: true,
-      inputValue: 1,
-      productData: {},
-      reviewProduct: {},
-      commentsProduct: {},
+      activeTab: 'product',
+      productId: 0,
+      comboId: 0,
+      reviewForm: {
+        id: null,
+        noiDung: '',
+        soSao: 5,
+        maSp: null,
+        maCombo: null,
+      },
+      result: '',
       isUserLoggedIn: !authService.isExpiredSessionAccess(),
+      userId: authService.getUserId(),
+      orderId: null,
+      orderDetail: null,
+      orderResult: '',
     }
   },
-  computed: {},
+  computed: {
+    orderDetailInfo() {
+      if (!this.orderDetail) return ''
+      const { maHd, ngayTao, hoTen, diaChiNhanHang, tinhTrang } = this.orderDetail
+      return `Mã hóa đơn: ${maHd}\nNgày tạo: ${ngayTao}\nKhách: ${hoTen}\nĐịa chỉ: ${diaChiNhanHang}\nTình trạng: ${tinhTrang}`
+    },
+  },
   methods: {
-    async onSubmit() {
+    async getProductReviews() {
+      this.result = 'Đang tải...'
       try {
-        this.isLoading = true
-        // Xử lý submit ở đây, ví dụ alert hoặc emit
-        await this.loadProductData()
-        await this.loadReviewProduct()
-        await this.loadCommentsProduct()
-      } catch (error) {
-        console.error('Error during submit:', error)
-      } finally {
-        this.showModal = true
-        this.isLoading = false
+        const res = await axiosConfig.getFromApi(
+          `/review/products/${this.productId}`,
+          ConfigsRequest.getSkipAuthConfig(),
+        )
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
+        else alert('Đã nhận dữ liệu đánh giá!')
+        this.result = res
+      } catch (e) {
+        this.result = e.message
       }
     },
-    async loadProductData() {
-      const res = await axiosConfig
-        .getFromApi(`/Products/${this.inputValue}`, ConfigsRequest.getSkipAuthConfig())
-        .then((response) => {
-          if (response) {
-            return response
-          }
-          return response
-        })
-        .catch((error) => {
-          console.error('Error fetching product data:', error)
-          return {}
-        })
-      if (res && res.data) {
-        this.productData = res.data
-      } else {
-        this.productData = res
+    async getComboReviews() {
+      this.result = 'Đang tải...'
+      try {
+        const res = await axiosConfig.getFromApi(
+          `/review/combos/${this.comboId}`,
+          ConfigsRequest.getSkipAuthConfig(),
+        )
+        this.result = res
+      } catch (e) {
+        this.result = e.message
       }
     },
-    async loadReviewProduct() {
-      const res = await axiosConfig.getFromApi(
-        `/Review/${this.inputValue}`,
-        ConfigsRequest.getSkipAuthConfig(),
-      )
-      if (res && res.data) {
-        this.reviewProduct = res
-      } else {
-        this.reviewProduct = res
+    async addReview() {
+      this.result = 'Đang gửi...'
+      try {
+        const isProduct = this.productId > 0
+        const body = {
+          noiDung: this.reviewForm.noiDung,
+          soSao: this.reviewForm.soSao,
+          maSp: isProduct ? this.productId : null,
+          maCombo: isProduct ? this.comboId : null,
+        }
+        const res = await axiosConfig.postToApi(
+          `/Review?isProduct=${isProduct}`,
+          body,
+          ConfigsRequest.takeAuth(),
+        )
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
+        else alert('Đã lưu đánh giá!')
+        this.result = res
+        if (res.data && res.data.id) this.reviewForm.id = res.data.id
+      } catch (e) {
+        this.result = e.message
       }
     },
-    async loadCommentsProduct() {
-      const res = await axiosConfig
-        .getFromApi(`/Comment/${this.inputValue}`, ConfigsRequest.getSkipAuthConfig())
-        .then((response) => {
-          if (response) {
-            return response
-          }
-          return response
-        })
-        .catch((error) => {
-          console.error('Error fetching product data:', error)
-          return {}
-        })
-      if (res && res.data) {
-        this.commentsProduct = res.data
-      } else {
-        this.commentsProduct = res
+    async updateReview() {
+      this.result = 'Đang cập nhật...'
+      try {
+        if (!this.reviewForm.id) {
+          this.result = 'Bạn cần nhập id đánh giá để cập nhật!'
+          return
+        }
+        const isProduct = this.productId > 0
+        const body = {
+          id: this.reviewForm.id,
+          noiDung: this.reviewForm.noiDung,
+          soSao: this.reviewForm.soSao,
+          maSp: isProduct ? this.productId : null,
+          maCombo: isProduct ? this.comboId : null,
+        }
+        const res = await axiosConfig.putToApi(
+          `/Review?isProduct=${isProduct}`,
+          body,
+          ConfigsRequest.takeAuth(),
+        )
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
+        else alert('Đã cập nhập đánh giá!')
+        this.result = res
+      } catch (e) {
+        this.result = e.message
+      }
+    },
+    async deleteReview() {
+      this.result = 'Đang xóa...'
+      try {
+        const res = await axiosConfig.deleteFromApi(
+          `/Review/${this.productId > 0 ? this.productId : this.comboId}`,
+          ConfigsRequest.takeAuth(),
+        )
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
+        else alert('Đã lưu đánh giá!')
+        this.result = res
+      } catch (e) {
+        this.result = e.message
+      }
+    },
+    // Tab hóa đơn
+    async getOrderDetail() {
+      this.orderResult = 'Đang tải...'
+      this.orderDetail = null
+      try {
+        const res = await axiosConfig.getFromApi(
+          `/Review/orders/${this.orderId}`,
+          ConfigsRequest.takeAuth(),
+        )
+        if (res.success) {
+          this.orderDetail = res.data
+          // Chuẩn hóa các sản phẩm cho phép chỉnh sửa
+          this.orderDetail.products.forEach((p) => {
+            p._editNoiDung = p.noiDung
+            p._editSoSao = p.soSao
+          })
+          this.orderDetail.combos.forEach((c) => {
+            c._editNoiDung = c.noiDung
+            c._editSoSao = c.soSao
+          })
+        }
+        this.orderResult = ''
+      } catch (e) {
+        this.orderResult = e.message
+      }
+    },
+
+    async submitOrderProductReview(prod) {
+      try {
+        const body = {
+          id: prod.maDanhGia || null,
+          noiDung: prod._editNoiDung,
+          soSao: prod._editSoSao,
+          maSp: prod.maSp,
+          maCtsp: prod.maCtsp,
+          orderProductId: prod.id,
+        }
+        console.log('Submitting review for product:', body)
+        let res
+        if (prod.maDanhGia) {
+          res = await axiosConfig.putToApi(
+            `/Review?isProduct=true`,
+            body,
+            ConfigsRequest.takeAuth(),
+          )
+        } else {
+          res = await axiosConfig.postToApi(
+            `/Review?isProduct=true`,
+            body,
+            ConfigsRequest.takeAuth(),
+          )
+        }
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
+        else alert('Đã đánh giá thành công!')
+        await this.getOrderDetail()
+      } catch (e) {
+        alert('Lỗi: ' + e.message)
+      }
+    },
+    async deleteOrderProductReview(prod) {
+      try {
+        const res = await axiosConfig.deleteFromApi(
+          `/Review/${prod.MaSp}`,
+          ConfigsRequest.takeAuth(),
+        )
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
+        else alert('Đã xóa đánh giá!')
+        await this.getOrderDetail()
+      } catch (e) {
+        alert('Lỗi: ' + e.message)
+      }
+    },
+    async submitOrderComboReview(combo) {
+      try {
+        const body = {
+          id: combo.maDanhGia || null,
+          noiDung: combo._editNoiDung,
+          soSao: combo._editSoSao,
+          maCombo: combo.maCombo,
+          orderComboId: combo.id,
+        }
+        let res
+        if (combo.maDanhGia) {
+          res = await axiosConfig.putToApi(
+            `/Review?isProduct=false`,
+            body,
+            ConfigsRequest.takeAuth(),
+          )
+        } else {
+          res = await axiosConfig.postToApi(
+            `/Review?isProduct=false`,
+            body,
+            ConfigsRequest.takeAuth(),
+          )
+        }
+
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
+        else alert('Đã lưu đánh giá!')
+        await this.getOrderDetail()
+      } catch (e) {
+        alert('Lỗi: ' + e.message)
+      }
+    },
+    async deleteOrderComboReview(combo) {
+      try {
+        const res = await axiosConfig.deleteFromApi(
+          `/Review/${combo.MaCombo}`,
+          ConfigsRequest.takeAuth(),
+        )
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
+        else alert('Đã xóa đánh giá!')
+        await this.getOrderDetail()
+      } catch (e) {
+        alert('Lỗi: ' + e.message)
       }
     },
   },
@@ -164,7 +455,6 @@ export default {
 </script>
 
 <style scoped>
-/* Đảm bảo modal overlay phủ toàn màn hình */
 .modal-backdrop {
   position: fixed;
   inset: 0;
