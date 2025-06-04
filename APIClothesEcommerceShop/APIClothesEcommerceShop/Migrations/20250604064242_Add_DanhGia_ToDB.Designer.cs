@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    [Migration("20250603154542_Add_DanhGia_ToDB")]
+    [Migration("20250604064242_Add_DanhGia_ToDB")]
     partial class Add_DanhGia_ToDB
     {
         /// <inheritdoc />
@@ -85,9 +85,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<int>("DonGia")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MaDanhGia")
-                        .HasColumnType("int");
-
                     b.Property<int>("SoLuong")
                         .HasColumnType("int");
 
@@ -97,8 +94,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasIndex("MaCombo");
 
                     b.HasIndex("MaCtsp");
-
-                    b.HasIndex("MaDanhGia");
 
                     b.ToTable("CHITIETCOMBOHOADON", (string)null);
                 });
@@ -251,9 +246,6 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("int")
                         .HasColumnName("MaCTSP");
 
-                    b.Property<int?>("MaDanhGia")
-                        .HasColumnType("int");
-
                     b.Property<int>("MaHd")
                         .HasColumnType("int")
                         .HasColumnName("MaHD");
@@ -267,8 +259,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasIndex("MaCombo");
 
                     b.HasIndex("MaCtsp");
-
-                    b.HasIndex("MaDanhGia");
 
                     b.HasIndex("MaHd");
 
@@ -286,13 +276,10 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<int?>("MaCombo")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MaCtsp")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaHd")
-                        .HasColumnType("int");
-
                     b.Property<int>("MaKh")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaSp")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("NgayDanhGia")
@@ -313,11 +300,15 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.HasIndex("MaCombo");
 
-                    b.HasIndex("MaCtsp");
+                    b.HasIndex("MaSp");
 
-                    b.HasIndex("MaHd");
+                    b.HasIndex("MaKh", "MaCombo")
+                        .IsUnique()
+                        .HasFilter("[MaCombo] IS NOT NULL");
 
-                    b.HasIndex("MaKh");
+                    b.HasIndex("MaKh", "MaSp")
+                        .IsUnique()
+                        .HasFilter("[MaSp] IS NOT NULL");
 
                     b.ToTable("DANHGIA");
                 });
@@ -867,10 +858,6 @@ namespace APIClothesEcommerceShop.Migrations
                         .IsRequired()
                         .HasConstraintName("FK__CHITIETCO__MaCTS__66603565");
 
-                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", "MaDanhGiaNavigation")
-                        .WithMany()
-                        .HasForeignKey("MaDanhGia");
-
                     b.HasOne("APIClothesEcommerceShop.Models.Hoadon", "MaHdNavigation")
                         .WithMany("Chitietcombohoadons")
                         .HasForeignKey("MaHd")
@@ -880,8 +867,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaComboNavigation");
 
                     b.Navigation("MaCtspNavigation");
-
-                    b.Navigation("MaDanhGiaNavigation");
 
                     b.Navigation("MaHdNavigation");
                 });
@@ -936,10 +921,6 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasForeignKey("MaCtsp")
                         .HasConstraintName("FK__CTHOADON__MaCTSP__6B24EA82");
 
-                    b.HasOne("APIClothesEcommerceShop.Models.DanhGia", "MaDanhGiaNavigation")
-                        .WithMany()
-                        .HasForeignKey("MaDanhGia");
-
                     b.HasOne("APIClothesEcommerceShop.Models.Hoadon", "MaHdNavigation")
                         .WithMany("Cthoadons")
                         .HasForeignKey("MaHd")
@@ -950,26 +931,14 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.Navigation("MaCtspNavigation");
 
-                    b.Navigation("MaDanhGiaNavigation");
-
                     b.Navigation("MaHdNavigation");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.DanhGia", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Combo", "Combo")
-                        .WithMany()
+                        .WithMany("DanhGias")
                         .HasForeignKey("MaCombo");
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Chitietsanpham", "ChitietSanPham")
-                        .WithMany()
-                        .HasForeignKey("MaCtsp");
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Hoadon", "Hoadon")
-                        .WithMany()
-                        .HasForeignKey("MaHd")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "KhachHang")
                         .WithMany()
@@ -977,13 +946,15 @@ namespace APIClothesEcommerceShop.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ChitietSanPham");
+                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "SanPham")
+                        .WithMany("DanhGias")
+                        .HasForeignKey("MaSp");
 
                     b.Navigation("Combo");
 
-                    b.Navigation("Hoadon");
-
                     b.Navigation("KhachHang");
+
+                    b.Navigation("SanPham");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Giohang", b =>
@@ -1102,6 +1073,8 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.Navigation("Cthoadons");
 
+                    b.Navigation("DanhGias");
+
                     b.Navigation("Giohangs");
                 });
 
@@ -1151,6 +1124,8 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("Chitietdanhmucs");
 
                     b.Navigation("Chitietsanphams");
+
+                    b.Navigation("DanhGias");
                 });
 #pragma warning restore 612, 618
         }

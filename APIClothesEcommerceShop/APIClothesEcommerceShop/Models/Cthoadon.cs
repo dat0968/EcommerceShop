@@ -25,7 +25,4 @@ public partial class Cthoadon
     public virtual Chitietsanpham? MaCtspNavigation { get; set; }
 
     public virtual Hoadon MaHdNavigation { get; set; } = null!;
-    public int? MaDanhGia { get; set; }
-    [ForeignKey("MaDanhGia")]
-    public virtual DanhGia MaDanhGiaNavigation { get; set; } = null!;
 }

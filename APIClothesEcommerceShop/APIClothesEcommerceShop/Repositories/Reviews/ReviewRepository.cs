@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO;
@@ -22,109 +21,71 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             _db = db;
         }
 
-        public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int productId)
+        public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int maSp)
         {
-            ResponseAPI<IEnumerable<ReviewResponseDTO>> response = new();
+            var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
+            if (maSp <= 0)
+            {
+                response.SetErrorResponse("Mã sản phẩm không hợp lệ");
+                return response;
+            }
+
             try
             {
-                if (productId <= 0)
-                {
-                    throw new ArgumentException("Mã sản phẩm không hợp lệ");
-                }
-
                 var reviews = await _db.DanhGias
-                    .Where(r => r.MaCtsp == productId)
+                    .Where(r => r.MaSp == maSp)
                     .Select(r => r.ToReviewResponseDTO())
                     .ToListAsync();
 
-                if (reviews.Count == 0)
+                if (!reviews.Any())
                 {
-                    throw new KeyNotFoundException("Không có đánh giá nào cho sản phẩm này");
+                    response.SetErrorResponse("Không có đánh giá nào cho sản phẩm này");
+                    return response;
                 }
 
                 response.SetSuccessResponse(data: reviews, message: "Lấy danh sách đánh giá thành công");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
             }
             return response;
         }
 
-        public async Task<ResponseAPI<Hoadon>> GetOrderWithDetailItemAndReviewByOrderIdAsync(int orderId, int userId)
+        public async Task<ResponseAPI<OrderWithReview>> GetOrderWithDetailItemAndReviewByOrderIdAsync(int orderId, int userId)
         {
-            ResponseAPI<Hoadon> response = new();
+            var response = new ResponseAPI<OrderWithReview>();
+            if (orderId <= 0 || userId <= 0)
+            {
+                response.SetErrorResponse("Mã hóa đơn hoặc mã người dùng không hợp lệ");
+                return response;
+            }
+
             try
             {
-                if (orderId <= 0)
-                {
-                    throw new ArgumentException("Thông số dữ liệu đơn hàng không hợp lệ");
-                }
-
-                if (userId <= 0)
-                {
-                    throw new ArgumentException("Thông số dữ liệu người dùng không hợp lệ");
-                }
-
-                Hoadon? hoadon = await _db.Hoadons
+                var hoadon = await _db.Hoadons
                     .Include(h => h.Cthoadons)
-                        .ThenInclude(cthd => cthd.MaDanhGiaNavigation)
+                        .ThenInclude(ct => ct.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.MaSpNavigation)
+                                .ThenInclude(sp => sp.DanhGias)
                     .Include(h => h.Chitietcombohoadons)
-                        .ThenInclude(ctcbo => ctcbo.MaDanhGiaNavigation)
+                        .ThenInclude(ct => ct.MaComboNavigation)
+                            .ThenInclude(combo => combo.DanhGias)
                     .FirstOrDefaultAsync(h => h.MaHd == orderId && h.MaKh == userId);
 
                 if (hoadon == null)
                 {
-                    throw new KeyNotFoundException("Không có đánh giá nào cho các sản phẩm trong hóa đơn này");
-                }
-                response.SetSuccessResponse(data: hoadon, message: "Lấy danh sách đánh giá thành công");
-            }
-            catch (System.Exception ex)
-            {
-                ExceptionHandler.HandleException(ex, response);
-            }
-            return response;
-        }
-        public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsOfItemByOrderIdAsync(int orderId, int userId)
-        {
-            ResponseAPI<IEnumerable<ReviewResponseDTO>> response = new();
-            try
-            {
-                if (orderId == 0)
-                {
-                    throw new ArgumentException("Thông số dữ liệu đơn hàng không hợp lệ");
+                    response.SetErrorResponse("Hóa đơn không tồn tại hoặc không thuộc về người dùng này");
+                    return response;
                 }
 
-                if (userId == 0)
-                {
-                    throw new ArgumentException("Thông số dữ liệu người dùng không hợp lệ");
-                }
+                var transferData = hoadon.ToOrderWithReview();
+                transferData.Products.AddRange(hoadon.Cthoadons.Select(item => item.ToProductInOrderWithReview(item.MaCtspNavigation, userId)));
+                transferData.Combos.AddRange(hoadon.Chitietcombohoadons.Select(item => item.ToComboInOrderWithReview(item.MaComboNavigation, userId)));
 
-                Hoadon? hoadon = await _db.Hoadons
-                    .Include(h => h.Cthoadons)
-                    .FirstOrDefaultAsync(h => h.MaHd == orderId && h.MaKh == userId);
-                if (hoadon == null)
-                {
-                    throw new KeyNotFoundException("Hóa đơn không tồn tại hoặc không thuộc về người dùng này");
-                }
-                // Lấy danh sách sản phẩm trong hóa đơn
-                var productIds = hoadon.Cthoadons.Select(ct => ct.MaCtsp).ToList();
-                if (productIds.Count == 0)
-                {
-                    throw new KeyNotFoundException("Hóa đơn không có sản phẩm nào");
-                }
-                // Lấy danh sách đánh giá của các sản phẩm trong hóa đơn
-                var reviews = await _db.DanhGias
-                    .Where(r => productIds.Contains(r.MaCtsp) && r.MaKh == userId)
-                    .Select(r => r.ToReviewResponseDTO())
-                    .ToListAsync();
-                if (reviews.Count == 0)
-                {
-                    throw new KeyNotFoundException("Không có đánh giá nào cho các sản phẩm trong hóa đơn này");
-                }
-                response.SetSuccessResponse(data: reviews, message: "Lấy danh sách đánh giá thành công");
+                response.SetSuccessResponse(data: transferData, message: "Lấy thông tin hóa đơn và đánh giá thành công");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
             }
@@ -133,54 +94,35 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
         public async Task<ResponseAPI<ReviewResponseDTO>> AddReviewForItemInOrderAsync(ReviewRequestDTO entity)
         {
-            ResponseAPI<ReviewResponseDTO> response = new();
+            var response = new ResponseAPI<ReviewResponseDTO>();
+            if (entity == null)
+            {
+                response.SetErrorResponse("Đánh giá không được để trống");
+                return response;
+            }
+
             try
             {
-                if (entity == null)
-                {
-                    throw new ArgumentNullException(nameof(entity), "Đánh giá không được để trống");
-                }
+                ValidateReviewRequest(entity);
 
-                if (entity.MaKh <= 0)
-                {
-                    throw new ArgumentException("Mã khách hàng không hợp lệ");
-                }
+                // Kiểm tra xem đánh giá đã tồn tại chưa
+                var existingReview = await _db.DanhGias
+                    .FirstOrDefaultAsync(r => r.MaKh == entity.MaKh &&
+                                              (r.MaSp == entity.MaSp || r.MaCombo == entity.MaCombo));
 
-                if (entity.MaHd <= 0)
-                {
-                    throw new ArgumentException("Mã hóa đơn không hợp lệ");
-                }
-
-                if (string.IsNullOrWhiteSpace(entity.NoiDung))
-                {
-                    throw new ArgumentException("Nội dung đánh giá không được để trống");
-                }
-
-                if ((entity.MaCombo == 0 && entity.MaCtsp == 0) || (entity.MaCombo != 0 && entity.MaCtsp != 0))
-                {
-                    throw new ArgumentException("Phải cung cấp mã sản phẩm hoặc mã combo, nhưng không được cả hai");
-                }
-
-                if (entity.SoSao < 1 || entity.SoSao > 5)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(entity.SoSao), "Số sao phải nằm trong khoảng từ 1 đến 5");
-                }
-
-                // Kiểm tra xem người dùng có quyền đánh giá sản phẩm này không
-                bool canReview = await CanUserReviewProductAsync(entity.MaHd, entity.MaCtsp ?? 0, entity.MaKh);
-                if (!canReview)
-                {
-                    throw new UnauthorizedAccessException("Bạn không có quyền đánh giá sản phẩm này");
-                }
+                // if (existingReview != null)
+                // {
+                //     response.SetErrorResponse("Bạn đã đánh giá sản phẩm hoặc combo này rồi.");
+                //     return response;
+                // }
 
                 // Thêm đánh giá vào cơ sở dữ liệu
-                DanhGia reviewTransform = entity.ToDanhGia();
-                await _db.DanhGias.AddAsync(entity.ToDanhGia());
+                var reviewTransform = entity.ToDanhGia();
+                await _db.DanhGias.AddAsync(reviewTransform);
                 await _db.SaveChangesAsync();
-
                 response.SetSuccessResponse(data: reviewTransform.ToReviewResponseDTO(), message: "Thêm đánh giá thành công");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
             }
@@ -189,40 +131,20 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
         public async Task<ResponseAPI<string>> UpdateReviewAsync(ReviewRequestDTO entity)
         {
-            ResponseAPI<string> response = new();
+            var response = new ResponseAPI<string>();
+            if (entity == null)
+            {
+                response.SetErrorResponse("Đánh giá không được để trống");
+                return response;
+            }
+
             try
             {
-                if (entity == null)
-                {
-                    throw new ArgumentNullException(nameof(entity), "Đánh giá không được để trống");
-                }
+                ValidateReviewRequest(entity);
 
-                if (entity.Id <= 0)
-                {
-                    throw new ArgumentException("Mã đánh giá không hợp lệ");
-                }
-
-                if (string.IsNullOrWhiteSpace(entity.NoiDung))
-                {
-                    throw new ArgumentException("Nội dung đánh giá không được để trống");
-                }
-
-                if ((entity.MaCombo == 0 && entity.MaCtsp == 0) || (entity.MaCombo != 0 && entity.MaCtsp != 0))
-                {
-                    throw new ArgumentException("Phải cung cấp mã sản phẩm hoặc mã combo, nhưng không được cả hai");
-                }
-
-                if (entity.SoSao < 1 || entity.SoSao > 5)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(entity.SoSao), "Số sao phải nằm trong khoảng từ 1 đến 5");
-                }
-
-                // Kiểm tra xem đánh giá có tồn tại không
-                DanhGia? existingReview = await _db.DanhGias.FindAsync(entity.Id);
+                var existingReview = await _db.DanhGias.FindAsync(entity.Id);
                 if (existingReview == null)
-                {
-                    throw new KeyNotFoundException("Đánh giá không tồn tại");
-                }
+                    throw new Exception("Đánh giá không tồn tại");
 
                 // Cập nhật thông tin đánh giá
                 existingReview.NoiDung = entity.NoiDung;
@@ -234,67 +156,48 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 response.SetSuccessResponse(data: "Cập nhật đánh giá thành công", message: "Cập nhật đánh giá thành công");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
             }
             return response;
         }
 
-
         public async Task<ResponseAPI<string>> RemoveAsync(int reviewId, int userId)
         {
-            ResponseAPI<string> response = new();
+            var response = new ResponseAPI<string>();
+            if (reviewId <= 0 || userId <= 0)
+            {
+                response.SetErrorResponse("Thông số dữ liệu không hợp lệ");
+                return response;
+            }
+
             try
             {
-                if (reviewId <= 0)
-                {
-                    throw new ArgumentException("Mã đánh giá không hợp lệ");
-                }
-
-                if (userId <= 0)
-                {
-                    throw new ArgumentException("Mã người dùng không hợp lệ");
-                }
-
-                // Kiểm tra xem đánh giá có tồn tại không
-                DanhGia? existingReview = await _db.DanhGias.FindAsync(reviewId);
+                var existingReview = await _db.DanhGias.FindAsync(reviewId);
                 if (existingReview == null)
-                {
                     throw new KeyNotFoundException("Đánh giá không tồn tại");
-                }
 
-                // Kiểm tra xem người dùng có quyền xóa đánh giá này không
                 if (existingReview.MaKh != userId)
-                {
-                    throw new UnauthorizedAccessException("Bạn không có quyền xóa đánh giá này");
-                }
+                    throw new Exception("Bạn không có quyền xóa đánh giá này");
 
                 _db.DanhGias.Remove(existingReview);
                 await _db.SaveChangesAsync();
 
                 response.SetSuccessResponse(data: "Xóa đánh giá thành công", message: "Xóa đánh giá thành công");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
             }
             return response;
         }
 
-        #region [Private methods]
-        private async Task<bool> CanUserReviewProductAsync(int orderId, int productId, int userId)
+        private void ValidateReviewRequest(ReviewRequestDTO entity)
         {
-            Hoadon? hoadon = await _db.Hoadons
-                .Include(h => h.Cthoadons)
-                .FirstOrDefaultAsync(h => h.MaHd == orderId && h.MaKh == userId);
-            if (hoadon == null)
-            {
-                return false; // Không tìm thấy hóa đơn
-            }
-            // Kiểm tra xem sản phẩm có trong hóa đơn không
-            return hoadon.Cthoadons.Any(ct => ct.MaCtsp == productId);
+            if (entity.MaKh <= 0) throw new ArgumentException("Mã khách hàng không hợp lệ");
+            if (string.IsNullOrWhiteSpace(entity.NoiDung)) throw new ArgumentException("Nội dung đánh giá không được để trống");
+            if (entity.SoSao < 1 || entity.SoSao > 5) throw new ArgumentOutOfRangeException(nameof(entity.SoSao), "Số sao phải nằm trong khoảng từ 1 đến 5");
         }
-        #endregion
     }
 }

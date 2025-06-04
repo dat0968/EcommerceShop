@@ -14,10 +14,6 @@ namespace APIClothesEcommerceShop.Models
         [Key]
         public int Id { get; set; }
 
-        public int MaKh { get; set; }  // Liên kết với khách hàng
-        public int MaHd { get; set; }  // Liên kết với hóa đơn đã mua
-        public int? MaCtsp { get; set; } // Liên kết với sản phẩm trong hóa đơn (nếu có)
-        public int? MaCombo { get; set; } // Liên kết với combo trong hóa đơn (nếu có)
 
         [MaxLength(500)]
         public string NoiDung { get; set; } = string.Empty;
@@ -27,19 +23,39 @@ namespace APIClothesEcommerceShop.Models
 
         public DateTime NgayDanhGia { get; set; } = DateTime.UtcNow;
 
-        public string? ShopPhanHoi { get; set; } = null;
+        public string? ShopPhanHoi { get; set; } = string.Empty;
 
-        [ForeignKey("MaKh")]
-        public virtual Khachhang? KhachHang { get; set; }
+        // Liên kết với cho SanPham
+        public int? MaSp { get; set; }
+        public int? MaCombo { get; set; }
 
-        [ForeignKey("MaHd")]
-        public virtual Hoadon? Hoadon { get; set; }
-
-        [ForeignKey("MaCtsp")]
-        public virtual Chitietsanpham? ChitietSanPham { get; set; }
+        [ForeignKey("MaSp")]
+        public virtual Sanpham? SanPham { get; set; }
 
         [ForeignKey("MaCombo")]
         public virtual Combo? Combo { get; set; }
+
+        // Liên kết với khách hàng
+        public int MaKh { get; set; }
+
+        [ForeignKey("MaKh")]
+        public virtual Khachhang KhachHang { get; set; } = null!;
+
+        // Kiểm tra xem người dùng đã có đánh giá cho sản phẩm/combo này chưa
+        public static bool DaCoDanhGia(List<DanhGia> danhSachDanhGia, int maKhachHang, int? maSp, int? maCombo)
+        {
+            return danhSachDanhGia.Any(dg =>
+                dg.MaKh == maKhachHang &&
+                ((dg.MaSp == maSp && maCombo == null) || (dg.MaCombo == maCombo && maSp == null)));
+        }
+
+        // Phương thức kiểm tra xem người dùng đã mua sản phẩm/combo chưa
+        public static bool DaMuaSanPham(List<Hoadon> danhSachHoaDon, int maSp, int? maCombo, int maKhachHang)
+        {
+            return danhSachHoaDon.Any(hoaDon => hoaDon.MaKh == maKhachHang &&
+                (hoaDon.Cthoadons.Any(ct => ct.MaCtsp == maSp) ||
+                hoaDon.Chitietcombohoadons.Any(ct => ct.MaCombo == maCombo)));
+        }
     }
 
 
@@ -51,8 +67,7 @@ namespace APIClothesEcommerceShop.Models
             {
                 Id = dto.Id ?? 0,
                 MaKh = dto.MaKh,
-                MaHd = dto.MaHd,
-                MaCtsp = dto.MaCtsp,
+                MaSp = dto.MaSp,
                 MaCombo = dto.MaCombo,
                 NoiDung = dto.NoiDung,
                 SoSao = dto.SoSao,
@@ -66,15 +81,13 @@ namespace APIClothesEcommerceShop.Models
             {
                 Id = entity.Id,
                 MaKh = entity.MaKh,
-                MaHd = entity.MaHd,
-                MaCtsp = entity.MaCtsp,
-                MaCombo = entity.MaCombo,
                 NoiDung = entity.NoiDung,
                 SoSao = entity.SoSao,
                 NgayDanhGia = entity.NgayDanhGia,
-                ShopPhanHoi = entity.ShopPhanHoi
+                ShopPhanHoi = entity.ShopPhanHoi,
+                MaSp = entity.MaSp, // Nếu cần thì thêm mã sản phẩm
+                MaCombo = entity.MaCombo // Nếu cần thì thêm mã combo
             };
         }
     }
-
 }

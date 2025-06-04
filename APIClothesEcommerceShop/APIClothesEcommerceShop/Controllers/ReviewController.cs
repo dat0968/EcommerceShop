@@ -34,7 +34,8 @@ namespace APIClothesEcommerceShop.Controllers
             }
             return Ok(res);
         }
-        [ProducesResponseType(typeof(ResponseAPI<Hoadon>), 200)]
+        [ProducesResponseType(typeof(ResponseAPI<OrderWithReview>), 200)]
+        [Authorize(Roles = "Customer")]
         [HttpGet("orders/{orderId}")]
         public async Task<IActionResult> GetOrderWithReviews(int orderId = 0)
         {

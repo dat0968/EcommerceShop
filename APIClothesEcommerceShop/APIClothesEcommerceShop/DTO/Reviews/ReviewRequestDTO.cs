@@ -10,9 +10,8 @@ namespace APIClothesEcommerceShop.DTO.Reviews
     {
         public int? Id { get; set; }
         public int MaKh { get; set; } = 0;
-        public int MaHd { get; set; }
-        public int? MaCtsp { get; set; } = null;
-        public int? MaCombo { get; set; } = null;
+        public int? MaSp { get; set; } // Sử dụng MaSp thay cho MaCtsp
+        public int? MaCombo { get; set; }
 
         [MaxLength(500)]
         public string NoiDung { get; set; } = string.Empty;
