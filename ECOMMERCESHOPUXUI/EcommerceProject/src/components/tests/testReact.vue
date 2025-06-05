@@ -62,10 +62,10 @@
           </div>
         </div>
         <div class="mb-3">
-          <button class="btn btn-info me-2" @click="getProductReviews">
+          <button class="btn btn-info me-2" @click="getProductReviews()">
             Lấy đánh giá sản phẩm
           </button>
-          <button class="btn btn-info me-2" @click="getComboReviews">Lấy đánh giá combo</button>
+          <button class="btn btn-info me-2" @click="getComboReviews()">Lấy đánh giá combo</button>
         </div>
         <div class="mb-3">
           <label>Nội dung đánh giá:</label>
@@ -89,8 +89,13 @@
               <strong>Số sao:</strong> {{ review.soSao }} <br />
               <strong>Ngày đánh giá:</strong> {{ new Date(review.ngayDanhGia).toLocaleString() }}
               <br />
-              <strong>Phản hồi của shop:</strong>
-              {{ review.shopPhanHoi ? review.shopPhanHoi : 'Chưa có phản hồi' }}
+              <blockquote
+                class="col-12"
+                style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0"
+              >
+                <strong>Phản hồi của shop:</strong>
+                {{ review.shopPhanHoi ? review.shopPhanHoi : 'Chưa có phản hồi' }}
+              </blockquote>
             </li>
           </ul>
         </div>
@@ -115,7 +120,7 @@
           </div>
           <div v-if="orderDetail">
             <div class="mb-2">
-              <strong>Thông tin hóa đơn:</strong>
+              <h4>Thông tin hóa đơn:</h4>
               <ul class="list-group">
                 <li class="list-group-item"><strong>Mã hóa đơn:</strong> {{ orderDetail.maHd }}</li>
                 <li class="list-group-item">
@@ -131,7 +136,7 @@
               </ul>
             </div>
             <div>
-              <strong>Sản phẩm trong hóa đơn:</strong>
+              <h5>Sản phẩm trong hóa đơn:</h5>
               <div
                 v-for="prod in orderDetail.products"
                 :key="prod.id"
@@ -165,7 +170,7 @@
                   </button>
                 </div>
               </div>
-              <strong>Combo trong hóa đơn:</strong>
+              <h5>Combo trong hóa đơn:</h5>
               <div
                 v-for="combo in orderDetail.combos"
                 :key="combo.maCombo"

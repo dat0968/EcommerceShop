@@ -13,7 +13,7 @@
         <div class="col-md-3">
           <label class="form-label">Lọc theo đánh giá</label>
           <select class="form-select" v-model="filterByStar" @change="filterByRating">
-            <option value="">Tất cả</option>
+            <option value="null">Tất cả</option>
             <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
           </select>
         </div>
@@ -44,6 +44,7 @@ import * as configsDt from '@/utils/configsDatatable.js'
 import Overlay from '@/components/common/Overlay.vue'
 import { formatDate } from '@/constants/formatDatetime'
 import ResponseAPI from '@/models/ResponseAPI'
+// import { formatCurrency } from '@/constants/formatCurrency'
 
 export default {
   name: 'IndexReview',
@@ -52,7 +53,7 @@ export default {
   data() {
     return {
       listReview: [],
-      filtedListReview: [],
+      filteredListReview: [],
       isLoading: true,
       isDisabled: false,
       isEndpointActive: true, // Biến để kiểm tra kết nối API
@@ -111,11 +112,11 @@ export default {
     },
     // -- Lọc dữ liệu đánh giá theo số sao
     filterByRating() {
-      this.filtedListReview = this.listReview.filter((item) => {
-        if (this.filterByStar === null) return true // Không lọc nếu không có lựa chọn
+      this.filteredListReview = this.listReview.filter((item) => {
+        if (this.filterByStar == null || this.filterByStar == 'null') return true // Không lọc nếu không có lựa chọn
         return item.soSao == this.filterByStar
       })
-      if (this.filtedListReview.length === 0) {
+      if (this.filteredListReview.length === 0) {
         Swal.fire({
           icon: 'info',
           title: 'Không có đánh giá phù hợp',
@@ -124,8 +125,7 @@ export default {
         })
       }
       this.initDataTable() // Cập nhật DataTable sau khi lọc
-    },
-    // -- Hàm khởi tạo DataTable
+    }, // -- Hàm khởi tạo DataTable
     initDataTable() {
       const vm = this
       this.$nextTick(() => {
@@ -133,44 +133,40 @@ export default {
           $('#datatableReviews').DataTable().destroy()
         }
         this.datatable = $('#datatableReviews').DataTable({
-          data: vm.filtedListReview,
+          data: vm.filteredListReview,
           columns: [
-            // configsDt.defaultTdToShowDetail,
+            configsDt.defaultTdToShowDetail,
             {
-              data: null, // Dữ liệu sẽ được xác định trong render
+              data: null,
               title: 'Đối tượng đánh giá',
               className: 'text-center',
               render: function (data) {
-                const isProduct = data.maSp != null
+                const isProduct = data.maSp !== null
                 const idObject = isProduct ? data.maSp : data.maCombo
-                if (isProduct) {
-                  return `<span class="badge bg-primary" title=${idObject}>Sản phẩm</span>`
-                } else {
-                  return `<span class="badge bg-secondary" title=${idObject}>Combo</span>`
-                }
+                return isProduct
+                  ? `<span class="badge bg-primary" title="${idObject}">Sản phẩm</span>`
+                  : `<span class="badge bg-secondary" title="${idObject}">Combo</span>`
               },
             },
             { data: 'tenKhachHang', title: 'Tên khách hàng', className: 'text-center' },
             { data: 'soSao', title: 'Số sao', className: 'text-center' },
             {
-              data: 'ngayDanhGia',
-              title: 'Ngày đánh giá',
+              data: null,
+              title: 'Số sản phẩm đã mua',
               className: 'text-center',
               render: function (data) {
-                return formatDate(data)
+                // Tính tổng số lượng hàng hóa đã mua từ các đơn hàng
+                return data.orders.reduce((total, order) => {
+                  return total + order.soLuong
+                }, 0)
               },
             },
             {
-              data: 'shopPhanHoi',
-              title: 'Phản hồi của shop',
+              data: 'ngayDanhGia',
+              title: 'Ngày đánh giá',
               className: 'text-center',
-            },
-            {
-              data: 'ngayPhanHoi',
-              title: 'Ngày phản hồi',
-              className: 'text-center',
-              render: function (data) {
-                return formatDate(data)
+              render: function (date) {
+                return formatDate(date)
               },
             },
             {
@@ -186,9 +182,8 @@ export default {
           destroy: true,
           language: configsDt.defaultLanguageDatatable,
           initComplete: () => {
-            // configsDt.attachDetailsControl(`#datatableReviews`, this.formatDetails.bind(this))
+            configsDt.attachDetailsControl(`#datatableReviews`, this.formatDetails.bind(this))
 
-            // Sự kiện chọn tất cả
             $(document)
               .off('change', '#selectAllReviews')
               .on('change', '#selectAllReviews', function () {
@@ -196,7 +191,6 @@ export default {
                 $('.row-checkbox').prop('checked', checked).trigger('change')
               })
 
-            // Sự kiện từng dòng (giữ nguyên hoặc cập nhật lại nếu cần)
             $(document)
               .off('change', '.row-checkbox')
               .on('change', '.row-checkbox', function () {
@@ -206,11 +200,9 @@ export default {
                 } else {
                   vm.selectedReview = vm.selectedReview.filter((item) => item !== id)
                 }
-                // Nếu bỏ chọn bất kỳ dòng nào thì bỏ chọn checkbox tổng
                 if (!$(this).is(':checked')) {
                   $('#selectAllReviews').prop('checked', false)
                 }
-                // Nếu tất cả đều được chọn thì chọn checkbox tổng
                 if ($('.row-checkbox:checked').length === $('.row-checkbox').length) {
                   $('#selectAllReviews').prop('checked', true)
                 }
@@ -219,6 +211,82 @@ export default {
         })
       })
     },
+    // -- Mở mục xem chi tiết nội dung đánh giá
+    formatDetails(rowData) {
+      const div = $('<div/>').addClass('loading').text('Loading...')
+      // Tìm kiếm đánh giá dựa trên id của rowData
+      const evaluation = this.filteredListReview.find((x) => x.id == rowData.id)
+
+      // Kiểm tra sự tồn tại của đánh giá
+      if (!evaluation) {
+        div.html('<p>Không tìm thấy thông tin đánh giá.</p>')
+        return div
+      }
+
+      // Thống kê số lượng theo trạng thái
+      const statusCount = evaluation.orders.reduce((acc, order) => {
+        acc[order.trangThai] = (acc[order.trangThai] || 0) + order.soLuong
+        return acc
+      }, {})
+
+      const statusSummaryHtml = Object.entries(statusCount)
+        .map(([status, count]) => `<p><strong>${status}:</strong> ${count}</p>`)
+        .join('')
+
+      const detailsHtml = `
+    <div class="container-fluid">
+        <div class="row p-3">
+            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Tên sản phẩm:</strong> ${evaluation.tenSanPham}</p>
+            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Mã khách hàng:</strong> ${evaluation.maKh}</p>
+            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Email:</strong> ${evaluation.email}</p>
+            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Số điện thoại:</strong> ${evaluation.soDienThoai}</p>
+            <p class="col-12"><strong>Nội dung đánh giá:</strong> ${evaluation.noiDung}</p>
+            <blockquote class="col-12" style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0;">
+              <strong>Phản hồi của shop:</strong> 
+              ${evaluation.shopPhanHoi ? evaluation.shopPhanHoi + '<small class="text-muted"> (' + formatDate(evaluation.ngayPhanHoi) + ')</small>' : 'Chưa có đánh giá'}
+            </blockquote>
+
+            <hr/>  
+        </div>
+        <div class="row mb-3">
+            <div class="col-12">
+                <h6>Đối tượng đánh giá trong các đơn hàng:</h6>
+                ${statusSummaryHtml}
+            </div>
+        </div>
+        <div class="row mb-3 detail-list">
+            ${
+              evaluation.orders && evaluation.orders.length > 0
+                ? evaluation.orders
+                    .map(
+                      (order) => `
+                    <div class="col-sm-12 col-md-6 col-lg-4 mb-3">
+                        <div class="border m-1 p-4 shadow rounded bg-light">
+                            <div class="row">
+                                <div class="col-4 d-flex align-items-center">
+                                    <img src="${evaluation.hinhAnhSanPham || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
+                                </div>
+                                <div class="col-8">
+                                    <p><strong>Mã đơn hàng:</strong> <span>${order.maHd}</span></p>
+                                    <p><strong>Ngày tạo:</strong> <span>${formatDate(order.ngayTao)}</span></p>
+                                    <p><strong>Trạng thái:</strong> <span class="${order.trangThai === 'Chờ xử lý' ? 'text-warning' : 'text-success'}">${order.trangThai}</span></p>
+                                    <p><strong>Số lượng:</strong> <span>${order.soLuong}</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                    )
+                    .join('')
+                : '<div class="col-12"><p>Không có thông tin đơn hàng để hiển thị.</p></div>'
+            }
+        </div>
+    </div>`
+
+      div.html(detailsHtml)
+      return div
+    },
+
     // -- Hàm cập nhập phản hồi của shop
     async updateShopResponse() {
       try {
