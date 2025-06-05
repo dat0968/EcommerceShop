@@ -233,7 +233,7 @@ export default {
         }
         let contentResponse = ''
         Swal.fire({
-          title: 'Cập nhật phản hồi của shop',
+          title: `Cập nhật phản hồi của shop với ` + this.selectedReview.length + ` đánh giá`,
           input: 'textarea',
           inputLabel: 'Nội dung phản hồi',
           inputPlaceholder: 'Nhập nội dung phản hồi của shop...',

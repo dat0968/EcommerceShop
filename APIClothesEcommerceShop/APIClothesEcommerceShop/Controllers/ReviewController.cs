@@ -106,11 +106,11 @@ namespace APIClothesEcommerceShop.Controllers
 
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
-        [HttpDelete("{productId}")]
-        public async Task<IActionResult> DeleteReview(int productId)
+        [HttpDelete("{reviewId}")]
+        public async Task<IActionResult> DeleteReview(int reviewId)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var res = await _unit.Review.RemoveAsync(productId, userId);
+            var res = await _unit.Review.RemoveAsync(reviewId, userId);
             if (!res.Success)
             {
                 return StatusCode(res.StatusCode, res);

@@ -55,7 +55,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         }
         #endregion
 
-        #region  [Lấy danh sách đánh giá của sản phẩm]
+        #region [Lấy danh sách đánh giá của sản phẩm]
         public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByComboIdAsync(int maCombo)
         {
             var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
@@ -350,6 +350,37 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 ExceptionHandler.HandleException(ex, response);
             }
             return response;
+        }
+
+        /// <summary>
+        ///     Lấy thông tin đơn hàng cùng với đánh giá của người dùng theo mã hóa đơn và mã khách hàng
+        /// </summary>
+        /// <param name="maHd"></param>
+        /// <param name="maKh"></param>
+        /// <returns></returns>
+        public async Task<OrderWithReview?> GetOrderWithReviewAsync(int maHd, int maKh)
+        {
+            var order = await _db.Hoadons
+                .Include(hd => hd.Cthoadons)
+                    .ThenInclude(ct => ct.MaCtspNavigation)
+                        .ThenInclude(ctsp => ctsp.MaSpNavigation)
+                            .ThenInclude(sp => sp.DanhGias)
+                .Include(hd => hd.Chitietcombohoadons)
+                    .ThenInclude(ctcb => ctcb.MaComboNavigation)
+                        .ThenInclude(cb => cb.DanhGias)
+                .FirstOrDefaultAsync(hd => hd.MaHd == maHd && hd.MaKh == maKh);
+
+            if (order == null) return null;
+
+            var dto = order.ToOrderWithReview();
+            dto.Products = order.Cthoadons
+                .Select(ct => ct.ToProductInOrderWithReview(ct.MaCtspNavigation, maKh))
+                .ToList();
+            dto.Combos = order.Chitietcombohoadons
+                .Select(cb => cb.ToComboInOrderWithReview(cb.MaComboNavigation, maKh))
+                .ToList();
+
+            return dto;
         }
         #endregion
     }

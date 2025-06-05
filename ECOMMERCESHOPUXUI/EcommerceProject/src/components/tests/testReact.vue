@@ -78,7 +78,8 @@
         <div class="mb-3">
           <button class="btn btn-success me-2" @click="addReview">Thêm đánh giá</button>
           <button class="btn btn-warning me-2" @click="updateReview">Cập nhật đánh giá</button>
-          <button class="btn btn-danger" @click="deleteReview">Xóa đánh giá</button>
+          <button class="btn btn-danger" @click="deleteReview(1)">Xóa đánh giá</button>
+          <!-- ! Fix this-->
         </div>
         <div class="mb-3">
           <strong>Danh sách đánh giá:</strong>
@@ -320,11 +321,11 @@ export default {
         this.result = e.message
       }
     },
-    async deleteReview() {
+    async deleteReview(reviewId) {
       this.result = 'Đang xóa...'
       try {
         const res = await axiosConfig.deleteFromApi(
-          `/Review/${this.productId > 0 ? this.productId : this.comboId}`,
+          `/Review/${reviewId}`,
           ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
@@ -396,7 +397,7 @@ export default {
     async deleteOrderProductReview(prod) {
       try {
         const res = await axiosConfig.deleteFromApi(
-          `/Review/${prod.MaSp}`,
+          `/Review/${prod.maDanhGia}?isProduct=true`,
           ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
@@ -440,7 +441,7 @@ export default {
     async deleteOrderComboReview(combo) {
       try {
         const res = await axiosConfig.deleteFromApi(
-          `/Review/${combo.MaCombo}`,
+          `/Review/${combo.maCombo}?isProduct=false`,
           ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
