@@ -22,31 +22,38 @@ namespace APIClothesEcommerceShop.Controllers
         {
             _unit = unit;
         }
+
+        /// <summary>
+        /// Lấy danh sách đánh giá của sản phẩm theo mã sản phẩm.
+        /// </summary>
+        /// <param name="productId">Mã sản phẩm</param>
+        /// <returns>Danh sách đánh giá sản phẩm</returns>
         [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
         [HttpGet("products/{productId}")]
         public async Task<IActionResult> GetReviewsByProductId(int productId)
         {
             var res = await _unit.Review.GetReviewsByProductIdAsync(productId);
-            if (res.Data == null)
-            {
-                res.SetErrorResponse("No reviews found for this product.");
-                return NotFound(res);
-            }
             return Ok(res);
         }
 
+        /// <summary>
+        /// Lấy danh sách đánh giá của combo theo mã combo.
+        /// </summary>
+        /// <param name="comboId">Mã combo</param>
+        /// <returns>Danh sách đánh giá combo</returns>
         [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
         [HttpGet("combos/{comboId}")]
         public async Task<IActionResult> GetReviewsByComboId(int comboId)
         {
             var res = await _unit.Review.GetReviewsByComboIdAsync(comboId);
-            if (res.Data == null)
-            {
-                res.SetErrorResponse("No reviews found for this product.");
-                return NotFound(res);
-            }
             return Ok(res);
         }
+
+        /// <summary>
+        /// Lấy chi tiết đơn hàng cùng đánh giá của người dùng theo mã đơn hàng (chỉ cho khách hàng).
+        /// </summary>
+        /// <param name="orderId">Mã đơn hàng</param>
+        /// <returns>Chi tiết đơn hàng và đánh giá</returns>
         [ProducesResponseType(typeof(ResponseAPI<OrderWithReview>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpGet("orders/{orderId}")]
@@ -56,6 +63,13 @@ namespace APIClothesEcommerceShop.Controllers
             var res = await _unit.Review.GetOrderWithDetailItemAndReviewByOrderIdAsync(orderId, userId);
             return Ok(res);
         }
+
+        /// <summary>
+        /// Thêm mới đánh giá cho sản phẩm hoặc combo (chỉ cho khách hàng).
+        /// </summary>
+        /// <param name="review">Thông tin đánh giá</param>
+        /// <param name="isProduct">Đánh giá cho sản phẩm hay combo</param>
+        /// <returns>Kết quả thêm đánh giá</returns>
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpPost]
@@ -80,6 +94,12 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(res);
         }
 
+        /// <summary>
+        /// Cập nhật đánh giá cho sản phẩm hoặc combo (chỉ cho khách hàng).
+        /// </summary>
+        /// <param name="review">Thông tin đánh giá cần cập nhật</param>
+        /// <param name="isProduct">Đánh giá cho sản phẩm hay combo</param>
+        /// <returns>Kết quả cập nhật đánh giá</returns>
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpPut]
@@ -104,6 +124,11 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(res);
         }
 
+        /// <summary>
+        /// Xóa đánh giá của người dùng (chỉ cho khách hàng).
+        /// </summary>
+        /// <param name="reviewId">Mã đánh giá</param>
+        /// <returns>Kết quả xóa đánh giá</returns>
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpDelete("{reviewId}")]
@@ -118,7 +143,11 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(res);
         }
 
-        [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewDetailResponseDTO>>), 200)]
+        /// <summary>
+        /// Lấy tất cả đánh giá chi tiết (dành cho nhân viên/quản trị).
+        /// </summary>
+        /// <returns>Danh sách đánh giá chi tiết</returns>
+        [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewDetailDTO>>), 200)]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllReview()
         {
@@ -126,6 +155,11 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(reviews);
         }
 
+        /// <summary>
+        /// Phản hồi đánh giá của khách hàng (dành cho nhân viên/quản trị).
+        /// </summary>
+        /// <param name="request">Thông tin phản hồi và danh sách mã đánh giá</param>
+        /// <returns>Kết quả phản hồi</returns>
         [HttpPut("shop-response")]
         public async Task<IActionResult> ResponseToReview([FromBody] ReviewReplyRequestDTO request)
         {

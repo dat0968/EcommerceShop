@@ -6,7 +6,7 @@ using APIClothesEcommerceShop.Models;
 
 namespace APIClothesEcommerceShop.DTO.Reviews
 {
-    public class ReviewDetailResponseDTO
+    public class ReviewDetailDTO
     {
         public int Id { get; set; }
         public int MaKh { get; set; } = 0;
@@ -33,17 +33,30 @@ namespace APIClothesEcommerceShop.DTO.Reviews
         public int LuotXem { get; set; }
         public int SoLuong { get; set; }
         public bool? IsActive { get; set; }
+
+        // Thông tin các đơn hàng liên quan đến đánh giá này
+        public List<OrderReviewInfoDTO> Orders { get; set; } = new();
+    }
+    // Thông tin đơn hàng liên quan đến đánh giá
+    public class OrderReviewInfoDTO
+    {
+        public int MaHd { get; set; }
+        public DateTime NgayTao { get; set; }
+        public string TrangThai { get; set; } = string.Empty;
+        public int? MaCtsp { get; set; } // Nếu là sản phẩm lẻ
+        public int? MaCombo { get; set; } // Nếu là combo
+        public int? SoLuong { get; set; }
     }
     public static class ReviewDetailResponseDTOExtensions
     {
-        public static ReviewDetailResponseDTO ToDetailResponseDTO(
+        public static ReviewDetailDTO ToDetailResponseDTO(
                 this ReviewResponseDTO review,
                 Khachhang? khachHang = null,
                 Sanpham? sanPham = null,
                 Combo? combo = null
             )
         {
-            return new ReviewDetailResponseDTO
+            return new ReviewDetailDTO
             {
                 Id = review.Id,
                 MaKh = review.MaKh,

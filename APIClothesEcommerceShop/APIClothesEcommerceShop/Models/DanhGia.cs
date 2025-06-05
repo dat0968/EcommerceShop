@@ -51,11 +51,20 @@ namespace APIClothesEcommerceShop.Models
         }
 
         // Phương thức kiểm tra xem người dùng đã mua sản phẩm/combo chưa
-        public static bool DaMuaSanPham(List<Hoadon> danhSachHoaDon, int maSp, int? maCombo, int maKhachHang)
+        public static bool DaMuaSanPham(List<Hoadon> danhSachHoaDon, int idObject, bool isProduct, int maKhachHang)
         {
-            return danhSachHoaDon.Any(hoaDon => hoaDon.MaKh == maKhachHang &&
-                (hoaDon.Cthoadons.Any(ct => ct.MaCtsp == maSp) ||
-                hoaDon.Chitietcombohoadons.Any(ct => ct.MaCombo == maCombo)));
+            if (isProduct)
+            {
+                int maSp = idObject;
+                return danhSachHoaDon.Any(hoaDon => hoaDon.MaKh == maKhachHang &&
+                    hoaDon.Cthoadons.Any(ct => ct.MaCtsp == maSp));
+            }
+            else
+            {
+                int maCombo = idObject;
+                return danhSachHoaDon.Any(hoaDon => hoaDon.MaKh == maKhachHang &&
+                    hoaDon.Chitietcombohoadons.Any(ct => ct.MaCombo == maCombo));
+            }
         }
     }
 
@@ -76,7 +85,7 @@ namespace APIClothesEcommerceShop.Models
             };
         }
 
-        public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity)
+        public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity, bool isProduct = true)
         {
             return new ReviewResponseDTO
             {
@@ -89,7 +98,11 @@ namespace APIClothesEcommerceShop.Models
                 ShopPhanHoi = entity.ShopPhanHoi,
                 NgayPhanHoi = entity.NgayPhanHoi,
                 MaSp = entity.MaSp, // Nếu cần thì thêm mã sản phẩm
-                MaCombo = entity.MaCombo // Nếu cần thì thêm mã combo
+                MaCombo = entity.MaCombo, // Nếu cần thì thêm mã combo
+                DaMuaHang = entity.KhachHang?.Hoadons.Any(hd =>
+                    isProduct
+                        ? hd.Cthoadons.Any(ct => ct.MaCtsp == entity.MaSp)
+                        : hd.Chitietcombohoadons.Any(ct => ct.MaCombo == entity.MaCombo)) ?? false
             };
         }
     }

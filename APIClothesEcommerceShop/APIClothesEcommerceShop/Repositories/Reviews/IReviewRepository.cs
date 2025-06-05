@@ -18,7 +18,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         Task<ResponseAPI<string>> UpdateReviewAsync(ReviewRequestDTO entity, bool isProduct);
         Task<ResponseAPI<string>> RemoveAsync(int reviewId, int userId);
 
-        Task<ResponseAPI<IEnumerable<ReviewDetailResponseDTO>>> GetAllReviewDtoAsync();
+        Task<ResponseAPI<IEnumerable<ReviewDetailDTO>>> GetAllReviewDtoAsync();
         Task<ResponseAPI<string>> UpdateShopReplyAsync(ReviewReplyRequestDTO request);
     }
 }

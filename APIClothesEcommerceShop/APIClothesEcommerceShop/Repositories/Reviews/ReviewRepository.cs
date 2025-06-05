@@ -34,9 +34,29 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
             try
             {
+                // Lấy danh sách mã biến thể của sản phẩm
+                int[] listIds = await _db.Chitietsanphams.Where(x => x.MaSp == maSp).Select(x => x.MaCtsp).ToArrayAsync();
+
+                // Lấy danh sách đánh giá cho sản phẩm cụ thể
                 var reviews = await _db.DanhGias
                     .Where(r => r.MaSp == maSp)
-                    .Select(r => r.ToReviewResponseDTO())
+                    .Include(r => r.KhachHang)
+                        .ThenInclude(kh => kh.Hoadons)
+                            .ThenInclude(hd => hd.Cthoadons)
+                    .Select(r => new ReviewResponseDTO
+                    {
+                        Id = r.Id,
+                        MaKh = r.MaKh,
+                        TenKhachHang = r.KhachHang.HoTen,
+                        MaSp = r.MaSp,
+                        NoiDung = r.NoiDung,
+                        SoSao = r.SoSao,
+                        NgayDanhGia = r.NgayDanhGia,
+                        ShopPhanHoi = r.ShopPhanHoi,
+                        NgayPhanHoi = r.NgayPhanHoi,
+                        DaMuaHang = r.KhachHang.Hoadons.Any(hd =>
+                            hd.Cthoadons.Any(ct => listIds.Any(li => li == ct.MaCtsp))) // ? Xử lí sau: && hd.TinhTrang == "Đã nhận hàng"
+                    })
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -55,7 +75,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         }
         #endregion
 
-        #region [Lấy danh sách đánh giá của sản phẩm]
+        #region [Lấy danh sách đánh giá của combo]
         public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByComboIdAsync(int maCombo)
         {
             var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
@@ -69,7 +89,21 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 var reviews = await _db.DanhGias
                     .Where(r => r.MaCombo == maCombo)
-                    .Select(r => r.ToReviewResponseDTO())
+                    .Include(r => r.KhachHang)
+                    .Select(r => new ReviewResponseDTO
+                    {
+                        Id = r.Id,
+                        MaKh = r.MaKh,
+                        TenKhachHang = r.KhachHang.HoTen,
+                        MaSp = r.MaSp,
+                        NoiDung = r.NoiDung,
+                        SoSao = r.SoSao,
+                        NgayDanhGia = r.NgayDanhGia,
+                        ShopPhanHoi = r.ShopPhanHoi,
+                        NgayPhanHoi = r.NgayPhanHoi,
+                        DaMuaHang = r.KhachHang.Hoadons.Any(hd =>
+                            hd.Cthoadons.Any(ct => ct.MaCombo == maCombo)) // ? Xử lí sau: && hd.TinhTrang == "Đã nhận hàng"
+                    })
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -285,26 +319,103 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         /// Lấy tất cả đánh giá dưới dạng danh sách DTO
         /// </summary>
         /// <returns></returns>
-        public async Task<ResponseAPI<IEnumerable<ReviewDetailResponseDTO>>> GetAllReviewDtoAsync()
+        public async Task<ResponseAPI<IEnumerable<ReviewDetailDTO>>> GetAllReviewDtoAsync()
         {
-            var response = new ResponseAPI<IEnumerable<ReviewDetailResponseDTO>>();
+            var response = new ResponseAPI<IEnumerable<ReviewDetailDTO>>();
             try
             {
+                // Lấy danh sách mã biến thể của sản phẩm
+                var listIds = await _db.Sanphams
+                    .Include(x => x.Chitietsanphams)
+                    .ToDictionaryAsync(
+                        x => x.MaSp,
+                        x => x.Chitietsanphams.Select(ct => ct.MaCtsp).ToList()
+                    );
+
                 var reviews = await _db.DanhGias
                     .Include(r => r.KhachHang)
                     .Include(r => r.SanPham)
-                        .ThenInclude(sp => sp.Chitietsanphams)
                     .Include(r => r.Combo)
-                    .Select(r => r.ToReviewResponseDTO().ToDetailResponseDTO(r.KhachHang, r.SanPham, r.Combo))
                     .ToListAsync();
 
-                if (!reviews.Any())
+                List<ReviewDetailDTO> transformDtos = new();
+                foreach (var review in reviews)
+                {
+                    var orders = _db.Hoadons
+                        .Where(hd => hd.MaKh == review.MaKh &&
+                            (
+                                (review.MaSp != null && hd.Cthoadons.Any(ct => listIds.ContainsKey(review.MaSp.Value) && listIds[review.MaSp.Value].Contains(ct.MaCtsp ?? 0)))
+                                || (review.MaCombo != null && hd.Chitietcombohoadons.Any(ct => ct.MaCombo == review.MaCombo))
+                            ))
+                        .Select(hd => new OrderReviewInfoDTO
+                        {
+                            MaHd = hd.MaHd,
+                            NgayTao = hd.NgayTao,
+                            TrangThai = hd.TinhTrang,
+                            MaCtsp = review.MaSp != null
+                                ? (hd.Cthoadons.FirstOrDefault(ct => listIds.ContainsKey(review.MaSp.Value) && ct.MaCtsp != null && listIds[review.MaSp.Value].Contains(ct.MaCtsp.Value)) != null
+                                    ? hd.Cthoadons.FirstOrDefault(ct => listIds.ContainsKey(review.MaSp.Value) && ct.MaCtsp != null && listIds[review.MaSp.Value].Contains(ct.MaCtsp.Value))!.MaCtsp
+                                    : null)
+                                : null,
+                            MaCombo = review.MaCombo != null
+                                ? (hd.Chitietcombohoadons.FirstOrDefault(ct => ct.MaCombo == review.MaCombo) != null
+                                    ? hd.Chitietcombohoadons.FirstOrDefault(ct => ct.MaCombo == review.MaCombo)!.MaCombo
+                                    : (int?)null)
+                                : null,
+                            SoLuong =
+                                review.MaSp != null
+                                    ? (
+                                        (from ct in hd.Cthoadons
+                                         where listIds.ContainsKey(review.MaSp.Value)
+                                            && ct.MaCtsp != null
+                                            && listIds[review.MaSp.Value].Contains(ct.MaCtsp.Value)
+                                         select ct.SoLuong).FirstOrDefault()
+                                      )
+                                    : (review.MaCombo != null
+                                        ? (
+                                            (from ct in hd.Chitietcombohoadons
+                                             where ct.MaCombo == review.MaCombo
+                                             select ct.SoLuong).FirstOrDefault()
+                                          )
+                                        : null)
+                        }).ToList();
+
+                    var transformDto = new ReviewDetailDTO
+                    {
+                        Id = review.Id,
+                        MaKh = review.MaKh,
+                        TenKhachHang = review.KhachHang?.HoTen ?? "",
+                        MaSp = review.MaSp,
+                        MaCombo = review.MaCombo,
+                        NoiDung = review.NoiDung,
+                        SoSao = review.SoSao,
+                        NgayDanhGia = review.NgayDanhGia,
+                        ShopPhanHoi = review.ShopPhanHoi,
+                        NgayPhanHoi = review.NgayPhanHoi,
+                        Email = review.KhachHang?.Email ?? "",
+                        SoDienThoai = review.KhachHang?.Sdt ?? "",
+                        HoTen = review.KhachHang?.HoTen ?? "",
+                        TenSanPham = review.SanPham != null ? review.SanPham.TenSanPham : (review.Combo != null ? review.Combo.TenCombo : ""),
+                        HinhAnhSanPham = review.Combo?.Hinh ?? "", // ? review.SanPham.Hinh
+                        DonGia = review.SanPham != null
+                            ? (review.SanPham.Chitietsanphams.Any() ? (double)review.SanPham.Chitietsanphams.Average(x => x.DonGia) : 0)
+                            : (review.Combo?.GiaCombo ?? 0),
+                        LuotXem = review.SanPham?.LuotXem ?? 0,
+                        SoLuong = review.SanPham != null
+                            ? (review.SanPham.Chitietsanphams.Any() ? (int)review.SanPham.Chitietsanphams.Average(x => x.SoLuongTon) : 0)
+                            : (review.Combo?.SoLuong ?? 0),
+                        IsActive = review.SanPham?.IsActive ?? review.Combo?.IsActive,
+                        Orders = orders
+                    };
+                    transformDtos.Add(transformDto);
+                }
+                if (!transformDtos.Any())
                 {
                     response.SetErrorResponse("Không có đánh giá nào");
                     return response;
                 }
 
-                response.SetSuccessResponse(data: reviews, message: "Lấy danh sách đánh giá thành công");
+                response.SetSuccessResponse(data: transformDtos, message: "Lấy danh sách đánh giá thành công");
             }
             catch (Exception ex)
             {
@@ -312,7 +423,6 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
-
         public async Task<ResponseAPI<string>> UpdateShopReplyAsync(ReviewReplyRequestDTO request)
         {
             var response = new ResponseAPI<string>();
@@ -352,6 +462,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
+        // ! Test: Not exist to use
         /// <summary>
         ///     Lấy thông tin đơn hàng cùng với đánh giá của người dùng theo mã hóa đơn và mã khách hàng
         /// </summary>

@@ -14,6 +14,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
         public int? MaCombo { get; set; } // Thêm mã combo vào phản hồi
         public string NoiDung { get; set; } = string.Empty;
         public int SoSao { get; set; } = 0;
+        public bool DaMuaHang { get; set; } = false; // Thêm thuộc tính để kiểm tra đã mua hàng hay chưa
 
         public DateTime NgayDanhGia { get; set; } = DateTime.Now;
         public string? ShopPhanHoi { get; set; } = null;
