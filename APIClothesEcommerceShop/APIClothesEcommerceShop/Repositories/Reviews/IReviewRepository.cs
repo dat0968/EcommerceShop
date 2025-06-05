@@ -19,6 +19,6 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         Task<ResponseAPI<string>> RemoveAsync(int reviewId, int userId);
 
         Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetAllReviewDtoAsync();
-        Task<ResponseAPI<string>> UpdateShopReplyAsync(int[] reviewIds, string replyContent);
+        Task<ResponseAPI<string>> UpdateShopReplyAsync(RequestReplyRequestDTO request);
     }
 }

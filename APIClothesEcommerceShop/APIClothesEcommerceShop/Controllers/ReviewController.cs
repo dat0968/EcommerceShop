@@ -127,18 +127,18 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpPut("shop-response")]
-        public async Task<IActionResult> ResponseToReview([FromBody] int[] listId, string responseContent)
+        public async Task<IActionResult> ResponseToReview([FromBody] RequestReplyRequestDTO request)
         {
-            if (listId == null || listId.Length == 0 || string.IsNullOrEmpty(responseContent))
+            if (request.ListId.Length == 0 || string.IsNullOrEmpty(request.ResponseContent))
             {
                 return BadRequest(new ResponseAPI<string>
                 {
                     Success = false,
-                    Message = "Invalid input data."
+                    Message = "Yêu cầu dữ liệu không hợp lệ."
                 });
             }
 
-            var res = await _unit.Review.UpdateShopReplyAsync(listId, responseContent);
+            var res = await _unit.Review.UpdateShopReplyAsync(request);
             if (!res.Success)
             {
                 return StatusCode(res.StatusCode, res);

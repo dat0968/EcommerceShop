@@ -310,10 +310,10 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
-        public async Task<ResponseAPI<string>> UpdateShopReplyAsync(int[] reviewIds, string replyContent)
+        public async Task<ResponseAPI<string>> UpdateShopReplyAsync(RequestReplyRequestDTO request)
         {
             var response = new ResponseAPI<string>();
-            if (reviewIds == null || reviewIds.Length == 0 || string.IsNullOrWhiteSpace(replyContent))
+            if (request == null || request.ListId.Length == 0 || string.IsNullOrWhiteSpace(request.ResponseContent))
             {
                 response.SetErrorResponse("Thông tin đánh giá hoặc nội dung phản hồi không hợp lệ");
                 return response;
@@ -322,7 +322,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             try
             {
                 var reviews = await _db.DanhGias
-                    .Where(r => reviewIds.Contains(r.Id))
+                    .Where(r => request.ListId.Contains(r.Id))
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -333,7 +333,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 foreach (var review in reviews)
                 {
-                    review.ShopPhanHoi = replyContent;
+                    review.ShopPhanHoi = request.ResponseContent;
                     review.NgayPhanHoi = DateTime.UtcNow;
                 }
 
