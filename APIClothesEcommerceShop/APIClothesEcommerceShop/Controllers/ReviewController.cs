@@ -118,7 +118,7 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(res);
         }
 
-        [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewResponseDTO>>), 200)]
+        [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewDetailResponseDTO>>), 200)]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllReview()
         {
@@ -127,7 +127,7 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpPut("shop-response")]
-        public async Task<IActionResult> ResponseToReview([FromBody] RequestReplyRequestDTO request)
+        public async Task<IActionResult> ResponseToReview([FromBody] ReviewReplyRequestDTO request)
         {
             if (request.ListId.Length == 0 || string.IsNullOrEmpty(request.ResponseContent))
             {

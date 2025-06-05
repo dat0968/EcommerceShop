@@ -285,14 +285,17 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         /// Lấy tất cả đánh giá dưới dạng danh sách DTO
         /// </summary>
         /// <returns></returns>
-        public async Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetAllReviewDtoAsync()
+        public async Task<ResponseAPI<IEnumerable<ReviewDetailResponseDTO>>> GetAllReviewDtoAsync()
         {
-            var response = new ResponseAPI<IEnumerable<ReviewResponseDTO>>();
+            var response = new ResponseAPI<IEnumerable<ReviewDetailResponseDTO>>();
             try
             {
                 var reviews = await _db.DanhGias
-                    .Include(r => r.KhachHang) // Bao gồm thông tin khách hàng
-                    .Select(r => r.ToReviewResponseDTO())
+                    .Include(r => r.KhachHang)
+                    .Include(r => r.SanPham)
+                        .ThenInclude(sp => sp.Chitietsanphams)
+                    .Include(r => r.Combo)
+                    .Select(r => r.ToReviewResponseDTO().ToDetailResponseDTO(r.KhachHang, r.SanPham, r.Combo))
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -310,7 +313,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
-        public async Task<ResponseAPI<string>> UpdateShopReplyAsync(RequestReplyRequestDTO request)
+        public async Task<ResponseAPI<string>> UpdateShopReplyAsync(ReviewReplyRequestDTO request)
         {
             var response = new ResponseAPI<string>();
             if (request == null || request.ListId.Length == 0 || string.IsNullOrWhiteSpace(request.ResponseContent))
