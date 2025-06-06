@@ -12,9 +12,9 @@ namespace APIClothesEcommerceShop.DTO.Reviews
         public string TenKhachHang { get; set; } = string.Empty; // Thêm tên khách hàng vào phản hồi
         public int? MaSp { get; set; } // Thêm mã sản phẩm vào phản hồi
         public int? MaCombo { get; set; } // Thêm mã combo vào phản hồi
+        public int MaCthd { get; set; }
         public string NoiDung { get; set; } = string.Empty;
         public int SoSao { get; set; } = 0;
-        public bool DaMuaHang { get; set; } = false; // Thêm thuộc tính để kiểm tra đã mua hàng hay chưa
 
         public DateTime NgayDanhGia { get; set; } = DateTime.Now;
         public string? ShopPhanHoi { get; set; } = null;

@@ -15,6 +15,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     public class ReviewRepository : Repository<DanhGia>, IReviewRepository
     {
         private readonly EcommerceShopContext _db;
+        private static string pathImageReview = "wwwroot/HinhAnh/Reviews";
 
         public ReviewRepository(EcommerceShopContext db) : base(db)
         {
@@ -40,23 +41,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 // Lấy danh sách đánh giá cho sản phẩm cụ thể
                 var reviews = await _db.DanhGias
                     .Where(r => r.MaSp == maSp)
+                    .Include(x => x.Cthoadon)
                     .Include(r => r.KhachHang)
-                        .ThenInclude(kh => kh.Hoadons)
-                            .ThenInclude(hd => hd.Cthoadons)
-                    .Select(r => new ReviewResponseDTO
-                    {
-                        Id = r.Id,
-                        MaKh = r.MaKh,
-                        TenKhachHang = r.KhachHang.HoTen,
-                        MaSp = r.MaSp,
-                        NoiDung = r.NoiDung,
-                        SoSao = r.SoSao,
-                        NgayDanhGia = r.NgayDanhGia,
-                        ShopPhanHoi = r.ShopPhanHoi,
-                        NgayPhanHoi = r.NgayPhanHoi,
-                        DaMuaHang = r.KhachHang.Hoadons.Any(hd =>
-                            hd.Cthoadons.Any(ct => listIds.Any(li => li == ct.MaCtsp))) // ? Xử lí sau: && hd.TinhTrang == "Đã nhận hàng"
-                    })
+                    .Select(r => r.ToReviewResponseDTO())
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -90,20 +77,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 var reviews = await _db.DanhGias
                     .Where(r => r.MaCombo == maCombo)
                     .Include(r => r.KhachHang)
-                    .Select(r => new ReviewResponseDTO
-                    {
-                        Id = r.Id,
-                        MaKh = r.MaKh,
-                        TenKhachHang = r.KhachHang.HoTen,
-                        MaSp = r.MaSp,
-                        NoiDung = r.NoiDung,
-                        SoSao = r.SoSao,
-                        NgayDanhGia = r.NgayDanhGia,
-                        ShopPhanHoi = r.ShopPhanHoi,
-                        NgayPhanHoi = r.NgayPhanHoi,
-                        DaMuaHang = r.KhachHang.Hoadons.Any(hd =>
-                            hd.Cthoadons.Any(ct => ct.MaCombo == maCombo)) // ? Xử lí sau: && hd.TinhTrang == "Đã nhận hàng"
-                    })
+                    .Select(r => r.ToReviewResponseDTO())
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -136,12 +110,12 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 var hoadon = await _db.Hoadons
                     .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.DanhGia) // TempNote
+                    .Include(h => h.Cthoadons)
                         .ThenInclude(ct => ct.MaCtspNavigation)
                             .ThenInclude(ctsp => ctsp.MaSpNavigation)
-                                .ThenInclude(sp => sp.DanhGias)
-                    .Include(h => h.Chitietcombohoadons)
+                    .Include(h => h.Cthoadons)
                         .ThenInclude(ct => ct.MaComboNavigation)
-                            .ThenInclude(combo => combo.DanhGias)
                     .FirstOrDefaultAsync(h => h.MaHd == orderId && h.MaKh == userId);
 
                 if (hoadon == null)
@@ -151,8 +125,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 }
 
                 var transferData = hoadon.ToOrderWithReview();
-                transferData.Products.AddRange(hoadon.Cthoadons.Select(item => item.ToProductInOrderWithReview(item.MaCtspNavigation, userId)));
-                transferData.Combos.AddRange(hoadon.Chitietcombohoadons.Select(item => item.ToComboInOrderWithReview(item.MaComboNavigation, userId)));
+                transferData.Products.AddRange(hoadon.Cthoadons.Where(x => x.MaCtsp.HasValue).Select(item => item.ToProductInOrderWithReview()));
+                transferData.Combos.AddRange(hoadon.Cthoadons.Where(x => x.MaCombo.HasValue).Select(item => item.ToComboInOrderWithReview()));
 
                 response.SetSuccessResponse(data: transferData, message: "Lấy thông tin hóa đơn và đánh giá thành công");
             }
@@ -184,7 +158,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     existingReview = await _db.DanhGias
                     .FirstOrDefaultAsync(r => r.MaKh == entity.MaKh &&
-                                              (r.MaSp == entity.MaSp));
+                                              (r.MaSp == entity.MaSp) && r.MaCtHd == entity.MaCtHd);
                     if (existingReview != null)
                     {
                         response.SetErrorResponse("Bạn đã đánh giá sản phẩm này rồi, vui lòng chỉ sửa thông tin.");
@@ -195,7 +169,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     existingReview = await _db.DanhGias
                     .FirstOrDefaultAsync(r => r.MaKh == entity.MaKh &&
-                                              (r.MaCombo == entity.MaCombo));
+                                              (r.MaCombo == entity.MaCombo) && r.MaCtHd == entity.MaCtHd);
                     if (existingReview != null)
                     {
                         response.SetErrorResponse("Bạn đã đánh giá combo này rồi, vui lòng chỉ sửa thông tin.");
@@ -205,6 +179,13 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 // Thêm đánh giá vào cơ sở dữ liệu
                 var reviewTransform = entity.ToDanhGia();
+
+                // Lưu hình ảnh
+                if (entity.HinhAnhs != null && entity.HinhAnhs.Length > 0)
+                {
+                    string[] listNameImgs = await SaveImagesReview(entity.HinhAnhs);
+                    reviewTransform.CombineNameImg(listNameImgs);
+                }
                 await _db.DanhGias.AddAsync(reviewTransform);
                 await _db.SaveChangesAsync();
                 response.SetSuccessResponse(data: reviewTransform.ToReviewResponseDTO(), message: "Thêm đánh giá thành công");
@@ -269,7 +250,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         }
         #endregion
 
-        #region [Xóa đánh giá sản phẩm hoặc combo]
+        #region [Xóa đánh giá sản phẩm hoặc combo - Không chắc nó hoạt động hay không]
         public async Task<ResponseAPI<string>> RemoveAsync(int reviewId, int userId)
         {
             var response = new ResponseAPI<string>();
@@ -316,7 +297,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
         #region [REVIEW METHODS FOR PRODUCTS AND COMBOS ONLY FOR STAFFS]
         /// <summary>
-        /// Lấy tất cả đánh giá dưới dạng danh sách DTO
+        /// Lấy tất cả đánh giá dưới dạng danh sách DTO [! Bad query]
         /// </summary>
         /// <returns></returns>
         public async Task<ResponseAPI<IEnumerable<ReviewDetailDTO>>> GetAllReviewDtoAsync()
@@ -396,7 +377,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                         SoDienThoai = review.KhachHang?.Sdt ?? "",
                         HoTen = review.KhachHang?.HoTen ?? "",
                         TenSanPham = review.SanPham != null ? review.SanPham.TenSanPham : (review.Combo != null ? review.Combo.TenCombo : ""),
-                        HinhAnhSanPham = review.Combo?.Hinh ?? "", // ? review.SanPham.Hinh
+                        HinhAnhs = review.TenCacHinhAnh ?? "",
                         DonGia = review.SanPham != null
                             ? (review.SanPham.Chitietsanphams.Any() ? (double)review.SanPham.Chitietsanphams.Average(x => x.DonGia) : 0)
                             : (review.Combo?.GiaCombo ?? 0),
@@ -462,37 +443,44 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
-        // ! Test: Not exist to use
-        /// <summary>
-        ///     Lấy thông tin đơn hàng cùng với đánh giá của người dùng theo mã hóa đơn và mã khách hàng
-        /// </summary>
-        /// <param name="maHd"></param>
-        /// <param name="maKh"></param>
-        /// <returns></returns>
-        public async Task<OrderWithReview?> GetOrderWithReviewAsync(int maHd, int maKh)
+        #region [Lưu hình ảnh đánh giá]
+        private async Task<string[]> SaveImagesReview(IFormFile[] fileForms)
         {
-            var order = await _db.Hoadons
-                .Include(hd => hd.Cthoadons)
-                    .ThenInclude(ct => ct.MaCtspNavigation)
-                        .ThenInclude(ctsp => ctsp.MaSpNavigation)
-                            .ThenInclude(sp => sp.DanhGias)
-                .Include(hd => hd.Chitietcombohoadons)
-                    .ThenInclude(ctcb => ctcb.MaComboNavigation)
-                        .ThenInclude(cb => cb.DanhGias)
-                .FirstOrDefaultAsync(hd => hd.MaHd == maHd && hd.MaKh == maKh);
+            try
+            {
+                if (fileForms == null || fileForms.Length == 0)
+                {
+                    return Array.Empty<string>();
+                }
 
-            if (order == null) return null;
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), pathImageReview);
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
 
-            var dto = order.ToOrderWithReview();
-            dto.Products = order.Cthoadons
-                .Select(ct => ct.ToProductInOrderWithReview(ct.MaCtspNavigation, maKh))
-                .ToList();
-            dto.Combos = order.Chitietcombohoadons
-                .Select(cb => cb.ToComboInOrderWithReview(cb.MaComboNavigation, maKh))
-                .ToList();
+                List<string> savedFileNames = new List<string>();
+                foreach (var file in fileForms)
+                {
+                    // Tạo tên file duy nhất
+                    var ext = Path.GetExtension(file.FileName);
+                    var uniqueFileName = $"{Path.GetFileNameWithoutExtension(file.FileName)}_{Guid.NewGuid()}{ext}";
+                    var filePath = Path.Combine(folderPath, uniqueFileName);
 
-            return dto;
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    savedFileNames.Add(uniqueFileName);
+                }
+                return savedFileNames.ToArray();
+            }
+            catch (Exception)
+            {
+                return Array.Empty<string>();
+            }
         }
+        #endregion
         #endregion
     }
 }

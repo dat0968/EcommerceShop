@@ -70,6 +70,10 @@ namespace APIClothesEcommerceShop.Models
                     hoaDon.Chitietcombohoadons.Any(ct => ct.MaCombo == maCombo));
             }
         }
+        public void CombineNameImg(string[] listNameImg)
+        {
+            this.TenCacHinhAnh = String.Join(",", listNameImg);
+        }
     }
 
 
@@ -83,30 +87,28 @@ namespace APIClothesEcommerceShop.Models
                 MaKh = dto.MaKh,
                 MaSp = dto.MaSp,
                 MaCombo = dto.MaCombo,
+                MaCtHd = dto.MaCtHd,
                 NoiDung = dto.NoiDung,
                 SoSao = dto.SoSao,
                 NgayDanhGia = dto.NgayDanhGia
             };
         }
 
-        public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity, bool isProduct = true)
+        public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity)
         {
             return new ReviewResponseDTO
             {
                 Id = entity.Id,
                 MaKh = entity.MaKh,
                 TenKhachHang = entity.KhachHang?.HoTen ?? "Khách hàng không xác định",
+                MaSp = entity.MaSp, // Nếu cần thì thêm mã sản phẩm
+                MaCombo = entity.MaCombo, // Nếu cần thì thêm mã combo
+                MaCthd = entity.MaCtHd,
                 NoiDung = entity.NoiDung,
                 SoSao = entity.SoSao,
                 NgayDanhGia = entity.NgayDanhGia,
                 ShopPhanHoi = entity.ShopPhanHoi,
-                NgayPhanHoi = entity.NgayPhanHoi,
-                MaSp = entity.MaSp, // Nếu cần thì thêm mã sản phẩm
-                MaCombo = entity.MaCombo, // Nếu cần thì thêm mã combo
-                DaMuaHang = entity.KhachHang?.Hoadons.Any(hd =>
-                    isProduct
-                        ? hd.Cthoadons.Any(ct => ct.MaCtsp == entity.MaSp)
-                        : hd.Chitietcombohoadons.Any(ct => ct.MaCombo == entity.MaCombo)) ?? false
+                NgayPhanHoi = entity.NgayPhanHoi
             };
         }
     }

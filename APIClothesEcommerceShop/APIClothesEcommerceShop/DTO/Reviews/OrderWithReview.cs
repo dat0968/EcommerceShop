@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using APIClothesEcommerceShop.Models;
+using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace APIClothesEcommerceShop.DTO.Reviews
 {
@@ -52,6 +53,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
 
     public class ProductInOrderWithReview
     {
+        // Tương ứng mã cthd
         public int Id { get; set; }
 
         public int MaSp { get; set; }
@@ -69,12 +71,14 @@ namespace APIClothesEcommerceShop.DTO.Reviews
         public string NoiDung { get; set; } = string.Empty;
 
         public int SoSao { get; set; }
-
-        public bool HasReview => SoSao > 0;
+        public string[]? HinhAnhs { get; set; }
     }
 
     public class ComboInOrderWithReview
     {
+
+        // Tương ứng mã cthd
+        public int Id { get; set; }
         public int MaCtsp { get; set; }
 
         public int MaCombo { get; set; }
@@ -89,7 +93,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
 
         public int SoSao { get; set; }
 
-        public bool HasReview => SoSao > 0;
+        public string[]? HinhAnhs { get; set; }
     }
 
     public static class OrderWithReviewExtensions
@@ -119,19 +123,9 @@ namespace APIClothesEcommerceShop.DTO.Reviews
             };
         }
 
-        public static ProductInOrderWithReview ToProductInOrderWithReview(this Cthoadon product, Chitietsanpham? productDt, int MaKh)
+        public static ProductInOrderWithReview ToProductInOrderWithReview(this Cthoadon product)
         {
-            return CreateProductReview(product, productDt, MaKh);
-        }
-
-        public static ComboInOrderWithReview ToComboInOrderWithReview(this Chitietcombohoadon comboHd, Combo combo, int MaKh)
-        {
-            return CreateComboReview(comboHd, combo, MaKh);
-        }
-
-        private static ProductInOrderWithReview CreateProductReview(Cthoadon product, Chitietsanpham? productDt, int MaKh)
-        {
-            var danhGia = productDt?.MaSpNavigation.DanhGias.FirstOrDefault(x => x.MaKh == MaKh) ?? new DanhGia();
+            var danhGia = product.DanhGia;
             return new ProductInOrderWithReview
             {
                 Id = product.Id,
@@ -142,22 +136,25 @@ namespace APIClothesEcommerceShop.DTO.Reviews
                 GiamGia = product.GiamGia,
                 MaDanhGia = danhGia?.Id ?? 0,
                 NoiDung = danhGia?.NoiDung ?? "Bạn chưa đánh giá.",
-                SoSao = danhGia?.SoSao ?? 0
+                SoSao = danhGia?.SoSao ?? 0,
+                HinhAnhs = danhGia?.TenCacHinhAnh?.Split(",")
             };
         }
 
-        private static ComboInOrderWithReview CreateComboReview(Chitietcombohoadon comboHd, Combo combo, int MaKh)
+        public static ComboInOrderWithReview ToComboInOrderWithReview(this Cthoadon comboHd)
         {
-            var danhGia = combo.DanhGias.FirstOrDefault(x => x.MaKh == MaKh);
+            var danhGia = comboHd.DanhGia;
             return new ComboInOrderWithReview
             {
-                MaCtsp = comboHd.MaCtsp,
-                MaCombo = comboHd.MaCombo,
+                Id = comboHd.Id,
+                MaCtsp = comboHd.MaCtsp ?? 0,
+                MaCombo = comboHd.MaCombo ?? 0,
                 SoLuong = comboHd.SoLuong,
-                DonGia = comboHd.DonGia,
+                DonGia = comboHd.Gia,
                 MaDanhGia = danhGia?.Id ?? 0,
                 NoiDung = danhGia?.NoiDung ?? "Bạn chưa đánh giá.",
-                SoSao = danhGia?.SoSao ?? 0
+                SoSao = danhGia?.SoSao ?? 0,
+                HinhAnhs = danhGia?.TenCacHinhAnh?.Split(",")
             };
         }
     }

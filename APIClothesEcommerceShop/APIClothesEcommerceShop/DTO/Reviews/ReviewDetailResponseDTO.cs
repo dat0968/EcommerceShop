@@ -28,7 +28,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
 
         // Thông tin chi tiết về sản phẩm hoặc combo được đánh giá
         public string TenSanPham { get; set; } = string.Empty; // Tên sản phẩm
-        public string HinhAnhSanPham { get; set; } = string.Empty; // Hình ảnh sản phẩm
+        public string HinhAnhs { get; set; } = string.Empty; // Hình ảnh sản phẩm
         public double DonGia { get; set; }
         public int LuotXem { get; set; }
         public int SoLuong { get; set; }
@@ -72,7 +72,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
                 SoDienThoai = khachHang?.Sdt ?? string.Empty,
                 HoTen = khachHang?.HoTen ?? string.Empty,
                 TenSanPham = sanPham?.TenSanPham ?? combo?.TenCombo ?? string.Empty,
-                HinhAnhSanPham = combo?.Hinh ?? string.Empty,
+                HinhAnhs = combo?.Hinh ?? string.Empty,
                 DonGia = sanPham != null
                     ? (sanPham.Chitietsanphams.Any() ? (double)sanPham.Chitietsanphams.Average(x => x.DonGia) : 0)
                     : (combo?.GiaCombo ?? 0),

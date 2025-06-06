@@ -12,6 +12,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
         public int MaKh { get; set; } = 0;
         public int? MaSp { get; set; } // Sử dụng MaSp thay cho MaCtsp
         public int? MaCombo { get; set; }
+        public int MaCtHd { get; set; }
 
         [MaxLength(500)]
         public string NoiDung { get; set; } = string.Empty;
@@ -20,5 +21,6 @@ namespace APIClothesEcommerceShop.DTO.Reviews
         public int SoSao { get; set; } = 0;
 
         public DateTime NgayDanhGia { get; set; } = DateTime.Now;
+        public IFormFile[]? HinhAnhs { get; set; }
     }
 }

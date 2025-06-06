@@ -73,7 +73,7 @@ namespace APIClothesEcommerceShop.Controllers
         [ProducesResponseType(typeof(ResponseAPI<ReviewResponseDTO>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        public async Task<IActionResult> AddReview([FromBody] ReviewRequestDTO review, bool isProduct = true)
+        public async Task<IActionResult> AddReview([FromForm] ReviewRequestDTO review, bool isProduct = true)
         {
             if (review == null)
             {
