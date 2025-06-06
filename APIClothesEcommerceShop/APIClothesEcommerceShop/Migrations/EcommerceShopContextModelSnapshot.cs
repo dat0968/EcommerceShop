@@ -299,6 +299,9 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<int>("SoSao")
                         .HasColumnType("int");
 
+                    b.Property<string>("TenCacHinhAnh")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MaCombo");

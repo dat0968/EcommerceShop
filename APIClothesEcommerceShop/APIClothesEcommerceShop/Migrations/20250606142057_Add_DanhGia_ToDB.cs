@@ -22,6 +22,7 @@ namespace APIClothesEcommerceShop.Migrations
                     NgayDanhGia = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ShopPhanHoi = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     NgayPhanHoi = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    TenCacHinhAnh = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     MaSp = table.Column<int>(type: "int", nullable: true),
                     MaCombo = table.Column<int>(type: "int", nullable: true),
                     MaCtHd = table.Column<int>(type: "int", nullable: false),

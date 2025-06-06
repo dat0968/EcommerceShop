@@ -25,6 +25,7 @@ namespace APIClothesEcommerceShop.Models
 
         public string? ShopPhanHoi { get; set; } = string.Empty;
         public DateTime? NgayPhanHoi { get; set; } = null;
+        public string? TenCacHinhAnh { get; set; } = string.Empty;
 
         // Liên kết với cho SanPham
         public int? MaSp { get; set; }

@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    [Migration("20250606134730_Add_DanhGia_ToDB")]
+    [Migration("20250606142057_Add_DanhGia_ToDB")]
     partial class Add_DanhGia_ToDB
     {
         /// <inheritdoc />
@@ -301,6 +301,9 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.Property<int>("SoSao")
                         .HasColumnType("int");
+
+                    b.Property<string>("TenCacHinhAnh")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
