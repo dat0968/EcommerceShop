@@ -78,16 +78,23 @@
         <div class="mb-3">
           <button class="btn btn-success me-2" @click="addReview">Thêm đánh giá</button>
           <button class="btn btn-warning me-2" @click="updateReview">Cập nhật đánh giá</button>
-          <button class="btn btn-danger" @click="deleteReview(1)">Xóa đánh giá</button>
           <!-- ! Fix this-->
+          <button class="btn btn-danger" @click="deleteReview(1)">Xóa đánh giá</button>
         </div>
         <div class="mb-3">
           <strong>Danh sách đánh giá:</strong>
           <ul class="list-group">
-            <li v-for="review in result.data" :key="review.id" class="list-group-item">
+            <li
+              v-for="review in result.data"
+              :key="review.id"
+              class="list-group-item position-relative"
+            >
               <strong>Nội dung:</strong> {{ review.noiDung }} <br />
               <strong>Số sao:</strong> {{ review.soSao }} <br />
               <strong>Ngày đánh giá:</strong> {{ new Date(review.ngayDanhGia).toLocaleString() }}
+              <span class="position-absolute top-0 right-0 badge badge-info">{{
+                review.daMuaHang ? 'Đã mua hàng' : 'Chưa mua hàng'
+              }}</span>
               <br />
               <blockquote
                 class="col-12"
