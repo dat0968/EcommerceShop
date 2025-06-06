@@ -186,8 +186,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         {
             // Tạo dictionary để truy xuất nhanh các đơn hàng theo mã khách hàng
             var ordersByCustomer = dataOrder
-                .Where(x => x.MaKhNavigation != null)
-                .GroupBy(x => x.MaKh)
+                .Where(x => x != null && x.MaKhNavigation != null && x.MaKh.HasValue)
+                .GroupBy(x => x.MaKh!.Value) // ! Over there has a !.
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
 
             return ordersByCustomer.Select(kvp =>
@@ -780,43 +780,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             {
                 Console.WriteLine($"Lỗi khi lấy dữ liệu nhân viên: {ex.Message}");
                 data = new List<Nhanvien>();
-            }
-            return data;
-        }
-        private async Task<List<Combo>> GetCombosAsync()
-        {
-            List<Combo> data = new();
-            try
-            {
-                data = await _context.Combos
-                                .Include(x => x.Chitietcombohoadons)
-                                    .ThenInclude(x => x.MaHdNavigation)
-                                .Include(x => x.Chitietcombohoadons)
-                                    .ThenInclude(x => x.MaComboNavigation)
-                                .AsNoTracking().ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi khi lấy dữ liệu combo: {ex.Message}");
-                data = new List<Combo>();
-            }
-            return data;
-        }
-
-        private async Task<List<Chitietcombohoadon>> GetChitietcombohoadonsAsync()
-        {
-            List<Chitietcombohoadon> data = new();
-            try
-            {
-                data = await _context.Chitietcombohoadons
-                                .Include(x => x.MaComboNavigation)
-                                .Include(x => x.MaHdNavigation)
-                                .AsNoTracking().ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi khi lấy dữ liệu chi tiết combo hóa đơn: {ex.Message}");
-                data = new List<Chitietcombohoadon>();
             }
             return data;
         }
