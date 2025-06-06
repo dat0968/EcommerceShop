@@ -1,13 +1,14 @@
 class ConfigsRequest {
-  static getSkipAuthConfig() {
-    return { headers: { skipAuth: true } }
+  static getSkipAuthConfig(extraHeaders = {}) {
+    return { headers: { skipAuth: true, ...extraHeaders } }
   }
 
-  static takeAuth() {
-    return { headers: { skipAuth: false } }
+  static takeAuth(extraHeaders = {}) {
+    return { headers: { skipAuth: false, ...extraHeaders } }
   }
-  static formDataRequest() {
-    return { headers: { 'Content-Type': 'multipart/form-data' } }
+
+  static formDataRequest(extraHeaders = {}) {
+    return { headers: { 'Content-Type': 'multipart/form-data', ...extraHeaders } }
   }
 }
 

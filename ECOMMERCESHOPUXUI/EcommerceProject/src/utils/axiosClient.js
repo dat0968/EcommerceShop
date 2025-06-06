@@ -55,9 +55,10 @@ async function detectAvailableApi(paths = API_PATHS) {
 const axiosClient = axios.create({
   baseURL: localStorage.getItem('apiBaseUrl') ?? API_PATHS[0],
   timeout: 500000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Đừng set Content-Type mặc định ở đây!
+  // headers: {
+  //   'Content-Type': 'application/json',
+  // },
 })
 
 // Hàm khởi tạo baseURL động
@@ -129,6 +130,10 @@ axiosClient.interceptors.request.use(
     // console.log(isRequiresAuth)
     const requiresAuth = isRequiresAuth
 
+    if (config.data && !(config.data instanceof FormData) && !config.headers['Content-Type']) {
+      config.headers['Content-Type'] = 'application/json'
+    }
+
     if (!requiresAuth) {
       return config // Không yêu cầu xác thực, bỏ qua
     }
@@ -174,6 +179,9 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error(`API Error: ${error.response.status}`, error.response.data)
+    }
+    if (error.response.data) {
+      return error.response.data
     }
     return error.response
   },
@@ -237,6 +245,9 @@ async function handleCastResponse(callback, castFn) {
 function isEndpointAvailable() {
   return axiosClient.defaults.baseURL !== '' && axiosClient.defaults.baseURL !== null
 }
+function getEndpoint() {
+  return axiosClient.defaults.baseURL
+}
 export {
   getFromApi,
   postToApi,
@@ -245,4 +256,5 @@ export {
   deleteFromApi,
   handleCastResponse,
   isEndpointAvailable,
+  getEndpoint,
 }

@@ -92,9 +92,6 @@
               <strong>Nội dung:</strong> {{ review.noiDung }} <br />
               <strong>Số sao:</strong> {{ review.soSao }} <br />
               <strong>Ngày đánh giá:</strong> {{ new Date(review.ngayDanhGia).toLocaleString() }}
-              <span class="position-absolute top-0 right-0 badge badge-info">{{
-                review.daMuaHang ? 'Đã mua hàng' : 'Chưa mua hàng'
-              }}</span>
               <br />
               <blockquote
                 class="col-12"
@@ -163,6 +160,32 @@
                   <select v-model.number="prod._editSoSao" class="form-control">
                     <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
                   </select>
+                  <div v-if="!prod.maDanhGia" class="mb-2">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      @change="onProductImagesChange($event, prod)"
+                    />
+                    <div class="d-flex flex-wrap mt-2">
+                      <img
+                        v-for="(img, idx) in prod._previewImgs || []"
+                        :key="idx"
+                        :src="img"
+                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
+                      />
+                    </div>
+                  </div>
+                  <div v-else>
+                    <div class="d-flex flex-wrap mt-2">
+                      <img
+                        v-for="(img, idx) in prod.hinhAnhs || []"
+                        :key="idx"
+                        :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
+                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
+                      />
+                    </div>
+                  </div>
                   <button
                     class="btn btn-success btn-sm me-2 mt-2"
                     @click="submitOrderProductReview(prod)"
@@ -197,6 +220,32 @@
                   <select v-model.number="combo._editSoSao" class="form-control">
                     <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
                   </select>
+                  <div v-if="!combo.maDanhGia" class="mb-2">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      @change="onComboImagesChange($event, combo)"
+                    />
+                    <div class="d-flex flex-wrap mt-2">
+                      <img
+                        v-for="(img, idx) in combo._previewImgs || []"
+                        :key="idx"
+                        :src="img"
+                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
+                      />
+                    </div>
+                  </div>
+                  <div v-else>
+                    <div class="d-flex flex-wrap mt-2">
+                      <img
+                        v-for="(img, idx) in combo.hinhAnhs || []"
+                        :key="idx"
+                        :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
+                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
+                      />
+                    </div>
+                  </div>
                   <button
                     class="btn btn-success btn-sm me-2 mt-2"
                     @click="submitOrderComboReview(combo)"
@@ -226,6 +275,7 @@ import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 import authService from '@/services/authService'
 import ResponseAPI from '@/models/ResponseAPI'
+import pathReplaceImg from '@/utils/processPathImg'
 export default {
   name: 'TestReaction',
   data() {
@@ -247,6 +297,7 @@ export default {
       orderId: null,
       orderDetail: null,
       orderResult: '',
+      pathReplaceImg,
     }
   },
   computed: {
@@ -257,6 +308,14 @@ export default {
     },
   },
   methods: {
+    onProductImagesChange(e, prod) {
+      prod._selectedFiles = Array.from(e.target.files)
+      prod._previewImgs = prod._selectedFiles.map((file) => URL.createObjectURL(file))
+    },
+    onComboImagesChange(e, combo) {
+      combo._selectedFiles = Array.from(e.target.files)
+      combo._previewImgs = combo._selectedFiles.map((file) => URL.createObjectURL(file))
+    },
     async getProductReviews() {
       this.result = 'Đang tải...'
       try {
@@ -376,28 +435,41 @@ export default {
 
     async submitOrderProductReview(prod) {
       try {
-        const body = {
-          id: prod.maDanhGia || null,
-          noiDung: prod._editNoiDung,
-          soSao: prod._editSoSao,
-          maSp: prod.maSp,
-          maCtsp: prod.maCtsp,
-          orderProductId: prod.id,
-        }
-        console.log('Submitting review for product:', body)
         let res
         if (prod.maDanhGia) {
+          // Đã có đánh giá, chỉ cập nhật
+          const body = {
+            id: prod.maDanhGia,
+            noiDung: prod._editNoiDung,
+            soSao: prod._editSoSao,
+            maSp: prod.maSp,
+            maCtsp: prod.maCtsp,
+            maCtHd: prod.id,
+          }
           res = await axiosConfig.putToApi(
             `/Review?isProduct=true`,
             body,
             ConfigsRequest.takeAuth(),
           )
         } else {
-          res = await axiosConfig.postToApi(
-            `/Review?isProduct=true`,
-            body,
-            ConfigsRequest.takeAuth(),
-          )
+          // Chưa có đánh giá, gửi kèm ảnh
+          const formData = new FormData()
+          formData.append('noiDung', prod._editNoiDung)
+          formData.append('soSao', prod._editSoSao)
+          formData.append('maSp', prod.maSp)
+          formData.append('maCtsp', prod.maCtsp)
+          formData.append('maCtHd', prod.id)
+          if (prod._selectedFiles) {
+            prod._selectedFiles.forEach((file) => formData.append('hinhAnhs', file))
+          }
+
+          /* ? Maybe create method to check this
+          for (let pair of formData.entries()) {
+            console.log(pair[0], pair[1])
+          } */
+          res = await axiosConfig.postToApi(`/Review?isProduct=true`, formData, {
+            ...ConfigsRequest.takeAuth(),
+          })
         }
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
         else alert('Đã đánh giá thành công!')
@@ -419,31 +491,40 @@ export default {
         alert('Lỗi: ' + e.message)
       }
     },
+
     async submitOrderComboReview(combo) {
       try {
-        const body = {
-          id: combo.maDanhGia || null,
-          noiDung: combo._editNoiDung,
-          soSao: combo._editSoSao,
-          maCombo: combo.maCombo,
-          orderComboId: combo.id,
-        }
         let res
         if (combo.maDanhGia) {
+          // Đã có đánh giá, chỉ cập nhật
+          const body = {
+            id: combo.maDanhGia,
+            noiDung: combo._editNoiDung,
+            soSao: combo._editSoSao,
+            maCombo: combo.maCombo,
+            maCtHd: combo.id,
+          }
           res = await axiosConfig.putToApi(
             `/Review?isProduct=false`,
             body,
             ConfigsRequest.takeAuth(),
           )
         } else {
-          res = await axiosConfig.postToApi(
-            `/Review?isProduct=false`,
-            body,
-            ConfigsRequest.takeAuth(),
-          )
+          // Chưa có đánh giá, gửi kèm ảnh
+          const formData = new FormData()
+          formData.append('noiDung', combo._editNoiDung)
+          formData.append('soSao', combo._editSoSao)
+          formData.append('maCombo', combo.maCombo)
+          formData.append('maCtHd', combo.id)
+          if (combo._selectedFiles) {
+            combo._selectedFiles.forEach((file) => formData.append('hinhAnhs', file))
+          }
+          console.log(formData)
+          res = await axiosConfig.postToApi(`/Review?isProduct=false`, formData, {
+            ...ConfigsRequest.takeAuth(),
+          })
         }
-
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
         else alert('Đã lưu đánh giá!')
         await this.getOrderDetail()
       } catch (e) {

@@ -44,6 +44,7 @@ import * as configsDt from '@/utils/configsDatatable.js'
 import Overlay from '@/components/common/Overlay.vue'
 import { formatDate } from '@/constants/formatDatetime'
 import ResponseAPI from '@/models/ResponseAPI'
+import pathReplaceImg from '@/utils/processPathImg'
 // import { formatCurrency } from '@/constants/formatCurrency'
 
 export default {
@@ -60,6 +61,7 @@ export default {
       overlayContent: 'Đang tải dữ liệu đánh giá...',
       selectedReview: [],
       filterByStar: null,
+      pathReplaceImg,
     }
   },
   computed: {},
@@ -254,33 +256,22 @@ export default {
                 ${statusSummaryHtml}
             </div>
         </div>
-        <div class="row mb-3 detail-list">
-            ${
-              evaluation.orders && evaluation.orders.length > 0
-                ? evaluation.orders
-                    .map(
-                      (order) => `
-                    <div class="col-sm-12 col-md-6 col-lg-4 mb-3">
-                        <div class="border m-1 p-4 shadow rounded bg-light">
-                            <div class="row">
-                                <div class="col-4 d-flex align-items-center">
-                                    <img src="${evaluation.hinhAnhSanPham || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
-                                </div>
-                                <div class="col-8">
-                                    <p><strong>Mã đơn hàng:</strong> <span>${order.maHd}</span></p>
-                                    <p><strong>Ngày tạo:</strong> <span>${formatDate(order.ngayTao)}</span></p>
-                                    <p><strong>Trạng thái:</strong> <span class="${order.trangThai === 'Chờ xử lý' ? 'text-warning' : 'text-success'}">${order.trangThai}</span></p>
-                                    <p><strong>Số lượng:</strong> <span>${order.soLuong}</span></p>
-                                </div>
-                            </div>
-                        </div>
+       <div class="row mb-3 detail-list">
+        ${
+          evaluation.hinhAnhs && evaluation.hinhAnhs.split(',').length > 0
+            ? evaluation.hinhAnhs
+                .split(',')
+                .map(
+                  (img) => `
+                    <div class="col-4 d-flex align-items-center">
+                      <img src="${pathReplaceImg(undefined, 'HinhAnh/Reviews', img)}" class="img-fluid rounded" alt="Hình ảnh đánh giá">
                     </div>
-                `,
-                    )
-                    .join('')
-                : '<div class="col-12"><p>Không có thông tin đơn hàng để hiển thị.</p></div>'
-            }
-        </div>
+                  `,
+                )
+                .join('')
+            : '<div class="col-12"><p>Không có hình ảnh đánh giá để hiển thị.</p></div>'
+        }
+      </div>
     </div>`
 
       div.html(detailsHtml)
