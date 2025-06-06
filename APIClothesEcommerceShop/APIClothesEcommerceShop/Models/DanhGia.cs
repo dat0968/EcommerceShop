@@ -74,6 +74,10 @@ namespace APIClothesEcommerceShop.Models
         {
             this.TenCacHinhAnh = String.Join(",", listNameImg);
         }
+        public string[] GetSavedListFileName()
+        {
+            return TenCacHinhAnh?.Split(',') ?? new string[0];
+        }
     }
 
 

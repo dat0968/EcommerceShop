@@ -270,8 +270,15 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     throw new Exception("Bạn không có quyền xóa đánh giá này");
 
                 _db.DanhGias.Remove(existingReview);
-                await _db.SaveChangesAsync();
+                string[] nameSavedFiles = existingReview.GetSavedListFileName();
 
+                await _db.SaveChangesAsync();
+                bool isDeletedSavedFiles = await DeleteSaveImages(nameSavedFiles);
+
+                if (isDeletedSavedFiles)
+                {
+                    Console.WriteLine($">>>> Đã xóa các hình ảnh của đánh giá mã {existingReview.Id}");
+                }
                 response.SetSuccessResponse(data: "Xóa đánh giá thành công", message: "Xóa đánh giá thành công");
             }
             catch (Exception ex)
@@ -443,7 +450,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
-        #region [Lưu hình ảnh đánh giá]
+        #region [Xử lí hình đánh giá]
         private async Task<string[]> SaveImagesReview(IFormFile[] fileForms)
         {
             try
@@ -478,6 +485,29 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             catch (Exception)
             {
                 return Array.Empty<string>();
+            }
+        }
+        private async Task<bool> DeleteSaveImages(string[] savedFiles)
+        {
+            if (savedFiles == null || savedFiles.Length == 0)
+                return false;
+
+            try
+            {
+                var folderPath = Path.Combine(Directory.GetCurrentDirectory(), pathImageReview);
+                foreach (var fileName in savedFiles)
+                {
+                    var filePath = Path.Combine(folderPath, fileName);
+                    if (File.Exists(filePath))
+                    {
+                        File.Delete(filePath);
+                    }
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
         #endregion
