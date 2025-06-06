@@ -25,4 +25,5 @@ public partial class Cthoadon
     public virtual Chitietsanpham? MaCtspNavigation { get; set; }
 
     public virtual Hoadon MaHdNavigation { get; set; } = null!;
+    public virtual DanhGia? DanhGia { get; set; }
 }

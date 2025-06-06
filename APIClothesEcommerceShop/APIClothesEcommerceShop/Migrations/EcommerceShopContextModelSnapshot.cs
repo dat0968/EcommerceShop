@@ -273,6 +273,9 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<int?>("MaCombo")
                         .HasColumnType("int");
 
+                    b.Property<int>("MaCtHd")
+                        .HasColumnType("int");
+
                     b.Property<int>("MaKh")
                         .HasColumnType("int");
 
@@ -300,15 +303,12 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.HasIndex("MaCombo");
 
+                    b.HasIndex("MaCtHd")
+                        .IsUnique();
+
+                    b.HasIndex("MaKh");
+
                     b.HasIndex("MaSp");
-
-                    b.HasIndex("MaKh", "MaCombo")
-                        .IsUnique()
-                        .HasFilter("[MaCombo] IS NOT NULL");
-
-                    b.HasIndex("MaKh", "MaSp")
-                        .IsUnique()
-                        .HasFilter("[MaSp] IS NOT NULL");
 
                     b.ToTable("DANHGIA");
                 });
@@ -940,6 +940,12 @@ namespace APIClothesEcommerceShop.Migrations
                         .WithMany("DanhGias")
                         .HasForeignKey("MaCombo");
 
+                    b.HasOne("APIClothesEcommerceShop.Models.Cthoadon", "Cthoadon")
+                        .WithOne("DanhGia")
+                        .HasForeignKey("APIClothesEcommerceShop.Models.DanhGia", "MaCtHd")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "KhachHang")
                         .WithMany()
                         .HasForeignKey("MaKh")
@@ -951,6 +957,8 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasForeignKey("MaSp");
 
                     b.Navigation("Combo");
+
+                    b.Navigation("Cthoadon");
 
                     b.Navigation("KhachHang");
 
@@ -1076,6 +1084,11 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("DanhGias");
 
                     b.Navigation("Giohangs");
+                });
+
+            modelBuilder.Entity("APIClothesEcommerceShop.Models.Cthoadon", b =>
+                {
+                    b.Navigation("DanhGia");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Danhmuccha", b =>

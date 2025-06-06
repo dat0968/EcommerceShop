@@ -24,6 +24,7 @@ namespace APIClothesEcommerceShop.Migrations
                     NgayPhanHoi = table.Column<DateTime>(type: "datetime2", nullable: true),
                     MaSp = table.Column<int>(type: "int", nullable: true),
                     MaCombo = table.Column<int>(type: "int", nullable: true),
+                    MaCtHd = table.Column<int>(type: "int", nullable: false),
                     MaKh = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -34,6 +35,12 @@ namespace APIClothesEcommerceShop.Migrations
                         column: x => x.MaCombo,
                         principalTable: "COMBO",
                         principalColumn: "MaCombo");
+                    table.ForeignKey(
+                        name: "FK_DANHGIA_CTHOADON_MaCtHd",
+                        column: x => x.MaCtHd,
+                        principalTable: "CTHOADON",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_DANHGIA_KHACHHANG_MaKh",
                         column: x => x.MaKh,
@@ -53,18 +60,15 @@ namespace APIClothesEcommerceShop.Migrations
                 column: "MaCombo");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DANHGIA_MaKh_MaCombo",
+                name: "IX_DANHGIA_MaCtHd",
                 table: "DANHGIA",
-                columns: new[] { "MaKh", "MaCombo" },
-                unique: true,
-                filter: "[MaCombo] IS NOT NULL");
+                column: "MaCtHd",
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DANHGIA_MaKh_MaSp",
+                name: "IX_DANHGIA_MaKh",
                 table: "DANHGIA",
-                columns: new[] { "MaKh", "MaSp" },
-                unique: true,
-                filter: "[MaSp] IS NOT NULL");
+                column: "MaKh");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DANHGIA_MaSp",

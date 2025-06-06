@@ -455,11 +455,11 @@ public partial class EcommerceShopContext : DbContext
             .HasForeignKey(y => y.IdDanhGia)
             .OnDelete(DeleteBehavior.Cascade); */
 
-        modelBuilder.Entity<DanhGia>(entity =>
-        {
-            entity.HasIndex(r => new { r.MaKh, r.MaSp }).IsUnique();
-            entity.HasIndex(r => new { r.MaKh, r.MaCombo }).IsUnique();
-        });
+        /*  modelBuilder.Entity<DanhGia>(entity =>
+         {
+             entity.HasIndex(r => new { r.MaKh, r.MaSp }).IsUnique();
+             entity.HasIndex(r => new { r.MaKh, r.MaCombo }).IsUnique();
+         }); */
 
         OnModelCreatingPartial(modelBuilder);
     }

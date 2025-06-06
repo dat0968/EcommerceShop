@@ -29,12 +29,15 @@ namespace APIClothesEcommerceShop.Models
         // Liên kết với cho SanPham
         public int? MaSp { get; set; }
         public int? MaCombo { get; set; }
+        public int MaCtHd { get; set; }
 
         [ForeignKey("MaSp")]
         public virtual Sanpham? SanPham { get; set; }
 
         [ForeignKey("MaCombo")]
         public virtual Combo? Combo { get; set; }
+        [ForeignKey("MaCtHd")]
+        public virtual Cthoadon? Cthoadon { get; set; }
 
         // Liên kết với khách hàng
         public int MaKh { get; set; }
