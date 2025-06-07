@@ -11,6 +11,7 @@ import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
+import pathReplaceImg from '@/utils/processPathImg'
 
 export default {
   name: 'EmployeeTable',
@@ -66,7 +67,7 @@ export default {
                     <div class="col-sm-12 col-md-6 p-3 detail-item">
                       <div class="row border p-1 rounded bg-light">
                         <div class="col-4 d-flex align-items-center">
-                          <img src="${order.avatar || '/images/default.png'}" class="img-fluid rounded" alt="Khách hàng">
+                          <img src="${pathReplaceImg(undefined, 'HinhAnh/Avatar/', order.avatar)}" class="img-fluid rounded" alt="Khách hàng">
                         </div>
                         <div class="col-8">
                           <div class="text-primary flex flex-flow-column justify-content-between">
