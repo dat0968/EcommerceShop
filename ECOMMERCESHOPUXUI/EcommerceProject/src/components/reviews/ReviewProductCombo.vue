@@ -1,15 +1,40 @@
 <template>
   <div>
+    <!-- Thanh lọc và tìm kiếm -->
+    <div class="row mb-3">
+      <div class="col-md-3 mb-2">
+        <select v-model="filterStar" class="form-control">
+          <option value="">Tất cả sao</option>
+          <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
+        <select v-model="filterHasImage" class="form-control">
+          <option value="">Có/không ảnh</option>
+          <option value="1">Có ảnh</option>
+          <option value="0">Không ảnh</option>
+        </select>
+      </div>
+      <div class="col-md-6 mb-2">
+        <input
+          v-model="searchText"
+          class="form-control"
+          placeholder="Tìm theo nội dung, tên khách, phản hồi..."
+        />
+      </div>
+    </div>
+
     <div v-if="loading" class="text-muted">Đang tải...</div>
     <div v-else>
-      <div v-if="reviews.length">
+      <div v-if="filteredReviews.length">
         <ul class="list-group">
           <li
-            v-for="review in reviews"
+            v-for="review in filteredReviews"
             :key="review.id"
             class="list-group-item"
             style="margin-bottom: 12px"
           >
+            <!-- ...phần hiển thị đánh giá giữ nguyên... -->
             <div class="d-flex align-items-center mb-2">
               <img
                 v-if="review.avatar"
@@ -74,7 +99,7 @@
       <div v-else-if="errorMessage" class="">
         {{ errorMessage }}
       </div>
-      <div v-else class="text-muted">Chưa có đánh giá nào.</div>
+      <div v-else class="text-muted">Không tìm thấy đánh giá phù hợp.</div>
     </div>
   </div>
 </template>
@@ -100,6 +125,9 @@ export default {
       pathReplaceImg,
       formatDate,
       errorMessage: null,
+      filterStar: '',
+      filterHasImage: '',
+      searchText: '',
     }
   },
   watch: {
@@ -110,6 +138,28 @@ export default {
     },
     isProduct() {
       this.reviews = []
+    },
+  },
+  computed: {
+    filteredReviews() {
+      return this.reviews.filter((r) => {
+        // Lọc theo số sao
+        if (this.filterStar && r.soSao != this.filterStar) return false
+        // Lọc theo có ảnh/không ảnh
+        const hasImg = r.hinhAnhs && r.hinhAnhs.length > 0
+        if (this.filterHasImage === '1' && !hasImg) return false
+        if (this.filterHasImage === '0' && hasImg) return false
+        // Lọc theo nội dung tìm kiếm
+        const text = this.searchText.trim().toLowerCase()
+        if (text) {
+          const inContent =
+            (r.noiDung && r.noiDung.toLowerCase().includes(text)) ||
+            (r.tenKhachHang && r.tenKhachHang.toLowerCase().includes(text)) ||
+            (r.shopPhanHoi && r.shopPhanHoi.toLowerCase().includes(text))
+          if (!inContent) return false
+        }
+        return true
+      })
     },
   },
   methods: {

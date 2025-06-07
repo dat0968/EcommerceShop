@@ -10,12 +10,26 @@
 
     <div class="col-12">
       <div class="row justify-content-between align-items-center mb-3">
-        <div class="col-md-3">
-          <label class="form-label">Lọc theo đánh giá</label>
+        <div class="col-md-3 mb-2">
           <select class="form-select" v-model="filterByStar" @change="filterByRating">
-            <option value="null">Tất cả</option>
+            <option value="null">Tất cả sao</option>
             <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
           </select>
+        </div>
+        <div class="col-md-3 mb-2">
+          <select class="form-select" v-model="filterHasImage" @change="filterByRating">
+            <option value="">Có/không ảnh</option>
+            <option value="1">Có ảnh</option>
+            <option value="0">Không ảnh</option>
+          </select>
+        </div>
+        <div class="col-md-6 mb-2">
+          <input
+            v-model="searchText"
+            class="form-control"
+            placeholder="Tìm theo nội dung, tên khách, phản hồi..."
+            @input="filterByRating"
+          />
         </div>
         <div class="col-md-3">
           <button class="btn btn-primary" :disabled="isDisabled" @click="updateShopResponse">
@@ -61,6 +75,8 @@ export default {
       overlayContent: 'Đang tải dữ liệu đánh giá...',
       selectedReview: [],
       filterByStar: null,
+      filterHasImage: '',
+      searchText: '',
       pathReplaceImg,
     }
   },
@@ -115,19 +131,31 @@ export default {
     // -- Lọc dữ liệu đánh giá theo số sao
     filterByRating() {
       this.filteredListReview = this.listReview.filter((item) => {
-        if (this.filterByStar == null || this.filterByStar == 'null') return true // Không lọc nếu không có lựa chọn
-        return item.soSao == this.filterByStar
+        // Lọc theo số sao
+        if (
+          this.filterByStar != null &&
+          this.filterByStar != 'null' &&
+          item.soSao != this.filterByStar
+        )
+          return false
+        // Lọc theo có ảnh/không ảnh
+        const hasImg = item.hinhAnhs && item.hinhAnhs.length > 0
+        if (this.filterHasImage === '1' && !hasImg) return false
+        if (this.filterHasImage === '0' && hasImg) return false
+        // Lọc theo nội dung tìm kiếm
+        const text = this.searchText.trim().toLowerCase()
+        if (text) {
+          const inContent =
+            (item.noiDung && item.noiDung.toLowerCase().includes(text)) ||
+            (item.tenKhachHang && item.tenKhachHang.toLowerCase().includes(text)) ||
+            (item.shopPhanHoi && item.shopPhanHoi.toLowerCase().includes(text))
+          if (!inContent) return false
+        }
+        return true
       })
-      if (this.filteredListReview.length === 0) {
-        Swal.fire({
-          icon: 'info',
-          title: 'Không có đánh giá phù hợp',
-          text: `Không có đánh giá nào với ${this.filterByStar} sao.`,
-          confirmButtonText: 'Đóng',
-        })
-      }
-      this.initDataTable() // Cập nhật DataTable sau khi lọc
-    }, // -- Hàm khởi tạo DataTable
+      this.initDataTable()
+    },
+    // -- Hàm khởi tạo DataTable
     initDataTable() {
       const vm = this
       this.$nextTick(() => {
