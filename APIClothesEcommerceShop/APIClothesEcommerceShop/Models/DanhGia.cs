@@ -105,6 +105,7 @@ namespace APIClothesEcommerceShop.Models
                 Id = entity.Id,
                 MaKh = entity.MaKh,
                 TenKhachHang = entity.KhachHang?.HoTen ?? "Khách hàng không xác định",
+                Avatar = entity.KhachHang?.HinhDaiDien ?? string.Empty,
                 MaSp = entity.MaSp, // Nếu cần thì thêm mã sản phẩm
                 MaCombo = entity.MaCombo, // Nếu cần thì thêm mã combo
                 MaCthd = entity.MaCtHd,

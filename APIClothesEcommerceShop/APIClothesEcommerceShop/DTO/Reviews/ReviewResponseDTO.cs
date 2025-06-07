@@ -10,6 +10,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
         public int Id { get; set; }
         public int MaKh { get; set; } = 0;
         public string TenKhachHang { get; set; } = string.Empty; // Thêm tên khách hàng vào phản hồi
+        public string Avatar { get; set; } = string.Empty;
         public int? MaSp { get; set; } // Thêm mã sản phẩm vào phản hồi
         public int? MaCombo { get; set; } // Thêm mã combo vào phản hồi
         public int MaCthd { get; set; }

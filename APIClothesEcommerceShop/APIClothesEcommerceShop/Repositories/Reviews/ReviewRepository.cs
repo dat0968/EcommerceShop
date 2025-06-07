@@ -471,7 +471,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     // Tạo tên file duy nhất
                     var ext = Path.GetExtension(file.FileName);
-                    var uniqueFileName = $"{Path.GetFileNameWithoutExtension(file.FileName)}_{Guid.NewGuid()}{ext}";
+                    var uniqueFileName = $"{Path.GetFileNameWithoutExtension(file.FileName.Replace(' ','_'))}_{Guid.NewGuid()}{ext}";
                     var filePath = Path.Combine(folderPath, uniqueFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))

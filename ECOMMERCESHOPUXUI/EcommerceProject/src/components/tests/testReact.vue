@@ -87,12 +87,58 @@
             <li
               v-for="review in result.data"
               :key="review.id"
-              class="list-group-item position-relative"
+              class="list-group-item"
+              style="margin-bottom: 12px"
             >
-              <strong>Nội dung:</strong> {{ review.noiDung }} <br />
-              <strong>Số sao:</strong> {{ review.soSao }} <br />
-              <strong>Ngày đánh giá:</strong> {{ new Date(review.ngayDanhGia).toLocaleString() }}
-              <br />
+              <div class="d-flex align-items-center mb-2">
+                <!-- Avatar nếu có -->
+                <img
+                  v-if="review.avatar"
+                  :src="pathReplaceImg(undefined, '', review.avatar)"
+                  alt="avatar"
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    margin-right: 10px;
+                  "
+                />
+                <div>
+                  <strong>{{ review.tenNguoiDanhGia || 'Ẩn danh' }}</strong>
+                  <span class="text-muted ms-2" style="font-size: 13px">
+                    {{ formatDate(review.ngayDanhGia) }}
+                  </span>
+                </div>
+              </div>
+              <div class="mb-1">
+                <span>
+                  <span v-for="n in review.soSao" :key="n" style="color: #ffc107">★</span>
+                  <span v-for="n in 5 - review.soSao" :key="'empty' + n" style="color: #e4e5e9"
+                    >★</span
+                  >
+                </span>
+              </div>
+              <div class="mb-2">
+                <strong>Nội dung:</strong>
+                <span>{{ review.noiDung }}</span>
+              </div>
+              <div v-if="review.hinhAnhs && review.hinhAnhs.length" class="d-flex flex-wrap mb-2">
+                <img
+                  v-for="(img, idx) in review.hinhAnhs"
+                  :key="idx"
+                  :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
+                  style="
+                    max-width: 80px;
+                    max-height: 80px;
+                    margin-right: 8px;
+                    margin-bottom: 8px;
+                    border: 1px solid #ccc;
+                    object-fit: cover;
+                  "
+                  alt="Hình đánh giá"
+                />
+              </div>
               <blockquote
                 class="col-12"
                 style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0"
@@ -140,36 +186,50 @@
               </ul>
             </div>
             <div>
-              <h5>Sản phẩm trong hóa đơn:</h5>
+              <h5>Sản phẩm/Combo trong hóa đơn:</h5>
               <div
-                v-for="prod in orderDetail.products"
-                :key="prod.id"
+                v-for="item in orderItems"
+                :key="item._type + '-' + item.id"
                 class="border rounded p-2 mb-2"
               >
-                <div>Mã sản phẩm: {{ prod.maSp }} | Số lượng: {{ prod.soLuong }}</div>
-                <div>Đánh giá: {{ prod.soSao > 0 ? prod.soSao + ' sao' : 'Chưa đánh giá' }}</div>
-                <div>Nội dung: {{ prod.noiDung }}</div>
+                <span
+                  class="badge"
+                  :class="item._type === 'product' ? 'bg-primary' : 'bg-success'"
+                  style="margin-bottom: 8px"
+                >
+                  {{ item._type === 'product' ? 'Sản phẩm' : 'Combo' }}
+                </span>
+                <div v-if="item._type === 'product'">
+                  Mã sản phẩm: {{ item.maSp }} | Số lượng: {{ item.soLuong }}
+                </div>
+                <div v-else>Mã combo: {{ item.maCombo }} | Số lượng: {{ item.soLuong }}</div>
+                <div>Đánh giá: {{ item.soSao > 0 ? item.soSao + ' sao' : 'Chưa đánh giá' }}</div>
+                <div>Nội dung: {{ item.noiDung }}</div>
                 <div>
                   <label>Nội dung đánh giá:</label>
                   <input
-                    v-model="prod._editNoiDung"
+                    v-model="item._editNoiDung"
                     class="form-control"
                     placeholder="Nội dung..."
                   />
                   <label class="mt-2">Số sao:</label>
-                  <select v-model.number="prod._editSoSao" class="form-control">
+                  <select v-model.number="item._editSoSao" class="form-control">
                     <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
                   </select>
-                  <div v-if="!prod.maDanhGia" class="mb-2">
+                  <div v-if="!item.maDanhGia" class="mb-2">
                     <input
                       type="file"
                       multiple
                       accept="image/*"
-                      @change="onProductImagesChange($event, prod)"
+                      @change="
+                        item._type === 'product'
+                          ? onProductImagesChange($event, item)
+                          : onComboImagesChange($event, item)
+                      "
                     />
                     <div class="d-flex flex-wrap mt-2">
                       <img
-                        v-for="(img, idx) in prod._previewImgs || []"
+                        v-for="(img, idx) in item._previewImgs || []"
                         :key="idx"
                         :src="img"
                         style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
@@ -179,7 +239,7 @@
                   <div v-else>
                     <div class="d-flex flex-wrap mt-2">
                       <img
-                        v-for="(img, idx) in prod.hinhAnhs || []"
+                        v-for="(img, idx) in item.hinhAnhs || []"
                         :key="idx"
                         :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
                         style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
@@ -188,71 +248,22 @@
                   </div>
                   <button
                     class="btn btn-success btn-sm me-2 mt-2"
-                    @click="submitOrderProductReview(prod)"
+                    @click="
+                      item._type === 'product'
+                        ? submitOrderProductReview(item)
+                        : submitOrderComboReview(item)
+                    "
                   >
                     Lưu
                   </button>
                   <button
                     class="btn btn-danger btn-sm mt-2"
-                    @click="deleteOrderProductReview(prod)"
+                    @click="
+                      item._type === 'product'
+                        ? deleteOrderProductReview(item)
+                        : deleteOrderComboReview(item)
+                    "
                   >
-                    Xóa
-                  </button>
-                </div>
-              </div>
-              <h5>Combo trong hóa đơn:</h5>
-              <div
-                v-for="combo in orderDetail.combos"
-                :key="combo.maCombo"
-                class="border rounded p-2 mb-2"
-              >
-                <div>Mã combo: {{ combo.maCombo }} | Số lượng: {{ combo.soLuong }}</div>
-                <div>Đánh giá: {{ combo.soSao > 0 ? combo.soSao + ' sao' : 'Chưa đánh giá' }}</div>
-                <div>Nội dung: {{ combo.noiDung }}</div>
-                <div>
-                  <label>Nội dung đánh giá:</label>
-                  <input
-                    v-model="combo._editNoiDung"
-                    class="form-control"
-                    placeholder="Nội dung..."
-                  />
-                  <label class="mt-2">Số sao:</label>
-                  <select v-model.number="combo._editSoSao" class="form-control">
-                    <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
-                  </select>
-                  <div v-if="!combo.maDanhGia" class="mb-2">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      @change="onComboImagesChange($event, combo)"
-                    />
-                    <div class="d-flex flex-wrap mt-2">
-                      <img
-                        v-for="(img, idx) in combo._previewImgs || []"
-                        :key="idx"
-                        :src="img"
-                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
-                      />
-                    </div>
-                  </div>
-                  <div v-else>
-                    <div class="d-flex flex-wrap mt-2">
-                      <img
-                        v-for="(img, idx) in combo.hinhAnhs || []"
-                        :key="idx"
-                        :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    class="btn btn-success btn-sm me-2 mt-2"
-                    @click="submitOrderComboReview(combo)"
-                  >
-                    Lưu
-                  </button>
-                  <button class="btn btn-danger btn-sm mt-2" @click="deleteOrderComboReview(combo)">
                     Xóa
                   </button>
                 </div>
@@ -276,6 +287,7 @@ import * as axiosConfig from '@/utils/axiosClient'
 import authService from '@/services/authService'
 import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
+import { formatDate } from '@/constants/formatDatetime'
 export default {
   name: 'TestReaction',
   data() {
@@ -306,8 +318,16 @@ export default {
       const { maHd, ngayTao, hoTen, diaChiNhanHang, tinhTrang } = this.orderDetail
       return `Mã hóa đơn: ${maHd}\nNgày tạo: ${ngayTao}\nKhách: ${hoTen}\nĐịa chỉ: ${diaChiNhanHang}\nTình trạng: ${tinhTrang}`
     },
+    orderItems() {
+      if (!this.orderDetail) return []
+      // Gắn thêm thuộc tính type để phân biệt
+      const products = (this.orderDetail.products || []).map((p) => ({ ...p, _type: 'product' }))
+      const combos = (this.orderDetail.combos || []).map((c) => ({ ...c, _type: 'combo' }))
+      return [...products, ...combos]
+    },
   },
   methods: {
+    formatDate,
     onProductImagesChange(e, prod) {
       prod._selectedFiles = Array.from(e.target.files)
       prod._previewImgs = prod._selectedFiles.map((file) => URL.createObjectURL(file))
