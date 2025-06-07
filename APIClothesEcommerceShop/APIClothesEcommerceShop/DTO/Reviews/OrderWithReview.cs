@@ -137,7 +137,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
                 MaDanhGia = danhGia?.Id ?? 0,
                 NoiDung = danhGia?.NoiDung ?? "Bạn chưa đánh giá.",
                 SoSao = danhGia?.SoSao ?? 0,
-                HinhAnhs = danhGia?.TenCacHinhAnh?.Split(",")
+                HinhAnhs = danhGia?.TenCacHinhAnh?.Split(",") ?? null
             };
         }
 
@@ -154,7 +154,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
                 MaDanhGia = danhGia?.Id ?? 0,
                 NoiDung = danhGia?.NoiDung ?? "Bạn chưa đánh giá.",
                 SoSao = danhGia?.SoSao ?? 0,
-                HinhAnhs = danhGia?.TenCacHinhAnh?.Split(",")
+                HinhAnhs = danhGia?.TenCacHinhAnh?.Split(",") ?? null
             };
         }
     }

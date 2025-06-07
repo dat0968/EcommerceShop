@@ -38,531 +38,87 @@
         </li>
       </ul>
 
-      <!-- Tab 1: Sản phẩm/Combo -->
       <div v-if="activeTab === 'product'">
-        <h5>Thông tin sản phẩm/combo & đánh giá</h5>
         <div class="row mb-3">
-          <div class="col-md-6">
-            <label>Mã sản phẩm:</label>
+          <div class="col-9 mb-3">
             <input
-              v-model.number="productId"
               type="number"
+              v-model="infoTransTab1.objectId"
+              min="1"
+              name=""
+              id=""
               class="form-control"
-              placeholder="Nhập mã sản phẩm"
+              placeholder="Nhập mã"
             />
           </div>
-          <div class="col-md-6">
-            <label>Mã combo:</label>
-            <input
-              v-model.number="comboId"
-              type="number"
-              class="form-control"
-              placeholder="Nhập mã combo"
-            />
-          </div>
-        </div>
-        <div class="mb-3">
-          <button class="btn btn-info me-2" @click="getProductReviews()">
-            Lấy đánh giá sản phẩm
-          </button>
-          <button class="btn btn-info me-2" @click="getComboReviews()">Lấy đánh giá combo</button>
-        </div>
-        <div class="mb-3">
-          <label>Nội dung đánh giá:</label>
-          <input v-model="reviewForm.noiDung" class="form-control" placeholder="Nội dung..." />
-          <label class="mt-2">Số sao:</label>
-          <select v-model.number="reviewForm.soSao" class="form-control">
-            <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <button class="btn btn-success me-2" @click="addReview">Thêm đánh giá</button>
-          <button class="btn btn-warning me-2" @click="updateReview">Cập nhật đánh giá</button>
-          <!-- ! Fix this-->
-          <button class="btn btn-danger" @click="deleteReview(1)">Xóa đánh giá</button>
-        </div>
-        <div class="mb-3">
-          <strong>Danh sách đánh giá:</strong>
-          <ul class="list-group">
-            <li
-              v-for="review in result.data"
-              :key="review.id"
-              class="list-group-item"
-              style="margin-bottom: 12px"
+          <div class="col-3">
+            <label for=""
+              ><input type="checkbox" v-model="infoTransTab1.isProduct" name="" id="" />Là sản
+              phẩm</label
             >
-              <div class="d-flex align-items-center mb-2">
-                <!-- Avatar nếu có -->
-                <img
-                  v-if="review.avatar"
-                  :src="pathReplaceImg(undefined, '', review.avatar)"
-                  alt="avatar"
-                  style="
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    object-fit: cover;
-                    margin-right: 10px;
-                  "
-                />
-                <div>
-                  <strong>{{ review.tenNguoiDanhGia || 'Ẩn danh' }}</strong>
-                  <span class="text-muted ms-2" style="font-size: 13px">
-                    {{ formatDate(review.ngayDanhGia) }}
-                  </span>
-                </div>
-              </div>
-              <div class="mb-1">
-                <span>
-                  <span v-for="n in review.soSao" :key="n" style="color: #ffc107">★</span>
-                  <span v-for="n in 5 - review.soSao" :key="'empty' + n" style="color: #e4e5e9"
-                    >★</span
-                  >
-                </span>
-              </div>
-              <div class="mb-2">
-                <strong>Nội dung:</strong>
-                <span>{{ review.noiDung }}</span>
-              </div>
-              <div v-if="review.hinhAnhs && review.hinhAnhs.length" class="d-flex flex-wrap mb-2">
-                <img
-                  v-for="(img, idx) in review.hinhAnhs"
-                  :key="idx"
-                  :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                  style="
-                    max-width: 80px;
-                    max-height: 80px;
-                    margin-right: 8px;
-                    margin-bottom: 8px;
-                    border: 1px solid #ccc;
-                    object-fit: cover;
-                  "
-                  alt="Hình đánh giá"
-                />
-              </div>
-              <blockquote
-                class="col-12"
-                style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0"
-              >
-                <strong>Phản hồi của shop:</strong>
-                {{ review.shopPhanHoi ? review.shopPhanHoi : 'Chưa có phản hồi' }}
-              </blockquote>
-            </li>
-          </ul>
+          </div>
+          <button class="col-12 btn btn-info" @click="tranformDataTab1">Nhập</button>
         </div>
+        <ReviewProductCombo
+          :objectId="infoTransTab1._objectId"
+          :isProduct="infoTransTab1._isProduct"
+        />
       </div>
-
-      <!-- Tab 2: Hóa đơn của tôi -->
       <div v-else>
-        <div v-if="!isUserLoggedIn" class="alert alert-warning">
-          Vui lòng <RouterLink to="/Login">đăng nhập</RouterLink> để xem hóa đơn và đánh giá.
-        </div>
-        <div v-else>
-          <h5>Thông tin hóa đơn & đánh giá</h5>
-          <div class="mb-3">
-            <label>Mã hóa đơn:</label>
+        <div class="row mb-3">
+          <div class="col-12 mb-3">
             <input
-              v-model.number="orderId"
               type="number"
+              v-model="infoTransTab2.orderId"
+              min="1"
+              name=""
+              id=""
               class="form-control"
-              placeholder="Nhập mã hóa đơn"
+              placeholder="Nhập mã"
             />
-            <button class="btn btn-info mt-2" @click="getOrderDetail">Xem hóa đơn</button>
           </div>
-          <div v-if="orderDetail">
-            <div class="mb-2">
-              <h4>Thông tin hóa đơn:</h4>
-              <ul class="list-group">
-                <li class="list-group-item"><strong>Mã hóa đơn:</strong> {{ orderDetail.maHd }}</li>
-                <li class="list-group-item">
-                  <strong>Ngày tạo:</strong> {{ new Date(orderDetail.ngayTao).toLocaleString() }}
-                </li>
-                <li class="list-group-item"><strong>Khách:</strong> {{ orderDetail.hoTen }}</li>
-                <li class="list-group-item">
-                  <strong>Địa chỉ:</strong> {{ orderDetail.diaChiNhanHang }}
-                </li>
-                <li class="list-group-item">
-                  <strong>Tình trạng:</strong> {{ orderDetail.tinhTrang }}
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h5>Sản phẩm/Combo trong hóa đơn:</h5>
-              <div
-                v-for="item in orderItems"
-                :key="item._type + '-' + item.id"
-                class="border rounded p-2 mb-2"
-              >
-                <span
-                  class="badge"
-                  :class="item._type === 'product' ? 'bg-primary' : 'bg-success'"
-                  style="margin-bottom: 8px"
-                >
-                  {{ item._type === 'product' ? 'Sản phẩm' : 'Combo' }}
-                </span>
-                <div v-if="item._type === 'product'">
-                  Mã sản phẩm: {{ item.maSp }} | Số lượng: {{ item.soLuong }}
-                </div>
-                <div v-else>Mã combo: {{ item.maCombo }} | Số lượng: {{ item.soLuong }}</div>
-                <div>Đánh giá: {{ item.soSao > 0 ? item.soSao + ' sao' : 'Chưa đánh giá' }}</div>
-                <div>Nội dung: {{ item.noiDung }}</div>
-                <div>
-                  <label>Nội dung đánh giá:</label>
-                  <input
-                    v-model="item._editNoiDung"
-                    class="form-control"
-                    placeholder="Nội dung..."
-                  />
-                  <label class="mt-2">Số sao:</label>
-                  <select v-model.number="item._editSoSao" class="form-control">
-                    <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
-                  </select>
-                  <div v-if="!item.maDanhGia" class="mb-2">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      @change="
-                        item._type === 'product'
-                          ? onProductImagesChange($event, item)
-                          : onComboImagesChange($event, item)
-                      "
-                    />
-                    <div class="d-flex flex-wrap mt-2">
-                      <img
-                        v-for="(img, idx) in item._previewImgs || []"
-                        :key="idx"
-                        :src="img"
-                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
-                      />
-                    </div>
-                  </div>
-                  <div v-else>
-                    <div class="d-flex flex-wrap mt-2">
-                      <img
-                        v-for="(img, idx) in item.hinhAnhs || []"
-                        :key="idx"
-                        :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                        style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
-                      />
-                    </div>
-                  </div>
-                  <button
-                    class="btn btn-success btn-sm me-2 mt-2"
-                    @click="
-                      item._type === 'product'
-                        ? submitOrderProductReview(item)
-                        : submitOrderComboReview(item)
-                    "
-                  >
-                    Lưu
-                  </button>
-                  <button
-                    class="btn btn-danger btn-sm mt-2"
-                    @click="
-                      item._type === 'product'
-                        ? deleteOrderProductReview(item)
-                        : deleteOrderComboReview(item)
-                    "
-                  >
-                    Xóa
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-else-if="orderResult">
-            <pre class="bg-light p-2" style="max-height: 200px; overflow: auto">{{
-              orderResult
-            }}</pre>
-          </div>
+          <button class="col-12 btn btn-info" @click="transformDataTab2">Nhập</button>
         </div>
+        <ReviewOrder :orderId="infoTransTab2._orderId" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ConfigsRequest from '@/models/ConfigsRequest'
-import * as axiosConfig from '@/utils/axiosClient'
-import authService from '@/services/authService'
-import ResponseAPI from '@/models/ResponseAPI'
-import pathReplaceImg from '@/utils/processPathImg'
-import { formatDate } from '@/constants/formatDatetime'
+import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
+import ReviewOrder from '@/components/reviews/ReviewOrder.vue'
+
 export default {
   name: 'TestReaction',
+  components: {
+    ReviewProductCombo,
+    ReviewOrder,
+  },
   data() {
     return {
       showModal: false,
       activeTab: 'product',
-      productId: 0,
-      comboId: 0,
-      reviewForm: {
-        id: null,
-        noiDung: '',
-        soSao: 5,
-        maSp: null,
-        maCombo: null,
+      infoTransTab1: {
+        objectId: null,
+        isProduct: true,
+        _objectId: null,
+        _isProduct: true,
       },
-      result: '',
-      isUserLoggedIn: !authService.isExpiredSessionAccess(),
-      userId: authService.getUserId(),
-      orderId: null,
-      orderDetail: null,
-      orderResult: '',
-      pathReplaceImg,
+      infoTransTab2: {
+        orderId: null,
+        _orderId: null,
+      },
     }
   },
-  computed: {
-    orderDetailInfo() {
-      if (!this.orderDetail) return ''
-      const { maHd, ngayTao, hoTen, diaChiNhanHang, tinhTrang } = this.orderDetail
-      return `Mã hóa đơn: ${maHd}\nNgày tạo: ${ngayTao}\nKhách: ${hoTen}\nĐịa chỉ: ${diaChiNhanHang}\nTình trạng: ${tinhTrang}`
-    },
-    orderItems() {
-      if (!this.orderDetail) return []
-      // Gắn thêm thuộc tính type để phân biệt
-      const products = (this.orderDetail.products || []).map((p) => ({ ...p, _type: 'product' }))
-      const combos = (this.orderDetail.combos || []).map((c) => ({ ...c, _type: 'combo' }))
-      return [...products, ...combos]
-    },
-  },
   methods: {
-    formatDate,
-    onProductImagesChange(e, prod) {
-      prod._selectedFiles = Array.from(e.target.files)
-      prod._previewImgs = prod._selectedFiles.map((file) => URL.createObjectURL(file))
+    tranformDataTab1() {
+      this.infoTransTab1._objectId = this.infoTransTab1.objectId
+      this.infoTransTab1._isProduct = this.infoTransTab1.isProduct
     },
-    onComboImagesChange(e, combo) {
-      combo._selectedFiles = Array.from(e.target.files)
-      combo._previewImgs = combo._selectedFiles.map((file) => URL.createObjectURL(file))
-    },
-    async getProductReviews() {
-      this.result = 'Đang tải...'
-      try {
-        const res = await axiosConfig.getFromApi(
-          `/review/products/${this.productId}`,
-          ConfigsRequest.getSkipAuthConfig(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã nhận dữ liệu đánh giá!')
-        this.result = res
-      } catch (e) {
-        this.result = e.message
-      }
-    },
-    async getComboReviews() {
-      this.result = 'Đang tải...'
-      try {
-        const res = await axiosConfig.getFromApi(
-          `/review/combos/${this.comboId}`,
-          ConfigsRequest.getSkipAuthConfig(),
-        )
-        this.result = res
-      } catch (e) {
-        this.result = e.message
-      }
-    },
-    async addReview() {
-      this.result = 'Đang gửi...'
-      try {
-        const isProduct = this.productId > 0
-        const body = {
-          noiDung: this.reviewForm.noiDung,
-          soSao: this.reviewForm.soSao,
-          maSp: isProduct ? this.productId : null,
-          maCombo: isProduct ? this.comboId : null,
-        }
-        const res = await axiosConfig.postToApi(
-          `/Review?isProduct=${isProduct}`,
-          body,
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã lưu đánh giá!')
-        this.result = res
-        if (res.data && res.data.id) this.reviewForm.id = res.data.id
-      } catch (e) {
-        this.result = e.message
-      }
-    },
-    async updateReview() {
-      this.result = 'Đang cập nhật...'
-      try {
-        if (!this.reviewForm.id) {
-          this.result = 'Bạn cần nhập id đánh giá để cập nhật!'
-          return
-        }
-        const isProduct = this.productId > 0
-        const body = {
-          id: this.reviewForm.id,
-          noiDung: this.reviewForm.noiDung,
-          soSao: this.reviewForm.soSao,
-          maSp: isProduct ? this.productId : null,
-          maCombo: isProduct ? this.comboId : null,
-        }
-        const res = await axiosConfig.putToApi(
-          `/Review?isProduct=${isProduct}`,
-          body,
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã cập nhập đánh giá!')
-        this.result = res
-      } catch (e) {
-        this.result = e.message
-      }
-    },
-    async deleteReview(reviewId) {
-      this.result = 'Đang xóa...'
-      try {
-        const res = await axiosConfig.deleteFromApi(
-          `/Review/${reviewId}`,
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã lưu đánh giá!')
-        this.result = res
-      } catch (e) {
-        this.result = e.message
-      }
-    },
-    // Tab hóa đơn
-    async getOrderDetail() {
-      this.orderResult = 'Đang tải...'
-      this.orderDetail = null
-      try {
-        const res = await axiosConfig.getFromApi(
-          `/Review/orders/${this.orderId}`,
-          ConfigsRequest.takeAuth(),
-        )
-        if (res.success) {
-          this.orderDetail = res.data
-          // Chuẩn hóa các sản phẩm cho phép chỉnh sửa
-          this.orderDetail.products.forEach((p) => {
-            p._editNoiDung = p.noiDung
-            p._editSoSao = p.soSao
-          })
-          this.orderDetail.combos.forEach((c) => {
-            c._editNoiDung = c.noiDung
-            c._editSoSao = c.soSao
-          })
-        }
-        this.orderResult = ''
-      } catch (e) {
-        this.orderResult = e.message
-      }
-    },
-
-    async submitOrderProductReview(prod) {
-      try {
-        let res
-        if (prod.maDanhGia) {
-          // Đã có đánh giá, chỉ cập nhật
-          const body = {
-            id: prod.maDanhGia,
-            noiDung: prod._editNoiDung,
-            soSao: prod._editSoSao,
-            maSp: prod.maSp,
-            maCtsp: prod.maCtsp,
-            maCtHd: prod.id,
-          }
-          res = await axiosConfig.putToApi(
-            `/Review?isProduct=true`,
-            body,
-            ConfigsRequest.takeAuth(),
-          )
-        } else {
-          // Chưa có đánh giá, gửi kèm ảnh
-          const formData = new FormData()
-          formData.append('noiDung', prod._editNoiDung)
-          formData.append('soSao', prod._editSoSao)
-          formData.append('maSp', prod.maSp)
-          formData.append('maCtsp', prod.maCtsp)
-          formData.append('maCtHd', prod.id)
-          if (prod._selectedFiles) {
-            prod._selectedFiles.forEach((file) => formData.append('hinhAnhs', file))
-          }
-
-          /* ? Maybe create method to check this
-          for (let pair of formData.entries()) {
-            console.log(pair[0], pair[1])
-          } */
-          res = await axiosConfig.postToApi(`/Review?isProduct=true`, formData, {
-            ...ConfigsRequest.takeAuth(),
-          })
-        }
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã đánh giá thành công!')
-        await this.getOrderDetail()
-      } catch (e) {
-        alert('Lỗi: ' + e.message)
-      }
-    },
-    async deleteOrderProductReview(prod) {
-      try {
-        const res = await axiosConfig.deleteFromApi(
-          `/Review/${prod.maDanhGia}?isProduct=true`,
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
-        else alert('Đã xóa đánh giá!')
-        await this.getOrderDetail()
-      } catch (e) {
-        alert('Lỗi: ' + e.message)
-      }
-    },
-
-    async submitOrderComboReview(combo) {
-      try {
-        let res
-        if (combo.maDanhGia) {
-          // Đã có đánh giá, chỉ cập nhật
-          const body = {
-            id: combo.maDanhGia,
-            noiDung: combo._editNoiDung,
-            soSao: combo._editSoSao,
-            maCombo: combo.maCombo,
-            maCtHd: combo.id,
-          }
-          res = await axiosConfig.putToApi(
-            `/Review?isProduct=false`,
-            body,
-            ConfigsRequest.takeAuth(),
-          )
-        } else {
-          // Chưa có đánh giá, gửi kèm ảnh
-          const formData = new FormData()
-          formData.append('noiDung', combo._editNoiDung)
-          formData.append('soSao', combo._editSoSao)
-          formData.append('maCombo', combo.maCombo)
-          formData.append('maCtHd', combo.id)
-          if (combo._selectedFiles) {
-            combo._selectedFiles.forEach((file) => formData.append('hinhAnhs', file))
-          }
-          console.log(formData)
-          res = await axiosConfig.postToApi(`/Review?isProduct=false`, formData, {
-            ...ConfigsRequest.takeAuth(),
-          })
-        }
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã lưu đánh giá!')
-        await this.getOrderDetail()
-      } catch (e) {
-        alert('Lỗi: ' + e.message)
-      }
-    },
-    async deleteOrderComboReview(combo) {
-      try {
-        const res = await axiosConfig.deleteFromApi(
-          `/Review/${combo.maCombo}?isProduct=false`,
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) return
-        else alert('Đã xóa đánh giá!')
-        await this.getOrderDetail()
-      } catch (e) {
-        alert('Lỗi: ' + e.message)
-      }
+    transformDataTab2() {
+      this.infoTransTab2._orderId = this.infoTransTab2.orderId
+      console.log(this.infoTransTab2)
     },
   },
 }
