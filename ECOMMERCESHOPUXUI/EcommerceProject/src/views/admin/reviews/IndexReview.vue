@@ -44,6 +44,12 @@
       ></table>
     </div>
   </div>
+  <VueEasyLight
+    :visible="isLightboxOpen"
+    :imgs="lightboxImages"
+    :index="lightboxIndex"
+    @hide="closeLightbox"
+  />
 </template>
 
 <script>
@@ -59,11 +65,12 @@ import Overlay from '@/components/common/Overlay.vue'
 import { formatDate } from '@/constants/formatDatetime'
 import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
+import VueEasyLight from 'vue-easy-lightbox'
 // import { formatCurrency } from '@/constants/formatCurrency'
 
 export default {
   name: 'IndexReview',
-  components: { Overlay },
+  components: { Overlay, VueEasyLight },
   props: {},
   data() {
     return {
@@ -78,6 +85,9 @@ export default {
       filterHasImage: '',
       searchText: '',
       pathReplaceImg,
+      isLightboxOpen: false,
+      lightboxImages: [],
+      lightboxIndex: 0,
     }
   },
   computed: {},
@@ -112,6 +122,13 @@ export default {
       this.overlayContent = 'Không có đánh giá nào để hiển thị.'
     }
     this.isLoading = false // Đặt trạng thái loading là false sau khi hoàn thành
+
+    window.vueIndexReviewOpenLightbox = this.openLightbox
+  },
+  beforeUnmount() {
+    if (window.vueIndexReviewOpenLightbox === this.openLightbox) {
+      window.vueIndexReviewOpenLightbox = undefined
+    }
   },
   methods: {
     // -- Hàm lấy dữ liệu đánh giá từ API
@@ -264,45 +281,70 @@ export default {
         .join('')
 
       const detailsHtml = `
-    <div class="container-fluid">
-        <div class="row p-3">
-            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Tên sản phẩm:</strong> ${evaluation.tenSanPham}</p>
-            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Mã khách hàng:</strong> ${evaluation.maKh}</p>
-            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Email:</strong> ${evaluation.email}</p>
-            <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Số điện thoại:</strong> ${evaluation.soDienThoai}</p>
-            <p class="col-12"><strong>Nội dung đánh giá:</strong> ${evaluation.noiDung}</p>
-            <blockquote class="col-12" style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0;">
-              <strong>Phản hồi của shop:</strong> 
-              ${evaluation.shopPhanHoi ? evaluation.shopPhanHoi + '<small class="text-muted"> (' + formatDate(evaluation.ngayPhanHoi) + ')</small>' : 'Chưa có đánh giá'}
-            </blockquote>
+      <div class="container-fluid">
+          <div class="row p-3">
+              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Tên sản phẩm:</strong> ${evaluation.tenSanPham}</p>
+              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Mã khách hàng:</strong> ${evaluation.maKh}</p>
+              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Email:</strong> ${evaluation.email}</p>
+              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Số điện thoại:</strong> ${evaluation.soDienThoai}</p>
+              <p class="col-12"><strong>Nội dung đánh giá:</strong> ${evaluation.noiDung}</p>
+              <blockquote class="col-12" style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0;">
+                <strong>Phản hồi của shop:</strong> 
+                ${evaluation.shopPhanHoi ? evaluation.shopPhanHoi + '<small class="text-muted"> (' + formatDate(evaluation.ngayPhanHoi) + ')</small>' : 'Chưa có đánh giá'}
+              </blockquote>
 
-            <hr/>  
+              <hr/>  
+          </div>
+          <div class="row mb-3">
+              <div class="col-12">
+                  <h6>Đối tượng đánh giá trong các đơn hàng:</h6>
+                  ${statusSummaryHtml}
+              </div>
+          </div>
+        <div class="row mb-3 detail-list">
+          ${
+            evaluation.hinhAnhs && evaluation.hinhAnhs.split(',').length > 0
+              ? evaluation.hinhAnhs
+                  .split(',')
+                  .map(
+                    (img, idx, arr) => `
+                      <div class="col-4 d-flex align-items-center">
+                        <img 
+                          src="${pathReplaceImg(undefined, 'HinhAnh/Reviews', img)}" 
+                          class="img-fluid rounded review-lightbox-img" 
+                          alt="Hình ảnh đánh giá"
+                          data-imgs='${JSON.stringify(arr)}'
+                          data-idx='${idx}'
+                          style="cursor:pointer"
+                        >
+                      </div>
+                    `,
+                  )
+                  .join('')
+              : '<div class="col-12"><p>Không có hình ảnh đánh giá để hiển thị.</p></div>'
+          }
         </div>
-        <div class="row mb-3">
-            <div class="col-12">
-                <h6>Đối tượng đánh giá trong các đơn hàng:</h6>
-                ${statusSummaryHtml}
-            </div>
-        </div>
-       <div class="row mb-3 detail-list">
-        ${
-          evaluation.hinhAnhs && evaluation.hinhAnhs.split(',').length > 0
-            ? evaluation.hinhAnhs
-                .split(',')
-                .map(
-                  (img) => `
-                    <div class="col-4 d-flex align-items-center">
-                      <img src="${pathReplaceImg(undefined, 'HinhAnh/Reviews', img)}" class="img-fluid rounded" alt="Hình ảnh đánh giá">
-                    </div>
-                  `,
-                )
-                .join('')
-            : '<div class="col-12"><p>Không có hình ảnh đánh giá để hiển thị.</p></div>'
-        }
-      </div>
-    </div>`
+      </div>`
 
       div.html(detailsHtml)
+
+      // Gắn sự kiện click cho ảnh review để mở LightBox
+      setTimeout(() => {
+        div
+          .find('.review-lightbox-img')
+          .off()
+          .on('click', function () {
+            const imgs = JSON.parse($(this).attr('data-imgs'))
+            const idx = parseInt($(this).attr('data-idx'))
+            // Gọi method openLightbox của Vue component
+            if (typeof window.vueIndexReviewOpenLightbox === 'function') {
+              window.vueIndexReviewOpenLightbox(
+                imgs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+                idx,
+              )
+            }
+          })
+      }, 0)
       return div
     },
 
@@ -384,6 +426,26 @@ export default {
           confirmButtonText: 'Đóng',
         })
       }
+    },
+    // - Xử lí về LightBox hình ảnh
+    openLightbox(imgs, idx = 0) {
+      this.lightboxImages = imgs
+      this.lightboxIndex = idx
+      this.isLightboxOpen = true
+    },
+    closeLightbox() {
+      this.isLightboxOpen = false
+    },
+    getReviewImages(item) {
+      // Trả về mảng tên file ảnh (không path)
+      if (!item.hinhAnhs) return []
+      return Array.isArray(item.hinhAnhs) ? item.hinhAnhs : item.hinhAnhs.split(',')
+    },
+    getReviewImagesFullPath(item) {
+      // Trả về mảng path đầy đủ cho lightbox
+      return this.getReviewImages(item).map((img) =>
+        this.pathReplaceImg(undefined, 'HinhAnh/Reviews', img),
+      )
     },
   },
 }
