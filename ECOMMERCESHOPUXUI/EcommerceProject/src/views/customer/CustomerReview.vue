@@ -48,18 +48,19 @@
           <div v-if="activeTab === 'notReviewed'">
             <div v-if="notReviewed.length">
               <div v-for="item in notReviewed" :key="item.id" class="border rounded p-3 mb-3">
-                <div class="mb-2 p-2 bg-white d-flex align-items-center">
+                <div class="mb-2 p-2 bg-light d-flex align-items-center">
                   <div v-if="item.tenHinhAnh" class="me-3">
                     <img
                       :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
                       alt="Ảnh sản phẩm"
-                      style="
-                        width: 60px;
-                        height: 60px;
-                        object-fit: cover;
-                        border-radius: 8px;
-                        border: 1px solid #eee;
+                      class="img-fluid border border-light rounded"
+                      @click="
+                        openLightbox(
+                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
+                          0,
+                        )
                       "
+                      style="width: 7em; height: 5em; object-fit: cover"
                     />
                   </div>
                   <div>
@@ -101,14 +102,20 @@
                     type="file"
                     multiple
                     accept="image/*"
+                    :disabled="getImageCount(item) >= maxImages"
                     @change="onImagesChange($event, item)"
                   />
+                  <small class="text-muted ms-2"
+                    >{{ getImageCount(item) }}/{{ maxImages }} ảnh</small
+                  >
                   <div class="d-flex flex-wrap mt-2">
                     <img
                       v-for="(img, idx) in item._previewImgs || []"
                       :key="idx"
                       :src="img"
-                      style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
+                      class="img-fluid me-2 border border-light rounded-5"
+                      style="max-width: 10em; height: 10em"
+                      @click="openLightbox(item._previewImgs, idx)"
                     />
                   </div>
                 </div>
@@ -127,18 +134,19 @@
           <div v-else>
             <div v-if="reviewed.length">
               <div v-for="item in reviewed" :key="item.id" class="border rounded p-3 mb-3">
-                <div class="mb-2 p-2 bg-white d-flex align-items-center">
+                <div class="mb-2 p-2 bg-light d-flex align-items-center">
                   <div v-if="item.tenHinhAnh" class="me-3">
                     <img
                       :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
                       alt="Ảnh sản phẩm"
-                      style="
-                        width: 60px;
-                        height: 60px;
-                        object-fit: cover;
-                        border-radius: 8px;
-                        border: 1px solid #eee;
+                      class="img-fluid border border-light rounded"
+                      @click="
+                        openLightbox(
+                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
+                          0,
+                        )
                       "
+                      style="width: 7em; height: 5em; object-fit: cover"
                     />
                   </div>
                   <div>
@@ -168,7 +176,9 @@
                       : item.hinhAnhs.split(',')"
                     :key="idx"
                     :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                    style="max-width: 80px; margin-right: 8px; border: 1px solid #ccc"
+                    class="img-fluid me-2 border border-light rounded-5"
+                    style="max-width: 10em; height: 10em"
+                    @click="openLightbox(getReviewImagesFullPath(item), idx)"
                   />
                 </div>
                 <blockquote
@@ -192,6 +202,12 @@
     </section>
     <!-- Shop Section End -->
   </div>
+  <VueEasyLight
+    :visible="isLightboxOpen"
+    :imgs="lightboxImages"
+    :index="lightboxIndex"
+    @hide="closeLightbox"
+  />
 </template>
 
 <script>
@@ -201,6 +217,8 @@ import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
 import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
 import { formatCurrency } from '@/constants/formatCurrency'
+import Swal from 'sweetalert2'
+import VueEasyLight from 'vue-easy-lightbox'
 
 export default {
   name: 'CustomerReview',
@@ -210,16 +228,20 @@ export default {
       notReviewed: [],
       reviewed: [],
       pathReplaceImg,
+      maxImages: 5,
+      maxImageSize: 5 * 1024 * 1024, // 5MB
+      isLightboxOpen: false,
+      lightboxImages: [],
+      lightboxIndex: 0,
     }
   },
-  components: { EmptySuggestBox },
+  components: { EmptySuggestBox, VueEasyLight },
   mounted() {
     this.loadFromCookieOrApi()
   },
   methods: {
     formatCurrency,
     loadFromCookieOrApi() {
-      // Ưu tiên lấy từ cookie, nếu không có thì gọi API
       const cookie = document.cookie.split('; ').find((row) => row.startsWith('userReviews='))
       if (cookie) {
         try {
@@ -240,7 +262,6 @@ export default {
           this.reviewed = []
           return
         }
-        // Lưu lại vào cookie
         document.cookie =
           'userReviews=' + encodeURIComponent(JSON.stringify(res.data)) + '; path=/;'
         this.prepareData(res.data)
@@ -260,12 +281,45 @@ export default {
       this.reviewed = data.listReviewed || []
     },
     onImagesChange(e, item) {
+      const files = Array.from(e.target.files)
+      // Kiểm tra số lượng ảnh
+      if (files.length > this.maxImages) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Chỉ được chọn tối đa 5 ảnh!',
+          timer: 2000,
+          showConfirmButton: false,
+        })
+        e.target.value = ''
+        return
+      }
+      // Kiểm tra dung lượng từng ảnh
+      const oversize = files.find((f) => f.size > this.maxImageSize)
+      if (oversize) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Ảnh vượt quá 5MB!',
+          text: `Ảnh "${oversize.name}" vượt quá dung lượng cho phép.`,
+        })
+        e.target.value = ''
+        return
+      }
+      // Xóa preview cũ
       if (item._previewImgs) item._previewImgs.forEach((url) => URL.revokeObjectURL(url))
-      item._selectedFiles = Array.from(e.target.files)
-      item._previewImgs = item._selectedFiles.map((file) => URL.createObjectURL(file))
+      item._selectedFiles = files
+      item._previewImgs = files.map((file) => URL.createObjectURL(file))
     },
     async submitReview(item) {
       try {
+        if (!item._editNoiDung || !item._editSoSao) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Vui lòng nhập nội dung và chọn số sao!',
+            timer: 2000,
+            showConfirmButton: false,
+          })
+          return
+        }
         const formData = new FormData()
         formData.append('noiDung', item._editNoiDung)
         formData.append('soSao', item._editSoSao)
@@ -281,11 +335,42 @@ export default {
           ConfigsRequest.takeAuth(),
         )
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã gửi đánh giá!')
+        Swal.fire({
+          icon: 'success',
+          title: 'Đã gửi đánh giá!',
+          timer: 1200,
+          showConfirmButton: false,
+        })
         this.reloadReviews()
       } catch (e) {
-        alert('Lỗi: ' + e.message)
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: e.message,
+        })
       }
+    },
+    getImageCount(item) {
+      return item._selectedFiles ? item._selectedFiles.length : 0
+    },
+    openLightbox(imgs, idx = 0) {
+      this.lightboxImages = imgs
+      this.lightboxIndex = idx
+      this.isLightboxOpen = true
+    },
+    closeLightbox() {
+      this.isLightboxOpen = false
+    },
+    getReviewImages(item) {
+      // Trả về mảng tên file ảnh (không path)
+      if (!item.hinhAnhs) return []
+      return Array.isArray(item.hinhAnhs) ? item.hinhAnhs : item.hinhAnhs.split(',')
+    },
+    getReviewImagesFullPath(item) {
+      // Trả về mảng path đầy đủ cho lightbox
+      return this.getReviewImages(item).map((img) =>
+        this.pathReplaceImg(undefined, 'HinhAnh/Reviews', img),
+      )
     },
   },
 }

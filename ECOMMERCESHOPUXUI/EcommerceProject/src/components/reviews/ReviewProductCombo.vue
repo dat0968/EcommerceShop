@@ -46,6 +46,9 @@
                   object-fit: cover;
                   margin-right: 10px;
                 "
+                @click="
+                  openLightbox([pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)], 0)
+                "
               />
               <div>
                 <strong>{{ review.tenKhachHang || 'Ẩn danh' }}</strong>
@@ -55,18 +58,13 @@
               </div>
             </div>
             <!-- Thông tin sản phẩm/combo -->
-            <div class="mb-2 p-2 bg-white d-flex align-items-center">
+            <div class="mb-2 p-2 bg-light d-flex align-items-center">
               <div v-if="review.tenHinhAnh" class="me-3">
                 <img
                   :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
                   alt="Ảnh sản phẩm"
-                  style="
-                    width: 60px;
-                    height: 60px;
-                    object-fit: cover;
-                    border-radius: 8px;
-                    border: 1px solid #eee;
-                  "
+                  class="img-fluid border border-light rounded"
+                  style="width: 7em; height: 5em; object-fit: cover"
                 />
               </div>
               <div>
@@ -91,22 +89,20 @@
               <strong>Nội dung:</strong>
               <span>{{ review.noiDung }}</span>
             </div>
-            <div v-if="review.hinhAnhs && review.hinhAnhs.length" class="d-flex flex-wrap mb-2">
+            <div
+              v-if="review.hinhAnhs && review.hinhAnhs.length"
+              class="d-flex flex-wrap mb-2 mx-2"
+            >
               <img
                 v-for="(img, idx) in Array.isArray(review.hinhAnhs)
                   ? review.hinhAnhs
                   : review.hinhAnhs.split(',')"
                 :key="idx"
                 :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                style="
-                  max-width: 80px;
-                  max-height: 80px;
-                  margin-right: 8px;
-                  margin-bottom: 8px;
-                  border: 1px solid #ccc;
-                  object-fit: cover;
-                "
+                class="img-fluid me-2 border border-light rounded-5"
+                style="max-width: 7em; height: 7em"
                 alt="Hình đánh giá"
+                @click="openLightbox(getReviewImagesFullPath(review), idx)"
               />
             </div>
             <blockquote
@@ -126,6 +122,12 @@
       <div v-else class="text-muted">Không tìm thấy đánh giá phù hợp.</div>
     </div>
   </div>
+  <VueEasyLight
+    :visible="isLightboxOpen"
+    :imgs="lightboxImages"
+    :index="lightboxIndex"
+    @hide="closeLightbox"
+  />
 </template>
 
 <script>
@@ -134,6 +136,7 @@ import * as axiosConfig from '@/utils/axiosClient'
 import pathReplaceImg from '@/utils/processPathImg'
 import { formatDate } from '@/constants/formatDatetime'
 import ResponseAPI from '@/models/ResponseAPI'
+import VueEasyLight from 'vue-easy-lightbox'
 
 export default {
   name: 'ReviewProductCombo',
@@ -141,6 +144,7 @@ export default {
     objectId: Number,
     isProduct: Boolean,
   },
+  components: { VueEasyLight },
   data() {
     return {
       objectIdLocal: this.objectId || null,
@@ -152,6 +156,9 @@ export default {
       filterStar: '',
       filterHasImage: '',
       searchText: '',
+      isLightboxOpen: false,
+      lightboxImages: [],
+      lightboxIndex: 0,
     }
   },
   watch: {
@@ -219,6 +226,25 @@ export default {
       } else {
         this.reviews = []
       }
+    },
+    openLightbox(imgs, idx = 0) {
+      this.lightboxImages = imgs
+      this.lightboxIndex = idx
+      this.isLightboxOpen = true
+    },
+    closeLightbox() {
+      this.isLightboxOpen = false
+    },
+    getReviewImages(item) {
+      // Trả về mảng tên file ảnh (không path)
+      if (!item.hinhAnhs) return []
+      return Array.isArray(item.hinhAnhs) ? item.hinhAnhs : item.hinhAnhs.split(',')
+    },
+    getReviewImagesFullPath(item) {
+      // Trả về mảng path đầy đủ cho lightbox
+      return this.getReviewImages(item).map((img) =>
+        this.pathReplaceImg(undefined, 'HinhAnh/Reviews', img),
+      )
     },
   },
   mounted() {
