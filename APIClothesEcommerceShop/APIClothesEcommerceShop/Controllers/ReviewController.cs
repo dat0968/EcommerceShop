@@ -87,10 +87,6 @@ namespace APIClothesEcommerceShop.Controllers
             review.MaKh = userId;
 
             var res = await _unit.Review.AddReviewForItemInOrderAsync(review, isProduct);
-            if (!res.Success)
-            {
-                return StatusCode(res.StatusCode, res);
-            }
             return Ok(res);
         }
 
@@ -117,10 +113,6 @@ namespace APIClothesEcommerceShop.Controllers
             review.MaKh = userId;
 
             var res = await _unit.Review.UpdateReviewAsync(review, isProduct);
-            if (!res.Success)
-            {
-                return StatusCode(res.StatusCode, res);
-            }
             return Ok(res);
         }
 
@@ -136,10 +128,6 @@ namespace APIClothesEcommerceShop.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var res = await _unit.Review.RemoveAsync(reviewId, userId);
-            if (!res.Success)
-            {
-                return StatusCode(res.StatusCode, res);
-            }
             return Ok(res);
         }
 
@@ -173,10 +161,6 @@ namespace APIClothesEcommerceShop.Controllers
             }
 
             var res = await _unit.Review.UpdateShopReplyAsync(request);
-            if (!res.Success)
-            {
-                return StatusCode(res.StatusCode, res);
-            }
             return Ok(res);
         }
     }

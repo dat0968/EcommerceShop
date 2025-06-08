@@ -16,7 +16,7 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpOptions]
         public IActionResult Get()
         {
-            return Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow });
+            return Ok();
         }
     }
 }
