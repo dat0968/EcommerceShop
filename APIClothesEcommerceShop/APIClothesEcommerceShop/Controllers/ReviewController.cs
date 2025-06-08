@@ -64,6 +64,16 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(res);
         }
 
+        [ProducesResponseType(typeof(ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>), 200)]
+        [Authorize(Roles = "Customer")]
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllReviewOfUser()
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var res = await _unit.Review.GetAllReviewOfUser(userId);
+            return Ok(res);
+        }
+
         /// <summary>
         /// Thêm mới đánh giá cho sản phẩm hoặc combo (chỉ cho khách hàng).
         /// </summary>

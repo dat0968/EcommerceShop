@@ -46,37 +46,13 @@ namespace APIClothesEcommerceShop.Models
         [ForeignKey("MaKh")]
         public virtual Khachhang KhachHang { get; set; } = null!;
 
-        // Kiểm tra xem người dùng đã có đánh giá cho sản phẩm/combo này chưa
-        public static bool DaCoDanhGia(List<DanhGia> danhSachDanhGia, int maKhachHang, int? maSp, int? maCombo)
-        {
-            return danhSachDanhGia.Any(dg =>
-                dg.MaKh == maKhachHang &&
-                ((dg.MaSp == maSp && maCombo == null) || (dg.MaCombo == maCombo && maSp == null)));
-        }
-
-        // Phương thức kiểm tra xem người dùng đã mua sản phẩm/combo chưa
-        public static bool DaMuaSanPham(List<Hoadon> danhSachHoaDon, int idObject, bool isProduct, int maKhachHang)
-        {
-            if (isProduct)
-            {
-                int maSp = idObject;
-                return danhSachHoaDon.Any(hoaDon => hoaDon.MaKh == maKhachHang &&
-                    hoaDon.Cthoadons.Any(ct => ct.MaCtsp == maSp));
-            }
-            else
-            {
-                int maCombo = idObject;
-                return danhSachHoaDon.Any(hoaDon => hoaDon.MaKh == maKhachHang &&
-                    hoaDon.Chitietcombohoadons.Any(ct => ct.MaCombo == maCombo));
-            }
-        }
         public void CombineNameImg(string[] listNameImg)
         {
             this.TenCacHinhAnh = String.Join(",", listNameImg);
         }
-        public string[] GetSavedListFileName()
+        public string[]? GetSavedListFileName()
         {
-            return TenCacHinhAnh?.Split(',') ?? new string[0];
+            return string.IsNullOrEmpty(TenCacHinhAnh) ? null : TenCacHinhAnh?.Split(',');
         }
     }
 
@@ -98,23 +74,34 @@ namespace APIClothesEcommerceShop.Models
             };
         }
 
-        public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity)
+        public static ReviewResponseDTO ToReviewResponseDTO(this DanhGia entity, bool isProduct)
         {
-            return new ReviewResponseDTO
+            ReviewResponseDTO dTO = new ReviewResponseDTO
             {
                 Id = entity.Id,
                 MaKh = entity.MaKh,
-                TenKhachHang = entity.KhachHang?.HoTen ?? "Khách hàng không xác định",
+                TenKhachHang = entity.KhachHang?.HoTen ?? "**** ***",
                 Avatar = entity.KhachHang?.HinhDaiDien ?? string.Empty,
-                MaSp = entity.MaSp, // Nếu cần thì thêm mã sản phẩm
-                MaCombo = entity.MaCombo, // Nếu cần thì thêm mã combo
+                MaSp = entity.MaSp,
+                MaCombo = entity.MaCombo,
                 MaCthd = entity.MaCtHd,
                 NoiDung = entity.NoiDung,
                 SoSao = entity.SoSao,
+                TenDoiTuong = entity.SanPham?.TenSanPham ?? entity.Combo?.TenCombo ?? "N/A",
+                TenHinhAnh = entity.Cthoadon?.MaCtspNavigation?.Hinhanhs?.FirstOrDefault()?.TenHinhAnh ?? entity.Cthoadon?.MaComboNavigation?.Hinh ?? "",
+                HinhAnhs = entity.GetSavedListFileName(),
                 NgayDanhGia = entity.NgayDanhGia,
                 ShopPhanHoi = entity.ShopPhanHoi,
                 NgayPhanHoi = entity.NgayPhanHoi
             };
+            if (isProduct)
+            {
+                dTO.KichThuoc = entity.Cthoadon?.MaCtspNavigation?.KichThuoc;
+                dTO.MauSac = entity.Cthoadon?.MaCtspNavigation?.MauSac;
+                dTO.SoLuongTon = entity.Cthoadon?.MaCtspNavigation?.SoLuongTon ?? 0;
+                dTO.DonGia = entity.Cthoadon?.MaCtspNavigation?.DonGia ?? 9999;
+            }
+            return dTO;
         }
     }
 }

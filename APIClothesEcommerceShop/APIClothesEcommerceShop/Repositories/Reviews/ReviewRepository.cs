@@ -16,6 +16,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     {
         private readonly EcommerceShopContext _db;
         private static string pathImageReview = "wwwroot/HinhAnh/Reviews";
+        private static string filterStatusOrder = "Đã nhận hàng"; // Trạng thái để lọc việc get danh sách đánh giá
 
         public ReviewRepository(EcommerceShopContext db) : base(db)
         {
@@ -43,7 +44,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Where(r => r.MaSp == maSp)
                     .Include(x => x.Cthoadon)
                     .Include(r => r.KhachHang)
-                    .Select(r => r.ToReviewResponseDTO())
+                    .Select(r => r.ToReviewResponseDTO(true))
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -77,7 +78,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 var reviews = await _db.DanhGias
                     .Where(r => r.MaCombo == maCombo)
                     .Include(r => r.KhachHang)
-                    .Select(r => r.ToReviewResponseDTO())
+                    .Select(r => r.ToReviewResponseDTO(false))
                     .ToListAsync();
 
                 if (!reviews.Any())
@@ -138,6 +139,65 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         }
         #endregion
 
+        #region [Lấy danh sách sản phẩm và combo trong hóa đơn cùng với đánh giá của người riêng người dùng]
+        public async Task<ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>> GetAllReviewOfUser(int userId)
+        {
+            var response = new ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>();
+            response.Data = new Dictionary<string, List<ReviewResponseDTO>>();
+            try
+            {
+                DateTime today = DateTime.UtcNow;
+                DateTime sevenDaysAgo = today.AddDays(-7);
+
+                // Lấy tất cả cthoadon của user trong các hóa đơn đã nhận hàng trong 7 ngày gần nhất
+                /*  && ct.MaHdNavigation.NgayNhan != null
+                    && ct.MaHdNavigation.NgayNhan >= sevenDaysAgo */
+
+                var cthoadons = await _db.Cthoadons
+                    .Include(ct => ct.MaHdNavigation)
+                        .Where(ct => ct.MaHdNavigation.MaKh == userId)
+                    .Include(ct => ct.DanhGia)
+                    .Include(ct => ct.MaCtspNavigation)
+                        .ThenInclude(ctsp => ctsp.MaSpNavigation)
+                    .Include(ct => ct.MaCtspNavigation)
+                        .ThenInclude(ctsp => ctsp.Hinhanhs)
+                    .Include(ct => ct.MaComboNavigation)
+                    .ToListAsync();
+
+                var notReviewIn7days = new List<ReviewResponseDTO>();
+                var listReviewed = new List<ReviewResponseDTO>();
+
+                foreach (var ct in cthoadons)
+                {
+                    if (ct.DanhGia != null)
+                    {
+                        bool isProduct = ct.DanhGia.MaSp != null && ct.DanhGia.MaSp != 0;
+                        // Đã đánh giá
+                        listReviewed.Add(ct.DanhGia.ToReviewResponseDTO(isProduct));
+                    }
+                    // ! Khi đặt filter trạng thái đơn hàng thì mở cmt dưới thay else
+                    //  else if (ct.DanhGia != null && ct.DanhGia?.Cthoadon?.MaHdNavigation.NgayNhan != null && ct.DanhGia.Cthoadon.MaHdNavigation.NgayNhan >= sevenDaysAgo)
+                    else
+                    {
+                        bool isProduct = ct.MaCtsp != null && ct.MaCtsp != 0;
+                        // Chưa đánh giá, tạo ReviewResponseDTO với thông tin cơ bản
+                        var dto = ReviewResponseDTO.MakeEmptyReview(ct, isProduct);
+                        notReviewIn7days.Add(dto);
+                    }
+                }
+
+                response.Data["notReviewIn7days"] = notReviewIn7days;
+                response.Data["listReviewed"] = listReviewed;
+                response.SetSuccessResponse();
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+        #endregion
+
         #region [Thêm đánh giá cho sản phẩm hoặc combo]
         public async Task<ResponseAPI<ReviewResponseDTO>> AddReviewForItemInOrderAsync(ReviewRequestDTO entity, bool isProduct)
         {
@@ -188,7 +248,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 }
                 await _db.DanhGias.AddAsync(reviewTransform);
                 await _db.SaveChangesAsync();
-                response.SetSuccessResponse(data: reviewTransform.ToReviewResponseDTO(), message: "Thêm đánh giá thành công");
+                response.SetSuccessResponse(data: reviewTransform.ToReviewResponseDTO(isProduct), message: "Thêm đánh giá thành công");
             }
             catch (Exception ex)
             {
@@ -471,7 +531,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     // Tạo tên file duy nhất
                     var ext = Path.GetExtension(file.FileName);
-                    var uniqueFileName = $"{Path.GetFileNameWithoutExtension(file.FileName.Replace(' ','_'))}_{Guid.NewGuid()}{ext}";
+                    var uniqueFileName = $"{Path.GetFileNameWithoutExtension(file.FileName.Replace(' ', '_'))}_{Guid.NewGuid()}{ext}";
                     var filePath = Path.Combine(folderPath, uniqueFileName);
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
