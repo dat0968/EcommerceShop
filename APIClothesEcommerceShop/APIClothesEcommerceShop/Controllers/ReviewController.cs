@@ -64,6 +64,10 @@ namespace APIClothesEcommerceShop.Controllers
             return Ok(res);
         }
 
+        /// <summary>
+        /// Lấy danh sách đánh giá của khách hàng dựa vào số liệu đơn hàng của khách
+        /// </summary>
+        /// <returns></returns>
         [ProducesResponseType(typeof(ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>), 200)]
         [Authorize(Roles = "Customer")]
         [HttpGet("users")]
