@@ -43,6 +43,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 var reviews = await _db.DanhGias
                     .Where(r => r.MaSp == maSp)
                     .Include(x => x.Cthoadon)
+                        .ThenInclude(ct => ct.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .Include(r => r.KhachHang)
                     .Select(r => r.ToReviewResponseDTO(true))
                     .ToListAsync();
@@ -157,6 +159,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Include(ct => ct.MaHdNavigation)
                         .Where(ct => ct.MaHdNavigation.MaKh == userId)
                     .Include(ct => ct.DanhGia)
+                        .ThenInclude(dg => dg.KhachHang)
                     .Include(ct => ct.MaCtspNavigation)
                         .ThenInclude(ctsp => ctsp.MaSpNavigation)
                     .Include(ct => ct.MaCtspNavigation)
@@ -364,7 +367,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
         #region [REVIEW METHODS FOR PRODUCTS AND COMBOS ONLY FOR STAFFS]
         /// <summary>
-        /// Lấy tất cả đánh giá dưới dạng danh sách DTO [! Bad query]
+        /// Lấy tất cả đánh giá dưới dạng danh sách DTO [! Damn query]
         /// </summary>
         /// <returns></returns>
         public async Task<ResponseAPI<IEnumerable<ReviewDetailDTO>>> GetAllReviewDtoAsync()
@@ -381,6 +384,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     );
 
                 var reviews = await _db.DanhGias
+                    .Include(r => r.Cthoadon)
+                        .ThenInclude(ct => ct.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .Include(r => r.KhachHang)
                     .Include(r => r.SanPham)
                     .Include(r => r.Combo)
