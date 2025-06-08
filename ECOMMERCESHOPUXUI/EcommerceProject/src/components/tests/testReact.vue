@@ -6,7 +6,7 @@
       style="bottom: 30px; left: 20px; z-index: 1050"
       @click="showModal = !showModal"
     >
-      Mở đánh giá
+      {{ showModal ? '🔴' : '🟢' }}
     </button>
 
     <!-- Modal overlay -->
