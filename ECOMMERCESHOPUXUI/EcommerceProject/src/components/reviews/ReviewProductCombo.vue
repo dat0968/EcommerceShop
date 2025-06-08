@@ -34,7 +34,6 @@
             class="list-group-item"
             style="margin-bottom: 12px"
           >
-            <!-- ...phần hiển thị đánh giá giữ nguyên... -->
             <div class="d-flex align-items-center mb-2">
               <img
                 v-if="review.avatar"
@@ -53,6 +52,31 @@
                 <span class="text-muted ms-2" style="font-size: 13px">
                   {{ formatDate(review.ngayDanhGia) }}
                 </span>
+              </div>
+            </div>
+            <!-- Thông tin sản phẩm/combo -->
+            <div class="mb-2 p-2 bg-white d-flex align-items-center">
+              <div v-if="review.tenHinhAnh" class="me-3">
+                <img
+                  :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
+                  alt="Ảnh sản phẩm"
+                  style="
+                    width: 60px;
+                    height: 60px;
+                    object-fit: cover;
+                    border-radius: 8px;
+                    border: 1px solid #eee;
+                  "
+                />
+              </div>
+              <div>
+                <span v-if="review.maSp"><strong>Sản phẩm:</strong> {{ review.maSp }}</span>
+                <span v-if="review.maCombo"><strong>Combo:</strong> {{ review.maCombo }}</span>
+                <span v-if="review.tenDoiTuong">| {{ review.tenDoiTuong ?? 'N/A' }}</span>
+                <span v-if="review.kichThuoc">| Size: {{ review.kichThuoc }}</span>
+                <span v-if="review.mauSac">| Màu: {{ review.mauSac }}</span>
+                <span v-if="review.donGia">| Giá: {{ review.donGia.toLocaleString() }}₫</span>
+                <span v-if="review.soLuongTon !== undefined">| Tồn: {{ review.soLuongTon }}</span>
               </div>
             </div>
             <div class="mb-1">

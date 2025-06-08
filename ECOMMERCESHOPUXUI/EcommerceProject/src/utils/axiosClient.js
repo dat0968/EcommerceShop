@@ -95,7 +95,6 @@ async function refreshAccessToken() {
   try {
     const readtoken = ReadToken(Cookies.get('accessToken')) // Đọc thông tin từ access token
     if (!readtoken) {
-      // console.log('Không thể đọc thông tin từ access token.')
       return false // Hoặc ném lỗi
     }
 
@@ -127,7 +126,8 @@ async function refreshAccessToken() {
 axiosClient.interceptors.request.use(
   async (config) => {
     const isRequiresAuth = !config.headers.skipAuth
-    // console.log(isRequiresAuth)
+    const isSkipNavigation = config.headers['Skip-Navigation'] ?? false
+
     const requiresAuth = isRequiresAuth
 
     if (config.data && !(config.data instanceof FormData) && !config.headers['Content-Type']) {
@@ -143,7 +143,7 @@ axiosClient.interceptors.request.use(
     if (!accessToken) {
       // Yêu cầu xác thực nhưng không có token
       console.warn('Không có access token, chuyển hướng đến trang đăng nhập.')
-      router.push('/login') // Chuyển hướng đến trang đăng nhập
+      if (!isSkipNavigation) router.push('/login') // Chuyển hướng đến trang đăng nhập
       return config // Quan trọng: Ngăn chặn request được gửi đi
     }
     // Kiểm tra token hết hạn bằng cách sử dụng ReadToken
@@ -155,9 +155,8 @@ axiosClient.interceptors.request.use(
         config.headers.Authorization = `Bearer ${newAccessToken}`
       } else {
         // Không thể làm mới token, chuyển hướng đến trang đăng nhập
-        // console.log('Không thể làm mới token, chuyển hướng đến trang đăng nhập.')
-        router.push('/login')
-        return config // Hoặc ném lỗi nếu cần
+        if (!isSkipNavigation) router.push('/login')
+        return config // Trả về lỗi cấu hình request
       }
     } else {
       // Token còn hiệu lực, thêm vào header

@@ -22,9 +22,6 @@ import 'bootstrap-datepicker'
 //import '../../assets/admin/plugins/datepicker/i18n/datepicker.en.js'
 import 'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'
 import '../../assets/Admin/js/main.js'
-import statistics from '../admin/statistics/statistics.vue'
-import products from '../admin/products/index.vue'
-import CustomerManagement from '../admin/Customer/CustomerManagement.vue'
 import { onMounted } from 'vue'
 
 onMounted(() => {
@@ -129,7 +126,7 @@ onMounted(() => {
 
           <!-- Start XP Navigationbar -->
           <div class="xp-navigationbar">
-            <ul class="xp-vertical-menu" style="color: black">
+            <ul class="xp-vertical-menu">
               <li>
                 <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
                   <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
@@ -145,8 +142,6 @@ onMounted(() => {
                   <i class="icon-notebook"></i><span>Quản lý danh mục</span>
                 </RouterLink>
               </li>
-            </ul>
-            <ul class="xp-vertical-menu">
               <li>
                 <RouterLink to="/admin/combo">
                   <i class="icon-basket"></i><span class="font-color">Quản lý combo</span>

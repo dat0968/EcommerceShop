@@ -46,7 +46,7 @@
             >
               <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
             </select>
-            <span class="ms-2">
+            <span class="ms-2" style="font-size: xxx-large">
               <span v-for="n in item._editSoSao" :key="n" style="color: #ffc107">★</span>
               <span v-for="n in 5 - item._editSoSao" :key="'empty' + n" style="color: #e4e5e9"
                 >★</span
@@ -156,10 +156,16 @@ export default {
       return id !== null && id !== undefined && id !== 0 && !isNaN(id)
     },
     onProductImagesChange(e, prod) {
+      if (prod._previewImgs) {
+        prod._previewImgs.forEach((url) => URL.revokeObjectURL(url))
+      }
       prod._selectedFiles = Array.from(e.target.files)
       prod._previewImgs = prod._selectedFiles.map((file) => URL.createObjectURL(file))
     },
     onComboImagesChange(e, combo) {
+      if (combo._previewImgs) {
+        combo._previewImgs.forEach((url) => URL.revokeObjectURL(url))
+      }
       combo._selectedFiles = Array.from(e.target.files)
       combo._previewImgs = combo._selectedFiles.map((file) => URL.createObjectURL(file))
     },
@@ -173,14 +179,18 @@ export default {
         )
         if (res.success) {
           this.orderDetail = res.data
-          // Chuẩn hóa các sản phẩm cho phép chỉnh sửa
+          // Reset input cho từng sản phẩm/combo
           this.orderDetail.products.forEach((p) => {
-            p._editNoiDung = p.noiDung
-            p._editSoSao = p.soSao
+            p._editNoiDung = p.noiDung || ''
+            p._editSoSao = p.soSao || 5
+            p._selectedFiles = []
+            p._previewImgs = []
           })
           this.orderDetail.combos.forEach((c) => {
-            c._editNoiDung = c.noiDung
-            c._editSoSao = c.soSao
+            c._editNoiDung = c.noiDung || ''
+            c._editSoSao = c.soSao || 5
+            c._selectedFiles = []
+            c._previewImgs = []
           })
         }
         this.orderResult = ''
@@ -297,7 +307,6 @@ export default {
     orderId(val) {
       this.orderIdLocal = val
       if (this.isValidId(val)) this.getOrderDetail()
-      this.orderDetail = null
     },
   },
   mounted() {
