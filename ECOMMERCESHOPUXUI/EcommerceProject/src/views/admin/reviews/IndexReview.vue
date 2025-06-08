@@ -23,14 +23,14 @@
             <option value="0">Không ảnh</option>
           </select>
         </div>
-        <div class="col-md-6 mb-2">
+        <!-- <div class="col-md-6 mb-2">
           <input
             v-model="searchText"
             class="form-control"
             placeholder="Tìm theo nội dung, tên khách, phản hồi..."
             @input="filterByRating"
           />
-        </div>
+        </div> -->
         <div class="col-md-3">
           <button class="btn btn-primary" :disabled="isDisabled" @click="updateShopResponse">
             Cập nhật phản hồi của shop
@@ -83,7 +83,7 @@ export default {
       selectedReview: [],
       filterByStar: null,
       filterHasImage: '',
-      searchText: '',
+      // searchText: '',
       pathReplaceImg,
       isLightboxOpen: false,
       lightboxImages: [],
@@ -160,14 +160,14 @@ export default {
         if (this.filterHasImage === '1' && !hasImg) return false
         if (this.filterHasImage === '0' && hasImg) return false
         // Lọc theo nội dung tìm kiếm
-        const text = this.searchText.trim().toLowerCase()
+        /* const text = this.searchText.trim().toLowerCase()
         if (text) {
           const inContent =
             (item.noiDung && item.noiDung.toLowerCase().includes(text)) ||
             (item.tenKhachHang && item.tenKhachHang.toLowerCase().includes(text)) ||
             (item.shopPhanHoi && item.shopPhanHoi.toLowerCase().includes(text))
           if (!inContent) return false
-        }
+        } */
         return true
       })
       this.initDataTable()
@@ -288,11 +288,14 @@ export default {
               <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Email:</strong> ${evaluation.email}</p>
               <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Số điện thoại:</strong> ${evaluation.soDienThoai}</p>
               <p class="col-12"><strong>Nội dung đánh giá:</strong> ${evaluation.noiDung}</p>
-              <blockquote class="col-12" style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0;">
+              ${
+                evaluation.shopPhanHoi
+                  ? `<blockquote class="col-12" style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0;">
                 <strong>Phản hồi của shop:</strong> 
                 ${evaluation.shopPhanHoi ? evaluation.shopPhanHoi + '<small class="text-muted"> (' + formatDate(evaluation.ngayPhanHoi) + ')</small>' : 'Chưa có đánh giá'}
-              </blockquote>
-
+              </blockquote>`
+                  : ''
+              }
               <hr/>  
           </div>
           <div class="row mb-3">
@@ -311,11 +314,11 @@ export default {
                       <div class="col-4 d-flex align-items-center">
                         <img 
                           src="${pathReplaceImg(undefined, 'HinhAnh/Reviews', img)}" 
-                          class="img-fluid rounded review-lightbox-img" 
+                          class="img-fluid me-2 border border-light rounded-5 review-lightbox-img"
+                          style="max-width: 7em; height: 7em; cursor:pointer"
                           alt="Hình ảnh đánh giá"
                           data-imgs='${JSON.stringify(arr)}'
                           data-idx='${idx}'
-                          style="cursor:pointer"
                         >
                       </div>
                     `,
