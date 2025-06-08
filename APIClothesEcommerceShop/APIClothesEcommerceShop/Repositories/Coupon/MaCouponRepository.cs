@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.DTO.Coupon;
+using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.Repositories.Coupon
 {
@@ -17,29 +18,37 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
         {
             this.db = db;
         }
-        public CouponDTO Create(CouponDTO maCoupon)
+
+        public async Task<CouponDTO> Create(CouponDTO maCoupon)
         {
-            string maCode = string.IsNullOrWhiteSpace(maCoupon.MaCode)
-                ? GenerateRandomCouponCode()
-                : maCoupon.MaCode;
-
-            var newCouponCode = new APIClothesEcommerceShop.Models.Macoupon
+            try
             {
-                MaCode = maCode,
-                MoTa = maCoupon.MoTa,
-                SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : null,
-                PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : null,
-                NgayKetThuc = maCoupon.NgayKetThuc,
-                NgayBatDau = maCoupon.NgayBatDau,
-                SoLuong = maCoupon.SoLuong,
-                TrangThai = true,
-                DonHangToiThieu = maCoupon.DonHangToiThieu,
-                SoLuongDaDung = 0
-            };
+                string maCode = string.IsNullOrWhiteSpace(maCoupon.MaCode)
+                    ? GenerateRandomCouponCode()
+                    : maCoupon.MaCode;
 
-            db.Macoupons.Add(newCouponCode);
-            db.SaveChanges();
-            return maCoupon;
+                var newCouponCode = new APIClothesEcommerceShop.Models.Macoupon
+                {
+                    MaCode = maCode,
+                    MoTa = maCoupon.MoTa,
+                    SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : 0,
+                    PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : 0,
+                    NgayKetThuc = maCoupon.NgayKetThuc,
+                    NgayBatDau = maCoupon.NgayBatDau,
+                    SoLuong = maCoupon.SoLuong,
+                    TrangThai = true,
+                    DonHangToiThieu = maCoupon.DonHangToiThieu,
+                    SoLuongDaDung = 0
+                };
+
+                db.Macoupons.Add(newCouponCode);
+                await db.SaveChangesAsync();
+                return maCoupon;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
 
         private string GenerateRandomCouponCode(int length = 8)
@@ -50,26 +59,26 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-
-        public void Cancel(string id)
+        public async Task Cancel(string id)
         {
-            var FindMaCoupon = db.Macoupons.FirstOrDefault(p => p.MaCode == id);
-            if (FindMaCoupon != null)
+            var findMaCoupon = await db.Macoupons.FirstOrDefaultAsync(p => p.MaCode == id);
+            if (findMaCoupon != null)
             {
-                FindMaCoupon.TrangThai = false;
-                db.SaveChanges();
+                findMaCoupon.TrangThai = false;
+                await db.SaveChangesAsync();
             }
         }
 
-        public List<CouponDTO> GetAll(string? keywords, string? status, string? sort)
+        public async Task<List<CouponDTO>> GetAll(string? keywords, string? status, string? sort)
         {
             var listCouponCode = db.Macoupons.AsQueryable();
-            var CovertToListMaCouponVM = new List<CouponDTO>();
+            var covertToListMaCouponVM = new List<CouponDTO>();
 
             if (!string.IsNullOrEmpty(keywords))
             {
                 listCouponCode = listCouponCode.Where(p => p.MaCode.Contains(keywords));
             }
+
             switch (status)
             {
                 case "Còn hiệu lực":
@@ -85,6 +94,7 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     listCouponCode = listCouponCode.OrderByDescending(p => p.NgayBatDau);
                     break;
             }
+
             switch (sort)
             {
                 case "asc":
@@ -94,9 +104,11 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     listCouponCode = listCouponCode.OrderByDescending(p => p.NgayBatDau);
                     break;
             }
-            foreach (var item in listCouponCode)
+
+            var result = await listCouponCode.ToListAsync();
+            foreach (var item in result)
             {
-                CovertToListMaCouponVM.Add(new CouponDTO
+                covertToListMaCouponVM.Add(new CouponDTO
                 {
                     MaCode = item.MaCode,
                     PhanTramGiam = item.PhanTramGiam,
@@ -109,16 +121,17 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     DonHangToiThieu = item.DonHangToiThieu,
                 });
             }
-            return CovertToListMaCouponVM;
+            return covertToListMaCouponVM;
         }
 
-        public void Update(CouponDTO maCoupon)
+        public async Task Update(CouponDTO maCoupon)
         {
             var editCouponCode = new APIClothesEcommerceShop.Models.Macoupon
             {
                 MaCode = maCoupon.MaCode,
-                SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : null,
-                PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : null,
+                MoTa = maCoupon.MoTa,
+                SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : 0,
+                PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : 0,
                 NgayKetThuc = maCoupon.NgayKetThuc,
                 SoLuong = maCoupon.SoLuong,
                 TrangThai = maCoupon.TrangThai,
@@ -127,14 +140,15 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                 DonHangToiThieu = maCoupon.DonHangToiThieu,
             };
             db.Macoupons.Update(editCouponCode);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
         }
+
         public async Task<CouponDTO?> GetById(string macoupon)
         {
             var findCoupon = await db.Macoupons.AsNoTracking().FirstOrDefaultAsync(p => p.MaCode == macoupon.Trim());
-            if (findCoupon != null) 
+            if (findCoupon != null)
             {
-                var CouponDTO = new CouponDTO
+                var couponDTO = new CouponDTO
                 {
                     MaCode = findCoupon.MaCode,
                     SoLuong = findCoupon.SoLuong,
@@ -147,7 +161,7 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     NgayKetThuc = findCoupon.NgayKetThuc,
                     TrangThai = findCoupon.TrangThai,
                 };
-                return CouponDTO;
+                return couponDTO;
             }
             return null;
         }

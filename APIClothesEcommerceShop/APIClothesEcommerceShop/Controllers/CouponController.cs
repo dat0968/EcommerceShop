@@ -1,6 +1,9 @@
 ﻿using APIClothesEcommerceShop.DTO.Coupon;
 using APIClothesEcommerceShop.Repositories.Macoupon;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -13,16 +16,17 @@ namespace APIClothesEcommerceShop.Controllers
         {
             this.maCouponRepository = MaCouponRepository;
         }
+
         [HttpGet("GetAllCouponCodeByPage")]
-        public IActionResult GetAllByPage(string? keywords, string? status, string? sort, int page = 1)
+        public async Task<IActionResult> GetAllByPage(string? keywords, string? status, string? sort, int page = 1)
         {
             try
             {
-                int pagesize = 5;
-                var listCounponCode = maCouponRepository.GetAll(keywords, status, sort);
-                var totalItems = listCounponCode.Count();
+                int pagesize = 10;
+                var listCouponCode = await maCouponRepository.GetAll(keywords, status, sort);
+                var totalItems = listCouponCode.Count();
                 var totalPages = (int)Math.Ceiling((double)totalItems / pagesize);
-                var pagedCouponCode = listCounponCode.Skip((page - 1) * pagesize).Take(pagesize);
+                var pagedCouponCode = listCouponCode.Skip((page - 1) * pagesize).Take(pagesize);
                 return Ok(new
                 {
                     Success = true,
@@ -41,16 +45,17 @@ namespace APIClothesEcommerceShop.Controllers
                 });
             }
         }
+
         [HttpGet("GetAll")]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
             try
             {
-                var listCounponCode = maCouponRepository.GetAll(null, null, null);
+                var listCouponCode = await maCouponRepository.GetAll(null, null, null);
                 return Ok(new
                 {
                     Success = true,
-                    Data = listCounponCode,
+                    Data = listCouponCode,
                 });
             }
             catch (Exception ex)
@@ -62,8 +67,9 @@ namespace APIClothesEcommerceShop.Controllers
                 });
             }
         }
+
         [HttpPost("Create")]
-        public IActionResult Create(CouponDTO model)
+        public async Task<IActionResult> Create(CouponDTO model)
         {
             try
             {
@@ -72,7 +78,7 @@ namespace APIClothesEcommerceShop.Controllers
                     model.MaCode = GenerateRandomCouponCode(10);
                 }
 
-                var newCouponCode = maCouponRepository.Create(model);
+                var newCouponCode = await maCouponRepository.Create(model);
                 return Ok(new
                 {
                     Success = true,
@@ -90,7 +96,6 @@ namespace APIClothesEcommerceShop.Controllers
             }
         }
 
-        // Hàm sinh mã coupon ngẫu nhiên
         private string GenerateRandomCouponCode(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -100,11 +105,11 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpPut("Update")]
-        public IActionResult Update(CouponDTO model)
+        public async Task<IActionResult> Update(CouponDTO model)
         {
             try
             {
-                maCouponRepository.Update(model);
+                await maCouponRepository.Update(model);
                 return Ok(new
                 {
                     Success = true,
@@ -120,12 +125,13 @@ namespace APIClothesEcommerceShop.Controllers
                 });
             }
         }
-        [HttpPut("Cancel")]
-        public IActionResult Cancel(string id)
+
+        [HttpPut("Cancel/{id}")]
+        public async Task<IActionResult> Cancel(string id)
         {
             try
             {
-                maCouponRepository.Cancel(id);
+                await maCouponRepository.Cancel(id);
                 return Ok(new
                 {
                     Success = true,
