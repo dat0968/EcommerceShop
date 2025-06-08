@@ -6,7 +6,7 @@ import router from '@/router/index'
 import Cookies from 'js-cookie' // Import js-cookie
 // Base Axios Client
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:5031/api', // Thay bằng base URL của API bạn
+  baseURL: 'https://localhost:7217/api', // Thay bằng base URL của API bạn
   timeout: 500000, // Giới hạn timeout (ms)
   headers: {
     'Content-Type': 'application/json',

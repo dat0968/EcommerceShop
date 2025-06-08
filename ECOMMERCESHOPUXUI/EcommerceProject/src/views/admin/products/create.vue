@@ -210,7 +210,7 @@ async function submitProduct() {
           throw new Error(`Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`)
         }
       }
-      let hasError = false
+      var hasError = false
       // Kiểm tra ảnh cho từng chi tiết sản phẩm
       product.value.productDetails.forEach((p, index) => {
         if (p.images.length == 0) {

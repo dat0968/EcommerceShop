@@ -1,4 +1,4 @@
-using APIClothesEcommerceShop.Data;
+﻿using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.Repositories.Cart;
 using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Category;
@@ -28,6 +28,7 @@ using APIClothesEcommerceShop.Repositories.Account;
 using Humanizer.Configuration;
 using VNPAY.NET;
 using APIClothesEcommerceShop.Repositories.DbInitializer;
+using APIClothesEcommerceShop.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,7 +42,7 @@ builder.Services.AddDbContext<EcommerceShopContext>(options =>
 // Add services to the container.
 builder.Services.AddControllers(options =>
 {
-    // V� hi?u h�a validate t? ??ng ?? tr�nh th�ng b�o l?i m?c ??nh
+    // Vô hi?u hóa validate t? ??ng ?? tránh thông báo l?i m?c ??nh
     options.ModelValidatorProviders.Clear();
 });
 
@@ -67,7 +68,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", securitySchema);
 
-    #region Format thêm comment lên môi action
+    #region Format thÃªm comment lÃªn mÃ´i action
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
@@ -85,10 +86,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyPolicy", ops =>
     {
-        ops.AllowAnyHeader();
-        ops.AllowAnyMethod();
-        ops.AllowAnyOrigin();
-        ops.SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        ops.WithOrigins("http://localhost:8080", "http://192.168.1.150:8080", "http://localhost:5173") // Thêm IP nội bộ
+           .AllowAnyHeader()
+           .AllowAnyMethod()
+           .AllowCredentials()
+           .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
 builder.Services.AddHttpClient(); 
@@ -116,6 +118,7 @@ builder.Services.AddScoped<IDbInitializer, DbInitializer>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
+
 var SecretKey = builder.Configuration["JWT:SecretKey"];
 var SecretKeyBytes = Encoding.UTF8.GetBytes(SecretKey);
 builder.Services.AddAuthentication(options =>
@@ -160,7 +163,7 @@ app.MapControllers();
 
 app.Run();
 
-#region Func tạo CConstantsL 
+#region Func táº¡o CConstantsL 
 void SeedDatabaes()
 {
     using (var seedScope = app.Services.CreateScope())

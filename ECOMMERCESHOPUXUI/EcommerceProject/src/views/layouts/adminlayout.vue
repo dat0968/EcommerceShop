@@ -94,35 +94,42 @@ onMounted(() => {
           <!-- End XP Logobar -->
 
           <!-- Start XP Navigationbar -->
-          <div class="xp-navigationbar"  >
-            <ul class="xp-vertical-menu"  style="color: black;">
+          <div class="xp-navigationbar">
+            <ul class="xp-vertical-menu" style="color: black;">
               <li>
                 <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
-                  <i class="icon-speedometer"></i><span class="font-color" >Thống kê</span>
+                  <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/Admin/Product">
-                  <i class="icon-speedometer"></i><span>Quản lý sản phẩm</span>
+                  <i class="icon-speedometer"></i><span class="font-color">Quản lý sản phẩm</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/Admin/Order">
-                  <i class="icon-speedometer"></i><span>Quản lý đơn hàng</span>
+                  <i class="icon-speedometer"></i><span class="font-color">Quản lý đơn hàng</span>
                 </RouterLink>
+              </li>
+              <!-- <li>
                 <RouterLink to="/admin/combo">
                   <i class="icon-basket"></i><span class="font-color" >Quản lý combo</span>
                 </RouterLink>
-              </li>
+              </li> -->
               <li>
                 <RouterLink to="/admin/customer">
-                  <i class="icon-people"></i><span class="font-color" >Khách hàng</span>
+                  <i class="icon-people"></i><span class="font-color">Khách hàng</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/admin/staff">
-                  <i class="icon-people"></i><span class="font-color" >Nhân Viên</span>
+                  <i class="icon-people"></i><span class="font-color">Nhân Viên</span>
                 </RouterLink>
+              </li>
+              <li class="nav-item">
+                <router-link to="/admin/chat" >
+                  <i class="bi bi-chat-dots"></i> <span class="font-color">Liên hệ </span>
+                </router-link>
               </li>
             </ul>
           </div>
@@ -433,8 +440,8 @@ svg {
 .xp-vertical-menu li a.router-link-active,
 .xp-vertical-menu li a.router-link-exact-active {
   color: #ffffff;
-  background-image: linear-gradient(to right,#5E72EB,
-  #FF9190);
+  background-image: linear-gradient(to right, #5E72EB,
+      #FF9190);
   border-left: 4px solid #fff;
 }
 
@@ -453,6 +460,7 @@ svg {
   display: inline-block;
   text-align: center;
 }
+
 .font-color {
   color: rgb(70, 12, 12);
   font-weight: bold;

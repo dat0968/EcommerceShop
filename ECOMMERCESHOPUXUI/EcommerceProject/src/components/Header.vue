@@ -72,11 +72,16 @@
                     <div class="col-xl-6 col-lg-7">
                         <nav class="header__menu">
                             <ul>
-                                <li>
-                                    <RouterLink to="/">Trang Chủ</RouterLink>
+                                <li class="nav-item">
+                                    <RouterLink to="/" class="nav-link">Trang Chủ</RouterLink>
                                 </li>
-                                <li>
-                                    <RouterLink to='/Shop'>Cửa Hàng</RouterLink>
+                                <li class="nav-item">
+                                    <RouterLink to='/Shop'class="nav-link">  Cửa Hàng</RouterLink>
+                                </li>
+                                <li class="nav-item">
+                                    <router-link to="/chat" class="nav-link">
+                                         Liên Hệ
+                                    </router-link>
                                 </li>
                             </ul>
                         </nav>
@@ -85,7 +90,7 @@
                         <div class="header__right">
                             <div class="header__right__auth">
                                 <router-link to="/Login" class="text-primary">Đăng nhập</router-link>
-                            <router-link to="/Register" class="text-primary">Đăng ký</router-link>
+                                <router-link to="/Register" class="text-primary">Đăng ký</router-link>
                             </div>
                             <ul class="header__right__widget">
                                 <li><a href="#"><span class="icon_heart_alt"></span>

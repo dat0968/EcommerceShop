@@ -43,18 +43,14 @@
                         <th @click="sortTable('gioiTinh')">Giới Tính <span class="icon-arrow"
                                 :class="{ 'active': sortColumn === 'gioiTinh', 'asc': !sortAsc && sortColumn === 'gioiTinh' }">↑</span>
                         </th>
-                        <th @click="sortTable('ngaySinh')">Ngày Sinh <span class="icon-arrow"
-                                :class="{ 'active': sortColumn === 'ngaySinh', 'asc': !sortAsc && sortColumn === 'ngaySinh' }">↑</span>
-                        </th>
+                    
                         <th @click="sortTable('chucVu')">Chức Vụ <span class="icon-arrow"
                                 :class="{ 'active': sortColumn === 'chucVu', 'asc': !sortAsc && sortColumn === 'chucVu' }">↑</span>
                         </th>
                         <th @click="sortTable('sdt')">SĐT <span class="icon-arrow"
                                 :class="{ 'active': sortColumn === 'sdt', 'asc': !sortAsc && sortColumn === 'sdt' }">↑</span>
                         </th>
-                        <th @click="sortTable('email')">Email <span class="icon-arrow"
-                                :class="{ 'active': sortColumn === 'email', 'asc': !sortAsc && sortColumn === 'email' }">↑</span>
-                        </th>
+                    
                         <th @click="sortTable('tinhTrang')">Tình Trạng <span class="icon-arrow"
                                 :class="{ 'active': sortColumn === 'tinhTrang', 'asc': !sortAsc && sortColumn === 'tinhTrang' }">↑</span>
                         </th>
@@ -74,10 +70,10 @@
                                 }}</span>
                         </td>
                         <td>{{ staffMember.gioiTinh }}</td>
-                        <td>{{ staffMember.ngaySinh ? formatDate(staffMember.ngaySinh) : '' }}</td>
+                   
                         <td>{{ staffMember.tenChucVu }}</td>
                         <td>{{ staffMember.sdt }}</td>
-                        <td>{{ staffMember.email }}</td>
+                
                         <td>
                             <p :class="['status', getStatusClass(staffMember.tinhTrang)]">{{ staffMember.tinhTrang }}
                             </p>

@@ -42,5 +42,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
         
         Task<IActionResult> SendVerificationCode(string email);
         Task<IActionResult> VerifyEmail(string email, string code);
+        Task LoginGoogleCustom(string redirectUri); // API đăng nhập Google mới
+        Task<IActionResult> GoogleResponseCustom();
     }
 }

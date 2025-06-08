@@ -39,9 +39,7 @@
             <th @click="sortTable('gioiTinh')">Giới Tính <span class="icon-arrow"
                 :class="{ 'active': sortColumn === 'gioiTinh', 'asc': !sortAsc && sortColumn === 'gioiTinh' }">↑</span>
             </th>
-            <th @click="sortTable('ngaySinh')">Ngày Sinh <span class="icon-arrow"
-                :class="{ 'active': sortColumn === 'ngaySinh', 'asc': !sortAsc && sortColumn === 'ngaySinh' }">↑</span>
-            </th>
+        
             <th @click="sortTable('sdt')">SĐT <span class="icon-arrow"
                 :class="{ 'active': sortColumn === 'sdt', 'asc': !sortAsc && sortColumn === 'sdt' }">↑</span></th>
             <th @click="sortTable('email')">Email <span class="icon-arrow"
@@ -63,7 +61,7 @@
               <span class="customer-name" @click="showCustomerDetail(customer)">{{ customer.hoTen }}</span>
             </td>
             <td>{{ customer.gioiTinh }}</td>
-            <td>{{ customer.ngaySinh ? formatDate(customer.ngaySinh) : '' }}</td>
+          
             <td>{{ customer.sdt }}</td>
             <td>{{ customer.email }}</td>
             <td>

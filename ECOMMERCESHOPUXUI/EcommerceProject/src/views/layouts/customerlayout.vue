@@ -22,6 +22,8 @@
   import 'owl.carousel'
   import 'jquery.nicescroll'
   import '../../assets/Customer/js/main.js'
+
+  
 </script>
 <template>
   <div>

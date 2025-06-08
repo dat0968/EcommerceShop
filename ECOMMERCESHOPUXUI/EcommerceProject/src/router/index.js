@@ -1,5 +1,4 @@
-
-// Cấu hình router được sửa lỗi
+// Cập nhật file router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 import LayoutCustomer from '../views/layouts/customerlayout.vue'
 import LayoutAdmin from '../views/layouts/adminlayout.vue'
@@ -22,6 +21,9 @@ import ForgotPasswordStaff from '../views/accounts/ForgotPasswordStaff.vue'
 import ResetPasswordCustomer from '../views/accounts/ResetPasswordCustomer.vue'
 import ResetPasswordStaff from '../views/accounts/ResetPasswordStaff.vue'
 import GoogleLoginSuccess from '../views/accounts/GoogleLoginSuccess.vue'
+import CustomerChat from '../views/customer/CustomerChat.vue'
+import StaffChat from '../views/admin/chat/StaffChat.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -36,6 +38,8 @@ const router = createRouter({
         {path: 'cart', name: 'cart', component: cart},
         {path: 'checkout', name: 'checkout', component: checkout},
         {path: 'customer', name: 'CustomerManagement', component: customerManagement},
+        {path: 'chat', name: 'CustomerChat', component: CustomerChat},
+        {path: 'chat/:id', name: 'CustomerChatDetail', component: CustomerChat},
       ]
     },
     {
@@ -48,6 +52,8 @@ const router = createRouter({
         {path: '', name: 'statistics', component: statistics},
         {path: 'customer', name: 'CustomerManagement', component: customerManagement},
         {path: 'staff', name: 'StaffManagement', component: staffManagement},
+        {path: 'chat', name: 'StaffChat', component: StaffChat},
+        {path: 'chat/:id', name: 'StaffChatDetail', component: StaffChat},
       ]
     },
      {

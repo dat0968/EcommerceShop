@@ -1,0 +1,75 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "conversations": {
+      "$conversationId": {
+        // Chỉ khách hàng (maKH) hoặc nhân viên (maNV) trong cuộc trò chuyện được đọc/ghi
+        ".read": "auth != null && (data.child('maKH').val() === auth.uid || data.child('maNV').val() === auth.uid)",
+        ".write": "auth != null && (data.child('maKH').val() === auth.uid || data.child('maNV').val() === auth.uid)",
+        "messages": {
+          "$messageId": {
+            // Đọc: Chỉ người trong cuộc trò chuyện
+            ".read": "auth != null && (get(/databases/$(database)/conversations/$conversationId).child('maKH').val() === auth.uid || get(/databases/$(database)/conversations/$conversationId).child('maNV').val() === auth.uid)",
+            // Ghi: Chỉ người gửi tin nhắn
+            ".write": "auth != null && incomingData().child('nguoiGui').val() === auth.uid"
+          }
+        },
+        "transferHistory": {
+          "$transferId": {
+            ".read": "auth != null && (get(/databases/$(database)/conversations/$conversationId).child('maKH').val() === auth.uid || get(/databases/$(database)/conversations/$conversationId).child('maNV').val() === auth.uid)",
+            ".write": "auth != null && incomingData().child('fromStaffId').val() === auth.uid"
+          }
+        },
+        "unlockHistory": {
+          "$unlockId": {
+            ".read": "auth != null && (get(/databases/$(database)/conversations/$conversationId).child('maKH').val() === auth.uid || get(/databases/$(database)/conversations/$conversationId).child('maNV').val() === auth.uid)",
+            ".write": "auth != null && incomingData().child('staffId').val() === auth.uid"
+          }
+        }
+      }
+    },
+    "userStatus": {
+      "$userId": {
+        // Đọc: Tất cả người dùng đã đăng nhập
+        ".read": "auth != null",
+        // Ghi: Chỉ người dùng sở hữu trạng thái
+        ".write": "auth != null && $userId === auth.uid"
+      }
+    },
+    "calls": {
+      "$callId": {
+        // Chỉ người gọi (callerId) hoặc người nhận (receiverId) được đọc/ghi
+        ".read": "auth != null && (data.child('callerId').val() === auth.uid || data.child('receiverId').val() === auth.uid)",
+        ".write": "auth != null && (data.child('callerId').val() === auth.uid || data.child('receiverId').val() === auth.uid)",
+        "offer": {
+          // Người gọi lưu offer
+          ".read": "auth != null",
+          ".write": "auth != null && data.parent().child('callerId').val() === auth.uid"
+        },
+        "answer": {
+          // Người nhận lưu answer
+          ".read": "auth != null",
+          ".write": "auth != null && data.parent().child('receiverId').val() === auth.uid"
+        },
+        "iceCandidates": {
+          "$iceId": {
+            ".read": "auth != null",
+            ".write": "auth != null"
+          }
+        },
+        "status": {
+          ".read": "auth != null",
+          ".write": "auth != null && (data.parent().child('callerId').val() === auth.uid || data.parent().child('receiverId').val() === auth.uid)"
+        }
+      }
+    },
+    "notifications": {
+      "$userId": {
+        // Chỉ người dùng sở hữu thông báo được đọc/ghi
+        ".read": "auth != null && $userId === auth.uid",
+        ".write": "auth != null"
+      }
+    }
+  }
+}
