@@ -1,5 +1,5 @@
 import axios from 'axios'
-import toastr from 'toastr'
+import Swal from 'sweetalert2'
 import { jwtDecode } from 'jwt-decode'
 import ResponseAPI from '@/models/ResponseAPI'
 import ConfigsRequest from '@/models/ConfigsRequest'
@@ -42,10 +42,11 @@ async function detectAvailableApi(paths = API_PATHS) {
       continue
     }
   }
-  toastr.error(
-    'Không tìm thấy API endpoint khả dụng! Vui lòng kiểm tra lại cấu hình hoặc kết nối mạng.',
-    'Lỗi kết nối API',
-  )
+  Swal.fire({
+    icon: 'error',
+    title: 'Lỗi kết nối',
+    text: 'Không tìm thấy khả dụng! Vui lòng kiểm tra lại cấu hình hoặc kết nối mạng.',
+  })
 
   console.error('Không tìm thấy API endpoint khả dụng!')
   return '' // Trả về chuỗi rỗng nếu không tìm thấy endpoint nào khả dụng

@@ -57,7 +57,7 @@
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 
-import toastr from 'toastr'
+import Swal from 'sweetalert2'
 
 import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
 import CustomerStatisticsResponse from '@/models/dtos/statisticsDtos/customerStatisticsResponse'
@@ -179,7 +179,7 @@ export default {
     }
 
     if (errorMessage !== '') {
-      toastr.error('Hiện không thể load dữ liệu: ' + errorMessage)
+      Swal.fire('Hiện không thể load các dữ liệu dưới', errorMessage, 'error')
       console.warn(errorLogs)
     }
     // Lưu cache với thời gian hết hạn

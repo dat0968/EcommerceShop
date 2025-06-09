@@ -1,5 +1,5 @@
 import { jwtDecode } from 'jwt-decode'
-import toastr from 'toastr'
+import Swal from 'sweetalert2'
 import router from '@/router/index'
 import Cookies from 'js-cookie' // Import js-cookie
 
@@ -59,7 +59,11 @@ const authService = {
     if (!roleUser) {
       if (navigateToError) {
         router.push({ path: '/Error/401' })
-        toastr.error('Bạn không có quyền truy cập trang này.')
+        Swal.fire({
+          icon: 'warning',
+          title: 'Cảnh báo',
+          text: 'Bạn không có quyền thực hiện hành động này.',
+        })
       }
       return false // Không có role, không có quyền truy cập
     }
@@ -81,13 +85,21 @@ const authService = {
           path: '/login',
           state: { from: router.currentRoute.fullPath },
         })
-        toastr.info('Bạn chưa đăng nhập.')
+        Swal.fire({
+          icon: 'info',
+          title: 'Thông báo',
+          text: 'Bạn chưa đăng nhập.',
+        })
         return false
       }
 
       if (navigateToError) {
         router.push({ path: '/Error/401' })
-        toastr.error('Bạn không có quyền truy cập trang này.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: 'Bạn không có quyền truy cập trang này.',
+        })
         return false
       }
 
@@ -95,7 +107,11 @@ const authService = {
     }
 
     if (roleUser === 'Customer' && !isCustomerHasPower) {
-      toastr.warning('Bạn không có quyền thực hiện hành động này.')
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cảnh báo',
+        text: 'Bạn không có quyền thực hiện hành động này.',
+      })
       return false
     }
 
@@ -104,10 +120,18 @@ const authService = {
     if (!hasRequiredRole) {
       if (navigateToError) {
         router.push({ path: '/Error/403' })
-        toastr.error('Bạn không có quyền truy cập trang này.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: 'Bạn không có quyền truy cập trang này.',
+        })
         return false
       }
-      toastr.warning('Bạn không có quyền truy cập.')
+      Swal.fire({
+        icon: 'warning',
+        title: 'Cảnh báo',
+        text: 'Bạn không có quyền thực hiện hành động này.',
+      })
       return false
     }
 

@@ -1,4 +1,4 @@
-import toastr from 'toastr'
+import Swal from 'sweetalert2'
 
 class ResponseAPI {
   constructor(
@@ -45,10 +45,12 @@ class ResponseAPI {
     const responseJson = this.fromJson(response) // Tạo instance từ JSON
 
     if (responseJson.success) {
-      if (isShowNotification) toastr.success(responseJson.message || 'Thành công!') // Hiển thị thông báo thành công
+      if (isShowNotification)
+        Swal.fire('Thành công', responseJson.message || 'Hành động thành công', 'success')
       return false // Nếu thành công, trả về "false"
     } else {
-      if (isShowNotification) toastr.info(responseJson.message || 'Thao tác thất bại!') // Hiển thị thông báo thất bại
+      if (isShowNotification)
+        Swal.fire('Thất bại', responseJson.message || 'Thao tác thất bại!', 'info')
       return true // Nếu thất bại, trả về "true"
     }
   }
