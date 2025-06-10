@@ -32,11 +32,10 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
             for (int i = 1; i <= numCreate; i++)
             {
                 // Tạo combo mới
-                var combo = new Combo
+                var combo = new APIClothesEcommerceShop.Models.Combo
                 {
                     TenCombo = $"Combo {i}",
                     Hinh = null,
-                    GiaCombo = 0, // Sẽ tính sau
                     SoLuong = random.Next(5, 20),
                     MoTa = $"Mô tả cho combo {i}",
                     IsActive = true
@@ -63,7 +62,7 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
                 }
 
                 // Gán giá combo là tổng giá các sản phẩm giảm 10%
-                combo.GiaCombo = (int)(tongGia * 0.9);
+                //combo.GiaCombo = (int)(tongGia * 0.9);
 
                 _db.Combos.Add(combo);
             }

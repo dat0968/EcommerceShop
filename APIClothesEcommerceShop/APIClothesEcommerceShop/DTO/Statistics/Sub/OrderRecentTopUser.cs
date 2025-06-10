@@ -9,7 +9,7 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
     {
         public OrderRecentTopUser(
                 int maHd,
-                int maKh,
+                int? maKh,
                 string hoTen,
                 int? maNv,
                 string? maCode,
@@ -39,7 +39,7 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
             TienGoc = tienGoc;
         }
         public int MaHd { get; set; }
-        public int MaKh { get; set; }
+        public int? MaKh { get; set; }
         public string HoTen { get; set; } = null!;
         public int? MaNv { get; set; }
         public string? MaCode { get; set; }

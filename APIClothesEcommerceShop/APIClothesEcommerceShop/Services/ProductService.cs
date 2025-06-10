@@ -48,8 +48,8 @@ namespace APIClothesEcommerceShop.Services
                     var NewProductDetail = new Chitietsanpham
                     {
                         MaSp = NewProduct.MaSp,
-                        KichThuoc = productdetail.KichThuoc,
-                        MauSac = productdetail.MauSac,
+                        KichThuoc = string.IsNullOrEmpty(productdetail.KichThuoc) == false ? productdetail.KichThuoc : null,
+                        MauSac = string.IsNullOrEmpty(productdetail.MauSac) == false ? productdetail.MauSac : null,
                         SoLuongTon = productdetail.SoLuongTon,
                         DonGia = productdetail.DonGia,
                         IsActive = true

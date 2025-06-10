@@ -49,7 +49,7 @@ public partial class EcommerceShopContext : DbContext
     public virtual DbSet<Refreshtoken> Refreshtokens { get; set; }
 
     public virtual DbSet<Sanpham> Sanphams { get; set; }
-
+    public virtual DbSet<Chitietcombo> Chitietcombos { get; set; }
     public virtual DbSet<DanhGia> DanhGias { get; set; }
 
     // ? public virtual DbSet<BinhLuan> BinhLuans { get; set; }
@@ -198,7 +198,8 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("GIOHANG");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                //.ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("ID");
             entity.Property(e => e.MaCtsp).HasColumnName("MaCTSP");
             entity.Property(e => e.MaKh).HasColumnName("MaKH");
@@ -440,7 +441,6 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("CHITIETCOMBO");
 
             entity.Property(e => e.MaSp).HasColumnName("MaSP");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
         /* ? modelBuilder.Entity<YeuThich>()

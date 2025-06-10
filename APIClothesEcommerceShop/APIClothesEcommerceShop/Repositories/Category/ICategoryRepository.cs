@@ -1,12 +1,17 @@
-﻿using APIClothesEcommerceShop.DTO;
-using APIClothesEcommerceShop.DTO.Categories;
+using APIClothesEcommerceShop.DTO.Category;
 using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.Repositories.Repository;
+using APIClothesEcommerceShop.DTO.Category.CategoryParent;
+using APIClothesEcommerceShop.DTO.Category.CategoryChild;
+using APIClothesEcommerceShop.DTO.Category.CategoryDetail;
 
 namespace APIClothesEcommerceShop.Repositories.Category
 {
     public interface ICategoryRepository : IRepository<Danhmuccha>
     {
+        Task<List<Danhmuccha>> GetCategories();
+        Task<List<CategoryResponseDTO>> GetAllBigCategories();
         // Lấy toàn bộ dữ liệu 
         Task<ResponseAPI<List<CategoryResponseDTO>>> GetAllCategoriesAsync();
         // Danh mục cha

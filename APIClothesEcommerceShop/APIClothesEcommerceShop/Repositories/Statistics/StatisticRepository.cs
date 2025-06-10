@@ -269,7 +269,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                             .Take(3)
                             .Select(o => new OrderRecentTopUser(
                                 o.MaHd,
-                                o.MaKh ?? 0,
+                                o.MaKh != null ? o.MaKh.Value : null,
                                 o.MaKhNavigation?.HoTen ?? "N/A",
                                 o.MaNv,
                                 o.MaCode,
@@ -604,7 +604,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     {
                         c.MaCombo,
                         c.TenCombo,
-                        c.GiaCombo,
+                        //c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
@@ -618,14 +618,14 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 }
 
                 // Khởi tạo thông tin thống kê
-                response.Data = new ComboStatisticsResponse
-                {
-                    TotalCombos = data.Count,
-                    TotalActiveCombos = data.Count(x => x.IsActive ?? false),
-                    TotalInactiveCombos = data.Count(x => !(x.IsActive ?? false)),
-                    TotalComboRevenue = data.Sum(x => x.Revenue),
-                    AverageComboPrice = data.Count > 0 ? data.Sum(x => x.GiaCombo) / data.Count : 0
-                };
+                //response.Data = new ComboStatisticsResponse
+                //{
+                //    TotalCombos = data.Count,
+                //    TotalActiveCombos = data.Count(x => x.IsActive ?? false),
+                //    TotalInactiveCombos = data.Count(x => !(x.IsActive ?? false)),
+                //    TotalComboRevenue = data.Sum(x => x.Revenue),
+                //    AverageComboPrice = data.Count > 0 ? data.Sum(x => x.GiaCombo) / data.Count : 0
+                //};
 
                 response.SetSuccessResponse();
             }
@@ -652,7 +652,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     {
                         c.MaCombo,
                         c.TenCombo,
-                        c.GiaCombo,
+                        //c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
@@ -780,6 +780,43 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             {
                 Console.WriteLine($"Lỗi khi lấy dữ liệu nhân viên: {ex.Message}");
                 data = new List<Nhanvien>();
+            }
+            return data;
+        }
+        private async Task<List<APIClothesEcommerceShop.Models.Combo>> GetCombosAsync()
+        {
+            List<APIClothesEcommerceShop.Models.Combo> data = new();
+            try
+            {
+                data = await _context.Combos
+                                .Include(x => x.Chitietcombohoadons)
+                                    .ThenInclude(x => x.MaHdNavigation)
+                                .Include(x => x.Chitietcombohoadons)
+                                    .ThenInclude(x => x.MaComboNavigation)
+                                .AsNoTracking().ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi lấy dữ liệu combo: {ex.Message}");
+                data = new List<APIClothesEcommerceShop.Models.Combo>();
+            }
+            return data;
+        }
+
+        private async Task<List<Chitietcombohoadon>> GetChitietcombohoadonsAsync()
+        {
+            List<Chitietcombohoadon> data = new();
+            try
+            {
+                data = await _context.Chitietcombohoadons
+                                .Include(x => x.MaComboNavigation)
+                                .Include(x => x.MaHdNavigation)
+                                .AsNoTracking().ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Lỗi khi lấy dữ liệu chi tiết combo hóa đơn: {ex.Message}");
+                data = new List<Chitietcombohoadon>();
             }
             return data;
         }

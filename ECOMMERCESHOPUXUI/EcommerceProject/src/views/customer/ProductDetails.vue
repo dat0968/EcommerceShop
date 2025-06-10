@@ -1,22 +1,26 @@
 <script setup>
-
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
-
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
+import Swal from 'sweetalert2'
 const route = useRoute()
-const getUrlAPI = ref('https://localhost:7217/api')
+const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
 const product = ref({})
 const allImages = ref([])
-const maxSlide = ref(1)
 const currentSlider = ref(1)
 const colors = ref([])
-const sizes = ref([])
-const selectedColor = ref(0) 
-const selectedSize = ref(0) 
+const selectedColor = ref('')
+const selectedSize = ref('')
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+const router = useRouter()
+const quantity = ref(1)
 // Call Api ProductDetails
 const fetchAPI = async () => {
-  const response = await fetch(`${getUrlAPI.value}/Shop/Product/${id}`, {
+  const response = await fetch(`${getUrlAPI.value}/api/Shop/Product/${id}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -33,14 +37,54 @@ const fetchAPI = async () => {
     })
   })
 
-  product.value.productDetails.forEach((element) => {
-    colors.value.push(element.mauSac)
-  })
+  // Xử lý moTa để thêm xuống dòng và định dạng
+  if (product.value.moTa) {
+    product.value.moTa = product.value.moTa
+      .replace(/\*\*([^*]+)\*\*/g, '<br><strong>$1</strong><br>') // Chuyển **...** thành <strong> và thêm <br> trước/sau
+      .replace(/\n/g, '<br>') // Chuyển các ký tự xuống dòng \n thành <br>
+  }
+  colors.value = [
+    ...new Set(
+      product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== '')
+    ),
+  ]
 
-  product.value.productDetails.forEach((element) => {
-    sizes.value.push(element.kichThuoc)
-  })
+  selectedColor.value = colors.value[0]
 }
+const sizes = computed(() => {
+  if (!product.value || !product.value.productDetails) return []
+
+  const filtered = product.value.productDetails
+    .filter((p) => p.mauSac && p.mauSac.toLowerCase() === selectedColor.value.toLowerCase())
+    .map((p) => p.kichThuoc)
+  return [...new Set(filtered)]
+})
+
+watch(sizes, (newSizes) => {
+  if (newSizes.length > 0) {
+    selectedSize.value = newSizes[0]
+  }
+})
+const originalPrice = computed(() => {
+  if (!product.value || !product.value.productDetails) return 0
+  var match = product.value.productDetails.find(
+    (p) =>
+      (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+  )
+  return match ? match.donGia : 0
+})
+
+const maxQuantity = computed(() => {
+  if (!product.value || !product.value.productDetails) return 0
+  var match = product.value.productDetails.find(
+    (p) =>
+      (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+  )
+  quantity.value = 1
+  return match ? match.soLuongTon : 'Hết hàng'
+})
 
 const chunkSize = 4
 const slideChunks = computed(() => {
@@ -50,8 +94,8 @@ const slideChunks = computed(() => {
   }
   return chunks
 })
-maxSlide.value = computed(() => slideChunks.value.length)
 
+const maxSlide = computed(() => slideChunks.value.length || 1)
 const prevImage = () => {
   currentSlider.value = currentSlider.value === 1 ? maxSlide.value : currentSlider.value - 1
 }
@@ -60,23 +104,44 @@ const nextImage = () => {
   currentSlider.value = currentSlider.value === maxSlide.value ? 1 : currentSlider.value + 1
 }
 
-
-
-
- 
-
 const selectColor = (color) => {
-  selectedColor.value = color 
+  selectedColor.value = color
 }
-
 
 const selectSize = (size) => {
-  selectedSize.value = size 
+  selectedSize.value = size
 }
 const currentImage = ref(1)
-
+const showMainImage = computed(() => {
+  if (!product.value || !product.value.productDetails) return 0
+  var match = product.value.productDetails.find(
+    (p) =>
+      (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+  )
+  var maCtsp = match.maCtsp
+  return allImages.value.findIndex((p) => p.maCtsp == maCtsp) + 1
+})
+// Đồng bộ giá trị mỗi khi showMainImage thay đổi
+watch(showMainImage, (newIndex) => {
+  currentImage.value = newIndex
+})
+const isLogin = computed(() => {
+  if (accessToken.value != undefined && accessToken.value != '') {
+    return true
+  }
+  return false
+})
+console.log(accessToken.value)
 onMounted(() => {
   fetchAPI()
+  fetchRcmProduct()
+  // Cuộn lên đầu trang
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth', // Cuộn mượt mà
+  })
+
   // Initialize Owl Carousel
   const owl = $('.product__details__pic__slider').owlCarousel({
     items: 1,
@@ -106,6 +171,118 @@ const changeImage = (index) => {
   currentImage.value = index
   $('.product__details__pic__slider').trigger('to.owl.carousel', [index - 1, 300])
 }
+const validateQuantity = () => {
+  const number = parseInt(quantity.value)
+  if (isNaN(number) || number < 1) {
+    quantity.value = '1'
+  } else if (number > maxQuantity.value) {
+    quantity.value = maxQuantity.value.toString()
+  } else {
+    quantity.value = number.toString()
+  }
+}
+const addToCart = async () => {
+  try {
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (!validatetoken.isValid) {
+      router.push('/Login')
+      return
+    } else {
+      accessToken.value = validatetoken.newAccessToken
+      const readToken = decodeToken(accessToken.value)
+      const matched = product.value.productDetails.find(
+        (p) =>
+          p.mauSac?.toLowerCase() === selectedColor.value?.toLowerCase() &&
+          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase()
+      )
+
+      const content = {
+        maKh: readToken.IdUser,
+        maCtsp: matched.maCtsp,
+        maCombo: null,
+        soLuong: quantity.value,
+        donGia: matched.donGia,
+        tenHinhAnh: allImages.value[currentImage.value - 1]?.tenHinhAnh || '',
+        giohangctcombos: [],
+      }
+      const response = await fetch(`${getUrlAPI.value}/api/Cart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(content),
+      })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        Swal.fire({
+          title: result.error || 'Đã xảy ra lỗi',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+        return
+      }
+
+      if (result.success) {
+        Swal.fire({
+          title: 'Đã thêm sản phẩm vào giỏ hàng.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+      }
+    }
+  } catch (error) {
+    Swal.fire({
+      title: `${error.message}`,
+      icon: 'error',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+  }
+}
+
+const recommendationProduct = ref([])
+const fetchRcmProduct = async () => {
+  
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid) {
+    accessToken.value = validatetoken.newAccessToken
+    const readToken = decodeToken(accessToken.value)
+    const response = await fetch(
+      `${getUrlAPI.value}/api/Home/RecommendationProduct?UserId=${readToken.IdUser}&maSp=${id}&numberOfRecommendations=8`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    
+    if (!response.ok) {
+      throw new Error('Error to fetchRecommendationProducts')
+    }
+    const result = await response.json()
+    recommendationProduct.value = result
+    console.log(recommendationProduct.value)
+  }
+}
+
+watch(
+  () => route.params.id,
+  async () => {
+    allImages.value = [];
+    selectedColor.value = '';
+    selectedSize.value = '';
+    quantity.value = 1;
+    currentSlider.value = 1;
+    currentImage.value = 1;
+    await fetchAPI();
+  }
+)
 </script>
 <template>
   <div>
@@ -115,16 +292,17 @@ const changeImage = (index) => {
         <div class="row">
           <div class="col-lg-6">
             <div class="product__details__pic">
-              <div style="position: relative" class="product__details__slider__content">
+              <div
+                style="position: relative; margin-bottom: 20px"
+                class="product__details__slider__content"
+              >
                 <div class="product__details__pic__slider owl-carousel">
                   <div v-for="(image, index) in allImages" :key="index">
                     <img
                       v-if="index + 1 == currentImage"
                       :data-hash="`product-${index}`"
                       class="product__big__img"
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                        image.tenHinhAnh
-                      }`"
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
                       alt=""
                     />
                   </div>
@@ -133,7 +311,7 @@ const changeImage = (index) => {
               <!-- Thumbnail ảnh nhỏ nằm dưới ảnh lớn -->
               <div
                 class="product__details__thumbnails d-flex justify-content-center col-lg-6"
-                style="max-width: 100%; display: flex; justify-content: center"
+                style="max-width: 100%; display: flex; justify-content: center; margin: 20px"
               >
                 <div class="carousel slide w-100">
                   <div class="carousel-inner">
@@ -193,19 +371,19 @@ const changeImage = (index) => {
           <div class="col-lg-6">
             <div class="product__details__text">
               <h3>
-                {{ product.tenSanPham }} <span>Số lượng: {{ 0 }}</span>
+                {{ product.tenSanPham }} <span>Còn: {{ maxQuantity }} sản phẩm</span>
               </h3>
-              <div class="product__details__price">{{ 0 }}</div>
+              <div class="product__details__price">{{ originalPrice }}</div>
               <div class="product__details__button">
                 <div class="quantity">
-                  <span>Số lượng: {{ 0 }}</span>
+                  <span>Số lượng:</span>
                   <div class="pro-qty">
-                    <input type="text" value="1" />
+                    <input v-model="quantity" @input="validateQuantity" type="text" value="1" />
                   </div>
                 </div>
-                <a style="text-decoration-line: none" href="#" class="cart-btn"
-                  ><span class="icon_bag_alt"></span> Thêm giỏ hàng</a
-                >
+                <button @click="addToCart" class="cart-btn">
+                  <span class="icon_bag_alt"></span> Thêm giỏ hàng
+                </button>
                 <ul>
                   <li>
                     <a href="#"><span class="icon_heart_alt"></span></a>
@@ -217,13 +395,13 @@ const changeImage = (index) => {
               </div>
               <div class="product__details__widget">
                 <ul>
-                  <li style="display: flex; align-items: center">
+                  <li style="display: flex; align-items: center" v-if="colors.length > 0">
                     <span style="min-width: 120px">Màu:</span>
                     <div class="color__checkbox" style="display: flex; gap: 8px">
                       <button
                         v-for="(color, index) in colors"
                         :key="index"
-                        :class="['btn', 'btn-light', { active: selectedColor === index }]"
+                        :class="['btn', 'btn-light', { active: selectedColor === color }]"
                         @click="selectColor(color)"
                         style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
                       >
@@ -231,13 +409,13 @@ const changeImage = (index) => {
                       </button>
                     </div>
                   </li>
-                  <li style="display: flex; align-items: center">
+                  <li style="display: flex; align-items: center" v-if="sizes.length > 0">
                     <span style="min-width: 120px">Kích thước:</span>
                     <div class="size__checkbox" style="display: flex; gap: 8px">
                       <button
                         v-for="(size, index) in sizes"
                         :key="index"
-                        :class="['btn', 'btn-light', { active: selectedSize === index }]"
+                        :class="['btn', 'btn-light', { active: selectedSize === size }]"
                         @click="selectSize(size)"
                         style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
                       >
@@ -258,30 +436,38 @@ const changeImage = (index) => {
               </ul>
               <div class="tab-content">
                 <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                  <p>
-                    {{ product.moTa }}
-                  </p>
+                  <p v-html="product.moTa"></p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="row">
+        <div v-if="isLogin" class="row">
           <div class="col-lg-12 text-center">
             <div class="related__title">
-              <h5>RELATED PRODUCTS</h5>
+              <h5>GỢI Ý CHO BẠN</h5>
             </div>
           </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
+          <div
+            v-for="item in recommendationProduct"
+            :key="item.maSp"
+            class="col-lg-3 col-md-4 col-sm-6"
+          >
             <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-1.jpg">
-                <div class="label new">New</div>
+              <div
+                class="product__item__pic set-bg"
+                :data-setbg="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                  item.productDetails[0].images[0].tenHinhAnh
+                }`"
+              >
+                <img
+                  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                    item.productDetails[0].images[0].tenHinhAnh
+                  }`"
+                  class="image-popup"
+                  style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px"
+                /><span class="arrow_expand"></span>
                 <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-1.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
                   <li>
                     <a href="#"><span class="icon_heart_alt"></span></a>
                   </li>
@@ -291,106 +477,21 @@ const changeImage = (index) => {
                 </ul>
               </div>
               <div class="product__item__text">
-                <h6><a href="#">Buttons tweed blazer</a></h6>
-                <div class="rating">
+                <h6>
+                  <router-link
+                    :to="`/product/${item.maSp}`"
+                    style="text-decoration-line: none"        
+                    >{{ item.tenSanPham }}</router-link
+                  >
+                </h6>
+                <!-- <div class="rating">
                   <i class="fa fa-star"></i>
                   <i class="fa fa-star"></i>
                   <i class="fa fa-star"></i>
                   <i class="fa fa-star"></i>
                   <i class="fa fa-star"></i>
-                </div>
-                <div class="product__price">$ 59.0</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-2.jpg">
-                <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-2.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_bag_alt"></span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="product__item__text">
-                <h6><a href="#">Flowy striped skirt</a></h6>
-                <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                </div>
-                <div class="product__price">$ 49.0</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-3.jpg">
-                <div class="label stockout">out of stock</div>
-                <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-3.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_bag_alt"></span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="product__item__text">
-                <h6><a href="#">Cotton T-Shirt</a></h6>
-                <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                </div>
-                <div class="product__price">$ 59.0</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-4.jpg">
-                <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-4.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_bag_alt"></span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="product__item__text">
-                <h6><a href="#">Slim striped pocket shirt</a></h6>
-                <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                </div>
-                <div class="product__price">$ 59.0</div>
+                </div> -->
+                <div style="color: red" class="product__price">{{ item.khoangGia }}</div>
               </div>
             </div>
           </div>

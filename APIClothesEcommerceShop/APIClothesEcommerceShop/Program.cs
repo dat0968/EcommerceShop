@@ -3,11 +3,13 @@ using APIClothesEcommerceShop.Repositories.Cart;
 using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.CategoryDetails;
+using APIClothesEcommerceShop.Repositories.Coupon;
 using APIClothesEcommerceShop.Repositories.Customer;
 using APIClothesEcommerceShop.Repositories.ImageProduct;
 using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Repositories.OrderComboDetails;
 using APIClothesEcommerceShop.Repositories.OrderDetails;
+using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
 using APIClothesEcommerceShop.Services;
@@ -31,6 +33,9 @@ using APIClothesEcommerceShop.Repositories.DbInitializer;
 using APIClothesEcommerceShop.Repositories.Home;
 using APIClothesEcommerceShop.Services.EmailService.GoogleSenderService;
 using APIClothesEcommerceShop.Services.EmailService;
+using APIClothesEcommerceShop.Repositories.Combo;
+using APIClothesEcommerceShop.Repositories.Combos;
+using APIClothesEcommerceShop.Repositories.DetailCombo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +47,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_Dot"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
 });
 
 // Add services to the container.
@@ -110,6 +115,10 @@ builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>(
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<MLRecommendationSystem>();
+builder.Services.AddScoped<ComboService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IVnpay, Vnpay>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();
@@ -118,12 +127,15 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
+builder.Services.AddScoped<IMaCouponRepository, MaCouponRepository>();
 #endregion
 
 #region [Dependency Injection cho các repository]
+builder.Services.AddScoped<IComboRepository, ComboRepository>();
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+builder.Services.AddScoped<IDetailCombo, DetailCombo>();
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -171,6 +183,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

@@ -83,7 +83,6 @@ const fetchAPINewProduts = async () => {
   }
   const result = await response.json()
   ListNewProducts.value = result
-  console.log(ListNewProducts.value)
 }
 
 const fetchAPIBestSellerProduts = async () => {
@@ -98,8 +97,6 @@ const fetchAPIBestSellerProduts = async () => {
   }
   const result = await response.json()
   ListBestSellerProducts.value = result
-
-  console.log(ListBestSellerProducts.value)
 }
 
 const fetchAPIHotProduts = async () => {
@@ -114,8 +111,6 @@ const fetchAPIHotProduts = async () => {
   }
   const result = await response.json()
   ListBestHotProducts.value = result
-
-  console.log(ListBestSellerProducts.value)
 }
 
 onMounted(() => {
@@ -255,7 +250,12 @@ onMounted(() => {
               </div>
               <div class="product__item__text">
                 <h6>
-                  <a style="text-decoration-line: none" href="#">{{ item.tenSanPham }}</a>
+                  <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none">
+                    {{ item.tenSanPham }}
+                    <div class="product__price text-muted fw-semibold fs-6 text-danger">
+                      {{ item.khoangGia }}
+                    </div>
+                  </router-link>
                 </h6>
                 <!-- <div class="rating">
                   <i class="fa fa-star"></i>
@@ -264,9 +264,6 @@ onMounted(() => {
                   <i class="fa fa-star"></i>
                   <i class="fa fa-star"></i>
                 </div> -->
-                <div class="product__price text-muted fw-semibold fs-6 text-danger">
-                  {{ item.khoangGia }}
-                </div>
               </div>
             </div>
           </div>
@@ -328,11 +325,18 @@ onMounted(() => {
                     class="img-fluid"
                   />
                 </div>
-                <div class="trend__item__text">
-                  <h6>{{ item.tenSanPham }}</h6>
-                  <div class="product__price text-danger fw-semibold fs-7">
-                    {{ item.khoangGia }}
-                  </div>
+                <div class="trend__item__text text-center mt-2">
+                  <h6>
+                    <router-link
+                      :to="`/product/${item.maSp}`"
+                      style="text-decoration-line: none; color: black"
+                    >
+                      {{ item.tenSanPham }}
+                      <div class="product__price text-danger fw-semibold fs-7">
+                        {{ item.khoangGia }}
+                      </div>
+                    </router-link>
+                  </h6>
                 </div>
               </div>
             </div>
@@ -354,10 +358,17 @@ onMounted(() => {
                   />
                 </div>
                 <div class="trend__item__text text-center mt-2">
-                  <h6 class="mb-1">{{ item.tenSanPham }}</h6>
-                  <div class="product__price text-danger fw-semibold fs-7">
-                    {{ item.khoangGia }}
-                  </div>
+                  <h6>
+                    <router-link
+                      :to="`/product/${item.maSp}`"
+                      style="text-decoration-line: none; color: black"
+                    >
+                      {{ item.tenSanPham }}
+                      <div class="product__price text-danger fw-semibold fs-7">
+                        {{ item.khoangGia }}
+                      </div>
+                    </router-link>
+                  </h6>
                 </div>
               </div>
             </div>
@@ -372,7 +383,7 @@ onMounted(() => {
                 <div class="trend__item__pic">
                   <img src="../../assets/img/trend/f-1.jpg" alt="" class="img-fluid" />
                 </div>
-                <div class="trend__item__text text-center">
+                <div class="trend__item__text text-center mt-2">
                   <h6 class="mb-1">Bow wrap skirt</h6>
                   <!-- <div class="rating">
                     <i class="fa fa-star"></i>
@@ -533,3 +544,4 @@ onMounted(() => {
   }
 }
 </style>
+

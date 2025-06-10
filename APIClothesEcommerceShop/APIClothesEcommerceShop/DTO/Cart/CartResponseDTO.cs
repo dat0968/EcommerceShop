@@ -10,12 +10,17 @@ namespace APIClothesEcommerceShop.DTO.Cart
         public int MaKh { get; set; }
 
         public int? MaCtsp { get; set; }
+        public string? TenSanPham { get; set; }
+        public string? KichThuoc { get; set; }
+        public string? Mau { get; set; }
 
         public int? MaCombo { get; set; }
 
         public int SoLuong { get; set; }
+        public int SoLuongToiDa { get; set; }
 
         public int DonGia { get; set; }
+        public string TenHinhAnh { get; set; }
 
         public virtual ICollection<Cart_DetailsComboResponseDTO> Giohangctcombos { get; set; } = new List<Cart_DetailsComboResponseDTO>();
     }

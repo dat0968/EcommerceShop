@@ -29,6 +29,7 @@ namespace APIClothesEcommerceShop.Services
                     SoLuong = model.SoLuong,
                     DonGia = model.DonGia,
                     MaKh = model.MaKh,
+                    TenHinhAnh = model.TenHinhAnh,
                 };
                 NewCart = await cartRepository.AddCart(NewCart);
                 if (model.MaCombo  != null)
@@ -52,7 +53,7 @@ namespace APIClothesEcommerceShop.Services
             }catch (Exception ex)
             {
                 await db.Database.RollbackTransactionAsync();
-                throw new Exception("Error", ex);
+                throw new Exception(ex.Message, ex);
             }          
         }
         public async Task UpdateToCart(int id, CartRequestDTO model)
@@ -84,7 +85,7 @@ namespace APIClothesEcommerceShop.Services
             catch (Exception ex)
             {
                 await db.Database.RollbackTransactionAsync();
-                throw new Exception("Error", ex);
+                throw new Exception(ex.Message, ex);
             }
         }
 

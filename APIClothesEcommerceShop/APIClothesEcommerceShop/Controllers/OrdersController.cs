@@ -36,5 +36,23 @@ namespace APIClothesEcommerceShop.Controllers
             }
             
         }
+        [HttpPut]
+        public async Task<IActionResult> Update(int id, string status, int MaNv, string paymentmethod, string? reasonCancel)
+        {
+            try
+            {
+                await orderRepository.UpdateStatusOrders(id, status, MaNv, paymentmethod, reasonCancel);
+                return Ok(new
+                {
+                    Success = true,
+                    Message = "Cập nhật trạng thái đơn hàng thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
+
+        }
     }
 }

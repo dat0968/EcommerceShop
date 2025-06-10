@@ -17,7 +17,7 @@ const categorySmallSelected = ref('')
 const sortByPrice = ref('')
 const filterPrice = ref('')
 const fetchBigCategories = async () => {
-  const fetchAPI = await fetch(`${getUrlAPI.value}/Categories/GetAllCategories`, {
+  const fetchAPI = await fetch(`${getUrlAPI.value}/Categories/GetCategoriesforShop`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ const fetchBigCategories = async () => {
     throw new Error('Failed to fetch')
   }
   const result = await fetchAPI.json()
-  listCategories.value = result.listBigCategories
+  listCategories.value = result
 }
 const fetchAPIProducts = async () => {
   try {
@@ -101,7 +101,7 @@ onMounted(() => {
         <div class="row">
           <div class="col-lg-12">
             <div class="breadcrumb__links">
-              <a href="./index.html"><i class="fa fa-home"></i> Trang chủ</a>
+              <RouterLink style="text-decoration-line: none;" to="/"><i class="fa fa-home"></i> Trang chủ</RouterLink>
               <span>Sản phẩm</span>
             </div>
           </div>

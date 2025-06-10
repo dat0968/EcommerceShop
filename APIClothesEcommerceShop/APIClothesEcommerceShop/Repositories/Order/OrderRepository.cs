@@ -111,7 +111,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
             var ListOrder = await db.Hoadons.AsNoTracking().Select(order => new OrderResponseDTO
             {
                 MaHd = order.MaHd,
-                MaKh = order.MaKh.Value,
+                MaKh = order.MaKh != null ? order.MaKh.Value : null,
                 MaNv = order.MaNv,
                 TenNv = order.MaNvNavigation != null ? order.MaNvNavigation.HoTen : null,
                 MaCode = order.MaCode,

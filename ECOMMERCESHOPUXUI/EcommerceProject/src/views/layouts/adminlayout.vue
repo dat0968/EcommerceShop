@@ -134,12 +134,17 @@ onMounted(() => {
               </li>
               <li>
                 <RouterLink to="/Admin/Product">
-                  <i class="icon-speedometer"></i><span>Quản lý sản phẩm</span>
+                  <i class="icon-bag"></i><span class="font-color">Quản lý sản phẩm</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/Admin/Order">
+                  <i class="icon-notebook"></i><span class="font-color">Quản lý đơn hàng</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/Admin/Category">
-                  <i class="icon-notebook"></i><span>Quản lý danh mục</span>
+                  <i class="icon-list"></i><span class="font-color">Quản lý danh mục</span>
                 </RouterLink>
               </li>
               <li>
@@ -155,6 +160,11 @@ onMounted(() => {
               <li>
                 <RouterLink to="/admin/staff">
                   <i class="icon-people"></i><span class="font-color">Nhân Viên</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/admin/coupon">
+                  <i class="icon-people"></i><span class="font-color">Coupon</span>
                 </RouterLink>
               </li>
               <li>
@@ -322,7 +332,7 @@ onMounted(() => {
           <!-- End XP Row -->
         </div>
         <!-- End XP Topbar -->
-        <!-- 
+        <!--
         <statistics /> -->
         <router-view />
       </div>

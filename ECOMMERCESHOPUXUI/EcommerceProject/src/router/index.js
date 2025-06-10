@@ -6,6 +6,7 @@ import home from '../views/customer/Home.vue'
 import shop from '../views/customer/Shop.vue'
 import detailProduct from '../views/customer/ProductDetails.vue'
 import detailCombo from '../views/customer/ComboDetails.vue'
+import Combo from '../views/admin/Combo/Index.vue'
 import cart from '../views/customer/Cart.vue'
 import checkout from '../views/customer/Checkout.vue'
 import statistics from '../views/admin/statistics/statistics.vue'
@@ -22,6 +23,7 @@ import ForgotPasswordStaff from '../views/accounts/ForgotPasswordStaff.vue'
 import ResetPasswordCustomer from '../views/accounts/ResetPasswordCustomer.vue'
 import ResetPasswordStaff from '../views/accounts/ResetPasswordStaff.vue'
 import GoogleLoginSuccess from '../views/accounts/GoogleLoginSuccess.vue'
+import couponManagement from '../views/admin/Coupon/indexCoupon.vue'
 import Review from '@/views/admin/reviews/IndexReview.vue'
 import CustomerReview from '@/views/customer/CustomerReview.vue'
 const router = createRouter({
@@ -49,10 +51,12 @@ const router = createRouter({
         { path: '/Admin/Product', name: products, component: products },
         { path: '/Admin/Category', name: CategoryIndex, component: CategoryIndex },
         { path: '/Admin/Order', name: orders, component: orders },
+        { path: '/Admin/Combo', name: Combo, component: Combo },
         { path: '/Admin/Review', name: Review, component: Review },
         { path: '', name: 'statistics', component: statistics },
         { path: 'customer', name: 'CustomerManagement', component: customerManagement },
         { path: 'staff', name: 'StaffManagement', component: staffManagement },
+        { path: 'coupon', name: 'couponManagement', component: couponManagement },
       ],
     },
     {

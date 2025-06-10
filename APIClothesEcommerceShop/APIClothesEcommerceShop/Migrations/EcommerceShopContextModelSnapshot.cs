@@ -31,30 +31,13 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<int>("MaCombo")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
                     b.Property<int>("MaComboNavigationMaCombo")
                         .HasColumnType("int");
 
                     b.Property<int>("MaSpNavigationMaSp")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("NgayBatDau")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("NgayKetThuc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("PhanTramGiam")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("SoLuong")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SoTienGiam")
+                    b.Property<int>("SoLuongSP")
                         .HasColumnType("int");
 
                     b.HasKey("MaSp", "MaCombo");
@@ -192,9 +175,6 @@ namespace APIClothesEcommerceShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaCombo"));
 
-                    b.Property<int>("GiaCombo")
-                        .HasColumnType("int");
-
                     b.Property<string>("Hinh")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -207,8 +187,20 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<string>("MoTa")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("NgayBatDau")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("NgayKetThuc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<float?>("PhanTramGiam")
+                        .HasColumnType("real");
+
                     b.Property<int>("SoLuong")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("SoTienGiam")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("TenCombo")
                         .IsRequired()
@@ -367,8 +359,11 @@ namespace APIClothesEcommerceShop.Migrations
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Giohang", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("ID");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DonGia")
                         .HasColumnType("int");
@@ -386,6 +381,10 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.Property<int>("SoLuong")
                         .HasColumnType("int");
+
+                    b.Property<string>("TenHinhAnh")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id")
                         .HasName("PK__GIOHANG__3214EC27D6272CAB");
