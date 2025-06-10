@@ -56,10 +56,6 @@ async function detectAvailableApi(paths = API_PATHS) {
 const axiosClient = axios.create({
   baseURL: localStorage.getItem('apiBaseUrl') ?? API_PATHS[0],
   timeout: 500000,
-  // Đừng set Content-Type mặc định ở đây!
-  // headers: {
-  //   'Content-Type': 'application/json',
-  // },
 })
 
 // Hàm khởi tạo baseURL động
