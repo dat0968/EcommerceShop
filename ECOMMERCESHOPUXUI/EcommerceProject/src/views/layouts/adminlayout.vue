@@ -157,6 +157,11 @@ onMounted(() => {
                   <i class="icon-people"></i><span class="font-color">Nhân Viên</span>
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink to="/Admin/Review">
+                  <i class="icon-star"></i><span class="font-color">Đánh giá</span>
+                </RouterLink>
+              </li>
             </ul>
           </div>
           <!-- End XP Navigationbar -->

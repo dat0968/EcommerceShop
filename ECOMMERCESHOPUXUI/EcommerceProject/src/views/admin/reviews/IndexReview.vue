@@ -283,17 +283,28 @@ export default {
       const detailsHtml = `
       <div class="container-fluid">
           <div class="row p-3">
-              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Tên sản phẩm:</strong> ${evaluation.tenSanPham}</p>
-              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Mã khách hàng:</strong> ${evaluation.maKh}</p>
-              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Email:</strong> ${evaluation.email}</p>
-              <p class="col-lg-3 col-md-4 col-sm-6 col-12 p-1"><strong>Số điện thoại:</strong> ${evaluation.soDienThoai}</p>
-              <p class="col-12"><strong>Nội dung đánh giá:</strong> ${evaluation.noiDung}</p>
+              <div class="col-lg-3 col-md-4 col-sm-6 col-12 p-1">
+                  <strong>Tên sản phẩm:</strong> ${evaluation.tenSanPham}
+              </div>
+              <div class="col-lg-3 col-md-4 col-sm-6 col-12 p-1">
+                  <strong>Mã khách hàng:</strong> ${evaluation.maKh}
+              </div>
+              <div class="col-lg-3 col-md-4 col-sm-6 col-12 p-1">
+                  <strong>Email:</strong> ${evaluation.email}
+              </div>
+              <div class="col-lg-3 col-md-4 col-sm-6 col-12 p-1">
+                  <strong>Số điện thoại:</strong> ${evaluation.soDienThoai}
+              </div>
+              <div class="col-12 mt-2">
+                  <strong>Nội dung đánh giá:</strong>
+                  <p>${evaluation.noiDung}</p>
+              </div>
               ${
                 evaluation.shopPhanHoi
-                  ? `<blockquote class="col-12" style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0;">
-                <strong>Phản hồi của shop:</strong> 
-                ${evaluation.shopPhanHoi ? evaluation.shopPhanHoi + '<small class="text-muted"> (' + formatDate(evaluation.ngayPhanHoi) + ')</small>' : 'Chưa có đánh giá'}
-              </blockquote>`
+                  ? `<blockquote class="col-12 border-start border-2 border-secondary ps-3 my-3">
+                      <strong>Phản hồi của shop:</strong> 
+                      ${evaluation.shopPhanHoi} <small class="text-muted">(${formatDate(evaluation.ngayPhanHoi)})</small>
+                    </blockquote>`
                   : ''
               }
               <hr/>  
@@ -304,53 +315,33 @@ export default {
                   ${statusSummaryHtml}
               </div>
           </div>
-        <div class="row mb-3 detail-list">
-          ${
-            evaluation.hinhAnhs && evaluation.hinhAnhs.split(',').length > 0
-              ? evaluation.hinhAnhs
-                  .split(',')
-                  .map(
-                    (img, idx, arr) => `
-                      <div class="col-4 d-flex align-items-center">
-                        <img 
-                          src="${pathReplaceImg(undefined, 'HinhAnh/Reviews', img)}" 
-                          class="img-fluid me-2 border border-light rounded-5 review-lightbox-img"
-                          style="max-width: 7em; height: 7em; cursor:pointer"
-                          alt="Hình ảnh đánh giá"
-                          data-imgs='${JSON.stringify(arr)}'
-                          data-idx='${idx}'
-                        >
-                      </div>
-                    `,
-                  )
-                  .join('')
-              : '<div class="col-12"><p>Không có hình ảnh đánh giá để hiển thị.</p></div>'
-          }
-        </div>
+          <div class="row mb-3 detail-list">
+            ${
+              evaluation.hinhAnhs && evaluation.hinhAnhs.split(',').length > 0
+                ? evaluation.hinhAnhs
+                    .split(',')
+                    .map(
+                      (img, idx, arr) => `
+                        <div class="col-4 d-flex align-items-center mb-2">
+                          <img 
+                            src="${pathReplaceImg(undefined, 'HinhAnh/Reviews', img)}" 
+                            class="img-fluid border border-light rounded-3 review-lightbox-img"
+                            style="max-width: 100%; height: auto; cursor:pointer"
+                            alt="Hình ảnh đánh giá"
+                            data-imgs='${JSON.stringify(arr)}'
+                            data-idx='${idx}'
+                          >
+                        </div>
+                      `,
+                    )
+                    .join('')
+                : '<div class="col-12"><p>Không có hình ảnh đánh giá để hiển thị.</p></div>'
+            }
+          </div>
       </div>`
 
       div.html(detailsHtml)
-
-      // Gắn sự kiện click cho ảnh review để mở LightBox
-      setTimeout(() => {
-        div
-          .find('.review-lightbox-img')
-          .off()
-          .on('click', function () {
-            const imgs = JSON.parse($(this).attr('data-imgs'))
-            const idx = parseInt($(this).attr('data-idx'))
-            // Gọi method openLightbox của Vue component
-            if (typeof window.vueIndexReviewOpenLightbox === 'function') {
-              window.vueIndexReviewOpenLightbox(
-                imgs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
-                idx,
-              )
-            }
-          })
-      }, 0)
-      return div
     },
-
     // -- Hàm cập nhập phản hồi của shop
     async updateShopResponse() {
       try {
