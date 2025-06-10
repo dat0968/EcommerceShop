@@ -29,6 +29,9 @@ using Humanizer.Configuration;
 using VNPAY.NET;
 using APIClothesEcommerceShop.Repositories.DbInitializer;
 using APIClothesEcommerceShop.Repositories.Home;
+using APIClothesEcommerceShop.Repositories.Combo;
+using APIClothesEcommerceShop.Repositories.Combos;
+using APIClothesEcommerceShop.Repositories.DetailCombo;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,6 +103,7 @@ builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>(
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<ComboService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IVnpay, Vnpay>();
@@ -109,10 +113,11 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
-
+builder.Services.AddScoped<IComboRepository, ComboRepository>();
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+builder.Services.AddScoped<IDetailCombo, DetailCombo>();
 
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();

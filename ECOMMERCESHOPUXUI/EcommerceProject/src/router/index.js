@@ -7,6 +7,7 @@ import home from '../views/customer/Home.vue'
 import shop from '../views/customer/Shop.vue'
 import detailProduct from '../views/customer/ProductDetails.vue'
 import detailCombo from '../views/customer/ComboDetails.vue'
+import Combo from '../views/admin/Combo/Index.vue'
 import cart from '../views/customer/Cart.vue'
 import checkout from '../views/customer/Checkout.vue'
 import statistics from '../views/admin/statistics/statistics.vue'
@@ -45,6 +46,7 @@ const router = createRouter({
         {path: '/Admin', name: statistics, component: statistics},
         {path: '/Admin/Product', name: products, component: products},
         {path: '/Admin/Order', name: orders, component: orders},
+        {path: '/Admin/Combo', name: Combo, component: Combo},
         {path: '', name: 'statistics', component: statistics},
         {path: 'customer', name: 'CustomerManagement', component: customerManagement},
         {path: 'staff', name: 'StaffManagement', component: staffManagement},

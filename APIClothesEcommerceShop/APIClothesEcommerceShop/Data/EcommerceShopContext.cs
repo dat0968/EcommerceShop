@@ -49,8 +49,9 @@ public partial class EcommerceShopContext : DbContext
     public virtual DbSet<Refreshtoken> Refreshtokens { get; set; }
 
     public virtual DbSet<Sanpham> Sanphams { get; set; }
+    public virtual DbSet<Chitietcombo> Chitietcombos { get; set; }
 
-    
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -437,7 +438,6 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("CHITIETCOMBO");
 
             entity.Property(e => e.MaSp).HasColumnName("MaSP");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
         });
 
         OnModelCreatingPartial(modelBuilder);
