@@ -3,11 +3,13 @@ using APIClothesEcommerceShop.Repositories.Cart;
 using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.CategoryDetails;
+using APIClothesEcommerceShop.Repositories.Coupon;
 using APIClothesEcommerceShop.Repositories.Customer;
 using APIClothesEcommerceShop.Repositories.ImageProduct;
 using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Repositories.OrderComboDetails;
 using APIClothesEcommerceShop.Repositories.OrderDetails;
+using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
 using APIClothesEcommerceShop.Services;
@@ -120,6 +122,7 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
+builder.Services.AddScoped<IMaCouponRepository, MaCouponRepository>();
 #endregion
 
 #region [Dependency Injection cho các repository]
@@ -173,6 +176,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
