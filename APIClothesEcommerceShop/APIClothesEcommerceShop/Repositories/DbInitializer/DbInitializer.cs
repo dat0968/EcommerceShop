@@ -210,7 +210,7 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
                 foreach (var combo in ctcbos)
                 {
                     int soLuong = random.Next(1, 3);
-                    int donGia = combo.GiaCombo;
+                    int donGia = (int?)combo.SoTienGiam ?? 10000; // ! Attention it
 
                     Chitietcombohoadon ctcbo = (new Chitietcombohoadon
                     {

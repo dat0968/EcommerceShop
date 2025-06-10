@@ -453,7 +453,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                         HinhAnhs = review.TenCacHinhAnh ?? "",
                         DonGia = review.SanPham != null
                             ? (review.SanPham.Chitietsanphams.Any() ? (double)review.SanPham.Chitietsanphams.Average(x => x.DonGia) : 0)
-                            : (review.Combo?.GiaCombo ?? 0),
+                            : ((int?)review.Combo?.SoTienGiam ?? 0), // ! Attention this
                         LuotXem = review.SanPham?.LuotXem ?? 0,
                         SoLuong = review.SanPham != null
                             ? (review.SanPham.Chitietsanphams.Any() ? (int)review.SanPham.Chitietsanphams.Average(x => x.SoLuongTon) : 0)
