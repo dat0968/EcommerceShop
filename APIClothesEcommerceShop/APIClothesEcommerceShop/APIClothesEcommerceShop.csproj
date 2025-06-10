@@ -39,8 +39,4 @@
     <Folder Include="wwwroot\fonts\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
 </Project>

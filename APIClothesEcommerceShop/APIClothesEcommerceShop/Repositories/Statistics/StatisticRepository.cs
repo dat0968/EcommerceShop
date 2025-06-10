@@ -604,7 +604,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     {
                         c.MaCombo,
                         c.TenCombo,
-                        c.GiaCombo,
+                        //c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
@@ -618,14 +618,14 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 }
 
                 // Khởi tạo thông tin thống kê
-                response.Data = new ComboStatisticsResponse
-                {
-                    TotalCombos = data.Count,
-                    TotalActiveCombos = data.Count(x => x.IsActive ?? false),
-                    TotalInactiveCombos = data.Count(x => !(x.IsActive ?? false)),
-                    TotalComboRevenue = data.Sum(x => x.Revenue),
-                    AverageComboPrice = data.Count > 0 ? data.Sum(x => x.GiaCombo) / data.Count : 0
-                };
+                //response.Data = new ComboStatisticsResponse
+                //{
+                //    TotalCombos = data.Count,
+                //    TotalActiveCombos = data.Count(x => x.IsActive ?? false),
+                //    TotalInactiveCombos = data.Count(x => !(x.IsActive ?? false)),
+                //    TotalComboRevenue = data.Sum(x => x.Revenue),
+                //    AverageComboPrice = data.Count > 0 ? data.Sum(x => x.GiaCombo) / data.Count : 0
+                //};
 
                 response.SetSuccessResponse();
             }
@@ -652,7 +652,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     {
                         c.MaCombo,
                         c.TenCombo,
-                        c.GiaCombo,
+                        //c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
@@ -783,9 +783,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             }
             return data;
         }
-        private async Task<List<Combo>> GetCombosAsync()
+        private async Task<List<APIClothesEcommerceShop.Models.Combo>> GetCombosAsync()
         {
-            List<Combo> data = new();
+            List<APIClothesEcommerceShop.Models.Combo> data = new();
             try
             {
                 data = await _context.Combos
@@ -798,7 +798,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             catch (Exception ex)
             {
                 Console.WriteLine($"Lỗi khi lấy dữ liệu combo: {ex.Message}");
-                data = new List<Combo>();
+                data = new List<APIClothesEcommerceShop.Models.Combo>();
             }
             return data;
         }

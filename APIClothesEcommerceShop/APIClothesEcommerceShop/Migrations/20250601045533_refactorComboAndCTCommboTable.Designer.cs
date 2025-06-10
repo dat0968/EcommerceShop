@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250601045533_refactorComboAndCTCommboTable")]
+    partial class refactorComboAndCTCommboTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -305,11 +308,8 @@ namespace APIClothesEcommerceShop.Migrations
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Giohang", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("ID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DonGia")
                         .HasColumnType("int");
@@ -327,10 +327,6 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.Property<int>("SoLuong")
                         .HasColumnType("int");
-
-                    b.Property<string>("TenHinhAnh")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id")
                         .HasName("PK__GIOHANG__3214EC27D6272CAB");
@@ -439,7 +435,7 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("char(20)")
                         .IsFixedLength();
 
-                    b.Property<int?>("MaKh")
+                    b.Property<int>("MaKh")
                         .HasColumnType("int")
                         .HasColumnName("MaKH");
 
@@ -947,6 +943,7 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "MaKhNavigation")
                         .WithMany("Hoadons")
                         .HasForeignKey("MaKh")
+                        .IsRequired()
                         .HasConstraintName("FK__HOADON__MaKH__60A75C0F");
 
                     b.HasOne("APIClothesEcommerceShop.Models.Nhanvien", "MaNvNavigation")
