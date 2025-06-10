@@ -37,6 +37,7 @@ namespace APIClothesEcommerceShop.DTO.Order
 
         public decimal TienGoc { get; set; }
         public decimal? GiamGia { get; set; }
+        public int[] GioHangId { get; set; } = new int[0];
 
         public virtual ICollection<ComboDetails_OrdersRequestDTO> Chitietcombohoadons { get; set; } = new List<ComboDetails_OrdersRequestDTO>();
 

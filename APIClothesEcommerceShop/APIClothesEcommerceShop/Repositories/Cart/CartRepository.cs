@@ -32,7 +32,7 @@ namespace APIClothesEcommerceShop.Repositories.Cart
                 return model;
             }catch (Exception ex)
             {
-                throw new Exception("Error", ex);
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -54,17 +54,23 @@ namespace APIClothesEcommerceShop.Repositories.Cart
             }
         }
 
-        public async Task<List<CartResponseDTO>> GetAll()
+        public async Task<List<CartResponseDTO>> GetAll(int MaKh)
         {
             try
             {
-                var GetAll = await db.Giohangs.AsNoTracking().Select(p => new CartResponseDTO
+                var GetAll = await db.Giohangs.AsNoTracking().Include(p => p.MaCtspNavigation).Select(p => new CartResponseDTO
                 {
                     Id = p.Id,
                     MaCombo = p.MaCombo,
                     MaCtsp = p.MaCtsp,
+                    TenSanPham = p.MaCtspNavigation != null ? p.MaCtspNavigation.MaSpNavigation.TenSanPham : null,
                     MaKh = p.MaKh,
+                    KichThuoc = p.MaCtspNavigation != null ? p.MaCtspNavigation.KichThuoc : null,
+                    Mau = p.MaCtspNavigation != null ? p.MaCtspNavigation.MauSac : null,
                     DonGia = p.DonGia,
+                    SoLuong = p.SoLuong,
+                    SoLuongToiDa = p.MaCtspNavigation != null ? p.MaCtspNavigation.SoLuongTon : 0,
+                    TenHinhAnh = p.TenHinhAnh,
                     Giohangctcombos = p.Giohangctcombos.Select(ct => new Cart_DetailsComboResponseDTO
                     {
                         Id = ct.Id,
@@ -73,7 +79,7 @@ namespace APIClothesEcommerceShop.Repositories.Cart
                         SoLuong = ct.SoLuong,
                         DonGia = ct.DonGia
                     }).ToList()
-                }).ToListAsync();
+                }).Where(p => p.MaKh == MaKh).ToListAsync();
                 return GetAll;
             }catch (Exception ex)
             {
@@ -89,15 +95,21 @@ namespace APIClothesEcommerceShop.Repositories.Cart
                 if(FindCart == null)
                 {
                     throw new Exception("Not Found Cart");
-                }   
+                }
+                var Findproduct = await db.Chitietsanphams.FirstOrDefaultAsync(p => p.MaCtsp == FindCart.MaCtsp);
+                var QuantityProduct = Findproduct?.SoLuongTon;
                 FindCart.SoLuong += Quantity;
+                if(FindCart.SoLuong > QuantityProduct)
+                {
+                    throw new Exception($"Số lượng sản phẩm trong giỏ hàng vượt quá số lượng tồn kho tối đa là {QuantityProduct} sản phẩm");
+                }
                 db.Giohangs.Update(FindCart);
                 await db.SaveChangesAsync();
                 return FindCart;
             }
             catch (Exception ex)
             {
-                throw new Exception("Error", ex);
+                throw new Exception(ex.Message, ex);
             }
         }
     }

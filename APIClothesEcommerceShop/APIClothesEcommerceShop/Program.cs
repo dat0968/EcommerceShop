@@ -110,6 +110,8 @@ builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>(
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
 builder.Services.AddScoped<IImageProductRepository, ImageProductRepository>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CartService>();
+builder.Services.AddScoped<MLRecommendationSystem>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IVnpay, Vnpay>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();

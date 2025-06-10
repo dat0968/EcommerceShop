@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-
+import piniaPersist from 'pinia-plugin-persistedstate'
 import replaceBrokenImages from '@/utils/autoReplaceImages'
 import { initApiBaseUrl } from '@/utils/axiosClient'
 
@@ -10,7 +10,10 @@ const app = createApp(App)
 
 await initApiBaseUrl()
 
-app.use(createPinia())
+const pinia = createPinia()
+pinia.use(piniaPersist)
+
+app.use(pinia)
 app.use(router)
 
 app.mount('#app')

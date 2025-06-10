@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250603123402_TenHinhAnhColumnforGioHangTable")]
+    partial class TenHinhAnhColumnforGioHangTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -313,11 +316,8 @@ namespace APIClothesEcommerceShop.Migrations
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Giohang", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("ID");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DonGia")
                         .HasColumnType("int");

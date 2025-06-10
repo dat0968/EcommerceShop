@@ -82,7 +82,6 @@ const fetchAPINewProduts = async () => {
   }
   const result = await response.json()
   ListNewProducts.value = result
-  console.log(ListNewProducts.value)
 }
 
 const fetchAPIBestSellerProduts = async () => {
@@ -97,8 +96,6 @@ const fetchAPIBestSellerProduts = async () => {
   }
   const result = await response.json()
   ListBestSellerProducts.value = result
-
-  console.log(ListBestSellerProducts.value)
 }
 
 const fetchAPIHotProduts = async () => {
@@ -113,8 +110,6 @@ const fetchAPIHotProduts = async () => {
   }
   const result = await response.json()
   ListBestHotProducts.value = result
-
-  console.log(ListBestSellerProducts.value)
 }
 
 onMounted(() => {

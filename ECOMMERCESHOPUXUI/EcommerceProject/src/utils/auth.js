@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import Cookies from 'js-cookie';
-import { GetApiUrl } from '@constants/api'
+import { GetApiUrl } from '@/constants/api'
 let getApiUrl = GetApiUrl()
 // Hàm giải mã accesstoken
 export function decodeToken(token) {
@@ -20,10 +20,10 @@ export function decodeToken(token) {
 // Hàm làm mới token
 async function renewAccessToken(decodedToken, refreshToken) {
     const payload = {
-        id: decodedToken.idUser,
-        hoTen: decodedToken.name,
-        sdt: decodedToken.phone,
-        vaiTro: decodedToken.role,
+        id: decodedToken.IdUser,
+        hoTen: decodedToken.Name,
+        sdt: decodedToken.Phone,
+        vaiTro: decodedToken.Role,
         refreshToken: refreshToken
     };
 
@@ -65,19 +65,25 @@ export async function validateToken(accessToken, refreshToken) {
     if (!accessToken || !refreshToken) {
         Cookies.remove('accessToken', { path: '/' });
         Cookies.remove('refreshToken', { path: '/' });
-        return false;
+        return { isValid: false };
     }
 
     const decodedToken = decodeToken(accessToken);
     if (!decodedToken) {
         Cookies.remove('accessToken', { path: '/' });
         Cookies.remove('refreshToken', { path: '/' });
-        return false;
+        return { isValid: false };
     }
     var currentTime = Math.floor(Date.now() / 1000); // quy đổi mili giây sang giây
     //Nếu token hết hạn, làm mới token mới
-    if (decodedToken.exp < currentTime) {
-        return await renewAccessToken(decodedToken, refreshToken);
+    if (decodedToken.Exp < currentTime) {
+        const renewed = await renewAccessToken(decodedToken, refreshToken);
+        if (renewed) {
+            const newToken = Cookies.get('accessToken');
+            return { isValid: true, newAccessToken: newToken };
+        } else {
+            return { isValid: false };
+        }
     }
-    return true;
+    return { isValid: true, newAccessToken: accessToken };
 }

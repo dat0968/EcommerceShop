@@ -1,7 +1,6 @@
 using APIClothesEcommerceShop.DTO.Category;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.DTO;
-using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Repository;
 using APIClothesEcommerceShop.DTO.Category.CategoryParent;
 using APIClothesEcommerceShop.DTO.Category.CategoryChild;

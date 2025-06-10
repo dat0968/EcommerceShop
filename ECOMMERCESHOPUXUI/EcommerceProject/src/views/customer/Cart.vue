@@ -1,3 +1,119 @@
+<script setup>
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
+import Swal from 'sweetalert2'
+import { useCartStore } from '@/stores/cartStore'
+const cartStore = useCartStore()
+const listCart = ref([])
+const router = useRouter()
+const getUrlAPI = ref(GetApiUrl())
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+async function fetchCart() {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid == false) {
+    router.push('/Login')
+  } else {
+    accessToken.value = validatetoken.newAccessToken
+    const readToken = decodeToken(accessToken.value)
+    const response = await fetch(`${getUrlAPI.value}/api/Cart/${readToken.IdUser}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!response.ok) {
+      throw new Error('Failed to fetchCart')
+    }
+    const result = await response.json()
+    listCart.value = result
+  }
+}
+
+onMounted(async () => {
+  await fetchCart()
+})
+
+const tongTien = computed(() => {
+  return listCart.value.reduce((total, item) => {
+    return total + item.donGia * item.soLuong
+  }, 0)
+})
+
+function validateQuantity(item) {
+  let number = parseInt(item.soLuong)
+
+  if (isNaN(number) || number < 1) {
+    item.soLuong = 1
+  } else if (number > item.soLuongToiDa) {
+    item.soLuong = item.soLuongToiDa
+
+    Swal.fire({
+      title: `Chỉ còn lại ${item.soLuongToiDa} sản phẩm`,
+      icon: 'warning',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+  } else {
+    item.soLuong = number
+  }
+}
+
+async function removeCart(id) {
+  const response = await fetch(`${getUrlAPI.value}/api/Cart/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Failed to deleteCart')
+  }
+  const result = await response.json()
+  if (result.success) {
+    Swal.fire({
+      title: `Đã xóa sản phẩm ra khỏi giỏ hàng`,
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+    await fetchCart()
+  }
+}
+const selectedItems = ref([])
+
+function toggleSelection(id) {
+  const index = selectedItems.value.indexOf(id)
+  if (index === -1) {
+    selectedItems.value.push(id)
+  } else {
+    selectedItems.value.splice(index, 1)
+  }
+}
+
+function confirmCart() {
+  if (selectedItems.value.length === 0) {
+    Swal.fire({
+      title: `Vui lòng chọn sản phẩm bạn muốn đặt hàng!`,
+      icon: 'warning',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+    return
+  }
+  const selectedCartItems = listCart.value.filter((item) => selectedItems.value.includes(item.id))
+
+  cartStore.setSelectedItems(selectedCartItems)
+  router.push('/checkout')
+}
+</script>
 <template>
   <div>
     <!-- Shop Cart Section Begin -->
@@ -9,79 +125,55 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Product</th>
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Total</th>
+                    <th>Sản phẩm</th>
+                    <th>Giá</th>
+                    <th>Số lượng</th>
+                    <th>Tổng tiền</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
+                  <tr
+                    :class="{ 'selected-row': selectedItems.includes(item.id) }"
+                    @click="toggleSelection(item.id)"
+                    style="cursor: pointer"
+                    v-for="item in listCart"
+                    :key="item.id"
+                  >
                     <td class="cart__product__item">
-                      <img src="@/assets/Customer/img/shop-cart/cp-1.jpg" alt="" />
+                      <div class="tick-icon" v-if="selectedItems.includes(item.id)">✔</div>
+                      <img
+                        :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                          item.tenHinhAnh
+                        }`"
+                        alt=""
+                        class="cart-product-image"
+                        @click="toggleSelection(item.id)"
+                      />
                       <div class="cart__product__item__title">
-                        <h6>Chain bucket bag</h6>
+                        <h6>{{ item.tenSanPham }}</h6>
+                        <div class="product-options">
+                          <span v-if="item.mau" class="option-label">Màu: {{ item.mau }}</span>
+                          <span v-if="item.kichThuoc" class="option-label"
+                            >Kích thước: {{ item.kichThuoc }}</span
+                          >
+                        </div>
                       </div>
                     </td>
-                    <td class="cart__price">$ 150.0</td>
+                    <td class="cart__price">{{ item.donGia }} VNĐ</td>
                     <td class="cart__quantity">
                       <div class="pro-qty">
-                        <input type="text" value="1" />
+                        <input
+                          @input="() => validateQuantity(item)"
+                          type="text"
+                          v-model="item.soLuong"
+                        />
                       </div>
                     </td>
-                    <td class="cart__total">$ 300.0</td>
-                    <td class="cart__close"><span class="icon_close"></span></td>
-                  </tr>
-                  <tr>
-                    <td class="cart__product__item">
-                      <img src="@/assets/Customer/img/shop-cart/cp-2.jpg" alt="" />
-                      <div class="cart__product__item__title">
-                        <h6>Zip-pockets pebbled tote briefcase</h6>
-                        
-                      </div>
+                    <td class="cart__total">{{ item.donGia * item.soLuong }} VNĐ</td>
+                    <td class="cart__close">
+                      <span @click="removeCart(item.id)" class="icon_close"></span>
                     </td>
-                    <td class="cart__price">$ 170.0</td>
-                    <td class="cart__quantity">
-                      <div class="pro-qty">
-                        <input type="text" value="1" />
-                      </div>
-                    </td>
-                    <td class="cart__total">$ 170.0</td>
-                    <td class="cart__close"><span class="icon_close"></span></td>
-                  </tr>
-                  <tr>
-                    <td class="cart__product__item">
-                      <img src="@/assets/Customer/img/shop-cart/cp-3.jpg" alt="" />
-                      <div class="cart__product__item__title">
-                        <h6>Black jean</h6>
-                        
-                      </div>
-                    </td>
-                    <td class="cart__price">$ 85.0</td>
-                    <td class="cart__quantity">
-                      <div class="pro-qty">
-                        <input type="text" value="1" />
-                      </div>
-                    </td>
-                    <td class="cart__total">$ 170.0</td>
-                    <td class="cart__close"><span class="icon_close"></span></td>
-                  </tr>
-                  <tr>
-                    <td class="cart__product__item">
-                      <img src="@/assets/Customer/img/shop-cart/cp-4.jpg" alt="" />
-                      <div class="cart__product__item__title">
-                        <h6>Cotton Shirt</h6>
-                      </div>
-                    </td>
-                    <td class="cart__price">$ 55.0</td>
-                    <td class="cart__quantity">
-                      <div class="pro-qty">
-                        <input type="text" value="1" />
-                      </div>
-                    </td>
-                    <td class="cart__total">$ 110.0</td>
-                    <td class="cart__close"><span class="icon_close"></span></td>
                   </tr>
                 </tbody>
               </table>
@@ -89,24 +181,70 @@
           </div>
           <div class="col-lg-3">
             <div class="cart__total__procced">
-              <h6>Cart total</h6>
+              <h6>Tổng giá trị</h6>
               <ul>
-                <li>Subtotal <span>$ 750.0</span></li>
-                <li>Total <span>$ 750.0</span></li>
+                <li>
+                  Tổng <span>{{ tongTien }}</span>
+                </li>
               </ul>
-              <a href="#" class="primary-btn">Đặt hàng</a>
+              <button
+                @click="confirmCart()"
+                style="width: 100%; text-decoration-line: none"
+                class="primary-btn"
+              >
+                Đặt hàng
+              </button>
             </div>
           </div>
-        </div>       
+        </div>
       </div>
     </section>
   </div>
   <!-- Shop Cart Section End -->
 </template>
 
-<script>
-export default {}
-</script>
+
 
 <style>
+.cart-product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 10px;
+}
+.product-options {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.option-label {
+  display: inline-block;
+  margin-right: 10px;
+}
+.selected-row {
+  border: 2px solid #28a745;
+  background-color: #f0fff4;
+}
+.selected-row {
+  position: relative;
+}
+
+.tick-icon {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background-color: #28a745;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
 </style>

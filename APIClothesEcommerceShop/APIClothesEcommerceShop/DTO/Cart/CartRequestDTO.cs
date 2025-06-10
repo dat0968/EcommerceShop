@@ -13,6 +13,7 @@ namespace APIClothesEcommerceShop.DTO.Cart
         public int SoLuong { get; set; }
 
         public int DonGia { get; set; }
+        public string TenHinhAnh { get; set; }
 
         public virtual ICollection<Cart_DetailsComboRequestDTO> Giohangctcombos { get; set; } = new List<Cart_DetailsComboRequestDTO>();
     }

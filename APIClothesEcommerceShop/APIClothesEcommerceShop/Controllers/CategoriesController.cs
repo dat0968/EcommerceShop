@@ -28,12 +28,27 @@ namespace APIClothesEcommerceShop.Controllers
             _unit = unit;
         }
 
+        [HttpGet("GetCategoriesforShop")]
+        public async Task<IActionResult> GetCategoriesforShop()
+        {
+            try
+            {
+                var listCategory = await _unit.Category.GetAllBigCategories();
+                return Ok(listCategory);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
         /// <summary>
         /// Lấy toàn bộ danh sách chi tiết danh mục sản phẩm (bao gồm cha, con, sản phẩm).
         /// </summary>
         [ProducesResponseType(typeof(ResponseAPI<List<CategoryResponseDTO>>), StatusCodes.Status200OK)]
         [Authorize(Roles = "Admin,Nhân viên")]
-        [HttpGet("")]
+        [HttpGet("GetAllCategories")]
         public async Task<IActionResult> GetCategories()
         {
             try

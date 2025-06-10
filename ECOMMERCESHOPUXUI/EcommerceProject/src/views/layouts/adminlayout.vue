@@ -129,7 +129,7 @@ onMounted(() => {
 
           <!-- Start XP Navigationbar -->
           <div class="xp-navigationbar">
-            <ul class="xp-vertical-menu" style="color: black">
+            <ul class="xp-vertical-menu">
               <li>
                 <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
                   <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
@@ -137,16 +137,19 @@ onMounted(() => {
               </li>
               <li>
                 <RouterLink to="/Admin/Product">
-                  <i class="icon-speedometer"></i><span>Quản lý sản phẩm</span>
+                  <i class="icon-bag"></i><span class="font-color">Quản lý sản phẩm</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/Admin/Order">
+                  <i class="icon-notebook"></i><span class="font-color">Quản lý đơn hàng</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/Admin/Category">
-                  <i class="icon-notebook"></i><span>Quản lý danh mục</span>
+                  <i class="icon-list"></i><span class="font-color">Quản lý danh mục</span>
                 </RouterLink>
               </li>
-            </ul>
-            <ul class="xp-vertical-menu">
               <li>
                 <RouterLink to="/admin/combo">
                   <i class="icon-basket"></i><span class="font-color">Quản lý combo</span>

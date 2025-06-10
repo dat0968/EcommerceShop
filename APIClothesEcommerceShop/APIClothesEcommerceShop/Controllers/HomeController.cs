@@ -1,4 +1,5 @@
 ﻿using APIClothesEcommerceShop.Repositories.Home;
+using APIClothesEcommerceShop.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +10,11 @@ namespace APIClothesEcommerceShop.Controllers
     public class HomeController : ControllerBase
     {
         private readonly IHomeRepository homeRepository;
-        public HomeController(IHomeRepository homeRepository)
+        private readonly MLRecommendationSystem mLRecommendationSystem;
+        public HomeController(IHomeRepository homeRepository, MLRecommendationSystem mLRecommendationSystem)
         {
             this.homeRepository = homeRepository;
+            this.mLRecommendationSystem = mLRecommendationSystem;
         }
         [HttpGet("GetNewProduct")]
         public async Task<IActionResult> GetNewProduct()
@@ -44,6 +47,19 @@ namespace APIClothesEcommerceShop.Controllers
             try
             {
                 var products = await homeRepository.GetHotProducts();
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
+        }
+        [HttpGet("RecommendationProduct")]
+        public async Task<IActionResult> RecommendationProduct(int UserId, int? maSp = null, int numberOfRecommendations = 6)
+        {
+            try
+            {
+                var products = await mLRecommendationSystem.Recommend(UserId, maSp, numberOfRecommendations);
                 return Ok(products);
             }
             catch (Exception ex)

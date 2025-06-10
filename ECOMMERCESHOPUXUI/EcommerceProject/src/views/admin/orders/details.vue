@@ -103,7 +103,6 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleString('vi-VN')
 }
 
-console.log(order.value)
 </script>
 
 <template>

@@ -195,7 +195,8 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("GIOHANG");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                //.ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("ID");
             entity.Property(e => e.MaCtsp).HasColumnName("MaCTSP");
             entity.Property(e => e.MaKh).HasColumnName("MaKH");

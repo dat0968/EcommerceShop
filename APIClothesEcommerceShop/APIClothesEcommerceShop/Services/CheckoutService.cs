@@ -87,7 +87,12 @@ namespace APIClothesEcommerceShop.Services
 
 
                 // Xóa giỏ hàng của khách
-                
+                foreach(int cartid in model.GioHangId)
+                {
+                    await cartRepository.DeleteCart(cartid);
+                }
+
+                await db.Database.CommitTransactionAsync();
                 return NewOrder;
             }catch(Exception ex)
             {

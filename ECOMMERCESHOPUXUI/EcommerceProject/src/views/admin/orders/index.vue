@@ -2,15 +2,25 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import detailsOrderModal from '../orders/details.vue'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
+import Swal from 'sweetalert2'
 const listOrders = ref([])
 const searchQuery = ref('')
 const statusFilter = ref('')
 const loading = ref(false)
 const selectedOrder = ref(null)
 const statusOrders = ref([])
-const getUrlAPI = ref('https://localhost:7217/api')
+const getUrlAPI = ref(GetApiUrl())
 const totalPages = ref(0)
 const pageSelected = ref(1)
+const accessToken = ref(Cookies.get('accessToken'))
+const isOpenModal = ref(false)
+const idUser = ref('')
+const openModal = () => {
+  isOpenModal.value = !isOpenModal.value
+}
 statusOrders.value = [
   'Đang xử lý VNPAY',
   'Chờ xác nhận',
@@ -25,7 +35,9 @@ statusOrders.value = [
 const fetchOrders = async () => {
   try {
     loading.value = true
-    const response = await axios.get(`${getUrlAPI.value}/Orders?search=${searchQuery.value}&filter=${statusFilter.value}&page=${pageSelected.value}`)
+    const response = await axios.get(
+      `${getUrlAPI.value}/api/Orders?search=${searchQuery.value}&filter=${statusFilter.value}&page=${pageSelected.value}`
+    )
     listOrders.value = response.data.data
     totalPages.value = response.data.toTalPage
   } catch (error) {
@@ -36,7 +48,7 @@ const fetchOrders = async () => {
 }
 
 // Lọc đơn hàng theo trạng thái và từ khóa tìm kiếm
-function filterOrders(){
+function filterOrders() {
   fetchOrders()
 }
 
@@ -55,12 +67,45 @@ const formatDate = (dateString) => {
 }
 
 // Xử lý cập nhật trạng thái
-const handleStatusChange = async (orderId, newStatus) => {
+const handleStatusChange = async (order, oldStatus, newStatus) => {
   try {
-    await axios.put(`${getUrlAPI.value}/Orders/${orderId}/status`, {
-      tinhTrang: newStatus,
+    var readToken = decodeToken(accessToken.value)
+    idUser.value = readToken.IdUser
+    if (idUser.value.toLowerCase() != String(order?.maNv || '').toLowerCase() && order?.maNv != null) {
+      console.log(idUser.value)
+      Swal.fire({
+        title:
+          'Đơn hàng này đang được phụ trách bởi nhân viên khác. Bạn không có quyền thay đổi trạng thái đơn hàng này.',
+        icon: 'error',
+        timer: 2500,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      })
+      return
+    }
+    if (['hoàn trả/hoàn tiền', 'đã hủy'].includes(newStatus.toLowerCase())) {
+      isOpenModal.value = true
+    }
+    const response = await fetch(`${getUrlAPI.value}/api/Orders`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     })
-    await fetchOrders() // Refresh lại dữ liệu
+    if (!response.ok) {
+      throw new Error('Failed to updateStatusOrder')
+    }
+    const result = await response.json()
+    if (result.success) {
+      Swal.fire({
+        title: 'Cập nhật trạng thái đơn hàng thành công.',
+        icon: 'error',
+        timer: 2500,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      })
+      await fetchOrders()
+    }
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái:', error)
   }
@@ -80,7 +125,9 @@ onMounted(() => {
 const filteredStatusOptions = computed(() => {
   return (tinhTrang) => {
     if (tinhTrang?.toLowerCase() === 'chờ xác nhận') {
-      return statusOrders.value.filter((status) => !['đang xử lý vnpay'].includes(status.toLowerCase()))
+      return statusOrders.value.filter(
+        (status) => !['đang xử lý vnpay', 'đã nhận', 'đã thanh toán'].includes(status.toLowerCase())
+      )
     }
     if (tinhTrang?.toLowerCase() === 'đã xác nhận') {
       return statusOrders.value.filter(
@@ -151,7 +198,12 @@ const filteredStatusOptions = computed(() => {
                 aria-label="Tìm kiếm đơn hàng"
               />
             </div>
-            <select @change="filterOrders()" v-model="statusFilter" class="form-select" style="width: 200px">
+            <select
+              @change="filterOrders()"
+              v-model="statusFilter"
+              class="form-select"
+              style="width: 200px"
+            >
               <option value="">Tất cả trạng thái</option>
               <option v-for="status in statusOrders" :key="status" :value="status">
                 {{ status }}
@@ -183,9 +235,10 @@ const filteredStatusOptions = computed(() => {
             <td>{{ formatCurrency(order.tienGoc + order.phiVanChuyen) }}</td>
             <td>
               <select
+                :disabled="idUser !== order.maNv && order.maNv != null"
                 class="form-select form-select-sm w-50"
                 :value="order.tinhTrang"
-                @change="handleStatusChange(order.maHd, $event.target.value)"
+                @change="handleStatusChange(order, order.tinhTrang, $event.target.value)"
               >
                 <option
                   :selected="status.toLowerCase() === order.tinhTrang.toLowerCase()"
@@ -196,6 +249,9 @@ const filteredStatusOptions = computed(() => {
                   {{ status }}
                 </option>
               </select>
+              <span v-if="idUser !== order.maNv && order.maNv != ''" class="text-danger small fst-italic">
+                Đơn hàng này đang được phụ trách bởi nhân viên khác. Bạn không có quyền thay đổi trạng thái đơn hàng này.
+              </span>
             </td>
             <td>
               <button
@@ -232,11 +288,73 @@ const filteredStatusOptions = computed(() => {
         </li>
       </ul>
     </nav>
+    <div
+      class="modal show"
+      tabindex="-1"
+      role="dialog"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1050;
+      "
+      v-if="isOpenModal"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title">Lý do hủy/hoàn trả hàng</h6>
+            <button
+              type="button"
+              data-dismiss="modal"
+              aria-label="Close"
+              style="
+                background: none;
+                border: none;
+                font-size: 20px;
+                color: #333;
+                cursor: pointer;
+                margin-left: auto;
+              "
+              @click="openModal"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <textarea
+              class="form-control"
+              name=""
+              id=""
+              cols="30"
+              rows="10"
+              placeholder="Nhập lý do hủy/hoàn trả hàng"
+            ></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary">Lưu</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style>
 .table th {
   white-space: nowrap;
+}
+.modal {
+  display: none;
+  position: fixed;
+}
+.modal.show {
+  display: block;
 }
 </style>
