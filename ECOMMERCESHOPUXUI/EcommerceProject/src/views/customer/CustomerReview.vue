@@ -19,7 +19,7 @@
     <section class="shop spad">
       <div class="container" style="min-height: 50vh">
         <div class="row">
-          <div class="d-flex align-items-center mb-3">
+          <div class="d-flex align-items-center mb-3 position-relative">
             <ul class="nav nav-tabs flex-grow-1">
               <li class="nav-item">
                 <a
@@ -40,39 +40,16 @@
                 >
               </li>
             </ul>
-            <button class="btn btn-outline-primary ms-3" @click="reloadReviews">
-              <span class="bi bi-arrow-clockwise"></span> Load lại
-            </button>
+            <div class="ms-3 position-absolute start-50">
+              <button class="btn btn-outline-primary" @click="reloadReviews">
+                <span class="icon-clockwise"></span> Load lại
+              </button>
+            </div>
           </div>
 
           <div v-if="activeTab === 'notReviewed'">
             <div v-if="notReviewed.length">
               <div v-for="item in notReviewed" :key="item.id" class="border rounded p-3 mb-3">
-                <div class="mb-2 p-2 bg-light d-flex align-items-center">
-                  <div v-if="item.tenHinhAnh" class="me-3">
-                    <img
-                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
-                      alt="Ảnh sản phẩm"
-                      class="img-fluid border border-light rounded"
-                      @click="
-                        openLightbox(
-                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
-                          0,
-                        )
-                      "
-                      style="width: 7em; height: 5em; object-fit: cover"
-                    />
-                  </div>
-                  <div>
-                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
-                    {{ item.maSp || item.maCombo }}
-                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
-                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
-                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
-                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
-                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
-                  </div>
-                </div>
                 <div class="mb-2">
                   <label>Số sao:</label>
                   <select
@@ -122,19 +99,7 @@
                 <button class="btn btn-success btn-sm me-2" @click="submitReview(item)">
                   Lưu đánh giá
                 </button>
-              </div>
-            </div>
-            <EmptySuggestBox
-              v-else
-              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
-              linkNav="/shop"
-            />
-          </div>
-
-          <div v-else>
-            <div v-if="reviewed.length">
-              <div v-for="item in reviewed" :key="item.id" class="border rounded p-3 mb-3">
-                <div class="mb-2 p-2 bg-light d-flex align-items-center">
+                <div class="mt-2 p-2 bg-light d-flex align-items-center">
                   <div v-if="item.tenHinhAnh" class="me-3">
                     <img
                       :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
@@ -159,6 +124,18 @@
                     <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+            <EmptySuggestBox
+              v-else
+              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
+              linkNav="/shop"
+            />
+          </div>
+
+          <div v-else>
+            <div v-if="reviewed.length">
+              <div v-for="item in reviewed" :key="item.id" class="border rounded p-3 mb-3">
                 <div class="mb-2">
                   <span>
                     <span v-for="n in item.soSao" :key="n" style="color: #ffc107">★</span>
@@ -189,6 +166,31 @@
                   <strong>Phản hồi của shop:</strong>
                   {{ item.shopPhanHoi }}
                 </blockquote>
+                <div class="mb-2 p-2 bg-light d-flex align-items-center">
+                  <div v-if="item.tenHinhAnh" class="me-3">
+                    <img
+                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
+                      alt="Ảnh sản phẩm"
+                      class="img-fluid border border-light rounded"
+                      @click="
+                        openLightbox(
+                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
+                          0,
+                        )
+                      "
+                      style="width: 7em; height: 5em; object-fit: cover"
+                    />
+                  </div>
+                  <div>
+                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
+                    {{ item.maSp || item.maCombo }}
+                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
+                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
+                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
+                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
+                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
+                  </div>
+                </div>
               </div>
             </div>
             <EmptySuggestBox

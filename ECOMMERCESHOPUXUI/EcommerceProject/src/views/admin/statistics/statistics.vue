@@ -1,6 +1,13 @@
 <template>
   <!-- Start XP Contentbar -->
   <div style="margin-top: 100px" class="xp-contentbar">
+    <!-- Breadcrumb trạng thái -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
+      </ol>
+      <hr />
+    </nav>
     <!-- Start Widget -->
     <RevenueStatistic :data="revenueStatisticData" :is-loading="isLoading"></RevenueStatistic>
 

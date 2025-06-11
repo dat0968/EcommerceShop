@@ -57,26 +57,7 @@
                 </span>
               </div>
             </div>
-            <!-- Thông tin sản phẩm/combo -->
-            <div class="mb-2 p-2 bg-light d-flex align-items-center">
-              <div v-if="review.tenHinhAnh" class="me-3">
-                <img
-                  :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
-                  alt="Ảnh sản phẩm"
-                  class="img-fluid border border-light rounded"
-                  style="width: 7em; height: 5em; object-fit: cover"
-                />
-              </div>
-              <div>
-                <span v-if="review.maSp"><strong>Sản phẩm:</strong> {{ review.maSp }}</span>
-                <span v-if="review.maCombo"><strong>Combo:</strong> {{ review.maCombo }}</span>
-                <span v-if="review.tenDoiTuong">| {{ review.tenDoiTuong ?? 'N/A' }}</span>
-                <span v-if="review.kichThuoc">| Size: {{ review.kichThuoc }}</span>
-                <span v-if="review.mauSac">| Màu: {{ review.mauSac }}</span>
-                <span v-if="review.donGia">| Giá: {{ review.donGia.toLocaleString() }}₫</span>
-                <span v-if="review.soLuongTon !== undefined">| Tồn: {{ review.soLuongTon }}</span>
-              </div>
-            </div>
+
             <div class="mb-1">
               <span>
                 <span v-for="n in review.soSao" :key="n" style="color: #ffc107">★</span>
@@ -113,6 +94,26 @@
               <strong>Phản hồi của shop:</strong>
               {{ review.shopPhanHoi ? review.shopPhanHoi : 'Chưa có phản hồi' }}
             </blockquote>
+            <!-- Thông tin sản phẩm/combo -->
+            <div class="mb-2 p-2 bg-light d-flex align-items-center">
+              <div v-if="review.tenHinhAnh" class="me-3">
+                <img
+                  :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
+                  alt="Ảnh sản phẩm"
+                  class="img-fluid border border-light rounded"
+                  style="width: 7em; height: 5em; object-fit: cover"
+                />
+              </div>
+              <div>
+                <span v-if="review.maSp"><strong>Sản phẩm:</strong> {{ review.maSp }}</span>
+                <span v-if="review.maCombo"><strong>Combo:</strong> {{ review.maCombo }}</span>
+                <span v-if="review.tenDoiTuong">| {{ review.tenDoiTuong ?? 'N/A' }}</span>
+                <span v-if="review.kichThuoc">| Size: {{ review.kichThuoc }}</span>
+                <span v-if="review.mauSac">| Màu: {{ review.mauSac }}</span>
+                <span v-if="review.donGia">| Giá: {{ review.donGia.toLocaleString() }}₫</span>
+                <span v-if="review.soLuongTon !== undefined">| Tồn: {{ review.soLuongTon }}</span>
+              </div>
+            </div>
           </li>
         </ul>
       </div>

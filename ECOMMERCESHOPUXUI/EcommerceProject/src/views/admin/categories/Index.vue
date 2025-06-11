@@ -8,8 +8,9 @@
     <!-- Breadcrumb trạng thái -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item active h5">Quản lý danh mục</li>
+        <li class="breadcrumb-item active h5"><strong>Quản lý danh mục</strong></li>
       </ol>
+      <hr />
     </nav>
     <!-- Chọn chế độ -->
     <div class="mb-3 d-flex align-items-center gap-3">
@@ -53,7 +54,14 @@
       <div class="row mb-3">
         <div class="col-md-3">
           <label class="form-label">Lọc theo mã danh mục cha</label>
-          <select class="form-select" v-model="selectedMaDanhMucCha" @change="onFilterChange">
+          <select
+            class="form-select"
+            v-model="selectedMaDanhMucCha"
+            @change="onFilterChange"
+            multiple
+            size="3"
+            style="min-height: 3em; max-height: 6em; overflow-y: auto"
+          >
             <option value="">Tất cả</option>
             <option
               v-for="item in optionsParentCategory"
@@ -66,7 +74,14 @@
         </div>
         <div class="col-md-3">
           <label class="form-label">Lọc theo mã danh mục con</label>
-          <select class="form-select" v-model="selectedMaDanhMucCon" @change="onFilterChange">
+          <select
+            class="form-select"
+            v-model="selectedMaDanhMucCon"
+            @change="onFilterChange"
+            multiple
+            size="3"
+            style="min-height: 3em; max-height: 6em; overflow-y: auto"
+          >
             <option value="">Tất cả</option>
             <option
               v-for="item in optionsChildCategory"
@@ -215,8 +230,8 @@ export default {
       optionsParentCategory: [],
       optionsChildCategory: [],
       isLoading: true,
-      selectedMaDanhMucCha: '',
-      selectedMaDanhMucCon: '',
+      selectedMaDanhMucCha: [],
+      selectedMaDanhMucCon: [],
       isEditParent: false,
       isEditChild: false,
       formParent: {
@@ -240,12 +255,14 @@ export default {
   computed: {
     filteredCategories() {
       return this.listCategories.filter((x) => {
-        let matchCha = this.selectedMaDanhMucCha
-          ? x.maDanhMucCha == this.selectedMaDanhMucCha
-          : true
-        let matchCon = this.selectedMaDanhMucCon
-          ? x.maDanhMucCon == this.selectedMaDanhMucCon
-          : true
+        let matchCha =
+          !this.selectedMaDanhMucCha.length ||
+          this.selectedMaDanhMucCha.includes('') ||
+          this.selectedMaDanhMucCha.includes(x.maDanhMucCha)
+        let matchCon =
+          !this.selectedMaDanhMucCon.length ||
+          this.selectedMaDanhMucCon.includes('') ||
+          this.selectedMaDanhMucCon.includes(x.maDanhMucCon)
         return matchCha && matchCon
       })
     },
@@ -288,7 +305,10 @@ export default {
       this.reloadDataTableChild()
     },
     async getCategories() {
-      const res = await axiosConfig.getFromApi('/categories', ConfigsRequest.takeAuth())
+      const res = await axiosConfig.getFromApi(
+        '/categories/GetAllCategories',
+        ConfigsRequest.takeAuth(),
+      )
       this.listCategories = res.data
       this.reloadDataTable()
     },
@@ -672,5 +692,11 @@ export default {
 .xp-contentbar[disabled] {
   pointer-events: none;
   opacity: 0.6;
+}
+select > option {
+  max-height: 10em;
+  overflow-y: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>
