@@ -19,11 +19,11 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendMailTest(string mailTake)
+        public async Task<IActionResult> SendMailTest([FromForm] SendForm formInfo)
         {
             try
             {
-                await _googleSender.SendTemplateEmailAsync(mailTake);
+                await _googleSender.SendTemplateEmailAsync(formInfo.MailTake, formInfo.File);
                 return Ok("Email sent successfully");
             }
             catch (Exception ex)
@@ -31,5 +31,10 @@ namespace APIClothesEcommerceShop.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+    }
+    public class SendForm
+    {
+        public string MailTake { get; set; } = string.Empty;
+        public IFormFile? File { get; set; }
     }
 }
