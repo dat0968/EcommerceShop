@@ -18,6 +18,7 @@ namespace APIClothesEcommerceShop.Repositories.Comments
         public Task AddCommentAsync(BinhLuan comment)
         {
             throw new NotImplementedException();
+            // await _db.AddAsync(comment);
         }
 
         public Task<BinhLuan> GetCommentByIdAsync(int commentId)
