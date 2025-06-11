@@ -19,6 +19,7 @@ namespace APIClothesEcommerceShop.Repositories.Token
             var JwtTokenHandler = new JwtSecurityTokenHandler();
             var radomIDToken = Guid.NewGuid();
             var secretKetByte = Encoding.UTF8.GetBytes(configuration["JWT:SecretKey"]);
+           // Console.WriteLine($"SecretKey from Configuration: {secretKetByte}");
             var TokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new List<Claim>

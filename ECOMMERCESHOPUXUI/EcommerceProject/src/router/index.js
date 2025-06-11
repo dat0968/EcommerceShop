@@ -22,6 +22,7 @@ import ForgotPasswordStaff from '../views/accounts/ForgotPasswordStaff.vue'
 import ResetPasswordCustomer from '../views/accounts/ResetPasswordCustomer.vue'
 import ResetPasswordStaff from '../views/accounts/ResetPasswordStaff.vue'
 import GoogleLoginSuccess from '../views/accounts/GoogleLoginSuccess.vue'
+import Profile from '../views/accounts/Profile.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -36,6 +37,7 @@ const router = createRouter({
         { path: 'cart', name: 'cart', component: cart },
         { path: 'checkout', name: 'checkout', component: checkout },
         { path: 'customer', name: 'CustomerManagement', component: customerManagement },
+        { path: 'Profile', name: 'Profile', component: Profile },
       ],
     },
     {
