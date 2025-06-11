@@ -1,4 +1,7 @@
 <script setup>
+import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
+import $ from 'jquery'
+
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
@@ -45,7 +48,7 @@ const fetchAPI = async () => {
   }
   colors.value = [
     ...new Set(
-      product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== '')
+      product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== ''),
     ),
   ]
 
@@ -70,7 +73,7 @@ const originalPrice = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
   )
   return match ? match.donGia : 0
 })
@@ -80,7 +83,7 @@ const maxQuantity = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
   )
   quantity.value = 1
   return match ? match.soLuongTon : 'Hết hàng'
@@ -117,7 +120,7 @@ const showMainImage = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
   )
   var maCtsp = match.maCtsp
   return allImages.value.findIndex((p) => p.maCtsp == maCtsp) + 1
@@ -193,7 +196,7 @@ const addToCart = async () => {
       const matched = product.value.productDetails.find(
         (p) =>
           p.mauSac?.toLowerCase() === selectedColor.value?.toLowerCase() &&
-          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase()
+          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase(),
       )
 
       const content = {
@@ -247,7 +250,6 @@ const addToCart = async () => {
 
 const recommendationProduct = ref([])
 const fetchRcmProduct = async () => {
-  
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
   if (validatetoken.isValid) {
     accessToken.value = validatetoken.newAccessToken
@@ -259,9 +261,9 @@ const fetchRcmProduct = async () => {
         headers: {
           'Content-Type': 'application/json',
         },
-      }
+      },
     )
-    
+
     if (!response.ok) {
       throw new Error('Error to fetchRecommendationProducts')
     }
@@ -274,14 +276,14 @@ const fetchRcmProduct = async () => {
 watch(
   () => route.params.id,
   async () => {
-    allImages.value = [];
-    selectedColor.value = '';
-    selectedSize.value = '';
-    quantity.value = 1;
-    currentSlider.value = 1;
-    currentImage.value = 1;
-    await fetchAPI();
-  }
+    allImages.value = []
+    selectedColor.value = ''
+    selectedSize.value = ''
+    quantity.value = 1
+    currentSlider.value = 1
+    currentImage.value = 1
+    await fetchAPI()
+  },
 )
 </script>
 <template>
@@ -367,6 +369,7 @@ watch(
                 </div>
               </div>
             </div>
+            <ReviewProductCombo :objectId="id" :isProduct="true" />
           </div>
           <div class="col-lg-6">
             <div class="product__details__text">
@@ -478,11 +481,9 @@ watch(
               </div>
               <div class="product__item__text">
                 <h6>
-                  <router-link
-                    :to="`/product/${item.maSp}`"
-                    style="text-decoration-line: none"        
-                    >{{ item.tenSanPham }}</router-link
-                  >
+                  <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none">{{
+                    item.tenSanPham
+                  }}</router-link>
                 </h6>
                 <!-- <div class="rating">
                   <i class="fa fa-star"></i>
@@ -501,9 +502,8 @@ watch(
     <!-- Product Details Section End -->
   </div>
 </template>
-  
-  
-  <style scoped>
+
+<style scoped>
 .carousel-item img {
   object-fit: cover;
   max-height: 150px;

@@ -50,6 +50,7 @@
                 </div>
               </div>
             </div>
+            <ReviewProductCombo :objectId="comboId ?? 0" :isProduct="false" />
           </div>
           <div class="col-lg-6">
             <div class="product__details__text">
@@ -65,12 +66,22 @@
                   </div>
                 </div>
                 <div class="button-group">
-                  <a style="height: 50px;" href="#" class="cart-btn" @click.prevent="addToCart">
+                  <a style="height: 50px" href="#" class="cart-btn" @click.prevent="addToCart">
                     <span class="icon_bag_alt"></span> Thêm giỏ hàng
                   </a>
-                  <div style="margin-bottom: 14px;" class="action-buttons">
-                    <a href="#" style="border-radius: 50%; width: 50px; height: 50px;" class="action-btn"><span class="icon_heart_alt"></span></a>
-                    <a href="#" style="border-radius: 50%; width: 50px; height: 50px;" class="action-btn"><span class="icon_adjust-horiz"></span></a>
+                  <div style="margin-bottom: 14px" class="action-buttons">
+                    <a
+                      href="#"
+                      style="border-radius: 50%; width: 50px; height: 50px"
+                      class="action-btn"
+                      ><span class="icon_heart_alt"></span
+                    ></a>
+                    <a
+                      href="#"
+                      style="border-radius: 50%; width: 50px; height: 50px"
+                      class="action-btn"
+                      ><span class="icon_adjust-horiz"></span
+                    ></a>
                   </div>
                 </div>
               </div>
@@ -155,134 +166,134 @@
             </div>
           </div>
           <div class="row">
-          <div class="col-lg-12 text-center">
-            <div class="related__title">
-              <h5>RELATED PRODUCTS</h5>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-1.jpg">
-                <div class="label new">New</div>
-                <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-1.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_bag_alt"></span></a>
-                  </li>
-                </ul>
+            <div class="col-lg-12 text-center">
+              <div class="related__title">
+                <h5>RELATED PRODUCTS</h5>
               </div>
-              <div class="product__item__text">
-                <h6><a href="#">Buttons tweed blazer</a></h6>
-                <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-1.jpg">
+                  <div class="label new">New</div>
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-1.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
                 </div>
-                <div class="product__price">$ 59.0</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-2.jpg">
-                <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-2.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_bag_alt"></span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="product__item__text">
-                <h6><a href="#">Flowy striped skirt</a></h6>
-                <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
+                <div class="product__item__text">
+                  <h6><a href="#">Buttons tweed blazer</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 59.0</div>
                 </div>
-                <div class="product__price">$ 49.0</div>
               </div>
             </div>
-          </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-3.jpg">
-                <div class="label stockout">out of stock</div>
-                <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-3.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_bag_alt"></span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="product__item__text">
-                <h6><a href="#">Cotton T-Shirt</a></h6>
-                <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-2.jpg">
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-2.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
                 </div>
-                <div class="product__price">$ 59.0</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-md-4 col-sm-6">
-            <div class="product__item">
-              <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-4.jpg">
-                <ul class="product__hover">
-                  <li>
-                    <a href="img/product/related/rp-4.jpg" class="image-popup"
-                      ><span class="arrow_expand"></span
-                    ></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
-                  <li>
-                    <a href="#"><span class="icon_bag_alt"></span></a>
-                  </li>
-                </ul>
-              </div>
-              <div class="product__item__text">
-                <h6><a href="#">Slim striped pocket shirt</a></h6>
-                <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
+                <div class="product__item__text">
+                  <h6><a href="#">Flowy striped skirt</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 49.0</div>
                 </div>
-                <div class="product__price">$ 59.0</div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-3.jpg">
+                  <div class="label stockout">out of stock</div>
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-3.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="product__item__text">
+                  <h6><a href="#">Cotton T-Shirt</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 59.0</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-4.jpg">
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-4.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="product__item__text">
+                  <h6><a href="#">Slim striped pocket shirt</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 59.0</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </section>
@@ -291,11 +302,18 @@
 </template>
 
 <script>
+import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
 import { ref, onMounted } from 'vue'
+import $ from 'jquery'
+import { useRoute } from 'vue-router'
 
 export default {
   name: 'ComboDetails',
+  components: { ReviewProductCombo },
   setup() {
+    const route = useRoute()
+    const comboId = route.params.id
+
     const currentSlider = ref(1)
     const quantity = ref(1)
     const selectedVariants = ref([])
@@ -382,6 +400,7 @@ export default {
     })
 
     return {
+      comboId,
       combo,
       currentSlider,
       quantity,
@@ -484,7 +503,7 @@ export default {
   align-items: center;
   gap: 0.5rem;
   transition: all 0.3s ease;
-  border-radius: 50px
+  border-radius: 50px;
 }
 
 .cart-btn:hover {
