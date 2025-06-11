@@ -1,63 +1,48 @@
 <template>
-  <!-- Start XP Contentbar -->
   <div style="margin-top: 100px" class="xp-contentbar">
-    <!-- Breadcrumb trạng thái -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
         <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
       </ol>
       <hr />
     </nav>
-    <!-- Start Widget -->
-    <RevenueStatistic :data="revenueStatisticData" :is-loading="isLoading"></RevenueStatistic>
 
-    <!-- Start XP Row -->
+    <RevenueStatistic
+      :data="revenueStatisticData"
+      :is-loading="revenueIsLoading"
+    ></RevenueStatistic>
+
     <div class="row align-items-stretch">
-      <!-- Start XP Col -->
       <div class="col-md-12 col-lg-12 col-xl-7 m-b-30">
-        <ProductStatistic :data="productStatisticData" :is-loading="isLoading"></ProductStatistic>
+        <ProductStatistic
+          :data="productStatisticData"
+          :is-loading="productIsLoading"
+        ></ProductStatistic>
       </div>
-      <!-- End XP Col -->
 
-      <!-- Start XP Col -->
       <div class="col-md-12 col-lg-12 col-xl-5">
-        <!-- Start XP Col -->
         <div class="flex-grow-1">
           <EmployeeStatistic
             :data="employeeStatisticsData"
-            :is-loading="isLoading"
+            :is-loading="employeeIsLoading"
           ></EmployeeStatistic>
         </div>
         <div class="flex-grow-1">
-          <!-- End XP Col -->
           <CustomerStatistic
             :data="customerStatisticsData"
-            :is-loading="isLoading"
+            :is-loading="customerIsLoading"
           ></CustomerStatistic>
         </div>
       </div>
-      <!-- End XP Col -->
     </div>
-    <!-- End XP Row -->
 
-    <!-- End XP Row -->
-    <OrderSummary :data="orderSummaryData" :is-loading="isLoading"></OrderSummary>
+    <OrderSummary :data="orderSummaryData" :is-loading="orderSummaryIsLoading"></OrderSummary>
 
-    <!-- End XP Row -->
-
-    <!-- Start Project -->
-    <!-- End XP Row -->
     <DatatableStatistic
       :data="datatableStatisticsResponse"
-      :is-loading="isLoading"
+      :is-loading="datatableIsLoading"
     ></DatatableStatistic>
-    <!-- End XP Row -->
   </div>
-  <!-- End XP Contentbar -->
-
-  <!-- <div class="">
-    <ComboStatistic :data="comboStatisticsaryData" :is-loading="isLoading"></ComboStatistic>
-  </div> -->
 </template>
 
 <script>
@@ -101,9 +86,13 @@ export default {
       customerStatisticsData: {},
       employeeStatisticsData: {},
       revenueStatisticData: {},
-      comboStatisticsaryData: {},
       datatableStatisticsResponse: {},
-      isLoading: true,
+      revenueIsLoading: true,
+      productIsLoading: true,
+      customerIsLoading: true,
+      employeeIsLoading: true,
+      orderSummaryIsLoading: true,
+      datatableIsLoading: true,
     }
   },
   computed: {},
@@ -208,41 +197,52 @@ export default {
   },
   methods: {
     async loadOrderSummaryData() {
+      this.orderSummaryIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetOrderSummary',
         ConfigsRequest.takeAuth(),
       )
       this.orderSummaryData = OrderSummaryResponse.fromApiResponse(response.data)
+      this.orderSummaryIsLoading = false
     },
     async loadProductStatisticsData() {
+      this.productIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetProductStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.productStatisticData = ProductStatisticsResponse.fromApiResponse(response.data)
+      this.productIsLoading = false
     },
     async loadCustomerStatisticsData() {
+      this.customerIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetCustomerStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.customerStatisticsData = CustomerStatisticsResponse.fromApiResponse(response.data)
+      this.customerIsLoading = false
     },
     async loadEmployeeStatisticsData() {
+      this.employeeIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetEmployeeStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.employeeStatisticsData = EmployeeStatisticsResponse.fromApiResponse(response.data)
+      this.employeeIsLoading = false
     },
     async loadRevenueStatisticsData() {
+      this.revenueIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetRevenueStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
+      this.revenueIsLoading = false
     },
     async loadComboStatisticsData() {
+      // this.
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetComboStatistics',
         ConfigsRequest.takeAuth(),
@@ -250,6 +250,7 @@ export default {
       this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
     },
     async loadDatatableData() {
+      this.datatableIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
@@ -257,6 +258,7 @@ export default {
       // console.log(response.data)
       this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)
       // console.log(this.datatableStatisticsResponse)
+      this.datatableIsLoading = false
     },
   },
 }
