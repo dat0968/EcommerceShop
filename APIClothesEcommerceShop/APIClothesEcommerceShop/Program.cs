@@ -149,6 +149,14 @@ builder.Services.AddScoped<GoogleSenderService>();
 var emailSettings = builder.Configuration.GetSection("GoogleEmailSetting");
 builder.Services.Configure<GoogleEmailSetting>(emailSettings);
 
+// Redis
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:Configuration"];
+    options.InstanceName = builder.Configuration["Redis:InstanceName"];
+});
+
+
 // JWT Authentication
 var SecretKey = builder.Configuration["JWT:SecretKey"];
 var SecretKeyBytes = Encoding.UTF8.GetBytes(SecretKey);
