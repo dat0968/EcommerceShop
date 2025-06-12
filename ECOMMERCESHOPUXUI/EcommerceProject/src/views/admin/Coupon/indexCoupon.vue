@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
 
 const getApiUrl = 'https://localhost:7217';
@@ -31,8 +31,22 @@ const totalPages = ref(1);
 
 const baseUrl = `${getApiUrl}/api/Coupon`;
 
-// Track discount type for add modal (amount or percentage)
+// Track discount type for add/edit modal (amount or percentage)
 const discountType = ref('amount'); // 'amount' for soTienGiam, 'percent' for phanTramGiam
+
+// Reset discount fields based on discountType
+const resetDiscountFields = () => {
+  if (discountType.value === 'amount') {
+    couponForm.value.phanTramGiam = null;
+  } else {
+    couponForm.value.soTienGiam = null;
+  }
+};
+
+// Watch discountType to reset fields
+watch(discountType, () => {
+  resetDiscountFields();
+});
 
 // Validate form
 const validateForm = () => {
@@ -54,15 +68,13 @@ const validateForm = () => {
     Swal.fire('Lỗi', 'Đơn hàng tối thiểu phải lớn hơn hoặc bằng 0', 'error');
     return false;
   }
-  if (!isEdit.value) {
-    if (discountType.value === 'amount' && (!couponForm.value.soTienGiam || couponForm.value.soTienGiam < 0)) {
-      Swal.fire('Lỗi', 'Số tiền giảm phải lớn hơn hoặc bằng 0', 'error');
-      return false;
-    }
-    if (discountType.value === 'percent' && (!couponForm.value.phanTramGiam || couponForm.value.phanTramGiam < 0 || couponForm.value.phanTramGiam > 100)) {
-      Swal.fire('Lỗi', 'Phần trăm giảm phải từ 0 đến 100', 'error');
-      return false;
-    }
+  if (discountType.value === 'amount' && (!couponForm.value.soTienGiam || couponForm.value.soTienGiam < 0)) {
+    Swal.fire('Lỗi', 'Số tiền giảm phải lớn hơn hoặc bằng 0', 'error');
+    return false;
+  }
+  if (discountType.value === 'percent' && (!couponForm.value.phanTramGiam || couponForm.value.phanTramGiam < 0 || couponForm.value.phanTramGiam > 100)) {
+    Swal.fire('Lỗi', 'Phần trăm giảm phải từ 0 đến 100', 'error');
+    return false;
   }
   return true;
 };
@@ -155,6 +167,9 @@ const openEditModal = (coupon) => {
     soLuong: coupon.soLuong,
     soLuongDaDung: coupon.soLuongDaDung || 0
   };
+  // Set discountType based on current coupon values
+  discountType.value = coupon.soTienGiam ? 'amount' : coupon.phanTramGiam ? 'percent' : 'amount';
+  resetDiscountFields();
   showEditModal.value = true;
 };
 
@@ -186,21 +201,20 @@ const createCoupon = async () => {
 
     const data = response.ok ? await response.json() : { success: false, message: `HTTP ${response.status}: ${await response.text()}` };
     if (data.success) {
-      // Thêm coupon mới vào đầu danh sách
       const newCoupon = {
         ...couponForm.value,
-        maCode: data.data?.maCode || couponForm.value.maCode, // Lấy maCode từ API nếu có
+        maCode: data.data?.maCode || couponForm.value.maCode,
         ngayBatDau: couponForm.value.ngayBatDau ? new Date(couponForm.value.ngayBatDau).toISOString().split('T')[0] : '',
         ngayKetThuc: couponForm.value.ngayKetThuc ? new Date(couponForm.value.ngayKetThuc).toISOString().split('T')[0] : '',
         soLuongDaDung: 0
       };
-      coupons.value.unshift(newCoupon); // Thêm vào đầu mảng
-      totalItems.value += 1; // Cập nhật tổng số mục
-      totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value); // Cập nhật tổng số trang
+      coupons.value.unshift(newCoupon);
+      totalItems.value += 1;
+      totalPages.value = Math.ceil(totalItems.value / itemsPerPage.value);
 
       Swal.fire('Thành công', data.message, 'success');
       closeAddModal();
-      fetchCoupons(); // Tải lại từ API để đồng bộ
+      fetchCoupons();
     } else {
       Swal.fire('Lỗi', data.message || 'Không thể thêm coupon', 'error');
     }
@@ -505,13 +519,21 @@ onMounted(() => {
                     <input v-model="couponForm.moTa" class="form-control">
                   </div>
                   <div class="col-md-6 mb-3">
+                    <label class="form-label">Loại giảm giá</label>
+                    <select v-model="discountType" class="form-control">
+                      <option value="amount">Số tiền giảm</option>
+                      <option value="percent">Phần trăm giảm</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
                     <label class="form-label">Số tiền giảm</label>
                     <input
                       v-model="couponForm.soTienGiam"
                       type="number"
                       class="form-control"
                       min="0"
-                      :disabled="couponForm.phanTramGiam > 0"
+                      :disabled="discountType === 'percent'"
+                      :required="discountType === 'amount'"
                     >
                   </div>
                   <div class="col-md-6 mb-3">
@@ -522,7 +544,8 @@ onMounted(() => {
                       class="form-control"
                       min="0"
                       max="100"
-                      :disabled="couponForm.soTienGiam > 0"
+                      :disabled="discountType === 'amount'"
+                      :required="discountType === 'percent'"
                     >
                   </div>
                   <div class="col-md-6 mb-3">
