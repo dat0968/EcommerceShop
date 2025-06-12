@@ -146,7 +146,7 @@ onMounted(() => {
   })
 
   // Initialize Owl Carousel
-  const owl = $('.product__details__pic__slider').owlCarousel({
+  /* const owl = $('.product__details__pic__slider').owlCarousel({
     items: 1,
     loop: true,
     autoplay: false,
@@ -167,7 +167,7 @@ onMounted(() => {
   owl.on('changed.owl.carousel', function (event) {
     currentImage.value = event.item.index + 1 - event.item.count
     if (currentImage.value < 1) currentImage.value += event.item.count
-  })
+  }) */
 })
 
 const changeImage = (index) => {

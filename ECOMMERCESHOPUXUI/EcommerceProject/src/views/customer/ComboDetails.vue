@@ -410,7 +410,7 @@ export default {
 
     onMounted(() => {
       // Initialize Owl Carousel
-      const owl = $('.product__details__pic__slider').owlCarousel({
+      /* const owl = $('.product__details__pic__slider').owlCarousel({
         items: 1,
         loop: true,
         autoplay: false,
@@ -419,7 +419,7 @@ export default {
         animateOut: 'fadeOut',
         animateIn: 'fadeIn',
       })
-
+ */
       // Khởi tạo biến thể mặc định
       combo.value.products.forEach((product, index) => {
         selectedVariants.value[index] = {

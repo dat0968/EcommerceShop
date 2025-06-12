@@ -23,14 +23,6 @@
             <option value="0">Không ảnh</option>
           </select>
         </div>
-        <!-- <div class="col-md-6 mb-2">
-          <input
-            v-model="searchText"
-            class="form-control"
-            placeholder="Tìm theo nội dung, tên khách, phản hồi..."
-            @input="filterByRating"
-          />
-        </div> -->
         <div class="col-md-3">
           <button class="btn btn-primary" :disabled="isDisabled" @click="updateShopResponse">
             Cập nhật phản hồi của shop
@@ -83,7 +75,6 @@ export default {
       selectedReview: [],
       filterByStar: null,
       filterHasImage: '',
-      // searchText: '',
       pathReplaceImg,
       isLightboxOpen: false,
       lightboxImages: [],
@@ -159,15 +150,6 @@ export default {
         const hasImg = item.hinhAnhs && item.hinhAnhs.length > 0
         if (this.filterHasImage === '1' && !hasImg) return false
         if (this.filterHasImage === '0' && hasImg) return false
-        // Lọc theo nội dung tìm kiếm
-        /* const text = this.searchText.trim().toLowerCase()
-        if (text) {
-          const inContent =
-            (item.noiDung && item.noiDung.toLowerCase().includes(text)) ||
-            (item.tenKhachHang && item.tenKhachHang.toLowerCase().includes(text)) ||
-            (item.shopPhanHoi && item.shopPhanHoi.toLowerCase().includes(text))
-          if (!inContent) return false
-        } */
         return true
       })
       this.initDataTable()
@@ -340,7 +322,7 @@ export default {
           </div>
       </div>`
 
-      div.html(detailsHtml)
+      return div.html(detailsHtml)
     },
     // -- Hàm cập nhập phản hồi của shop
     async updateShopResponse() {

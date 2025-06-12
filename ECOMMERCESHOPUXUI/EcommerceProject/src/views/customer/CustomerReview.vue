@@ -16,7 +16,7 @@
     <!-- Breadcrumb End -->
 
     <section class="shop spad">
-      <div class="container" style="min-height: 50vh">
+      <div class="container overflow-auto" style="min-height: 50vh">
         <div class="row">
           <div class="d-flex align-items-center mb-3 position-relative">
             <ul class="nav nav-tabs flex-grow-1">

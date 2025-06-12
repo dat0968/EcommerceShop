@@ -1,25 +1,29 @@
 import $ from 'jquery'
 
 export function attachDetailsControl(tableSelector, format) {
-  $(tableSelector + ' tbody')
-    .off('click', 'td.details-control')
-    .on('click', 'td.details-control', function () {
-      var tr = $(this).closest('tr')
-      var tdi = tr.find('i.fa')
-      var row = $(tableSelector).DataTable().row(tr)
+  try {
+    $(tableSelector + ' tbody')
+      .off('click', 'td.details-control')
+      .on('click', 'td.details-control', function () {
+        var tr = $(this).closest('tr')
+        var tdi = tr.find('i.fa')
+        var row = $(tableSelector).DataTable().row(tr)
 
-      if (row.child.isShown()) {
-        row.child.hide()
-        tr.removeClass('shown')
-        tdi.first().removeClass('fa-minus-square')
-        tdi.first().addClass('fa-plus-square')
-      } else {
-        row.child(format(row.data())).show()
-        tr.addClass('shown')
-        tdi.first().removeClass('fa-plus-square')
-        tdi.first().addClass('fa-minus-square')
-      }
-    })
+        if (row.child.isShown()) {
+          row.child.hide()
+          tr.removeClass('shown')
+          tdi.first().removeClass('fa-minus-square')
+          tdi.first().addClass('fa-plus-square')
+        } else {
+          row.child(format(row.data())).show()
+          tr.addClass('shown')
+          tdi.first().removeClass('fa-plus-square')
+          tdi.first().addClass('fa-minus-square')
+        }
+      })
+  } catch (e) {
+    console.warn(e)
+  }
 }
 
 //#region Default value for Datatable
