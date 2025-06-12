@@ -28,7 +28,7 @@ export default {
           '/Review/users',
           ConfigsRequest.takeAuth({ 'Skip-Navigation': true }),
         )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
           this.totalReviewNeedSubmit = 0
           this.userReviews = {}
           document.cookie = 'userReviews=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'

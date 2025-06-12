@@ -232,7 +232,7 @@ export default {
           })
         }
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã đánh giá thành công!')
+
         await this.getOrderDetail()
       } catch (e) {
         alert('Lỗi: ' + e.message)
@@ -283,7 +283,6 @@ export default {
           })
         }
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        else alert('Đã lưu đánh giá!')
         await this.getOrderDetail()
       } catch (e) {
         alert('Lỗi: ' + e.message)

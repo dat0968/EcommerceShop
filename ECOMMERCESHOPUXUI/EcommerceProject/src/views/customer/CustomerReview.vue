@@ -15,7 +15,6 @@
     </div>
     <!-- Breadcrumb End -->
 
-    <!-- Shop Section Begin -->
     <section class="shop spad">
       <div class="container" style="min-height: 50vh">
         <div class="row">
@@ -41,40 +40,79 @@
               </li>
             </ul>
             <div class="ms-3 position-absolute start-50">
-              <button class="btn btn-outline-primary" @click="reloadReviews">
-                <span class="icon-clockwise"></span> Load lại
+              <button class="btn" @click="reloadReviews" title="Tải lại danh sách đánh giá">
+                <span class="icon-check"></span>
               </button>
             </div>
           </div>
 
+          <!-- Tab Chưa đánh giá -->
           <div v-if="activeTab === 'notReviewed'">
             <div v-if="notReviewed.length">
-              <div v-for="item in notReviewed" :key="item.id" class="border rounded p-3 mb-3">
-                <div class="mb-2">
-                  <label>Số sao:</label>
-                  <select
-                    v-model.number="item._editSoSao"
-                    class="form-control"
-                    style="width: 120px; display: inline-block"
-                  >
-                    <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
-                  </select>
-                  <span class="ms-2">
-                    <span v-for="n in item._editSoSao" :key="n" style="color: #ffc107">★</span>
-                    <span v-for="n in 5 - item._editSoSao" :key="'empty' + n" style="color: #e4e5e9"
-                      >★</span
+              <div
+                v-for="item in notReviewed"
+                :key="item.id"
+                class="border rounded p-3 mb-4 shadow-sm"
+              >
+                <!-- Thông tin đối tượng -->
+                <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                  <div v-if="item.tenHinhAnh" class="me-3">
+                    <img
+                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
+                      alt="Ảnh sản phẩm"
+                      class="img-fluid border border-light rounded"
+                      style="width: 7em; height: 5em; object-fit: cover; cursor: pointer"
+                      @click="
+                        openLightbox(
+                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
+                          0,
+                        )
+                      "
+                    />
+                  </div>
+                  <div>
+                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
+                    {{ item.maSp || item.maCombo }}
+                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
+                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
+                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
+                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
+                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
+                  </div>
+                </div>
+                <!-- Đánh giá -->
+                <div class="row mb-2">
+                  <div class="col-md-6">
+                    <label class="fw-bold">Số sao:</label>
+                    <select
+                      v-model.number="item._editSoSao"
+                      class="form-control d-inline-block w-auto ms-2"
                     >
-                  </span>
+                      <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
+                    </select>
+                    <span class="ms-2">
+                      <span v-for="n in item._editSoSao" :key="n" style="color: #ffc107">★</span>
+                      <span
+                        v-for="n in 5 - item._editSoSao"
+                        :key="'empty' + n"
+                        style="color: #e4e5e9"
+                        >★</span
+                      >
+                    </span>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="fw-bold">Nội dung đánh giá:</label>
+                    <input
+                      v-model="item._editNoiDung"
+                      class="form-control"
+                      placeholder="Nội dung..."
+                    />
+                  </div>
                 </div>
+                <!-- Ảnh đánh giá -->
                 <div class="mb-2">
-                  <label>Nội dung đánh giá:</label>
-                  <input
-                    v-model="item._editNoiDung"
-                    class="form-control"
-                    placeholder="Nội dung..."
-                  />
-                </div>
-                <div class="mb-2">
+                  <label class="fw-bold">Hình ảnh kèm đánh giá:</label>
+                  <br />
                   <input
                     type="file"
                     multiple
@@ -91,27 +129,46 @@
                       :key="idx"
                       :src="img"
                       class="img-fluid me-2 border border-light rounded-5"
-                      style="max-width: 10em; height: 10em"
+                      style="max-width: 10em; height: 10em; cursor: pointer"
                       @click="openLightbox(item._previewImgs, idx)"
                     />
                   </div>
                 </div>
-                <button class="btn btn-success btn-sm me-2" @click="submitReview(item)">
+                <!-- Nút gửi -->
+                <button class="btn btn-success btn-sm" @click="submitReview(item)">
                   Lưu đánh giá
                 </button>
-                <div class="mt-2 p-2 bg-light d-flex align-items-center">
+              </div>
+            </div>
+            <EmptySuggestBox
+              v-else
+              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
+              linkNav="/shop"
+            />
+          </div>
+
+          <!-- Tab Đã đánh giá -->
+          <div v-else>
+            <div v-if="reviewed.length">
+              <div
+                v-for="item in reviewed"
+                :key="item.id"
+                class="border rounded p-3 mb-4 shadow-sm"
+              >
+                <!-- Thông tin đối tượng -->
+                <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
                   <div v-if="item.tenHinhAnh" class="me-3">
                     <img
                       :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
                       alt="Ảnh sản phẩm"
                       class="img-fluid border border-light rounded"
+                      style="width: 7em; height: 5em; object-fit: cover; cursor: pointer"
                       @click="
                         openLightbox(
                           [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
                           0,
                         )
                       "
-                      style="width: 7em; height: 5em; object-fit: cover"
                     />
                   </div>
                   <div>
@@ -124,18 +181,7 @@
                     <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
                   </div>
                 </div>
-              </div>
-            </div>
-            <EmptySuggestBox
-              v-else
-              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
-              linkNav="/shop"
-            />
-          </div>
-
-          <div v-else>
-            <div v-if="reviewed.length">
-              <div v-for="item in reviewed" :key="item.id" class="border rounded p-3 mb-3">
+                <!-- Số sao và nội dung -->
                 <div class="mb-2">
                   <span>
                     <span v-for="n in item.soSao" :key="n" style="color: #ffc107">★</span>
@@ -146,18 +192,27 @@
                   <span class="ms-2 text-muted">{{ item.soSao }} sao</span>
                 </div>
                 <div class="mb-2"><strong>Nội dung:</strong> {{ item.noiDung }}</div>
-                <div v-if="item.hinhAnhs && item.hinhAnhs.length" class="d-flex flex-wrap mb-2">
-                  <img
-                    v-for="(img, idx) in Array.isArray(item.hinhAnhs)
-                      ? item.hinhAnhs
-                      : item.hinhAnhs.split(',')"
-                    :key="idx"
-                    :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                    class="img-fluid me-2 border border-light rounded-5"
-                    style="max-width: 10em; height: 10em"
-                    @click="openLightbox(getReviewImagesFullPath(item), idx)"
-                  />
+                <!-- Ảnh đánh giá -->
+                <div v-if="item.hinhAnhs && item.hinhAnhs.length" class="mb-2">
+                  <div class="bg-light border rounded-3 p-2 mb-2 d-inline-block">
+                    <strong class="text-secondary" style="font-size: 0.95em">
+                      Hình ảnh kèm đánh giá:
+                    </strong>
+                    <div class="d-flex flex-wrap mt-2">
+                      <img
+                        v-for="(img, idx) in Array.isArray(item.hinhAnhs)
+                          ? item.hinhAnhs
+                          : item.hinhAnhs.split(',')"
+                        :key="idx"
+                        :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
+                        class="img-fluid me-2 border border-light rounded-5"
+                        style="max-width: 10em; height: 10em; cursor: pointer"
+                        @click="openLightbox(getReviewImagesFullPath(item), idx)"
+                      />
+                    </div>
+                  </div>
                 </div>
+                <!-- Phản hồi của shop -->
                 <blockquote
                   v-if="item.shopPhanHoi"
                   class="col-12"
@@ -166,31 +221,6 @@
                   <strong>Phản hồi của shop:</strong>
                   {{ item.shopPhanHoi }}
                 </blockquote>
-                <div class="mb-2 p-2 bg-light d-flex align-items-center">
-                  <div v-if="item.tenHinhAnh" class="me-3">
-                    <img
-                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
-                      alt="Ảnh sản phẩm"
-                      class="img-fluid border border-light rounded"
-                      @click="
-                        openLightbox(
-                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
-                          0,
-                        )
-                      "
-                      style="width: 7em; height: 5em; object-fit: cover"
-                    />
-                  </div>
-                  <div>
-                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
-                    {{ item.maSp || item.maCombo }}
-                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
-                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
-                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
-                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
-                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
-                  </div>
-                </div>
               </div>
             </div>
             <EmptySuggestBox
@@ -203,13 +233,13 @@
       </div>
     </section>
     <!-- Shop Section End -->
+    <VueEasyLight
+      :visible="isLightboxOpen"
+      :imgs="lightboxImages"
+      :index="lightboxIndex"
+      @hide="closeLightbox"
+    />
   </div>
-  <VueEasyLight
-    :visible="isLightboxOpen"
-    :imgs="lightboxImages"
-    :index="lightboxIndex"
-    @hide="closeLightbox"
-  />
 </template>
 
 <script>

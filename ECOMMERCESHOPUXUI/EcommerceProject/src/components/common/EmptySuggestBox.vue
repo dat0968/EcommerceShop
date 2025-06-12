@@ -3,7 +3,7 @@
     <div class="mb-3">
       <slot name="icon">
         <span style="font-size: 3rem; color: #bbb">
-          <i class="fa fa-box-open"></i>
+          <i :class="iconSub"></i>
         </span>
       </slot>
     </div>
@@ -11,7 +11,7 @@
       {{ contentText }}
     </div>
     <RouterLink v-if="linkNav" :to="linkNav" class="btn btn-outline-primary mt-2">
-      Khám phá ngay
+      {{ suggestContent }}
     </RouterLink>
   </div>
 </template>
@@ -20,6 +20,10 @@
 export default {
   name: 'EmptySuggestBox',
   props: {
+    iconSub: {
+      type: String,
+      default: 'fa fa-box-open',
+    },
     contentText: {
       type: String,
       required: true,
@@ -27,6 +31,10 @@ export default {
     linkNav: {
       type: String,
       default: '',
+    },
+    suggestContent: {
+      type: String,
+      default: 'Khám phá ngay',
     },
   },
 }

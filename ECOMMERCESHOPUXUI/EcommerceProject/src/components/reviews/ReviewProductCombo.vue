@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="">
     <!-- Thanh lọc và tìm kiếm -->
     <div class="row mb-3">
       <div class="col-md-3 mb-2">
@@ -31,12 +31,11 @@
           <li
             v-for="review in filteredReviews"
             :key="review.id"
-            class="list-group-item"
+            class="list-group-item rounded shadow"
             style="margin-bottom: 12px"
           >
             <div class="d-flex align-items-center mb-2">
               <img
-                v-if="review.avatar"
                 :src="pathReplaceImg(undefined, '', review.avatar)"
                 alt="avatar"
                 style="
@@ -47,7 +46,7 @@
                   margin-right: 10px;
                 "
                 @click="
-                  openLightbox([pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)], 0)
+                  openLightbox([pathReplaceImg(undefined, 'HinhAnh/SanPham', review.avatar)], 0)
                 "
               />
               <div>
@@ -70,21 +69,25 @@
               <strong>Nội dung:</strong>
               <span>{{ review.noiDung }}</span>
             </div>
-            <div
-              v-if="review.hinhAnhs && review.hinhAnhs.length"
-              class="d-flex flex-wrap mb-2 mx-2"
-            >
-              <img
-                v-for="(img, idx) in Array.isArray(review.hinhAnhs)
-                  ? review.hinhAnhs
-                  : review.hinhAnhs.split(',')"
-                :key="idx"
-                :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                class="img-fluid me-2 border border-light rounded-5"
-                style="max-width: 7em; height: 7em"
-                alt="Hình đánh giá"
-                @click="openLightbox(getReviewImagesFullPath(review), idx)"
-              />
+            <div v-if="review.hinhAnhs && review.hinhAnhs.length" class="mb-2 mx-2">
+              <div class="bg-light border rounded-3 p-2 mb-2 d-inline-block">
+                <strong class="text-secondary" style="font-size: 0.95em">
+                  Hình ảnh đánh giá:
+                </strong>
+                <div class="d-flex flex-wrap mt-2">
+                  <img
+                    v-for="(img, idx) in Array.isArray(review.hinhAnhs)
+                      ? review.hinhAnhs
+                      : review.hinhAnhs.split(',')"
+                    :key="idx"
+                    :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
+                    class="img-fluid me-2 border border-light rounded-5"
+                    style="max-width: 7em; height: 7em; cursor: pointer"
+                    alt="Hình đánh giá"
+                    @click="openLightbox(getReviewImagesFullPath(review), idx)"
+                  />
+                </div>
+              </div>
             </div>
             <blockquote
               v-if="review.shopPhanHoi"
@@ -94,6 +97,7 @@
               <strong>Phản hồi của shop:</strong>
               {{ review.shopPhanHoi ? review.shopPhanHoi : 'Chưa có phản hồi' }}
             </blockquote>
+            <hr />
             <!-- Thông tin sản phẩm/combo -->
             <div class="mb-2 p-2 bg-light d-flex align-items-center">
               <div v-if="review.tenHinhAnh" class="me-3">
@@ -118,7 +122,12 @@
         </ul>
       </div>
       <div v-else-if="errorMessage" class="">
-        {{ errorMessage }}
+        <EmptySuggestBox
+          :contentText="errorMessage"
+          :iconSub="'fa fa-star'"
+          :linkNav="'/review'"
+          :suggestContent="'Đánh giá ngay'"
+        />
       </div>
       <div v-else class="text-muted">Không tìm thấy đánh giá phù hợp.</div>
     </div>
@@ -138,14 +147,15 @@ import pathReplaceImg from '@/utils/processPathImg'
 import { formatDate } from '@/constants/formatDatetime'
 import ResponseAPI from '@/models/ResponseAPI'
 import VueEasyLight from 'vue-easy-lightbox'
+import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
 
 export default {
   name: 'ReviewProductCombo',
   props: {
-    objectId: Number,
+    objectId: String,
     isProduct: Boolean,
   },
-  components: { VueEasyLight },
+  components: { VueEasyLight, EmptySuggestBox },
   data() {
     return {
       objectIdLocal: this.objectId || null,
@@ -207,7 +217,7 @@ export default {
           ? `/review/products/${this.objectIdLocal}`
           : `/review/combos/${this.objectIdLocal}`
         const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig())
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res)) {
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
           this.errorMessage = res.data.message
           this.reviews = []
           return

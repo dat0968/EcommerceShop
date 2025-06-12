@@ -50,7 +50,6 @@
                 </div>
               </div>
             </div>
-            <ReviewProductCombo :objectId="comboId ?? 0" :isProduct="false" />
           </div>
           <div class="col-lg-6">
             <div class="product__details__text">
@@ -138,15 +137,35 @@
           </div>
           <div class="col-lg-12">
             <div class="product__details__tab">
+              <!-- Thay thế phần tab hiện tại bằng đoạn này -->
               <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
-                  <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab"
-                    >Description</a
+                  <a
+                    class="nav-link"
+                    :class="{ active: activeTab === 'desc' }"
+                    href="#"
+                    @click.prevent="activeTab = 'desc'"
+                    >Mô tả</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    :class="{ active: activeTab === 'review' }"
+                    href="#"
+                    @click.prevent="activeTab = 'review'"
+                    >Đánh giá</a
                   >
                 </li>
               </ul>
-              <div class="tab-content">
-                <div class="tab-pane active" id="tabs-1" role="tabpanel">
+              <div class="tab-content vh-100 overflow-auto">
+                <div
+                  v-show="activeTab == 'desc'"
+                  class="tab-pane"
+                  :class="[activeTab == 'desc' ? 'active' : '']"
+                  id="tabs-1"
+                  role="tabpanel"
+                >
                   <p>
                     Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut loret
                     fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi
@@ -161,6 +180,15 @@
                     montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque
                     eu, pretium quis, sem.
                   </p>
+                </div>
+                <div
+                  v-show="activeTab == 'review'"
+                  class="tab-pane"
+                  :class="[activeTab == 'review' ? 'active' : '']"
+                  id="tabs-2"
+                  role="tabpanel"
+                >
+                  <ReviewProductCombo :objectId="comboId" :isProduct="false" />
                 </div>
               </div>
             </div>
@@ -378,6 +406,8 @@ export default {
       })
     }
 
+    const activeTab = ref('desc')
+
     onMounted(() => {
       // Initialize Owl Carousel
       const owl = $('.product__details__pic__slider').owlCarousel({
@@ -409,6 +439,7 @@ export default {
       changeImage,
       selectVariant,
       addToCart,
+      activeTab,
     }
   },
 }

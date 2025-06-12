@@ -17,7 +17,7 @@ async function detectAvailableApi(paths = API_PATHS) {
   if (storedBaseUrl) {
     // Nếu có, kiểm tra xem nó có khả dụng không
     try {
-      const res = await axios.options(storedBaseUrl + '/Health', { timeout: 1000 })
+      const res = await axios.options(storedBaseUrl + '/Health', { timeout: 2000 })
       console.info(`API endpoint ${storedBaseUrl} khả dụng!`, `[${res.status}]`)
       return storedBaseUrl // Trả về baseURL đã lưu
     } catch (e) {
@@ -32,7 +32,7 @@ async function detectAvailableApi(paths = API_PATHS) {
   for (const path of paths) {
     try {
       // Gửi request OPTIONS để kiểm tra CORS và server
-      const res = await axios.options(path + '/Health', { timeout: 1000 })
+      const res = await axios.options(path + '/Health', { timeout: 2000 })
       console.info(`API endpoint ${path} khả dụng!`, `[${res.status}]`)
       localStorage.setItem('apiBaseUrl', path) // Lưu vào localStorage
       return path
@@ -139,9 +139,11 @@ axiosClient.interceptors.request.use(
 
     if (!accessToken) {
       // Yêu cầu xác thực nhưng không có token
-      console.warn('Không có access token, chuyển hướng đến trang đăng nhập.')
-      if (!isSkipNavigation) router.push('/login') // Chuyển hướng đến trang đăng nhập
-      return config // Quan trọng: Ngăn chặn request được gửi đi
+      if (!isSkipNavigation) {
+        console.warn('Không có access token, chuyển hướng đến trang đăng nhập.')
+        router.push('/login') // Chuyển hướng đến trang đăng nhập
+        return config
+      } // Quan trọng: Ngăn chặn request được gửi đi
     }
     // Kiểm tra token hết hạn bằng cách sử dụng ReadToken
     const readtoken = ReadToken(accessToken)

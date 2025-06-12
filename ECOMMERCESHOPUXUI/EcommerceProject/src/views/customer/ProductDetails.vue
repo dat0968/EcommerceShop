@@ -272,6 +272,7 @@ const fetchRcmProduct = async () => {
     console.log(recommendationProduct.value)
   }
 }
+const activeTab = ref('desc')
 
 watch(
   () => route.params.id,
@@ -369,7 +370,6 @@ watch(
                 </div>
               </div>
             </div>
-            <ReviewProductCombo :objectId="id" :isProduct="true" />
           </div>
           <div class="col-lg-6">
             <div class="product__details__text">
@@ -431,16 +431,45 @@ watch(
             </div>
           </div>
           <div class="col-lg-12">
-            <div class="product__details__tab">
-              <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item">
-                  <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">Mô tả</a>
-                </li>
-              </ul>
-              <div class="tab-content">
-                <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                  <p v-html="product.moTa"></p>
-                </div>
+            <!-- Thay thế phần tab hiện tại bằng đoạn này -->
+            <ul class="nav nav-tabs" role="tablist">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  :class="{ active: activeTab === 'desc' }"
+                  href="#"
+                  @click.prevent="activeTab = 'desc'"
+                  >Mô tả</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  :class="{ active: activeTab === 'review' }"
+                  href="#"
+                  @click.prevent="activeTab = 'review'"
+                  >Đánh giá</a
+                >
+              </li>
+            </ul>
+            <div class="tab-content vh-100 overflow-auto">
+              <div
+                v-show="activeTab == 'desc'"
+                class="tab-pane"
+                :class="[activeTab == 'desc' ? 'active' : '']"
+                id="tabs-1"
+                role="tabpanel"
+              >
+                <p v-html="product.moTa"></p>
+              </div>
+              <div
+                v-show="activeTab == 'review'"
+                class="tab-pane"
+                :class="[activeTab == 'review' ? 'active' : '']"
+                id="tabs-2"
+                role="tabpanel"
+              >
+                <ReviewProductCombo :objectId="id" :isProduct="true" />
               </div>
             </div>
           </div>
