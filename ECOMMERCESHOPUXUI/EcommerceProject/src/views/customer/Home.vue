@@ -13,7 +13,6 @@ import insta4 from '@/assets/Customer/img/instagram/insta-4.jpg'
 import insta5 from '@/assets/Customer/img/instagram/insta-5.jpg'
 import insta6 from '@/assets/Customer/img/instagram/insta-6.jpg'
 import { ref } from 'vue'
-import TestReact from '@/components/tests/testReact.vue'
 const setBackgroundImages = () => {
   const elements = document.querySelectorAll('[data-setbg]')
   elements.forEach((element) => {
@@ -434,7 +433,6 @@ onMounted(() => {
     </section>
     <!-- Trend Section End -->
   </div>
-  <TestReact />
 </template>
 
 <style>
@@ -544,4 +542,3 @@ onMounted(() => {
   }
 }
 </style>
-

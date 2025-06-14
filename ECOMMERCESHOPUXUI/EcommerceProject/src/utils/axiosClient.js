@@ -103,7 +103,10 @@ async function refreshAccessToken() {
       refreshToken: refreshToken,
     }
 
-    const response = await axios.post(`${axiosClient.baseURL}/Account/RenewAccessToken`, content)
+    const response = await axios.post(
+      `${localStorage.getItem('apiBaseUrl')}/Account/RenewAccessToken`,
+      content,
+    )
 
     if (response.status === 200 && response.data.success) {
       const { accessToken } = response.data.data
