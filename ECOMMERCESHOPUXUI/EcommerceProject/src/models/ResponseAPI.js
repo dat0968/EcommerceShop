@@ -45,12 +45,25 @@ class ResponseAPI {
     const responseJson = this.fromJson(response) // Tạo instance từ JSON
 
     if (responseJson.success) {
-      if (isShowNotification)
-        Swal.fire('Thành công', responseJson.message || 'Hành động thành công', 'success')
+      if (isShowNotification) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Thành công',
+          text: responseJson.message || 'Thao tác đã được thực hiện!',
+          showConfirmButton: false,
+          timer: 1500,
+        })
+      }
       return false // Nếu thành công, trả về "false"
     } else {
-      if (isShowNotification)
-        Swal.fire('Thất bại', responseJson.message || 'Thao tác thất bại!', 'info')
+      if (isShowNotification) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: responseJson.message || 'Có lỗi xảy ra. Vui lòng thử lại!',
+          showConfirmButton: true,
+        })
+      }
       return true // Nếu thất bại, trả về "true"
     }
   }
