@@ -236,6 +236,18 @@ export default {
                   $('#selectAllReviews').prop('checked', true)
                 }
               })
+            // Gắn sự kiện click cho ảnh review-lightbox-img để mở lightbox
+            $(document)
+              .off('click', '.review-lightbox-img')
+              .on('click', '.review-lightbox-img', function () {
+                const imgs = $(this).data('imgs')
+                const idx = parseInt($(this).data('idx')) || 0
+                // Chuyển đổi sang mảng path đầy đủ
+                const fullImgs = imgs.map((img) =>
+                  vm.pathReplaceImg(undefined, 'HinhAnh/Reviews', img),
+                )
+                vm.openLightbox(fullImgs, idx)
+              })
           },
         })
       })
@@ -304,11 +316,11 @@ export default {
                     .split(',')
                     .map(
                       (img, idx, arr) => `
-                        <div class="col-4 d-flex align-items-center mb-2">
+                        <div class="col-auto d-flex mb-2">
                           <img 
                             src="${pathReplaceImg(undefined, 'HinhAnh/Reviews', img)}" 
                             class="img-fluid border border-light rounded-3 review-lightbox-img"
-                            style="max-width: 100%; height: auto; cursor:pointer"
+                            style="max-width: 7em; height: 7em; cursor: pointer"
                             alt="Hình ảnh đánh giá"
                             data-imgs='${JSON.stringify(arr)}'
                             data-idx='${idx}'
