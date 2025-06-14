@@ -75,7 +75,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
                 HinhAnhs = combo?.Hinh ?? string.Empty,
                 DonGia = sanPham != null
                     ? (sanPham.Chitietsanphams.Any() ? (double)sanPham.Chitietsanphams.Average(x => x.DonGia) : 0)
-                    : ((int?)combo?.SoTienGiam ?? 0), // ! Attention this
+                    : ((int?)combo?.Chitietcombos.Sum(ctbo => ctbo.SoLuongSP * ctbo.MaSpNavigation.Chitietsanphams.Average(ctsp => ctsp.DonGia)) ?? 0), // ? Maybe not fine
                 LuotXem = sanPham?.LuotXem ?? 0,
                 SoLuong = sanPham != null
                     ? (sanPham.Chitietsanphams.Any() ? (int)sanPham.Chitietsanphams.Average(x => x.SoLuongTon) : 0)

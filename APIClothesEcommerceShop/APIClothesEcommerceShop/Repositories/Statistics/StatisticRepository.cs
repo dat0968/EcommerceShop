@@ -131,7 +131,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             // Gom nhóm theo MaSp (sản phẩm cha)
             var topProducts = allDetails
                 .Where(x => x.MaCtspNavigation != null)
-                .GroupBy(x => x.MaCtspNavigation!.MaSp) // ? Here has a !
+                .GroupBy(x => x.MaCtspNavigation!.MaSp)
                 .Select(g =>
                 {
                     var maSp = g.Key;
@@ -146,7 +146,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         {
                             var ctsp = ctspGroup.First().MaCtspNavigation;
                             return new DetailTopProduct(
-                                ctsp!.MaCtsp, // ? Here has a !
+                                ctsp!.MaCtsp,
                                 ctsp.MaSp,
                                 ctsp.KichThuoc,
                                 ctsp.MauSac,
@@ -187,7 +187,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             // Tạo dictionary để truy xuất nhanh các đơn hàng theo mã khách hàng
             var ordersByCustomer = dataOrder
                 .Where(x => x != null && x.MaKhNavigation != null && x.MaKh.HasValue)
-                .GroupBy(x => x.MaKh!.Value) // ! Over there has a !.
+                .GroupBy(x => x.MaKh.HasValue ? x.MaKh.Value : 0)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
 
             return ordersByCustomer.Select(kvp =>

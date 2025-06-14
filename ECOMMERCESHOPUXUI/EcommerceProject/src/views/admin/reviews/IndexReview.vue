@@ -381,7 +381,8 @@ export default {
           `/review/shop-response`,
           body,
           ConfigsRequest.getSkipAuthConfig(),
-        ) // ! Fix lại chỗ này
+        )
+        // ! Fix lại chỗ này
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
           return
         }

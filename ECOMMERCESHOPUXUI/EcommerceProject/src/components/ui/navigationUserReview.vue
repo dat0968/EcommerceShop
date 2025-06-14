@@ -9,6 +9,7 @@
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 import ResponseAPI from '@/models/ResponseAPI'
+import authService from '@/services/authService'
 
 export default {
   name: 'NavigationUserReview',
@@ -16,6 +17,7 @@ export default {
     return {
       userReviews: {},
       totalReviewNeedSubmit: 0,
+      isLogged: authService.isAccess(),
     }
   },
   mounted() {
@@ -24,6 +26,12 @@ export default {
   methods: {
     async loadUserReviews() {
       try {
+        if (this.isLogged) {
+          this.totalReviewNeedSubmit = 0
+          this.userReviews = {}
+          document.cookie = 'userReviews=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+          return
+        }
         const res = await axiosConfig.getFromApi(
           '/Review/users',
           ConfigsRequest.takeAuth({ 'Skip-Navigation': true }),
@@ -46,6 +54,7 @@ export default {
         this.totalReviewNeedSubmit = 0
         this.userReviews = {}
         document.cookie = 'userReviews=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+        console.log('Lỗi tải: ' + e)
       }
     },
   },

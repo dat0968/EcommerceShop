@@ -210,7 +210,9 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
                 foreach (var combo in ctcbos)
                 {
                     int soLuong = random.Next(1, 3);
-                    int donGia = (int?)combo.SoTienGiam ?? 10000; // ! Attention it
+                    int donGia =
+                     ((int?)combo?.Chitietcombos.Sum(ctbo => ctbo.SoLuongSP
+                     * ctbo.MaSpNavigation.Chitietsanphams.Average(ctsp => ctsp.DonGia)) ?? 0); // ? Maybe not fine
 
                     Chitietcombohoadon ctcbo = (new Chitietcombohoadon
                     {
