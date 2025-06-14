@@ -39,7 +39,7 @@
                 >
               </li>
             </ul>
-            <div class="ms-3 position-absolute start-50">
+            <div class="ms-3 position-absolute end-0">
               <button class="btn" @click="reloadReviews" title="Tải lại danh sách đánh giá">
                 <span class="icon-check"></span>
               </button>
@@ -54,32 +54,6 @@
                 :key="item.id"
                 class="border rounded p-3 mb-4 shadow-sm"
               >
-                <!-- Thông tin đối tượng -->
-                <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
-                  <div v-if="item.tenHinhAnh" class="me-3">
-                    <img
-                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
-                      alt="Ảnh sản phẩm"
-                      class="img-fluid border border-light rounded"
-                      style="width: 7em; height: 5em; object-fit: cover; cursor: pointer"
-                      @click="
-                        openLightbox(
-                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
-                          0,
-                        )
-                      "
-                    />
-                  </div>
-                  <div>
-                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
-                    {{ item.maSp || item.maCombo }}
-                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
-                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
-                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
-                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
-                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
-                  </div>
-                </div>
                 <!-- Đánh giá -->
                 <div class="row mb-2">
                   <div class="col-md-6">
@@ -134,27 +108,6 @@
                     />
                   </div>
                 </div>
-                <!-- Nút gửi -->
-                <button class="btn btn-success btn-sm" @click="submitReview(item)">
-                  Lưu đánh giá
-                </button>
-              </div>
-            </div>
-            <EmptySuggestBox
-              v-else
-              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
-              linkNav="/shop"
-            />
-          </div>
-
-          <!-- Tab Đã đánh giá -->
-          <div v-else>
-            <div v-if="reviewed.length">
-              <div
-                v-for="item in reviewed"
-                :key="item.id"
-                class="border rounded p-3 mb-4 shadow-sm"
-              >
                 <!-- Thông tin đối tượng -->
                 <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
                   <div v-if="item.tenHinhAnh" class="me-3">
@@ -181,6 +134,27 @@
                     <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
                   </div>
                 </div>
+                <!-- Nút gửi -->
+                <button class="btn btn-success btn-sm" @click="submitReview(item)">
+                  Lưu đánh giá
+                </button>
+              </div>
+            </div>
+            <EmptySuggestBox
+              v-else
+              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
+              linkNav="/shop"
+            />
+          </div>
+
+          <!-- Tab Đã đánh giá -->
+          <div v-else>
+            <div v-if="reviewed.length">
+              <div
+                v-for="item in reviewed"
+                :key="item.id"
+                class="border rounded p-3 mb-4 shadow-sm"
+              >
                 <!-- Số sao và nội dung -->
                 <div class="mb-2">
                   <span>
@@ -221,6 +195,32 @@
                   <strong>Phản hồi của shop:</strong>
                   {{ item.shopPhanHoi }}
                 </blockquote>
+                <!-- Thông tin đối tượng -->
+                <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                  <div v-if="item.tenHinhAnh" class="me-3">
+                    <img
+                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
+                      alt="Ảnh sản phẩm"
+                      class="img-fluid border border-light rounded"
+                      style="width: 7em; height: 5em; object-fit: cover; cursor: pointer"
+                      @click="
+                        openLightbox(
+                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
+                          0,
+                        )
+                      "
+                    />
+                  </div>
+                  <div>
+                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
+                    {{ item.maSp || item.maCombo }}
+                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
+                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
+                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
+                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
+                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
+                  </div>
+                </div>
               </div>
             </div>
             <EmptySuggestBox
@@ -249,6 +249,8 @@ import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
 import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
 import { formatCurrency } from '@/constants/formatCurrency'
+import offensiveWords from '@/assets/default/texts/vn_offensive_words.json'
+
 import Swal from 'sweetalert2'
 import VueEasyLight from 'vue-easy-lightbox'
 
@@ -273,6 +275,14 @@ export default {
   },
   methods: {
     formatCurrency,
+    isProfanity(text) {
+      if (!offensiveWords.length) return false
+      const normalized = text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+      return offensiveWords.some((word) => normalized.includes(word))
+    },
     loadFromCookieOrApi() {
       const cookie = document.cookie.split('; ').find((row) => row.startsWith('userReviews='))
       if (cookie) {
@@ -347,6 +357,16 @@ export default {
           Swal.fire({
             icon: 'warning',
             title: 'Vui lòng nhập nội dung và chọn số sao!',
+            timer: 2000,
+            showConfirmButton: false,
+          })
+          return
+        }
+        if (this.isProfanity(item._editNoiDung)) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Nội dung không phù hợp!',
+            text: 'Vui lòng không sử dụng từ ngữ thô tục trong đánh giá.',
             timer: 2000,
             showConfirmButton: false,
           })
