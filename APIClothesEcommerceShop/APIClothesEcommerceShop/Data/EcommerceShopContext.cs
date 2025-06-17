@@ -56,7 +56,6 @@ public partial class EcommerceShopContext : DbContext
 
     // ? public virtual DbSet<BinhLuan> BinhLuans { get; set; }
 
-    /* ? public virtual DbSet<YeuThich> YeuThichs { get; set; } */
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Sanphamyeuthich>(entity =>
