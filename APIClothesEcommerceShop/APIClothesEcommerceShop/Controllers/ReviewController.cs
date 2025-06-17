@@ -150,6 +150,7 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <returns>Danh sách đánh giá chi tiết</returns>
         [ProducesResponseType(typeof(ResponseAPI<IEnumerable<ReviewDetailDTO>>), 200)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllReview()
         {
@@ -162,6 +163,8 @@ namespace APIClothesEcommerceShop.Controllers
         /// </summary>
         /// <param name="request">Thông tin phản hồi và danh sách mã đánh giá</param>
         /// <returns>Kết quả phản hồi</returns>
+        [ProducesResponseType(typeof(ResponseAPI<string>), 200)]
+        [Authorize(Roles = "Admin,Nhân viên")]
         [HttpPut("shop-response")]
         public async Task<IActionResult> ResponseToReview([FromBody] ReviewReplyRequestDTO request)
         {

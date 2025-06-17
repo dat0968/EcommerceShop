@@ -125,10 +125,7 @@ export default {
     // -- Hàm lấy dữ liệu đánh giá từ API
     async getListReview() {
       try {
-        const response = await axiosConfig.getFromApi(
-          '/review/all',
-          ConfigsRequest.getSkipAuthConfig(),
-        )
+        const response = await axiosConfig.getFromApi('/review/all', ConfigsRequest.takeAuth())
         this.listReview = response.data
         this.isLoading = false
       } catch (error) {
@@ -392,7 +389,7 @@ export default {
         const res = await axiosConfig.putToApi(
           `/review/shop-response`,
           body,
-          ConfigsRequest.getSkipAuthConfig(),
+          ConfigsRequest.takeAuth(),
         )
         // ! Fix lại chỗ này
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
