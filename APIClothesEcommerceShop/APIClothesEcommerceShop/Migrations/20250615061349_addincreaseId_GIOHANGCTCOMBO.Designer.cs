@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250615061349_addincreaseId_GIOHANGCTCOMBO")]
+    partial class addincreaseId_GIOHANGCTCOMBO
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -241,60 +244,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasIndex("MaHd");
 
                     b.ToTable("CTHOADON", (string)null);
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.DanhGia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("MaCombo")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaCtHd")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaKh")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("MaSp")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("NgayDanhGia")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("NgayPhanHoi")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("NoiDung")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ShopPhanHoi")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SoSao")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TenCacHinhAnh")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MaCombo");
-
-                    b.HasIndex("MaCtHd")
-                        .IsUnique();
-
-                    b.HasIndex("MaKh");
-
-                    b.HasIndex("MaSp");
-
-                    b.ToTable("DANHGIA");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Danhmuccha", b =>
@@ -842,21 +791,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.ToTable("SANPHAM", (string)null);
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.Sanphamyeuthich", b =>
-                {
-                    b.Property<int>("MaSp")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaKh")
-                        .HasColumnType("int");
-
-                    b.HasKey("MaSp", "MaKh");
-
-                    b.HasIndex("MaKh");
-
-                    b.ToTable("SANPHAMYEUTHICH", (string)null);
-                });
-
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
@@ -966,37 +900,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaHdNavigation");
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.DanhGia", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.Combo", "Combo")
-                        .WithMany("DanhGias")
-                        .HasForeignKey("MaCombo");
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Cthoadon", "Cthoadon")
-                        .WithOne("DanhGia")
-                        .HasForeignKey("APIClothesEcommerceShop.Models.DanhGia", "MaCtHd")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "KhachHang")
-                        .WithMany()
-                        .HasForeignKey("MaKh")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "SanPham")
-                        .WithMany("DanhGias")
-                        .HasForeignKey("MaSp");
-
-                    b.Navigation("Combo");
-
-                    b.Navigation("Cthoadon");
-
-                    b.Navigation("KhachHang");
-
-                    b.Navigation("SanPham");
-                });
-
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Diachi", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "MaKhNavigation")
@@ -1098,25 +1001,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaChucVuNavigation");
                 });
 
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.Sanphamyeuthich", b =>
-                {
-                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "MaKhNavigation")
-                        .WithMany("Sanphamyeuthichs")
-                        .HasForeignKey("MaKh")
-                        .IsRequired()
-                        .HasConstraintName("FK__SPYEUTHICH__MaKH__6754119E");
-
-                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "MaSpNavigation")
-                        .WithMany("Sanphamyeuthichs")
-                        .HasForeignKey("MaSp")
-                        .IsRequired()
-                        .HasConstraintName("FK__SPYEUTHICH__MaKH__6754889E");
-
-                    b.Navigation("MaKhNavigation");
-
-                    b.Navigation("MaSpNavigation");
-                });
-
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietsanpham", b =>
                 {
                     b.Navigation("Chitietcombohoadons");
@@ -1143,14 +1027,7 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.Navigation("Cthoadons");
 
-                    b.Navigation("DanhGias");
-
                     b.Navigation("Giohangs");
-                });
-
-            modelBuilder.Entity("APIClothesEcommerceShop.Models.Cthoadon", b =>
-                {
-                    b.Navigation("DanhGia");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Danhmuccha", b =>
@@ -1182,8 +1059,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("Giohangs");
 
                     b.Navigation("Hoadons");
-
-                    b.Navigation("Sanphamyeuthichs");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Macoupon", b =>
@@ -1203,10 +1078,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("Chitietdanhmucs");
 
                     b.Navigation("Chitietsanphams");
-
-                    b.Navigation("Sanphamyeuthichs");
-
-                    b.Navigation("DanhGias");
                 });
 #pragma warning restore 612, 618
         }

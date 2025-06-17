@@ -26,6 +26,7 @@ import GoogleLoginSuccess from '../views/accounts/GoogleLoginSuccess.vue'
 import couponManagement from '../views/admin/Coupon/indexCoupon.vue'
 import Review from '@/views/admin/reviews/IndexReview.vue'
 import CustomerReview from '@/views/customer/CustomerReview.vue'
+import VNPAYresponse from '../views/customer/VNPaySuccess.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -59,6 +60,7 @@ const router = createRouter({
         { path: 'coupon', name: 'couponManagement', component: couponManagement },
       ],
     },
+    { path: '/VNPAYresponse/:orderId/:total', name: 'VNPAYresponse', component: VNPAYresponse },
     {
       path: '/Login',
       name: 'Login',

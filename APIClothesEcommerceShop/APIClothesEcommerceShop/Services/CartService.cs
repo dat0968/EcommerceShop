@@ -30,6 +30,12 @@ namespace APIClothesEcommerceShop.Services
                     DonGia = model.DonGia,
                     MaKh = model.MaKh,
                     TenHinhAnh = model.TenHinhAnh,
+                    Giohangctcombos = model.Giohangctcombos.Select(p => new Giohangctcombo
+                    {
+                        MaCtsp = p.MaCtsp,
+                        SoLuong = p.SoLuong,    
+                        DonGia = p.DonGia,
+                    }).ToList(),
                 };
                 NewCart = await cartRepository.AddCart(NewCart);
                 if (model.MaCombo  != null)
@@ -41,7 +47,7 @@ namespace APIClothesEcommerceShop.Services
                         {
                             MaCtsp = item.MaCtsp,
                             MaGioHang = NewCart.Id,
-                            SoLuong = NewCart.SoLuong * item.SoLuong,
+                            SoLuong = item.SoLuong,
                             DonGia = item.DonGia,
                         };
                         NewDetail = await cart_DetailComboRepository.AddCart_DetailCombo(NewDetail);
@@ -76,7 +82,7 @@ namespace APIClothesEcommerceShop.Services
                             SoLuong = model.SoLuong * item.SoLuong,
                             DonGia = item.DonGia,
                         };
-                        NewDetail = await cart_DetailComboRepository.UpdateCart_DetailCombo(NewDetail.MaGioHang, NewDetail.SoLuong);
+                        NewDetail = await cart_DetailComboRepository.UpdateCart_DetailCombo(NewDetail, NewDetail.SoLuong);
                     }
                 }
 

@@ -7,6 +7,9 @@
         public int MaGioHang { get; set; }
 
         public int MaCtsp { get; set; }
+        public string TenSanPham { get; set; }
+        public string? MauSac { get; set;}
+        public string? KichThuoc { get; set; }
 
         public int SoLuong { get; set; }
 

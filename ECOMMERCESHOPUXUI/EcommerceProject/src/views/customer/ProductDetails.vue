@@ -8,6 +8,7 @@ import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
+import recommendationview from '@/components/RecommendationProduct/RecomendationProduct.vue'
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
@@ -20,7 +21,8 @@ const selectedSize = ref('')
 const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const router = useRouter()
-const quantity = ref(1)
+const quantity = ref('1')
+
 // Call Api ProductDetails
 const fetchAPI = async () => {
   const response = await fetch(`${getUrlAPI.value}/api/Shop/Product/${id}`, {
@@ -85,7 +87,7 @@ const maxQuantity = computed(() => {
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
       (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
   )
-  quantity.value = 1
+  quantity.value = '1'
   return match ? match.soLuongTon : 'Hết hàng'
 })
 
@@ -175,6 +177,8 @@ const changeImage = (index) => {
   $('.product__details__pic__slider').trigger('to.owl.carousel', [index - 1, 300])
 }
 const validateQuantity = () => {
+  const value = quantity.value.trim()
+  if (value === '') return
   const number = parseInt(quantity.value)
   if (isNaN(number) || number < 1) {
     quantity.value = '1'
@@ -186,6 +190,17 @@ const validateQuantity = () => {
 }
 const addToCart = async () => {
   try {
+    const value = quantity.value.trim()
+    if (value === '') {
+      Swal.fire({
+        title: 'Không để trống số lượng',
+        icon: 'error',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      })
+      return
+    }
     const validatetoken = await validateToken(accessToken.value, refreshToken.value)
     if (!validatetoken.isValid) {
       router.push('/Login')
@@ -474,7 +489,7 @@ watch(
             </div>
           </div>
         </div>
-        <div v-if="isLogin" class="row">
+        <!-- <div v-if="isLogin" class="row">
           <div class="col-lg-12 text-center">
             <div class="related__title">
               <h5>GỢI Ý CHO BẠN</h5>
@@ -514,18 +529,13 @@ watch(
                     item.tenSanPham
                   }}</router-link>
                 </h6>
-                <!-- <div class="rating">
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                  <i class="fa fa-star"></i>
-                </div> -->
+               
                 <div style="color: red" class="product__price">{{ item.khoangGia }}</div>
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
+        <recommendationview></recommendationview>
       </div>
     </section>
     <!-- Product Details Section End -->

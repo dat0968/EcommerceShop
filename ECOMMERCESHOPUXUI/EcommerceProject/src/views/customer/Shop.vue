@@ -101,7 +101,9 @@ onMounted(() => {
         <div class="row">
           <div class="col-lg-12">
             <div class="breadcrumb__links">
-              <RouterLink style="text-decoration-line: none;" to="/"><i class="fa fa-home"></i> Trang chủ</RouterLink>
+              <RouterLink style="text-decoration-line: none" to="/"
+                ><i class="fa fa-home"></i> Trang chủ</RouterLink
+              >
               <span>Sản phẩm</span>
             </div>
           </div>
@@ -192,20 +194,14 @@ onMounted(() => {
               <div
                 class="col-lg-3 col-md-4 col-sm-6 mix"
                 v-for="product in products"
-                :key="product.maSp"
+                :key="product.id"
               >
                 <div class="product__item">
                   <div class="product__item__pic">
                     <img
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                        product.productDetails[0].images[0].tenHinhAnh
-                      }`"
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${product.image}`"
                       alt="Hình ảnh sản phẩm"
-                      v-if="
-                        product.productDetails.length > 0 &&
-                        product.productDetails[0].images &&
-                        product.productDetails[0].images.length > 0
-                      "
+                      v-if="product.image != undefined"
                     />
                     <span v-else class="text-muted"> Không có ảnh </span>
                     <ul class="product__hover">
@@ -224,10 +220,20 @@ onMounted(() => {
                   </div>
                   <div class="product__item__text">
                     <h6>
-                      <RouterLink :to="`/product/${product.maSp}`" style="text-decoration-line: none">
-                        {{ product.tenSanPham }}
+                      <RouterLink
+                        :to="product.type.toLowerCase() === 'product' ? `/product/${product.id}` : `/combo/${product.id}`"
+                        style="text-decoration-line: none"
+                      >
+                        {{ product.name }}
                         <div class="product__price text-muted fw-semibold fs-7 text-danger">
-                          {{ product.khoangGia }}
+                          {{
+                            product.type.toLowerCase() == 'product'
+                              ? product.priceRange
+                              : product.discountPercentage != undefined &&
+                                product.discountPercentage > 0
+                              ? 'Giảm ' + product.discountPercentage + '%'
+                              : 'Giảm ' + product.discountAmount + 'VNĐ'
+                          }}
                         </div>
                       </RouterLink>
                     </h6>

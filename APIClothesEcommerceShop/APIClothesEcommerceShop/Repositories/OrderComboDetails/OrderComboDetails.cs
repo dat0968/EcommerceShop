@@ -10,21 +10,13 @@ namespace APIClothesEcommerceShop.Repositories.OrderComboDetails
         {
             this.db = db;
         }
-        public async Task<Chitietcombohoadon> CreateComboOrderDetails(Chitietcombohoadon model)
+        public async Task<Chitietcombohoadon> AddDetailComboOrder(Chitietcombohoadon model)
         {
             try
             {
-                var NewComboDetailsOrder = new Chitietcombohoadon
-                {
-                    MaHd = model.MaHd,
-                    MaCtsp = model.MaCtsp,
-                    MaCombo = model.MaCombo,
-                    SoLuong = model.SoLuong,
-                    DonGia = model.DonGia,
-                };
-                db.Chitietcombohoadons.Add(NewComboDetailsOrder);
+                db.Chitietcombohoadons.Add(model);
                 await db.SaveChangesAsync();
-                return NewComboDetailsOrder;
+                return model;
             }
             catch(Exception ex)
             {

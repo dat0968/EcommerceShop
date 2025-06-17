@@ -2,8 +2,6 @@
 {
     public class Cart_DetailsComboRequestDTO
     {
-        public int Id { get; set; }
-
         public int MaCtsp { get; set; }
 
         public int SoLuong { get; set; }

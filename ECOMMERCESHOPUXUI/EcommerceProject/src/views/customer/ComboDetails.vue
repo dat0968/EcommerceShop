@@ -1,3 +1,202 @@
+<script setup>
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
+import RecomendationProduct from '@/components/RecommendationProduct/RecomendationProduct.vue'
+import Swal from 'sweetalert2'
+const route = useRoute()
+const getUrlAPI = ref(GetApiUrl())
+const id = route.params.id
+const combo = ref({})
+const allImages = ref([])
+const currentSlider = ref(1)
+const colors = ref([])
+const selectedVariants = ref([])
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+const router = useRouter()
+const quantity = ref('1')
+
+const fetchCombo = async () => {
+  const response = await fetch(getUrlAPI.value + `/api/Combos/${id}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+  if (!response.ok) {
+    throw new Error('Error fetchAPI Combo')
+  }
+  const result = await response.json()
+  combo.value = {
+    id: result.maCombo,
+    name: result.tenCombo,
+    image: result.hinh,
+    quantityCombo: result.soLuong,
+    description: result.moTa || 'Chưa có mô tả',
+    phanTramGiam: result.phanTramGiam,
+    soTienGiam: result.soTienGiam,
+    chitietcombos: result.chitietcombos.map((ct) => ({
+      id: ct.maSp,
+      name: ct.tenSp,
+      image: ct.sanPhamCTs[0]?.images[0] || '/images/default-product.jpg',
+      quantity: ct.soLuongSp,
+      variants: ct.sanPhamCTs,
+      colors: [...new Set(ct.sanPhamCTs.map((pd) => pd.mauSac).filter(Boolean))],
+      sizes: [...new Set(ct.sanPhamCTs.map((pd) => pd.kichThuoc).filter(Boolean))],
+    })),
+  }
+  combo.value.chitietcombos.forEach((product, index) => {
+    selectedVariants.value[index] = {
+      color: product.colors[0] || '',
+      size: availableSizes.value[index]?.[0] || '',
+    }
+  })
+  console.log(combo.value)
+}
+const availableSizes = computed(() => {
+  return (
+    combo.value.chitietcombos?.map((product, index) => {
+      const selectedColor = selectedVariants.value[index]?.color || product.colors[0]
+      const sizes = product.variants
+        .filter((v) => v.mauSac === selectedColor && v.soLuongTon > 0)
+        .map((v) => v.kichThuoc)
+      return [...new Set(sizes)]
+    }) || []
+  )
+})
+const validateQuantity = () => {
+  const value = quantity.value.trim()
+  if (value === '') return
+  const number = parseInt(quantity.value)
+  if (isNaN(number) || number < 1) {
+    quantity.value = '1'
+  } else if (number > combo.value.quantityCombo) {
+    quantity.value = combo.value.quantityCombo.toString()
+  } else {
+    quantity.value = number.toString()
+  }
+}
+onMounted(async () => {
+  await fetchCombo()
+})
+
+function selectedvariant(productIndex, type, value) {
+  if (!selectedVariants.value[productIndex]) {
+    selectedVariants.value[productIndex] = {}
+  }
+  selectedVariants.value[productIndex][type] = value
+  const product = combo.value.chitietcombos[productIndex]
+  if (type === 'color') {
+    const defaultSize = availableSizes.value[productIndex]?.[0]
+    if (defaultSize) {
+      selectedVariants.value[productIndex].size = defaultSize
+    }
+  }
+  const variant = product.variants.find(
+    (v) =>
+      v.mauSac === (selectedVariants.value[productIndex].color || product.colors[0]) &&
+      v.kichThuoc ===
+        (selectedVariants.value[productIndex].size || availableSizes.value[productIndex]?.[0]),
+  )
+  if (!variant || variant.soLuongTon <= 0) {
+    Swal.fire('Lỗi', 'Biến thể này không có sẵn hoặc đã hết hàng!', 'error')
+  }
+}
+
+const OrginalPriceCombo = computed(() => {
+  const chiTietCombos = combo.value?.chitietcombos || []
+  var FindPrice = chiTietCombos.map((combo, index) => {
+    const selectedColor = selectedVariants.value[index].color
+    const selectedSize = selectedVariants.value[index].size
+    const variant = combo.variants.find(
+      (p) => p.kichThuoc == selectedSize && p.mauSac == selectedColor,
+    )
+    return variant.donGia * combo.quantity
+  })
+  return FindPrice.reduce((total, num) => total + num, 0)
+})
+
+const PriceCombo = computed(() => {
+  return (
+    OrginalPriceCombo.value -
+    ((combo.value.phanTramGiam * OrginalPriceCombo.value) / 100 || combo.value.soTienGiam)
+  )
+})
+
+async function addToCart() {
+  const value = quantity.value.trim()
+  if (value === '') {
+    Swal.fire({
+      title: 'Không để trống số lượng',
+      icon: 'error',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+    return
+  }
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (!validatetoken.isValid) {
+    router.push('/Login')
+    return
+  } else {
+    accessToken.value = validatetoken.newAccessToken
+    const readToken = decodeToken(accessToken.value)
+    var content = {
+      maKh: readToken.IdUser,
+      maCtsp: null,
+      maCombo: combo.value.id,
+      soLuong: quantity.value,
+      donGia: PriceCombo.value,
+      tenHinhAnh: combo.value.image,
+      giohangctcombos: combo.value.chitietcombos.map((product, index) => {
+        const selectedColor = selectedVariants.value[index]?.color
+        const selectedSize = selectedVariants.value[index]?.size
+        const variant = product.variants.find(
+          (v) => v.mauSac === selectedColor && v.kichThuoc === selectedSize,
+        )
+        return {
+          maCtsp: variant?.maCtsp,
+          soLuong: quantity.value * product.quantity,
+          donGia: variant?.donGia || 0,
+        }
+      }),
+    }
+
+    const response = await fetch(`${getUrlAPI.value}/api/Cart`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(content),
+    })
+    const result = await response.json()
+    if (!response.ok || !result.success) {
+      Swal.fire({
+        title: result.error || 'Đã xảy ra lỗi',
+        icon: 'error',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      })
+      return
+    }
+    if (result.success) {
+      Swal.fire({
+        title: 'Đã thêm sản phẩm vào giỏ hàng.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      })
+    }
+    console.log(content)
+  }
+}
+</script>
 <template>
   <div>
     <!-- Combo Details Section Begin -->
@@ -7,66 +206,48 @@
           <div class="col-lg-6">
             <div class="product__details__pic">
               <div style="position: relative" class="product__details__slider__content">
-                <div class="product__details__pic__slider owl-carousel">
-                  <div>
-                    <img data-hash="combo-1" class="product__big__img" :src="combo.image" alt="" />
-                  </div>
-                  <div v-for="(product, index) in combo.products" :key="index">
-                    <img
-                      :data-hash="'combo-' + (index + 2)"
-                      class="product__big__img"
-                      :src="product.image"
-                      alt=""
-                    />
-                  </div>
-                </div>
-              </div>
-              <!-- Thumbnail ảnh nhỏ -->
-              <div
-                class="product__details__thumbnails d-flex justify-content-center col-lg-6"
-                style="max-width: 100%; display: flex; justify-content: center"
-              >
-                <div class="carousel slide w-100">
-                  <div class="carousel-inner">
-                    <div :class="['carousel-item', { active: currentSlider === 1 }]">
-                      <div class="d-flex gap-2 justify-content-center" style="width: 100%">
-                        <img
-                          :src="combo.image"
-                          class="img-fluid w-25"
-                          alt=""
-                          @click.prevent="changeImage(1)"
-                        />
-                        <img
-                          v-for="(product, index) in combo.products"
-                          :key="index"
-                          :src="product.image"
-                          class="img-fluid w-25"
-                          alt=""
-                          @click.prevent="changeImage(index + 2)"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <img
+                    class="product__big__img"
+                    :src="`${getUrlAPI}/HinhAnh/AnhCombo/${combo.image}`"
+                    alt=""
+                  />
                 </div>
               </div>
             </div>
           </div>
           <div class="col-lg-6">
             <div class="product__details__text">
-              <h3>{{ combo.name }}</h3>
+              <h3>
+                {{ combo.name }} <span>Còn: {{ combo.quantityCombo }} phần</span>
+              </h3>
               <div class="product__details__price">
-                {{ formatPrice(combo.price) }}đ <span>{{ formatPrice(combo.originalPrice) }}đ</span>
+                {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span>
               </div>
               <div class="product__details__button">
                 <div class="quantity">
                   <span>Số lượng:</span>
                   <div class="pro-qty">
-                    <input type="text" v-model="quantity" />
+                    <input type="text" v-model="quantity" @input="validateQuantity" />
                   </div>
                 </div>
-                <div class="button-group">
-                  <a style="height: 50px" href="#" class="cart-btn" @click.prevent="addToCart">
+                <a class="button-group">
+                  <button style="height: 50px" href="#" class="cart-btn" @click.prevent="addToCart">
                     <span class="icon_bag_alt"></span> Thêm giỏ hàng
+                  </button>
+                  <a style="margin-bottom: 14px" class="action-buttons">
+                    <a
+                      href="#"
+                      style="border-radius: 50%; width: 50px; height: 50px"
+                      class="action-btn"
+                      ><span class="icon_heart_alt"></span
+                    ></a>
+                    <a
+                      href="#"
+                      style="border-radius: 50%; width: 50px; height: 50px"
+                      class="action-btn"
+                      ><span class="icon_adjust-horiz"></span
+                    ></a>
                   </a>
                   <div style="margin-bottom: 14px" class="action-buttons">
                     <a
@@ -82,17 +263,17 @@
                       ><span class="icon_adjust-horiz"></span
                     ></a>
                   </div>
-                </div>
+                </a>
               </div>
               <div class="product__details__widget">
                 <ul class="variant-list">
                   <li
-                    v-for="(product, index) in combo.products"
+                    v-for="(product, index) in combo.chitietcombos"
                     :key="index"
                     class="variant-section"
                   >
                     <div class="variant-title">
-                      <h4>{{ product.name }}</h4>
+                      <h4>{{ product.tenSp }}</h4>
                     </div>
                     <div class="variant-options">
                       <div class="variant-group">
@@ -104,9 +285,9 @@
                             :class="[
                               'btn',
                               'btn-light',
-                              { active: selectedVariants[index]?.color === color },
+                              { active: selectedVariants[index]['color'] === color },
                             ]"
-                            @click="selectVariant(index, 'color', color)"
+                            @click="selectedvariant(index, 'color', color)"
                           >
                             {{ color }}
                           </button>
@@ -116,14 +297,14 @@
                         <span class="variant-label">Kích thước:</span>
                         <div class="size__checkbox">
                           <button
-                            v-for="(size, sizeIndex) in product.sizes"
+                            v-for="(size, sizeIndex) in availableSizes[index]"
                             :key="sizeIndex"
                             :class="[
                               'btn',
                               'btn-light',
-                              { active: selectedVariants[index]?.size === size },
+                              { active: selectedVariants[index]['size'] === size },
                             ]"
-                            @click="selectVariant(index, 'size', size)"
+                            @click="selectedvariant(index, 'size', size)"
                           >
                             {{ size }}
                           </button>
@@ -156,6 +337,7 @@
                     @click.prevent="activeTab = 'review'"
                     >Đánh giá</a
                   >
+                  <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">MÔ TẢ</a>
                 </li>
               </ul>
               <div class="tab-content vh-100 overflow-auto">
@@ -167,18 +349,7 @@
                   role="tabpanel"
                 >
                   <p>
-                    Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut loret
-                    fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi
-                    nesciunt loret. Neque porro lorem quisquam est, qui dolorem ipsum quia dolor si.
-                    Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut loret
-                    fugit, sed quia ipsu consequuntur magni dolores eos qui ratione voluptatem sequi
-                    nesciunt. Nulla consequat massa quis enim.
-                  </p>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula
-                    eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient
-                    montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque
-                    eu, pretium quis, sem.
+                    {{ combo.description }}
                   </p>
                 </div>
                 <div
@@ -322,6 +493,7 @@
               </div>
             </div>
           </div>
+          <RecomendationProduct />
         </div>
       </div>
     </section>

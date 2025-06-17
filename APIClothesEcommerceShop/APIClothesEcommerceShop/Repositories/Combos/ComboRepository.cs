@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using APIClothesEcommerceShop.DTO.Combos;
 using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Data;
+using APIClothesEcommerceShop.DTO.ProductDetails;
+using APIClothesEcommerceShop.DTO.ImageProduct;
 
 namespace APIClothesEcommerceShop.Repositories.Combos
 {
@@ -68,10 +70,45 @@ namespace APIClothesEcommerceShop.Repositories.Combos
         }
 
 
-        public async Task<APIClothesEcommerceShop.Models.Combo?> GetById(int id)
+        public async Task<ComboResponseDTO?> GetById(int id)
         {
-            var getCombobyID = await _context.Combos.AsNoTracking().FirstOrDefaultAsync(p => p.MaCombo == id);
-            return getCombobyID;
+            var getCombobyID = await _context.Combos.AsNoTracking()
+                .Include(p => p.Chitietcombos)
+                .ThenInclude(p => p.MaSpNavigation)
+                .ThenInclude(p => p.Chitietsanphams)
+                .FirstOrDefaultAsync(p => p.MaCombo == id);
+            if (getCombobyID == null)
+            {
+                throw new Exception("Not Found Combo");
+            }
+            var ResponseCombo = new ComboResponseDTO
+            {
+                MaCombo = getCombobyID.MaCombo,
+                TenCombo = getCombobyID.TenCombo,
+                Hinh = getCombobyID.Hinh,
+                SoLuong = getCombobyID.SoLuong,
+                MoTa = getCombobyID.MoTa,
+                NgayBatDau = getCombobyID.NgayBatDau,
+                NgayKetThuc = getCombobyID.NgayKetThuc,
+                PhanTramGiam = getCombobyID.PhanTramGiam,
+                SoTienGiam = getCombobyID.SoTienGiam,
+                IsActive = getCombobyID.IsActive,
+                Chitietcombos = getCombobyID.Chitietcombos.Select(p => new DetaisComboResponseDTO
+                {
+                    MaSp = p.MaSp,
+                    TenSp = p.MaSpNavigation.TenSanPham,
+                    SanPhamCTs = p.MaSpNavigation.Chitietsanphams.Where(details => details.IsActive == true).Select(details => new ProductDetailResponseDTO
+                    {
+                        MaCtsp = details.MaCtsp,
+                        KichThuoc = details.KichThuoc,
+                        MauSac = details.MauSac,
+                        SoLuongTon = details.SoLuongTon,
+                        DonGia = details.DonGia,
+                    }).ToList(),
+                    SoLuongSp = p.SoLuongSP,
+                }).ToList(),
+            };
+            return ResponseCombo;
         }
 
         public async Task<APIClothesEcommerceShop.Models.Combo> AddCombo(APIClothesEcommerceShop.Models.Combo newCombo)

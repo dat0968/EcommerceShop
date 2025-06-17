@@ -43,6 +43,16 @@ namespace APIClothesEcommerceShop.Repositories.ProductDetails
             }
         }
 
+        public async Task<Chitietsanpham> GetDetailByMaCTSp(int MaCtsp)
+        {
+            var findDetail = await db.Chitietsanphams.AsNoTracking().FirstOrDefaultAsync(p => p.MaCtsp == MaCtsp);
+            if(findDetail != null)
+            {
+                return findDetail;
+            }
+            return null;
+        }
+
         public async Task<List<Chitietsanpham>> GetDetailProductByProductId(int productId)
         {
             try

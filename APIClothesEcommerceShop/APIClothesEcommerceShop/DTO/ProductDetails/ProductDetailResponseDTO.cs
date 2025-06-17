@@ -15,7 +15,7 @@ namespace APIClothesEcommerceShop.DTO.ProductDetails
 
         public int DonGia { get; set; }
 
-        public bool? IsActive { get; set; }
+        //public bool? IsActive { get; set; }
 
         public virtual ICollection<ImageProductResponseDTO> Images { get; set; } = new List<ImageProductResponseDTO>();
     }

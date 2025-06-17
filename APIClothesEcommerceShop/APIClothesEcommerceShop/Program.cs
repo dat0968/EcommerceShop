@@ -36,6 +36,7 @@ using APIClothesEcommerceShop.Services.EmailService;
 using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Repositories.DetailCombo;
+using APIClothesEcommerceShop.Repositories.Address;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -118,6 +119,7 @@ builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<MLRecommendationSystem>();
 builder.Services.AddScoped<ComboService>();
+builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IVnpay, Vnpay>();
@@ -141,6 +143,7 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 #endregion
 
 #region [Dependency Injection cho các service]
