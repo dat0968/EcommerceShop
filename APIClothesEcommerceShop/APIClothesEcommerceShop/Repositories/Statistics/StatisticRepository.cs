@@ -167,7 +167,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         ProductId = maSp,
                         ProductName = productName,
                         CategoryName = categoryName ?? string.Empty,
-                        Revenue = g.Sum(x => ((x.Gia) * (x.SoLuong)) - (x.GiamGia)),
+                        Revenue = g.Sum(x => ((x.Gia) * (x.SoLuong))),
                         Count = g.Sum(x => x.SoLuong),
                         DetailTopProducts = detailTopProducts
                     };
@@ -399,7 +399,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Date = g.Key,
                     Month = g.Key.Month,
                     Year = g.Key.Year,
-                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0) - (y?.GiamGia ?? 0))),
+                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0))),
                     Count = g.Count()
                 }).ToList();
 
@@ -412,7 +412,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 {
                     Month = g.Key.Month,
                     Year = g.Key.Year,
-                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0) - (y?.GiamGia ?? 0))),
+                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0))),
                     Count = g.Count()
                 }).ToList();
 
@@ -421,7 +421,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 .Select(g => new SalesByTime
                 {
                     Year = g.Key,
-                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0) - (y?.GiamGia ?? 0))),
+                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0))),
                     Count = g.Count()
                 }).ToList();
 
@@ -607,7 +607,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         //c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
-                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
+                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong))
                     })
                     .AsNoTracking().ToListAsync();
 
@@ -655,7 +655,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         //c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
-                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong) - hoadon.GiamGia)
+                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong))
                     })
                     .AsNoTracking().ToListAsync();
                 var dataOrder = await _context.Hoadons

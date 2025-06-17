@@ -50,9 +50,40 @@ public partial class EcommerceShopContext : DbContext
 
     public virtual DbSet<Sanpham> Sanphams { get; set; }
     public virtual DbSet<Chitietcombo> Chitietcombos { get; set; }
+    public virtual DbSet<Diachi> Diachis { get; set; }
+    public virtual DbSet<Sanphamyeuthich> Sanphamyeuthiches { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Sanphamyeuthich>(entity =>
+        {
+            entity.HasKey(e => new { e.MaSp, e.MaKh });
+
+            entity.ToTable("SANPHAMYEUTHICH");
+
+            entity.HasOne(d => d.MaKhNavigation).WithMany(p => p.Sanphamyeuthichs)
+                .HasForeignKey(d => d.MaKh)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__SPYEUTHICH__MaKH__6754119E");
+            entity.HasOne(d => d.MaSpNavigation).WithMany(p => p.Sanphamyeuthichs)
+                .HasForeignKey(d => d.MaSp)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__SPYEUTHICH__MaKH__6754889E");
+        });
+        modelBuilder.Entity<Diachi>(entity =>
+        {
+            entity.HasKey(e => new { e.ID });
+
+            entity.ToTable("DIACHI");
+
+            entity.Property(e => e.diachichitiet).HasColumnName("DiaChiChiTiet");
+            entity.Property(e => e.MaKh).HasColumnName("MaKh");
+
+            entity.HasOne(d => d.MaKhNavigation).WithMany(p => p.Diachichitiets)
+                .HasForeignKey(d => d.MaKh)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__DiaChiCT__MaKH__6754599E");
+        });
         modelBuilder.Entity<Chitietcombohoadon>(entity =>
         {
             entity.HasKey(e => new { e.MaHd, e.MaCtsp, e.MaCombo }).HasName("PK__CHITIETC__9F02B7B6FFDE6FBA");
@@ -221,7 +252,8 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("GIOHANGCTCOMBO");
 
             entity.Property(e => e.Id)
-                .ValueGeneratedNever()
+                //.ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("ID");
             entity.Property(e => e.MaCtsp).HasColumnName("MaCTSP");
 

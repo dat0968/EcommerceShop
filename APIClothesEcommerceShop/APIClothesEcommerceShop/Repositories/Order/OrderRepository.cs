@@ -146,7 +146,6 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     MaCombo = cthd.MaCombo,
                     SoLuong = cthd.SoLuong,
                     Gia = cthd.Gia,
-                    GiamGia = cthd.GiamGia,
                 }).ToList()
             }).ToListAsync();
 
@@ -161,7 +160,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
             return ListOrder;
         }
 
-        public async Task UpdateStatusOrders(int id, string status, int MaNv, string paymentmethod, string? reasonCancel)
+        public async Task UpdateStatusOrders(int id, string status, int? MaNv, string paymentmethod, string? reasonCancel)
         {
             try
             {
@@ -219,6 +218,16 @@ namespace APIClothesEcommerceShop.Repositories.Order
                 throw new Exception("Error", ex);
             }
 
+        }
+
+        public async Task<Hoadon> GetbyId(int id)
+        {
+            var findOrder = await db.Hoadons.AsNoTracking().FirstOrDefaultAsync(p => p.MaHd == id);
+            if(findOrder == null)
+            {
+                throw new Exception("Not found Order");
+            }
+            return findOrder;
         }
     }
 }

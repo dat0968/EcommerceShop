@@ -8,6 +8,12 @@ export const useCartStore = defineStore('cart', {
   actions: {
     setSelectedItems(items) {
       this.selectedItems = items
+    },
+    deleteItemsCart(itemId) {
+      this.selectedItems = this.selectedItems.filter(item => item.id !== itemId)
+    },
+    clearCart() {
+      this.selectedItems = []
     }
   }
 })

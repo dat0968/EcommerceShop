@@ -24,6 +24,7 @@ import ResetPasswordCustomer from '../views/accounts/ResetPasswordCustomer.vue'
 import ResetPasswordStaff from '../views/accounts/ResetPasswordStaff.vue'
 import GoogleLoginSuccess from '../views/accounts/GoogleLoginSuccess.vue'
 import couponManagement from '../views/admin/Coupon/indexCoupon.vue'
+import VNPAYresponse from '../views/customer/VNPaySuccess.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -37,7 +38,7 @@ const router = createRouter({
         { path: 'combo/:id', name: 'detailCombo', component: detailCombo },
         { path: 'cart', name: 'cart', component: cart },
         { path: 'checkout', name: 'checkout', component: checkout },
-        { path: 'customer', name: 'CustomerManagement', component: customerManagement },
+        { path: 'customer', name: 'CustomerManagement', component: customerManagement },     
       ],
     },
     {
@@ -55,6 +56,7 @@ const router = createRouter({
         {path: 'coupon', name: 'couponManagement', component: couponManagement},
       ],
     },
+    { path: '/VNPAYresponse/:orderId/:total', name: 'VNPAYresponse', component: VNPAYresponse },
     {
       path: '/Login',
       name: 'Login',

@@ -14,16 +14,7 @@ namespace APIClothesEcommerceShop.Repositories.OrderDetails
         {
             try
             {
-                var NewOrderDetails = new Cthoadon
-                {
-                    MaHd = model.MaHd,
-                    MaCtsp = model.MaCtsp,
-                    MaCombo = model.MaCombo,
-                    SoLuong = model.SoLuong,
-                    Gia = model.Gia,
-                    GiamGia = model.GiamGia,
-                };
-                db.Cthoadons.Add(NewOrderDetails);
+                db.Cthoadons.Add(model);
                 await db.SaveChangesAsync();
                 return model;
             }

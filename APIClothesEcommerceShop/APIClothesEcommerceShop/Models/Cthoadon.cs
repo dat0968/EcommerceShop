@@ -17,8 +17,6 @@ public partial class Cthoadon
 
     public int Gia { get; set; }
 
-    public int GiamGia { get; set; }
-
     public virtual Combo? MaComboNavigation { get; set; }
 
     public virtual Chitietsanpham? MaCtspNavigation { get; set; }

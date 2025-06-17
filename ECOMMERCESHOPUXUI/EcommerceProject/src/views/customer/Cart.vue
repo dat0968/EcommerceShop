@@ -83,6 +83,7 @@ async function removeCart(id) {
       showConfirmButton: false,
       timerProgressBar: true,
     })
+    cartStore.deleteItemsCart(id)
     await fetchCart()
   }
 }
@@ -109,7 +110,7 @@ function confirmCart() {
     return
   }
   const selectedCartItems = listCart.value.filter((item) => selectedItems.value.includes(item.id))
-
+  
   cartStore.setSelectedItems(selectedCartItems)
   router.push('/checkout')
 }
@@ -143,7 +144,9 @@ function confirmCart() {
                     <td class="cart__product__item">
                       <div class="tick-icon" v-if="selectedItems.includes(item.id)">✔</div>
                       <img
-                        :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                        :src="item.maCombo == null ? `${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                          item.tenHinhAnh
+                        }` : `${getUrlAPI.replace('/api', '')}/HinhAnh/AnhCombo/${
                           item.tenHinhAnh
                         }`"
                         alt=""
@@ -151,12 +154,17 @@ function confirmCart() {
                         @click="toggleSelection(item.id)"
                       />
                       <div class="cart__product__item__title">
-                        <h6>{{ item.tenSanPham }}</h6>
-                        <div class="product-options">
+                        <h6>{{item.tenSanPham_TenCombo}}</h6>
+                        <div v-if="!item.maCombo" class="product-options">
                           <span v-if="item.mau" class="option-label">Màu: {{ item.mau }}</span>
                           <span v-if="item.kichThuoc" class="option-label"
                             >Kích thước: {{ item.kichThuoc }}</span
                           >
+                        </div>
+                        <div v-else class="product-options">
+                          <span v-for="detailsCombo in item.giohangctcombos" :key="detailsCombo.id" class="option-label">
+                            {{ detailsCombo.tenSanPham }} ({{ detailsCombo.mauSac }}, {{ detailsCombo.kichThuoc }})
+                          </span>
                         </div>
                       </div>
                     </td>

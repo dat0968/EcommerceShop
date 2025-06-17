@@ -10,7 +10,7 @@ namespace APIClothesEcommerceShop.DTO.Cart
         public int MaKh { get; set; }
 
         public int? MaCtsp { get; set; }
-        public string? TenSanPham { get; set; }
+        public string? TenSanPham_TenCombo { get; set; }
         public string? KichThuoc { get; set; }
         public string? Mau { get; set; }
 

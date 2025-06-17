@@ -4,6 +4,6 @@ namespace APIClothesEcommerceShop.Repositories.OrderComboDetails
 {
     public interface IOrderComboDetails
     {
-        Task<Chitietcombohoadon> CreateComboOrderDetails(Chitietcombohoadon model);
+        Task<Chitietcombohoadon> AddDetailComboOrder(Chitietcombohoadon model);
     }
 }

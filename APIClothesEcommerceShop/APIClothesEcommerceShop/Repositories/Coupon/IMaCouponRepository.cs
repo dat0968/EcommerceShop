@@ -13,5 +13,6 @@ namespace APIClothesEcommerceShop.Repositories.Macoupon
         Task<CouponDTO> Create(CouponDTO maCoupon);
         Task Update(CouponDTO maCoupon);
         Task Cancel(string id);
+        Task<bool> CheckUser_CouponCode(int maUser, string couponcode);
     }
 }

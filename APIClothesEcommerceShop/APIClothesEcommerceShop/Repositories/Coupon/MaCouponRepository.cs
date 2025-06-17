@@ -126,21 +126,28 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
 
         public async Task Update(CouponDTO maCoupon)
         {
-            var editCouponCode = new APIClothesEcommerceShop.Models.Macoupon
+            try
             {
-                MaCode = maCoupon.MaCode,
-                MoTa = maCoupon.MoTa,
-                SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : 0,
-                PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : 0,
-                NgayKetThuc = maCoupon.NgayKetThuc,
-                SoLuong = maCoupon.SoLuong,
-                TrangThai = maCoupon.TrangThai,
-                NgayBatDau = maCoupon.NgayBatDau,
-                SoLuongDaDung = maCoupon.SoLuongDaDung,
-                DonHangToiThieu = maCoupon.DonHangToiThieu,
-            };
-            db.Macoupons.Update(editCouponCode);
-            await db.SaveChangesAsync();
+                var editCouponCode = new APIClothesEcommerceShop.Models.Macoupon
+                {
+                    MaCode = maCoupon.MaCode,
+                    MoTa = maCoupon.MoTa,
+                    SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : 0,
+                    PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : 0,
+                    NgayKetThuc = maCoupon.NgayKetThuc,
+                    SoLuong = maCoupon.SoLuong,
+                    TrangThai = maCoupon.TrangThai,
+                    NgayBatDau = maCoupon.NgayBatDau,
+                    SoLuongDaDung = maCoupon.SoLuongDaDung,
+                    DonHangToiThieu = maCoupon.DonHangToiThieu,
+                };
+                db.Macoupons.Update(editCouponCode);
+                await db.SaveChangesAsync();
+            }
+           catch (Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
 
         public async Task<CouponDTO?> GetById(string macoupon)
@@ -164,6 +171,16 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                 return couponDTO;
             }
             return null;
+        }
+
+        public async Task<bool> CheckUser_CouponCode(int maUser, string couponcode)
+        {
+            var check = await db.Hoadons.AsNoTracking().FirstOrDefaultAsync(p => p.MaKh == maUser && p.MaCode == couponcode.Trim());
+            if (check != null)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

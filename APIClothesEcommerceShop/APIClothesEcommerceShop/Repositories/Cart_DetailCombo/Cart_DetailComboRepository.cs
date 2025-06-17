@@ -9,29 +9,28 @@ namespace APIClothesEcommerceShop.Repositories.Cart_DetailCombo
     {
         private readonly EcommerceShopContext db;
         public Cart_DetailComboRepository(EcommerceShopContext db)
-        { 
+        {
             this.db = db;
         }
         public async Task<Giohangctcombo> AddCart_DetailCombo(Giohangctcombo model)
         {
             try
             {
-                var FindCart_Combodetails = await db.Giohangctcombos.AsNoTracking().FirstOrDefaultAsync(p => p.MaGioHang == model.MaGioHang);
-                if(FindCart_Combodetails != null)
+                // Tìm trong local trước, nếu không có thì tìm trên DB với AsNoTracking
+                var FindCart_Combodetails = db.Giohangctcombos.Local.FirstOrDefault(p => p.MaGioHang == model.MaGioHang && p.MaCtsp == model.MaCtsp) ?? await db.Giohangctcombos.FirstOrDefaultAsync(p => p.MaGioHang == model.MaGioHang && p.MaCtsp == model.MaCtsp);
+                if (FindCart_Combodetails != null)
                 {
-                    // Cập nhật số lượng của giỏ hàng_chitiecombo
-                    var Cart_Combodetails = await UpdateCart_DetailCombo(FindCart_Combodetails.MaGioHang, model.SoLuong);
-                    return Cart_Combodetails;
+                    return await UpdateCart_DetailCombo(FindCart_Combodetails, model.SoLuong);
                 }
-                else if(FindCart_Combodetails == null)
-                {
-                    db.Giohangctcombos.Add(model);
-                    await db.SaveChangesAsync();
-                }
+
+                // Nếu chưa tồn tại thì thêm mới
+                db.Giohangctcombos.Add(model);
+                await db.SaveChangesAsync();
                 return model;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                throw new Exception("Error", ex);
+                throw new Exception("Error in AddCart_DetailCombo", ex);
             }
         }
 
@@ -44,7 +43,7 @@ namespace APIClothesEcommerceShop.Repositories.Cart_DetailCombo
                 {
                     throw new Exception("Not found Cart_DetailsCombo");
                 }
-                db.Remove(FindCart_ComboDetails);              
+                db.Remove(FindCart_ComboDetails);
                 await db.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -64,25 +63,26 @@ namespace APIClothesEcommerceShop.Repositories.Cart_DetailCombo
                 }
                 return FindDetailsCart_DetailCombo;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("Error", ex);
             }
         }
 
-        public async Task<Giohangctcombo> UpdateCart_DetailCombo(int MaGioHang, int Quantity)
+        public async Task<Giohangctcombo> UpdateCart_DetailCombo(Giohangctcombo model, int Quantity)
         {
             try
             {
-                var FindCart_ComboDetails = await db.Giohangctcombos.FirstOrDefaultAsync(c => c.MaGioHang == MaGioHang);
-                if (FindCart_ComboDetails == null)
-                {
-                    throw new Exception("Not found Cart_DetailsCombo");
-                }
-                FindCart_ComboDetails.SoLuong += Quantity;
-                db.Giohangctcombos.Update(FindCart_ComboDetails);
+                //var FindCart_ComboDetails = db.Giohangctcombos.Local.FirstOrDefault(p => p.MaGioHang == model.MaGioHang && p.MaCtsp == model.MaCtsp) ?? await db.Giohangctcombos.FirstOrDefaultAsync(p => p.MaGioHang == model.MaGioHang && p.MaCtsp == model.MaCtsp);
+                //if (FindCart_ComboDetails == null)
+                //{
+                //    throw new Exception("Not found Cart_DetailsCombo");
+                //}
+                model.SoLuong += Quantity;
+                db.Giohangctcombos.Update(model);
                 await db.SaveChangesAsync();
-                return FindCart_ComboDetails;
+
+                return model;
             }
             catch (Exception ex)
             {

@@ -1,4 +1,6 @@
-﻿namespace APIClothesEcommerceShop.DTO.Combos
+﻿using APIClothesEcommerceShop.DTO.ProductDetails;
+
+namespace APIClothesEcommerceShop.DTO.Combos
 {
     public class ComboResponseDTO
     {
@@ -12,7 +14,7 @@
         public DateTime? NgayKetThuc { get; set; }
         public float? PhanTramGiam { get; set; }
         public decimal? SoTienGiam { get; set; }
-        public List<SanPhamTrongComboDTO> SanPhams { get; set; }
+        
         public List<DetaisComboResponseDTO> Chitietcombos { get; set; } = new List<DetaisComboResponseDTO>();
     }
     public class DetaisComboResponseDTO
@@ -20,6 +22,6 @@
         public int MaSp { get; set; }
         public string TenSp { get; set; }
         public int SoLuongSp { get; set; }
-       
+        public List<ProductDetailResponseDTO> SanPhamCTs { get; set; }
     }
 }

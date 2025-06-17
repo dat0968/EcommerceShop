@@ -7,7 +7,7 @@ namespace APIClothesEcommerceShop.Repositories.Cart_DetailCombo
     {
         Task<Giohangctcombo> AddCart_DetailCombo(Giohangctcombo model);
         Task<List<Giohangctcombo>> DetailsCart_DetailCombo(int MaGioHang);
-        Task<Giohangctcombo> UpdateCart_DetailCombo(int MaGioHang, int Quantity);
+        Task<Giohangctcombo> UpdateCart_DetailCombo(Giohangctcombo model, int Quantity);
         Task DeleteCart_DetailCombo(int MaGioHang);
     }
 }
