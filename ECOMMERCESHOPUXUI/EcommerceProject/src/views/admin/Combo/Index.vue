@@ -139,14 +139,14 @@ function applyFilter() {
 
   filteredCombos.value = combos;
 
-  if (filteredCombos.value.length === 0) {
-    Swal.fire({
-      title: 'Không tìm thấy combo',
-      text: 'Không có combo nào phù hợp với bộ lọc hiện tại.',
-      icon: 'info',
-      confirmButtonText: 'OK'
-    });
-  }
+  // if (filteredCombos.value.length === 0) {
+  //   Swal.fire({
+  //     title: 'Không tìm thấy combo',
+  //     text: 'Không có combo nào phù hợp với bộ lọc hiện tại.',
+  //     icon: 'info',
+  //     confirmButtonText: 'OK'
+  //   });
+  // }
 }
 
 const ChangePage = (page) => {
