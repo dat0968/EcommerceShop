@@ -180,6 +180,15 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error(`API Error: ${error.response.status}`, error.response.data)
+      Swal.fire({
+        title: error.status,
+        text: error.response.message || 'Bạn không có quyền truy cập nội dung này.',
+        icon: 'error',
+      })
+      if (error.status == 403) {
+        router.push('/')
+        return
+      }
     }
     if (error.response.data) {
       return error.response.data

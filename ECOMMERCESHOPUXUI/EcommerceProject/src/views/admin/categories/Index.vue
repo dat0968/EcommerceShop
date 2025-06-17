@@ -339,6 +339,9 @@ export default {
         '/categories/parents',
         ConfigsRequest.takeAuth(),
       )
+      if (ResponseAPI.handleNotificationAndIsFailResponse(resOptionParen)) {
+        return
+      }
       this.optionsParentCategory = resOptionParen.data
 
       const resOptionChild = await axiosConfig.getFromApi(

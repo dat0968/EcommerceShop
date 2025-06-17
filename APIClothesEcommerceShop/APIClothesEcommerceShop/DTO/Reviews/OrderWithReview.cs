@@ -64,7 +64,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
 
         public int Gia { get; set; }
 
-        public int GiamGia { get; set; }
+        public int? GiamGia { get; set; }
 
         public int MaDanhGia { get; set; }
 
@@ -133,7 +133,7 @@ namespace APIClothesEcommerceShop.DTO.Reviews
                 MaCtsp = product.MaCtsp,
                 SoLuong = product.SoLuong,
                 Gia = product.Gia,
-                GiamGia = product.GiamGia,
+                GiamGia = (int?)(product?.MaHdNavigation?.MaCodeNavigation?.PhanTramGiam ?? (product?.Gia * product?.MaHdNavigation?.MaCodeNavigation?.PhanTramGiam)),
                 MaDanhGia = danhGia?.Id ?? 0,
                 NoiDung = danhGia?.NoiDung ?? "Bạn chưa đánh giá.",
                 SoSao = danhGia?.SoSao ?? 0,
