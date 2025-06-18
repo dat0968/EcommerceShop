@@ -10,7 +10,7 @@ const API_PATHS = [
   'http://localhost:5031/api', // Cái này là path http của API
 ]
 
-// Hàm kiểm tra endpoint khả dụng
+// #region [Hàm kiểm tra endpoint khả dụng]
 async function detectAvailableApi(paths = API_PATHS) {
   // Kiểm tra xem đã có baseUrl trong localStorage chưa
   const storedBaseUrl = localStorage.getItem('apiBaseUrl')
@@ -51,12 +51,14 @@ async function detectAvailableApi(paths = API_PATHS) {
   console.error('Không tìm thấy API endpoint khả dụng!')
   return '' // Trả về chuỗi rỗng nếu không tìm thấy endpoint nào khả dụng
 }
+// #endregion
 
-// Khởi tạo axiosClient với baseURL tạm thời
+// #region [Khởi tạo axiosClient với baseURL tạm thời]
 const axiosClient = axios.create({
   baseURL: localStorage.getItem('apiBaseUrl') ?? API_PATHS[0],
   timeout: 500000,
 })
+// #endregion
 
 // Hàm khởi tạo baseURL động
 export async function initApiBaseUrl() {
@@ -64,7 +66,7 @@ export async function initApiBaseUrl() {
   axiosClient.defaults.baseURL = url ?? ''
 }
 
-// Hàm đọc accesstoken (tương tự hàm ReadToken auth.js)
+// #region Hàm đọc accesstoken (tương tự hàm ReadToken auth.js)
 export function ReadToken(token) {
   if (token) {
     const decoded = jwtDecode(token)
@@ -79,6 +81,7 @@ export function ReadToken(token) {
     return null
   }
 }
+//#endregion
 
 // Hàm refresh token (dựa trên logic auth.js)
 async function refreshAccessToken() {
@@ -128,26 +131,20 @@ axiosClient.interceptors.request.use(
     const isRequiresAuth = !config.headers.skipAuth
     const isSkipNavigation = config.headers['Skip-Navigation'] ?? false
 
-    const requiresAuth = isRequiresAuth
-
     if (config.data && !(config.data instanceof FormData) && !config.headers['Content-Type']) {
       config.headers['Content-Type'] = 'application/json'
     }
 
-    if (!requiresAuth) {
-      return config // Không yêu cầu xác thực, bỏ qua
-    }
-
     const accessToken = Cookies.get('accessToken')
 
-    if (!accessToken) {
-      // Yêu cầu xác thực nhưng không có token
+    if (isRequiresAuth && !accessToken) {
       if (!isSkipNavigation) {
         console.warn('Không có access token, chuyển hướng đến trang đăng nhập.')
-        router.push('/login') // Chuyển hướng đến trang đăng nhập
-        return config
-      } // Quan trọng: Ngăn chặn request được gửi đi
+        router.push('/login')
+      }
+      throw new Error('Tài khoản chưa truy cập, không thể sử dụng 1 số tính năng.')
     }
+
     // Kiểm tra token hết hạn bằng cách sử dụng ReadToken
     const readtoken = ReadToken(accessToken)
     if (readtoken && readtoken.Exp * 1000 < Date.now()) {
@@ -156,20 +153,17 @@ axiosClient.interceptors.request.use(
       if (newAccessToken) {
         config.headers.Authorization = `Bearer ${newAccessToken}`
       } else {
-        // Không thể làm mới token, chuyển hướng đến trang đăng nhập
         if (!isSkipNavigation) router.push('/login')
-        return config // Trả về lỗi cấu hình request
+        throw new Error('Không thể làm mới access token.')
       }
-    } else {
+    } else if (accessToken) {
       // Token còn hiệu lực, thêm vào header
       config.headers.Authorization = `Bearer ${accessToken}`
     }
 
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  },
+  (error) => Promise.reject(error),
 )
 
 // Xử lý phản hồi với các lỗi
