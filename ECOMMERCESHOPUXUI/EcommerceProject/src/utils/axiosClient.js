@@ -45,7 +45,7 @@ async function detectAvailableApi(paths = API_PATHS) {
   Swal.fire({
     icon: 'error',
     title: 'Lỗi kết nối',
-    text: 'Không tìm thấy khả dụng! Vui lòng kiểm tra lại cấu hình hoặc kết nối mạng.',
+    text: 'Hiện không thể kết nối, vui lòng kiếm tra lại kết nối mạng',
   })
 
   console.error('Không tìm thấy API endpoint khả dụng!')

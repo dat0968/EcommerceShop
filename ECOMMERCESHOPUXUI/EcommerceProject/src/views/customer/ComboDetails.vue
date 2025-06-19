@@ -231,11 +231,11 @@ async function addToCart() {
                     <input type="text" v-model="quantity" @input="validateQuantity" />
                   </div>
                 </div>
-                <a class="button-group">
+                <div class="button-group">
                   <button style="height: 50px" href="#" class="cart-btn" @click.prevent="addToCart">
                     <span class="icon_bag_alt"></span> Thêm giỏ hàng
                   </button>
-                  <a style="margin-bottom: 14px" class="action-buttons">
+                  <button style="margin-bottom: 14px" class="action-buttons">
                     <a
                       href="#"
                       style="border-radius: 50%; width: 50px; height: 50px"
@@ -248,7 +248,7 @@ async function addToCart() {
                       class="action-btn"
                       ><span class="icon_adjust-horiz"></span
                     ></a>
-                  </a>
+                  </button>
                   <div style="margin-bottom: 14px" class="action-buttons">
                     <a
                       href="#"
@@ -263,7 +263,7 @@ async function addToCart() {
                       ><span class="icon_adjust-horiz"></span
                     ></a>
                   </div>
-                </a>
+                </div>
               </div>
               <div class="product__details__widget">
                 <ul class="variant-list">
