@@ -17,6 +17,7 @@ public partial class Cthoadon
     public int SoLuong { get; set; }
 
     public int Gia { get; set; }
+    public decimal? GiamGia { get; set; }
 
     public virtual Combo? MaComboNavigation { get; set; }
 

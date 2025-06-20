@@ -8,6 +8,7 @@ namespace APIClothesEcommerceShop.DTO.OrderDetails
 
         public int MaHd { get; set; }
         public string TenSanPham { get; set; }
+        public string TenCombo { get; set; }
         public string? BienThe { get; set; }
 
         public int? MaCtsp { get; set; }
@@ -17,7 +18,7 @@ namespace APIClothesEcommerceShop.DTO.OrderDetails
         public int SoLuong { get; set; }
 
         public int Gia { get; set; }
-
-        public int GiamGia { get; set; }
+        public decimal? GiamGia { get; set; }
+        public decimal GiaGoc { get; set; }
     }
 }

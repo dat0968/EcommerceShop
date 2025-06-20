@@ -151,6 +151,7 @@ async function addToCart() {
       maCombo: combo.value.id,
       soLuong: quantity.value,
       donGia: PriceCombo.value,
+      giamGia: OrginalPriceCombo.value - PriceCombo.value,
       tenHinhAnh: combo.value.image,
       giohangctcombos: combo.value.chitietcombos.map((product, index) => {
         const selectedColor = selectedVariants.value[index]?.color

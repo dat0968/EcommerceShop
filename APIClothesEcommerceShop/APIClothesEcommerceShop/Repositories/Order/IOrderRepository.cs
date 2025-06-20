@@ -7,6 +7,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
     {
         Task<List<OrderResponseDTO>> GetAll(string? search, string? filter);
         Task<Hoadon> GetbyId(int id);
+        Task<List<OrderResponseDTO>> GetByMakh(int Makh, string? search, string? filter);
         Task<Hoadon> CreateOrder(Hoadon model);
         Task UpdateStatusOrders(int id, string status, int? MaNv, string paymentmethod, string? reasonCancel);
         Task CancelOrders(int id, string selectedCancelStatus, string? ReasonCancel);
