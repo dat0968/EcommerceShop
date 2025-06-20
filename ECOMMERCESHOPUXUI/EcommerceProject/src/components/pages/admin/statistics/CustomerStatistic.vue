@@ -37,7 +37,7 @@
           <div class="col-md-6">
             <!-- Khung biểu đồ -->
             <div class="chart-container">
-              <canvas id="customerChart" v-show="!isLoading"></canvas>
+              <canvas ref="customerChart" v-show="!isLoading"></canvas>
               <div v-if="isLoading" class="text-center my-4">
                 <span>Đang tải dữ liệu...</span>
               </div>
@@ -95,7 +95,9 @@ export default {
   methods: {
     formatCurrency,
     renderCustomerChart() {
-      const ctx = document.getElementById('customerChart').getContext('2d')
+      const canvas = this.$refs.customerChart
+      if (!canvas) return
+      const ctx = canvas.getContext('2d')
       if (this.customerChart) {
         this.customerChart.destroy()
       }

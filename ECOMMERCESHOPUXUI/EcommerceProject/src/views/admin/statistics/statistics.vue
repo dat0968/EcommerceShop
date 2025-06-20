@@ -104,7 +104,7 @@ export default {
     const CACHE_KEY = 'statisticsData'
     const CACHE_EXPIRE = 5 * 60 * 1000 // 5 phút
 
-    let cached = await localStorage.getItem(CACHE_KEY)
+    let cached = localStorage.getItem(CACHE_KEY)
     let now = Date.now()
     if (cached) {
       try {
@@ -210,6 +210,7 @@ export default {
         ConfigsRequest.takeAuth(),
       )
       this.orderSummaryData = OrderSummaryResponse.fromApiResponse(response.data)
+      await this.$nextTick()
       this.orderSummaryIsLoading = false
     },
     async loadProductStatisticsData() {
@@ -219,6 +220,7 @@ export default {
         ConfigsRequest.takeAuth(),
       )
       this.productStatisticData = ProductStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
       this.productIsLoading = false
     },
     async loadCustomerStatisticsData() {
@@ -228,6 +230,7 @@ export default {
         ConfigsRequest.takeAuth(),
       )
       this.customerStatisticsData = CustomerStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
       this.customerIsLoading = false
     },
     async loadEmployeeStatisticsData() {
@@ -237,6 +240,7 @@ export default {
         ConfigsRequest.takeAuth(),
       )
       this.employeeStatisticsData = EmployeeStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
       this.employeeIsLoading = false
     },
     async loadRevenueStatisticsData() {
@@ -246,6 +250,7 @@ export default {
         ConfigsRequest.takeAuth(),
       )
       this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
       this.revenueIsLoading = false
     },
     async loadComboStatisticsData() {
@@ -254,6 +259,7 @@ export default {
         ConfigsRequest.takeAuth(),
       )
       this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
     },
     async loadDatatableData() {
       this.datatableIsLoading = true
@@ -261,7 +267,10 @@ export default {
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)
+      this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(
+        await response.data,
+      )
+      await this.$nextTick()
       this.datatableIsLoading = false
     },
   },

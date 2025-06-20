@@ -656,7 +656,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong)),
-                        StarCount = (int)c.DanhGias.Average(dg => dg.SoSao)
+                        StarCount = c.DanhGias.Any() ? (int)c.DanhGias.Average(dg => dg.SoSao) : 0
                     })
                     .AsNoTracking().ToListAsync();
                 var dataOrder = await _context.Hoadons
