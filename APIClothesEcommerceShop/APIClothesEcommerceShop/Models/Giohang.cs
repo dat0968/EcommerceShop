@@ -16,6 +16,7 @@ public partial class Giohang
     public int SoLuong { get; set; }
 
     public int DonGia { get; set; }
+    public decimal? GiamGia { get; set; }
     public string TenHinhAnh { get; set; }
 
     public virtual ICollection<Giohangctcombo> Giohangctcombos { get; set; } = new List<Giohangctcombo>();

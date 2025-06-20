@@ -107,7 +107,7 @@ function selectedvariant(productIndex, type, value) {
 }
 
 const OrginalPriceCombo = computed(() => {
-  const chiTietCombos = combo.value?.chitietcombos || [];
+  const chiTietCombos = combo.value?.chitietcombos || []
   var FindPrice = chiTietCombos.map((combo, index) => {
     const selectedColor = selectedVariants.value[index].color
     const selectedSize = selectedVariants.value[index].size
@@ -116,11 +116,14 @@ const OrginalPriceCombo = computed(() => {
     )
     return variant.donGia * combo.quantity
   })
-  return FindPrice.reduce((total, num) => total + num, 0);
+  return FindPrice.reduce((total, num) => total + num, 0)
 })
 
 const PriceCombo = computed(() => {
-  return OrginalPriceCombo.value - (combo.value.phanTramGiam * OrginalPriceCombo.value / 100 || combo.value.soTienGiam)
+  return (
+    OrginalPriceCombo.value -
+    ((combo.value.phanTramGiam * OrginalPriceCombo.value) / 100 || combo.value.soTienGiam)
+  )
 })
 
 async function addToCart() {
@@ -148,6 +151,7 @@ async function addToCart() {
       maCombo: combo.value.id,
       soLuong: quantity.value,
       donGia: PriceCombo.value,
+      giamGia: OrginalPriceCombo.value - PriceCombo.value,
       tenHinhAnh: combo.value.image,
       giohangctcombos: combo.value.chitietcombos.map((product, index) => {
         const selectedColor = selectedVariants.value[index]?.color
@@ -218,7 +222,9 @@ async function addToCart() {
               <h3>
                 {{ combo.name }} <span>Còn: {{ combo.quantityCombo }} phần</span>
               </h3>
-              <div class="product__details__price"> {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span></div>
+              <div class="product__details__price">
+                {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span>
+              </div>
               <div class="product__details__button">
                 <div class="quantity">
                   <span>Số lượng:</span>

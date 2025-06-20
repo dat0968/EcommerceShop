@@ -1,7 +1,9 @@
 ﻿using APIClothesEcommerceShop.DTO.Order;
+using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Services;
 using Azure;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VNPAY.NET;
@@ -30,10 +32,10 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpPost("CreatePaymentUrl")]
         public async Task<ActionResult<string>> CreatePaymentUrl(OrderRequestDTO model)
         {
-            var NewOrder = await checkoutService.Checkout(model);
+            Hoadon NewOrder = null;
             try
             {
-                
+                NewOrder = await checkoutService.Checkout(model);
                 var ipAddress = NetworkHelper.GetIpAddress(HttpContext); // Lấy địa chỉ IP của thiết bị thực hiện giao dịch
 
                 var request = new PaymentRequest
@@ -54,7 +56,10 @@ namespace APIClothesEcommerceShop.Controllers
             }
             catch (Exception ex)
             {
-                await orderRepository.CancelOrders((int)NewOrder.MaHd, "Đã hủy", "Khách hủy giao dịch VNPAY");
+                if (NewOrder != null && NewOrder.MaHd > 0)
+                {
+                    await orderRepository.CancelOrders(NewOrder.MaHd, "Đã hủy", "Khách hủy giao dịch VNPAY (lỗi hệ thống)");
+                }
                 return BadRequest(ex.Message);
             }
         }

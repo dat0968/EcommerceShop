@@ -25,6 +25,7 @@ import ResetPasswordStaff from '../views/accounts/ResetPasswordStaff.vue'
 import GoogleLoginSuccess from '../views/accounts/GoogleLoginSuccess.vue'
 import couponManagement from '../views/admin/Coupon/indexCoupon.vue'
 import VNPAYresponse from '../views/customer/VNPaySuccess.vue'
+import order from '../views/customer/FollowOrder.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -39,6 +40,7 @@ const router = createRouter({
         { path: 'cart', name: 'cart', component: cart },
         { path: 'checkout', name: 'checkout', component: checkout },
         { path: 'customer', name: 'CustomerManagement', component: customerManagement },     
+        { path: 'order', name: 'order', component: order },     
       ],
     },
     {

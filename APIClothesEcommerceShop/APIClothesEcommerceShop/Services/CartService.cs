@@ -28,6 +28,7 @@ namespace APIClothesEcommerceShop.Services
                     MaCombo = model.MaCombo,
                     SoLuong = model.SoLuong,
                     DonGia = model.DonGia,
+                    GiamGia = model.GiamGia,
                     MaKh = model.MaKh,
                     TenHinhAnh = model.TenHinhAnh,
                     Giohangctcombos = model.Giohangctcombos.Select(p => new Giohangctcombo

@@ -134,8 +134,8 @@ namespace APIClothesEcommerceShop.Services
                 .ToList();
 
             var ListProductRecommend = new List<ProductResponseDTO>();
-            if (idProductRecommend.Count > 0)
-            {
+           if (idProductRecommend.Count > 0)
+           {
                 foreach (var product in idProductRecommend)
                 {
                     var detailproducts = await db.Chitietsanphams.AsNoTracking().FirstOrDefaultAsync(p => p.MaCtsp == product.ProductId);

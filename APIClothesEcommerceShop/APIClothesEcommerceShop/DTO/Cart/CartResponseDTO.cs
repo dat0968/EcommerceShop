@@ -20,6 +20,8 @@ namespace APIClothesEcommerceShop.DTO.Cart
         public int SoLuongToiDa { get; set; }
 
         public int DonGia { get; set; }
+        public decimal? GiamGia { get; set; }
+        public decimal? GiaTruocKhiGiam { get; set; }
         public string TenHinhAnh { get; set; }
 
         public virtual ICollection<Cart_DetailsComboResponseDTO> Giohangctcombos { get; set; } = new List<Cart_DetailsComboResponseDTO>();

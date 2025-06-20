@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250619095311_AddGiamGiaCoulumnforCthoadon")]
+    partial class AddGiamGiaCoulumnforCthoadon
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -329,9 +332,6 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.Property<int>("DonGia")
                         .HasColumnType("int");
-
-                    b.Property<decimal?>("GiamGia")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("MaCombo")
                         .HasColumnType("int");

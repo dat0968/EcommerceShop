@@ -128,12 +128,7 @@ const showMainImage = computed(() => {
 watch(showMainImage, (newIndex) => {
   currentImage.value = newIndex
 })
-const isLogin = computed(() => {
-  if (accessToken.value != undefined && accessToken.value != '') {
-    return true
-  }
-  return false
-})
+
 console.log(accessToken.value)
 onMounted(() => {
   fetchAPI()
@@ -217,6 +212,7 @@ const addToCart = async () => {
         maCombo: null,
         soLuong: quantity.value,
         donGia: matched.donGia,
+        giamGia: 0,
         tenHinhAnh: allImages.value[currentImage.value - 1]?.tenHinhAnh || '',
         giohangctcombos: [],
       }

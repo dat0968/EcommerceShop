@@ -9,7 +9,7 @@ namespace APIClothesEcommerceShop.DTO.Order
         public int MaHd { get; set; }
 
         public int? MaKh { get; set; }
-
+        public string TenKh { get; set;}
         public int? MaNv { get; set; }
         public string? TenNv { get; set; }
         public string? MaCode { get; set; }
@@ -39,6 +39,7 @@ namespace APIClothesEcommerceShop.DTO.Order
         public decimal PhiVanChuyen { get; set; }
 
         public decimal TienGoc { get; set; }
+        public decimal? GiamGiaCoupon { get; set; } 
 
         public virtual ICollection<ComboDetails_OrdersResponseDTO> Chitietcombohoadons { get; set; } = new List<ComboDetails_OrdersResponseDTO>();
 

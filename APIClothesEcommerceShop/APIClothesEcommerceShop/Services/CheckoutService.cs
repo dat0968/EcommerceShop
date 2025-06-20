@@ -46,7 +46,7 @@ namespace APIClothesEcommerceShop.Services
                 var tinhtrangthantoan = "Chờ xác nhận";
                 if(model.HinhThucTt.ToLower() == "vnpay")
                 {
-                    tinhtrangthantoan = "Đang xử lí VNPAY";
+                    tinhtrangthantoan = "Đang xử lý VNPAY";
                 }
                 if(model.HinhThucTt.ToLower() == "tại cửa hàng")
                 {
@@ -87,6 +87,7 @@ namespace APIClothesEcommerceShop.Services
                         MaCombo = detail.MaCombo,
                         SoLuong = detail.SoLuong,
                         Gia = detail.Gia,
+                        GiamGia = detail.GiamGia,
                     };
                     OrderDetails = await orderDetailsRepository.CreateOrderDetails(OrderDetails);
                     /* Cập nhật số lượng Combo và sản phẩm và cập thông sản phẩm trong
@@ -100,7 +101,7 @@ namespace APIClothesEcommerceShop.Services
                             FindCombo.SoLuong = FindCombo.SoLuong - detail.SoLuong;
                             if (FindCombo.SoLuong < 0)
                             {
-                                throw new Exception($"Số lượng còn lại của combo {FindCombo.TenCombo} ({FindCombo.MaCombo}) không đủ");
+                                throw new Exception($"Số lượng còn lại của combo {FindCombo.TenCombo} (mã {FindCombo.MaCombo}) không đủ");
                             }
                             var updateCombo = new Combo
                             {

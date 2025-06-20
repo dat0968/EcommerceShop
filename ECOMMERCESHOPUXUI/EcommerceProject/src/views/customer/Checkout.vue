@@ -398,6 +398,7 @@ async function HandlePayment() {
       maCombo: item.maCombo,
       soLuong: item.soLuong,
       gia: item.donGia,
+      giamGia: item.giamGia,
     })),
   }
   console.log(content)
@@ -447,6 +448,10 @@ async function HandlePayment() {
           body: JSON.stringify(content),
         })
         const responseVNPAY = await CreatePaymentUrl.text()
+        if (!CreatePaymentUrl.ok) {
+          throw new Error(responseVNPAY);
+          
+        }
         window.location.href = responseVNPAY
       }
     } catch (error) {

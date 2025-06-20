@@ -3,6 +3,7 @@ using APIClothesEcommerceShop.DTO.ComboDetails_Orders;
 using APIClothesEcommerceShop.DTO.Order;
 using APIClothesEcommerceShop.DTO.OrderDetails;
 using APIClothesEcommerceShop.Models;
+using iText.Kernel.Pdf.Canvas;
 using Microsoft.EntityFrameworkCore;
 using System.Net.NetworkInformation;
 
@@ -42,8 +43,8 @@ namespace APIClothesEcommerceShop.Repositories.Order
                 existingHoaDon.TinhTrang = selectedCancelStatus;
                 existingHoaDon.LyDoHuy = reasonCancel;
                 db.Hoadons.Update(existingHoaDon);
-                // Hoàn lại số lượng sản phẩm mua lẻ trong hóa đơn
-                var checkDetailOrder = db.Cthoadons.Where(p => p.MaHd == existingHoaDon.MaHd).ToList();
+                // Hoàn lại số lượng sản phẩm mua lẻ và theo combo trong hóa đơn
+                var checkDetailOrder = await db.Cthoadons.Where(p => p.MaHd == existingHoaDon.MaHd).ToListAsync();
                 if (!checkDetailOrder.Any())
                 {
                     throw new Exception($"Không tìm thấy CTHoadon với Id {existingHoaDon.MaHd}");
@@ -63,7 +64,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     else
                     {
                         //Hoàn lại số lượng sản phẩm mua trong combo trong hóa đơn
-                        var checkDetailOrderCombo = db.Chitietcombohoadons.Where(p => p.MaHd == existingHoaDon.MaHd && p.MaCombo == detail.MaCombo).ToList();
+                        var checkDetailOrderCombo = await db.Chitietcombohoadons.Where(p => p.MaHd == existingHoaDon.MaHd && p.MaCombo == detail.MaCombo).ToListAsync();
                         foreach (var detailComboOder in checkDetailOrderCombo)
                         {
                             var findDetailproduct = db.Chitietsanphams.Local.FirstOrDefault(p => p.MaCtsp == detailComboOder.MaCtsp) ?? await db.Chitietsanphams.FindAsync(detailComboOder.MaCtsp);
@@ -108,7 +109,8 @@ namespace APIClothesEcommerceShop.Repositories.Order
 
         public async Task<List<OrderResponseDTO>> GetAll(string? search, string? filter)
         {
-            var ListOrder = await db.Hoadons.AsNoTracking().Select(order => new OrderResponseDTO
+            var ordersRaw = await db.Hoadons.AsNoTracking().Include(p => p.MaCodeNavigation).ToListAsync();
+            var ListOrder = ordersRaw.Select(order => new OrderResponseDTO
             {
                 MaHd = order.MaHd,
                 MaKh = order.MaKh != null ? order.MaKh.Value : null,
@@ -128,6 +130,10 @@ namespace APIClothesEcommerceShop.Repositories.Order
                 LyDoHuy = order.LyDoHuy,
                 PhiVanChuyen = order.PhiVanChuyen,
                 TienGoc = order.TienGoc,
+                GiamGiaCoupon = order.MaCodeNavigation != null
+                        ? (order.MaCodeNavigation.SoTienGiam != null && order.MaCodeNavigation.SoTienGiam > 0 
+                            ? order.MaCodeNavigation.SoTienGiam : (order.MaCodeNavigation.PhanTramGiam * order.TienGoc / 100))
+                        : 0m,
                 Chitietcombohoadons = order.Chitietcombohoadons.Select(ctcb => new ComboDetails_OrdersResponseDTO
                 {
                     MaHd = ctcb.MaHd,
@@ -147,7 +153,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     SoLuong = cthd.SoLuong,
                     Gia = cthd.Gia,
                 }).ToList()
-            }).ToListAsync();
+            }).ToList();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -228,6 +234,103 @@ namespace APIClothesEcommerceShop.Repositories.Order
                 throw new Exception("Not found Order");
             }
             return findOrder;
+        }
+
+        public async Task<List<OrderResponseDTO>> GetByMakh(int Makh, string? search, string? filter)
+        {
+            try
+            {
+                var ordersRaw = await db.Hoadons
+                    .AsNoTracking()
+                    .Include(p => p.MaKhNavigation)
+                    .Include(p => p.MaCodeNavigation)
+                    .Include(p => p.MaNvNavigation)
+                    .Include(p => p.Chitietcombohoadons)
+                        .ThenInclude(p => p.MaCtspNavigation)
+                            .ThenInclude(p => p.MaSpNavigation)
+                    .Include(p => p.Cthoadons)
+                        .ThenInclude(ct => ct.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.MaSpNavigation)
+                    .Include(p => p.Cthoadons)
+                        .ThenInclude(p => p.MaComboNavigation)
+                    .Where(p => p.MaKh == Makh).OrderByDescending(p => p.MaHd)
+                    .ToListAsync(); 
+
+                var ListOrder = ordersRaw.Select(order => new OrderResponseDTO
+                {
+                    MaHd = order.MaHd,
+                    MaKh = order.MaKh,
+                    TenKh = order.MaKhNavigation.HoTen,
+                    MaNv = order.MaNv,
+                    TenNv = order.MaNvNavigation?.HoTen,
+                    MaCode = order.MaCode,
+                    NgayNhan = order.NgayNhan,
+                    NgayTao = order.NgayTao,
+                    NgayThanhToan = order.NgayThanhToan,
+                    BatDauGiao = order.BatDauGiao,
+                    DiaChiNhanHang = order.DiaChiNhanHang,
+                    HinhThucTt = order.HinhThucTt,
+                    TinhTrang = order.TinhTrang,
+                    MoTa = order.MoTa,
+                    HoTen = order.HoTen,
+                    Sdt = order.Sdt,
+                    LyDoHuy = order.LyDoHuy,
+                    PhiVanChuyen = order.PhiVanChuyen,
+                    TienGoc = order.TienGoc,
+
+                    GiamGiaCoupon = order.MaCodeNavigation != null
+                        ? (order.MaCodeNavigation.SoTienGiam != null && order.MaCodeNavigation.SoTienGiam > 0
+                            ? order.MaCodeNavigation.SoTienGiam : (order.MaCodeNavigation.PhanTramGiam * order.TienGoc / 100))
+                        : 0m,
+
+                    Chitietcombohoadons = order.Chitietcombohoadons.Select(ctcb => new ComboDetails_OrdersResponseDTO
+                    {
+                        MaHd = ctcb.MaHd,
+                        MaCtsp = ctcb.MaCtsp,
+                        TenSanPham = ctcb.MaCtspNavigation.MaSpNavigation.TenSanPham,
+                        MauSac = ctcb.MaCtspNavigation.MauSac, 
+                        KichThuoc = ctcb.MaCtspNavigation.KichThuoc,
+                        MaCombo = ctcb.MaCombo,
+                        SoLuong = ctcb.SoLuong,
+                        DonGia = ctcb.DonGia,
+                    }).ToList(),
+
+                    Cthoadons = order.Cthoadons.Select(cthd => new OrderDetailsResponseDTO
+                    {
+                        Id = cthd.Id,
+                        TenSanPham = cthd.MaCtspNavigation != null && cthd.MaCtspNavigation.MaSpNavigation != null
+                        ? cthd.MaCtspNavigation.MaSpNavigation.TenSanPham
+                        : null,
+                        TenCombo = cthd.MaComboNavigation != null && cthd.MaComboNavigation.TenCombo != null
+                        ? cthd.MaComboNavigation.TenCombo
+                        : null,
+                        BienThe = cthd.MaCtspNavigation != null
+                        ? $"Màu: {cthd.MaCtspNavigation.MauSac} - Kích thước: {cthd.MaCtspNavigation.KichThuoc}"
+                        : null,
+                        MaHd = cthd.MaHd,
+                        MaCtsp = cthd.MaCtsp,
+                        MaCombo = cthd.MaCombo,
+                        SoLuong = cthd.SoLuong,
+                        Gia = cthd.Gia,
+                        GiamGia = cthd.GiamGia,
+                        GiaGoc = cthd.Gia + (decimal)(cthd.GiamGia != null && cthd.GiamGia > 0 ? cthd.GiamGia : 0),
+                    }).ToList()
+                }).ToList();
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    ListOrder = ListOrder.Where(p => p.MaHd.ToString().Contains(search.ToLower()) || p.HoTen.ToLower().Contains(search.ToLower())).ToList();
+                }
+                if (!string.IsNullOrEmpty(filter))
+                {
+                    ListOrder = ListOrder.Where(p => p.TinhTrang.ToLower().Contains(filter.ToLower())).ToList();
+                }
+                return ListOrder;
+            }
+            catch(Exception ex)
+            {
+                throw new Exception("Error", ex);
+            }
         }
     }
 }

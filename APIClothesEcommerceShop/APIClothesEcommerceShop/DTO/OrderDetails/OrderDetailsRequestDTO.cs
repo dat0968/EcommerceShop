@@ -12,5 +12,6 @@
         public int SoLuong { get; set; }
 
         public int Gia { get; set; }
+        public decimal? GiamGia { get; set; }
     }
 }
