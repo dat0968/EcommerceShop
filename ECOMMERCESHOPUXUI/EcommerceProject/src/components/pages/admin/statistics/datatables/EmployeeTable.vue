@@ -42,9 +42,9 @@ export default {
           configsDt.defaultTdToShowDetail,
           { data: 'employeeId', title: 'Mã nhân viên', className: 'text-center' },
           { data: 'employeeName', title: 'Tên nhân viên' },
-          { data: 'performanceScore', title: 'Điểm hiệu suất', className: 'text-center' },
+          // { data: 'performanceScore', title: 'Điểm hiệu suất', className: 'text-center' },
           { data: 'positionName', title: 'Chức vụ' },
-          { data: 'salesAmount', title: 'Doanh số', className: 'text-right' },
+          // ! { data: 'salesAmount', title: 'Doanh số', className: 'text-right' },
         ],
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
         initComplete: () => {

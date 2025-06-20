@@ -87,6 +87,7 @@ export default {
       employeeStatisticsData: {},
       revenueStatisticData: {},
       datatableStatisticsResponse: {},
+      comboStatisticsaryData: {}, // Đã thêm biến này để tránh lỗi runtime
       revenueIsLoading: true,
       productIsLoading: true,
       customerIsLoading: true,
@@ -115,9 +116,15 @@ export default {
           this.customerStatisticsData = await parsed.customerStatisticsData
           this.employeeStatisticsData = await parsed.employeeStatisticsData
           this.revenueStatisticData = await parsed.revenueStatisticData
-          this.comboStatisticsaryData = await parsed.comboStatisticsaryData
+          this.comboStatisticsaryData = (await parsed.comboStatisticsaryData) || {} // Đảm bảo không lỗi khi lấy cache
           this.datatableStatisticsResponse = await parsed.datatableStatisticsResponse
           this.isLoading = false
+          this.revenueIsLoading = false
+          this.productIsLoading = false
+          this.customerIsLoading = false
+          this.employeeIsLoading = false
+          this.orderSummaryIsLoading = false
+          this.datatableIsLoading = false
           return // Dừng nếu dữ liệu không hết hạn
         }
         localStorage.removeItem(CACHE_KEY) // Xóa cache nếu hết hạn
@@ -182,12 +189,12 @@ export default {
     localStorage.setItem(
       CACHE_KEY,
       JSON.stringify({
-        orderSummaryData: JSON.parse(JSON.stringify(this.orderSummaryData)), // Chuyển đổi thành đối tượng thường
+        orderSummaryData: JSON.parse(JSON.stringify(this.orderSummaryData)),
         productStatisticData: JSON.parse(JSON.stringify(this.productStatisticData)),
         customerStatisticsData: JSON.parse(JSON.stringify(this.customerStatisticsData)),
         employeeStatisticsData: JSON.parse(JSON.stringify(this.employeeStatisticsData)),
         revenueStatisticData: JSON.parse(JSON.stringify(this.revenueStatisticData)),
-        comboStatisticsaryData: JSON.parse(JSON.stringify(this.comboStatisticsaryData)),
+        comboStatisticsaryData: JSON.parse(JSON.stringify(this.comboStatisticsaryData)), // Đã thêm vào cache
         datatableStatisticsResponse: JSON.parse(JSON.stringify(this.datatableStatisticsResponse)),
         expire: now + CACHE_EXPIRE,
       }),
@@ -242,7 +249,6 @@ export default {
       this.revenueIsLoading = false
     },
     async loadComboStatisticsData() {
-      // this.
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetComboStatistics',
         ConfigsRequest.takeAuth(),
@@ -255,13 +261,10 @@ export default {
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
       )
-      // console.log(response.data)
       this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)
-      // console.log(this.datatableStatisticsResponse)
       this.datatableIsLoading = false
     },
   },
 }
 </script>
-
 <style scoped></style>

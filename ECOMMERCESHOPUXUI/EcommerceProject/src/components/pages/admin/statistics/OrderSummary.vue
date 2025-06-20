@@ -164,15 +164,15 @@ export default {
       var statusDataByTime
       switch (this.selectedTimePeriod) {
         case 'date': {
-          statusDataByTime = this.data.revenueByTimes.date
+          statusDataByTime = this.data.revenueByTimes.date ?? []
           break
         }
         case 'month': {
-          statusDataByTime = this.data.revenueByTimes.month
+          statusDataByTime = this.data.revenueByTimes.month ?? []
           break
         }
         case 'year': {
-          statusDataByTime = this.data.revenueByTimes.year
+          statusDataByTime = this.data.revenueByTimes.year ?? []
           break
         }
       }
@@ -184,11 +184,11 @@ export default {
       // Kiểm tra dữ liệu doanh thu
       let revenueData = []
       if (this.selectedTimePeriod === 'date') {
-        revenueData = this.data.revenueByTimes['date']
+        revenueData = this.data.revenueByTimes['date'] ?? []
       } else if (this.selectedTimePeriod === 'month') {
-        revenueData = this.data.revenueByTimes['month']
+        revenueData = this.data.revenueByTimes['month'] ?? []
       } else {
-        revenueData = this.data.revenueByTimes['year']
+        revenueData = this.data.revenueByTimes['year'] ?? []
       }
       this.hasRevenueChartData =
         revenueData &&
@@ -198,11 +198,11 @@ export default {
       // Kiểm tra dữ liệu trạng thái đơn hàng
       let statusData = []
       if (this.selectedTimePeriod === 'date') {
-        statusData = this.data.orderStatusStatistics['date']
+        statusData = this.data.orderStatusStatistics['date'] ?? []
       } else if (this.selectedTimePeriod === 'month') {
-        statusData = this.data.orderStatusStatistics['month']
+        statusData = this.data.orderStatusStatistics['month'] ?? []
       } else {
-        statusData = this.data.orderStatusStatistics['year']
+        statusData = this.data.orderStatusStatistics['year'] ?? []
       }
       this.hasOrderStatusChartData =
         statusData && statusData.length > 0 && statusData.some((item) => item.count > 0)

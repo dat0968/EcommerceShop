@@ -45,7 +45,10 @@ export default {
             data: null,
             title: 'Đánh giá',
             render: function (data, type, row) {
-              const totalReviewStar = row.detailTopProducts.soSao.reduce((total, x) => total + x, 0)
+              const totalReviewStar =
+                row.detailTopProducts && Array.isArray(row.detailTopProducts)
+                  ? row.detailTopProducts.reduce((total, x) => total + x.soSao, 0)
+                  : 0
               return `
               <span>
                 ${Array.from(
