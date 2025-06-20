@@ -333,14 +333,16 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     throw new Exception("Bạn không có quyền xóa đánh giá này");
 
                 _db.DanhGias.Remove(existingReview);
-                string[] nameSavedFiles = existingReview.GetSavedListFileName();
+                string[]? nameSavedFiles = existingReview.GetSavedListFileName();
 
                 await _db.SaveChangesAsync();
-                bool isDeletedSavedFiles = await DeleteSaveImages(nameSavedFiles);
-
-                if (isDeletedSavedFiles)
+                if (nameSavedFiles != null && nameSavedFiles.Count() != 0)
                 {
-                    Console.WriteLine($">>>> Đã xóa các hình ảnh của đánh giá mã {existingReview.Id}");
+                    bool isDeletedSavedFiles = DeleteSaveImages(nameSavedFiles);
+                    if (isDeletedSavedFiles)
+                    {
+                        Console.WriteLine($">>>> Đã xóa các hình ảnh của đánh giá mã {existingReview.Id}");
+                    }
                 }
                 response.SetSuccessResponse(data: "Xóa đánh giá thành công", message: "Xóa đánh giá thành công");
             }
@@ -553,7 +555,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 return Array.Empty<string>();
             }
         }
-        private async Task<bool> DeleteSaveImages(string[] savedFiles)
+        private bool DeleteSaveImages(string[]? savedFiles)
         {
             if (savedFiles == null || savedFiles.Length == 0)
                 return false;
