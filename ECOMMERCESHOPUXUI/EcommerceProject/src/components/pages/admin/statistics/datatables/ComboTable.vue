@@ -40,6 +40,7 @@ export default {
           configsDt.defaultTdToShowDetail,
           { data: 'comboId', title: 'Mã combo', className: 'text-center' },
           { data: 'comboName', title: 'Tên combo' },
+          { data: 'starCount', title: 'Đánh giá' },
           { data: 'salesCount', title: 'Số lượng bán', className: 'text-center' },
           { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
         ],
@@ -49,7 +50,7 @@ export default {
         },
       })
     },
-    // ! Not certainly about this method
+    // ! Not certainly about this method. Damn
     formatDetails(rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')
       const combo = this.combos.find((x) => x.comboId == rowData.comboId)

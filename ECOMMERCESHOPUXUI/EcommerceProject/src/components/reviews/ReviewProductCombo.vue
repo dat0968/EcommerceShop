@@ -10,7 +10,12 @@
       <div class="col-md-3 mb-2">
         <select v-model="filterStar" class="form-control">
           <option value="">Tất cả sao</option>
-          <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
+          <option v-for="n in 5" :key="n" :value="n">
+            <span>
+              <span style="color: #ffc107">{{ '★'.repeat(n) }}</span>
+              <span style="color: #e4e5e9">{{ '★'.repeat(5 - n) }}</span>
+            </span>
+          </option>
         </select>
       </div>
       <div class="col-md-3 mb-2">

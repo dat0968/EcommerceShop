@@ -153,6 +153,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                                 ctsp.SoLuongTon,
                                 ctsp.DonGia,
                                 ctsp.Hinhanhs?.FirstOrDefault()?.TenHinhAnh ?? string.Empty,
+                                ctsp.Cthoadons.Sum(cthd => cthd.DanhGia?.SoSao ?? 0),
                                 ctsp.IsActive
                             );
                         })
@@ -652,10 +653,11 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     {
                         c.MaCombo,
                         c.TenCombo,
-                        //c.GiaCombo,
+                        // c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
-                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong))
+                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong)),
+                        StarCount = c.DanhGias.Sum(dg => dg.SoSao)
                     })
                     .AsNoTracking().ToListAsync();
                 var dataOrder = await _context.Hoadons
@@ -688,7 +690,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     {
                         ComboId = x.MaCombo,
                         ComboName = x.TenCombo ?? string.Empty,
-                        SalesCount = x.SalesCount
+                        SalesCount = x.SalesCount,
+                        Revenue = x.Revenue,
+                        StarCount = x.StarCount
                     }).ToList();
 
                 // Khởi tạo response

@@ -41,6 +41,25 @@ export default {
           configsDt.defaultTdToShowDetail,
           { data: 'productId', title: 'Mã sản phẩm', className: 'text-center' },
           { data: 'productName', title: 'Tên sản phẩm' },
+          {
+            data: null,
+            title: 'Đánh giá',
+            render: function (data, type, row) {
+              const totalReviewStar = row.detailTopProducts.soSao.reduce((total, x) => total + x, 0)
+              return `
+              <span>
+                ${Array.from(
+                  { length: totalReviewStar },
+                  () => `<span style="color: #ffc107">★</span>`,
+                ).join('')}
+                ${Array.from(
+                  { length: 5 - totalReviewStar },
+                  () => `<span style="color: #e4e5e9">★</span>`,
+                ).join('')}
+              </span>
+              `
+            },
+          },
           { data: 'categoryName', title: 'Tên danh mục' },
           { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
           { data: 'count', title: 'Số lượng bán', className: 'text-center' },
