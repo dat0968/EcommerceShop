@@ -23,6 +23,9 @@
             <option value="0">Không ảnh</option>
           </select>
         </div>
+        <div class="col-md-3 mb-2">
+          <OffensiveWords />
+        </div>
         <div class="col-md-3">
           <button class="btn btn-primary" :disabled="isDisabled" @click="updateShopResponse">
             Cập nhật phản hồi của shop
@@ -58,11 +61,12 @@ import { formatDate } from '@/constants/formatDatetime'
 import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
 import VueEasyLight from 'vue-easy-lightbox'
+import OffensiveWords from '@/components/pages/admin/reviews/OffensiveWords.vue'
 // import { formatCurrency } from '@/constants/formatCurrency'
 
 export default {
   name: 'IndexReview',
-  components: { Overlay, VueEasyLight },
+  components: { Overlay, VueEasyLight, OffensiveWords },
   props: {},
   data() {
     return {

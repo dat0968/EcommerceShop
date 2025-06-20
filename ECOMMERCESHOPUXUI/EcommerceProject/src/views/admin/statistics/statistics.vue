@@ -59,13 +59,13 @@ import RevenueStatisticsResponse from '@/models/dtos/statisticsDtos/revenueStati
 import ComboStatisticsResponse from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
 import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 
-import OrderSummary from '@/components/pages/statistics/OrderSummary.vue'
-import ProductStatistic from '@/components/pages/statistics/ProductStatistic.vue'
-import CustomerStatistic from '@/components/pages/statistics/CustomerStatistic.vue'
-import EmployeeStatistic from '@/components/pages/statistics/EmployeeStatistic.vue'
-import RevenueStatistic from '@/components/pages/statistics/RevenueStatistic.vue'
-// import ComboStatistic from '@/components/pages/statistics/ComboStatistic.vue'
-import DatatableStatistic from '@/components/pages/statistics/DatatableStatistic.vue'
+import OrderSummary from '@/components/pages/admin/statistics/OrderSummary.vue'
+import ProductStatistic from '@/components/pages/admin/statistics/ProductStatistic.vue'
+import CustomerStatistic from '@/components/pages/admin/statistics/CustomerStatistic.vue'
+import EmployeeStatistic from '@/components/pages/admin/statistics/EmployeeStatistic.vue'
+import RevenueStatistic from '@/components/pages/admin/statistics/RevenueStatistic.vue'
+// import ComboStatistic from '@/components/pages/admin/statistics/ComboStatistic.vue'
+import DatatableStatistic from '@/components/pages/admin/statistics/DatatableStatistic.vue'
 
 export default {
   name: 'StatisticsView',

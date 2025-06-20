@@ -27,6 +27,7 @@ import couponManagement from '../views/admin/Coupon/indexCoupon.vue'
 import Review from '@/views/admin/reviews/IndexReview.vue'
 import CustomerReview from '@/views/customer/CustomerReview.vue'
 import VNPAYresponse from '../views/customer/VNPaySuccess.vue'
+import ContactUs from '@/views/customer/ContactUs.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -42,6 +43,7 @@ const router = createRouter({
         { path: 'checkout', name: 'checkout', component: checkout },
         { path: 'customer', name: 'CustomerManagement', component: customerManagement },
         { path: 'review', name: CustomerReview, component: CustomerReview },
+        { path: 'contactus', name: ContactUs, component: ContactUs },
       ],
     },
     {

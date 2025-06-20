@@ -3,6 +3,11 @@
     <!-- Thanh lọc và tìm kiếm -->
     <div class="row mb-3">
       <div class="col-md-3 mb-2">
+        <select class="form-control" disabled>
+          <option value="">Tất cả ({{ reviews.length }})</option>
+        </select>
+      </div>
+      <div class="col-md-3 mb-2">
         <select v-model="filterStar" class="form-control">
           <option value="">Tất cả sao</option>
           <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
@@ -15,12 +20,8 @@
           <option value="0">Không ảnh</option>
         </select>
       </div>
-      <div class="col-md-6 mb-2">
-        <input
-          v-model="searchText"
-          class="form-control"
-          placeholder="Tìm theo nội dung, tên khách, phản hồi..."
-        />
+      <div class="col-md-3 mb-2">
+        <input v-model="searchText" class="form-control" placeholder="Tìm theo nội dung..." />
       </div>
     </div>
 

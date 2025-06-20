@@ -7,7 +7,7 @@
           <div class="col-lg-12">
             <div class="breadcrumb__links">
               <a href="/"><i class="fa fa-home"></i> Trang chủ</a>
-              <span>Đánh giá</span>
+              <span>Liên hệ</span>
             </div>
           </div>
         </div>
