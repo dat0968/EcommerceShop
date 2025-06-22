@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="row justify-content-center text-center gap-2">
     <canvas ref="qrcanvas"></canvas>
-    <button @click="downloadQr" v-if="isValid">Tải ảnh</button>
+    <button @click="downloadQr" v-if="isValid" class="btn btn-outline-success">Tải ảnh</button>
     <div v-if="!isValid" class="text-danger">Dữ liệu không hợp lệ để tạo QR!</div>
   </div>
 </template>
@@ -26,7 +26,8 @@ export default {
     },
   },
   methods: {
-    renderQr(val) {
+    async renderQr(val) {
+      await this.$nextTick()
       if (!val || val.length < 1 || val.length > 256) {
         this.isValid = false
         const ctx = this.$refs.qrcanvas.getContext('2d')
@@ -49,3 +50,10 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+canvas {
+  width: 100%;
+  height: 320px;
+}
+</style>

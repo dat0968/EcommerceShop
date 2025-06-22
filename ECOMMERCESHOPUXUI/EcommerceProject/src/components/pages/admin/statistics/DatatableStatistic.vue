@@ -43,8 +43,8 @@
     </div>
 
     <div class="col-md-12 col-lg-4 col-xl-4">
-      <cardMap class="mb-3" />
-      <cardDiscordInvite />
+      <cardMap class="col-12 mb-3" />
+      <cardDiscordInvite class="col-12" />
     </div>
   </div>
 </template>

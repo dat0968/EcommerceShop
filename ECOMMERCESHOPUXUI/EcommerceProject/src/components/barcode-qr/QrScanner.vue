@@ -1,8 +1,7 @@
 <template>
-  <div>
+  <div class="row justify-content-center text-center gap-2">
     <video ref="video" style="width: 100%; max-width: 320px" autoplay></video>
     <div v-if="error" class="text-danger">{{ error }}</div>
-    <div v-if="scanned">Đã quét: {{ scanned }}</div>
   </div>
 </template>
 
@@ -31,9 +30,14 @@ export default {
       }
     })
   },
-  beforeUnmount() {
+  async beforeUnmount() {
+    await this.$nextTick()
     if (this.codeReader) {
-      this.codeReader.reset()
+      try {
+        await this.codeReader.stopContinuousDecode()
+      } catch (e) {
+        // ? ignore if already stopped
+      }
     }
   },
 }
