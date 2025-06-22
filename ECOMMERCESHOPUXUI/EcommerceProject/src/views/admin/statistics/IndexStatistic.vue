@@ -102,7 +102,7 @@ export default {
     this.isLoading = true
 
     const CACHE_KEY = 'statisticsData'
-    const CACHE_EXPIRE = 5 * 60 * 1000 // 5 phút
+    const CACHE_EXPIRE = 1 * 60 * 1000 // 5 phút
 
     let cached = localStorage.getItem(CACHE_KEY)
     let now = Date.now()
