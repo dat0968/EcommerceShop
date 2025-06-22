@@ -164,7 +164,7 @@ export default {
       var statusDataByTime
       switch (this.selectedTimePeriod) {
         case 'date': {
-          statusDataByTime = this.data.revenueByTimes.date ?? []
+          statusDataByTime = this.data.revenueByTimes?.date ?? []
           break
         }
         case 'month': {
@@ -184,11 +184,11 @@ export default {
       // Kiểm tra dữ liệu doanh thu
       let revenueData = []
       if (this.selectedTimePeriod === 'date') {
-        revenueData = this.data.revenueByTimes['date'] ?? []
+        revenueData = this.data?.revenueByTimes['date'] ?? []
       } else if (this.selectedTimePeriod === 'month') {
-        revenueData = this.data.revenueByTimes['month'] ?? []
+        revenueData = this.data?.revenueByTimes['month'] ?? []
       } else {
-        revenueData = this.data.revenueByTimes['year'] ?? []
+        revenueData = this.data?.revenueByTimes['year'] ?? []
       }
       this.hasRevenueChartData =
         revenueData &&
