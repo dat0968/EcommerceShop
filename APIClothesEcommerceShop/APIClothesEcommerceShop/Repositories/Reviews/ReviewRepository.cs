@@ -47,7 +47,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                             .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .Include(r => r.KhachHang)
                     .Select(r => r.ToReviewResponseDTO(true))
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 if (!reviews.Any())
                 {
@@ -81,7 +81,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Where(r => r.MaCombo == maCombo)
                     .Include(r => r.KhachHang)
                     .Select(r => r.ToReviewResponseDTO(false))
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 if (!reviews.Any())
                 {
@@ -165,7 +165,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Include(ct => ct.MaCtspNavigation)
                         .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .Include(ct => ct.MaComboNavigation)
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 var notReviewIn7days = new List<ReviewResponseDTO>();
                 var listReviewed = new List<ReviewResponseDTO>();
@@ -392,7 +392,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Include(r => r.KhachHang)
                     .Include(r => r.SanPham)
                     .Include(r => r.Combo)
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 List<ReviewDetailDTO> transformDtos = new();
                 foreach (var review in reviews)
@@ -492,7 +492,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 var reviews = await _db.DanhGias
                     .Where(r => request.ListId.Contains(r.Id))
-                    .ToListAsync();
+                    .AsNoTracking().ToListAsync();
 
                 if (!reviews.Any())
                 {
