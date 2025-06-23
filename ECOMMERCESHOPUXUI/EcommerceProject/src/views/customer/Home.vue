@@ -14,6 +14,7 @@ import insta5 from '@/assets/Customer/img/instagram/insta-5.jpg'
 import insta6 from '@/assets/Customer/img/instagram/insta-6.jpg'
 import { ref } from 'vue'
 import TestCodeQr from '@/components/tests/TestCodeQr.vue'
+import CompareProduct from '@/components/specicals/CompareProduct.vue'
 const setBackgroundImages = () => {
   const elements = document.querySelectorAll('[data-setbg]')
   elements.forEach((element) => {
@@ -435,6 +436,7 @@ onMounted(() => {
     <!-- Trend Section End -->
   </div>
   <TestCodeQr />
+  <CompareProduct />
 </template>
 
 <style>
