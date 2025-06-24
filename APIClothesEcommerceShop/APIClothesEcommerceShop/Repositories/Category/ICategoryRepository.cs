@@ -11,6 +11,7 @@ namespace APIClothesEcommerceShop.Repositories.Category
     public interface ICategoryRepository : IRepository<Danhmuccha>
     {
         Task<List<Danhmuccha>> GetCategories();
+        Task<List<CategoryResponseDTO>> GetAllSmallCategories();
         Task<List<CategoryResponseDTO>> GetAllBigCategories();
         // Lấy toàn bộ dữ liệu 
         Task<ResponseAPI<List<CategoryResponseDTO>>> GetAllCategoriesAsync();

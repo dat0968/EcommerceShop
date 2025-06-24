@@ -1,7 +1,6 @@
 <!-- CustomerManagement với imports tương đối -->
 <template>
-  <div class="customer-management" style="margin-top: 70px;">
-
+  <div class="customer-management" style="margin-top: 70px">
     <div class="action-buttons">
       <button class="btn add-button" @click="showAddModal = true">
         <i class="fas fa-plus"></i> Thêm Khách Hàng
@@ -21,85 +20,97 @@
 
     <!-- Modal thêm khách hàng -->
     <div class="modal" v-if="showAddModal">
-
       <div class="modal-header">
         <span class="close" @click="showAddModal = false">&times;</span>
       </div>
       <div class="modal-body">
-        <CustomerForm :isEdit="false" @submit-success="handleAddSuccess" @cancel="showAddModal = false" />
+        <CustomerForm
+          :isEdit="false"
+          @submit-success="handleAddSuccess"
+          @cancel="showAddModal = false"
+        />
       </div>
-
     </div>
 
     <!-- Modal  -->
     <div class="modal" v-if="showEditModal">
-
       <div class="modal-header">
         <span class="close" @click="showEditModal = false">&times;</span>
       </div>
       <div class="modal-body">
-        <CustomerForm :isEdit="true" :customerId="selectedCustomerId" @submit-success="handleEditSuccess"
-          @cancel="showEditModal = false" />
+        <CustomerForm
+          :isEdit="true"
+          :customerId="selectedCustomerId"
+          @submit-success="handleEditSuccess"
+          @cancel="showEditModal = false"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import CustomerTable from '@/components/customer/CustomerTable.vue';
-import CustomerForm from '@/components/customer/CustomerForm.vue';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
+import CustomerTable from '@/components/customer/CustomerTable.vue'
+import CustomerForm from '@/components/customer/CustomerForm.vue'
 export default {
   name: 'CustomerManagement',
   components: {
     CustomerTable,
-    CustomerForm
+    CustomerForm,
   },
   setup() {
-    const customerTable = ref(null);
-    const showAddModal = ref(false);
-    const showEditModal = ref(false);
-    const selectedCustomerId = ref(null);
-    const apiUrl = 'https://localhost:7217/api';
+    const customerTable = ref(null)
+    const showAddModal = ref(false)
+    const showEditModal = ref(false)
+    const selectedCustomerId = ref(null)
+    const apiUrl = ref(GetApiUrl())
 
     const openEditModal = (customerId) => {
-      selectedCustomerId.value = customerId;
-      showEditModal.value = true;
-    };
+      selectedCustomerId.value = customerId
+      showEditModal.value = true
+    }
 
     const handleAddSuccess = () => {
-      showAddModal.value = false;
-      refreshData();
-    };
+      showAddModal.value = false
+      refreshData()
+    }
 
     const handleEditSuccess = () => {
-      showEditModal.value = false;
-      refreshData();
-    };
+      showEditModal.value = false
+      refreshData()
+    }
 
     const refreshData = () => {
       if (customerTable.value) {
-        customerTable.value.fetchCustomers();
+        customerTable.value.fetchCustomers()
       }
-    };
+    }
 
     const exportToServer = (fileType) => {
-      let url = '';
+      let url = ''
 
       if (fileType === 'pdf') {
-        url = `${apiUrl}/Customer/export/pdf`;
+        url = `${apiUrl.value}/api/Customer/export/pdf`
       } else if (fileType === 'excel') {
-        url = `${apiUrl}/Customer/export/excel`;
+        url = `${apiUrl.value}/api/Customer/export/excel`
       }
 
       // Tạo một thẻ a để tải file
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileType === 'pdf' ? 'DanhSachKhachHang.pdf' : 'DanhSachKhachHang.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute(
+        'download',
+        fileType === 'pdf' ? 'DanhSachKhachHang.pdf' : 'DanhSachKhachHang.xlsx'
+      )
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
 
     return {
       customerTable,
@@ -110,15 +121,14 @@ export default {
       handleAddSuccess,
       handleEditSuccess,
       refreshData,
-      exportToServer
-    };
-  }
-};
+      exportToServer,
+    }
+  },
+}
 </script>
 
 <style scoped>
 .customer-management {
-
   background: url('@/assets/images/html_table.jpg') center / cover;
 
   padding: 1rem 2rem;
@@ -153,7 +163,7 @@ h1 {
 }
 
 .add-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
@@ -163,13 +173,12 @@ h1 {
 }
 
 .export-button {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
 /* Modal styles */
 .modal {
-
   position: fixed;
   z-index: 1000;
   left: 0;

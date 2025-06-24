@@ -45,6 +45,7 @@
 import { ref } from 'vue';
 import StaffTable from '@/components/staff/StaffTable.vue';
 import StaffForm from '@/components/staff/StaffForm.vue';
+import { GetApiUrl } from '@/constants/api'
 export default {
     name: 'StaffManagement',
     components: {
@@ -56,7 +57,7 @@ export default {
         const showAddModal = ref(false);
         const showEditModal = ref(false);
         const selectedStaffId = ref(null);
-        const apiUrl = 'https://localhost:7217/api';
+        const apiUrl = ref(GetApiUrl())
 
         const openEditModal = (staffId) => {
             selectedStaffId.value = staffId;
@@ -83,9 +84,9 @@ export default {
             let url = '';
 
             if (fileType === 'pdf') {
-                url = `${apiUrl}/Staff/export/pdf`;
+                url = `${apiUrl.value}/api/Staff/export/pdf`;
             } else if (fileType === 'excel') {
-                url = `${apiUrl}/Staff/export/excel`;
+                url = `${apiUrl.value}/api/Staff/export/excel`;
             }
 
             // Tạo một thẻ a để tải file

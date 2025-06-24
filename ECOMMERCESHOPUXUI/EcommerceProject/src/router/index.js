@@ -29,6 +29,9 @@ import CustomerReview from '@/views/customer/CustomerReview.vue'
 import VNPAYresponse from '../views/customer/VNPaySuccess.vue'
 import order from '../views/customer/FollowOrder.vue'
 import ContactUs from '@/views/customer/ContactUs.vue'
+import error from '../views/error/Error.vue'
+import Cookies from 'js-cookie'
+import { decodeToken, validateToken } from '@/utils/auth'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -105,8 +108,37 @@ const router = createRouter({
       name: 'ResetPasswordStaff',
       component: ResetPasswordStaff,
     },
+    {
+      path: '/Error/:id',
+      name: 'Error',
+      component: error,
+    },
   ],
   sensitive: false,
 })
-
+router.beforeEach(async (to, from, next) => {
+  let accessToken = Cookies.get('accessToken')
+  let refreshToken = Cookies.get('refreshToken')
+  const customerOnlyPages = ['/', '/cart', '/checkout', '/order']
+  const validatetoken = await validateToken(accessToken, refreshToken)
+  if (validatetoken.isValid == true) {
+    accessToken = validatetoken.newAccessToken
+    let readToken = decodeToken(accessToken)
+    let role = readToken.Role
+    if (role.toLowerCase() != 'customer' && customerOnlyPages.includes(to.path)) {
+      if (to.path == '/') {
+        return next('/Admin/Product')
+      }
+      if (to.path !== '/Error/401') {
+        return next('/Error/401')
+      }
+    }
+    if (role.toLowerCase() === 'customer' && to.path.toLowerCase().startsWith('/admin')) {
+      if (to.path !== '/Error/401') {
+        return next('/Error/401')
+      }
+    }
+  }
+  next()
+})
 export default router

@@ -1,14 +1,22 @@
 <script setup>
+import { useRouter } from 'vue-router'
+import { GetApiUrl } from '@/constants/api'
 import { onMounted, ref, watch } from 'vue'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
-const getUrlAPI = ref('https://localhost:7217/api')
+const router = useRouter()
+const getUrlAPI = ref(GetApiUrl())
 const listBigCategories = ref([])
 const listSmallCategories = ref([])
 const hasVariants = ref(false)
 const mainImages = ref([])
 const multiImages = ref([])
 const mainImagePreviews = ref([])
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
 const isSubmitting = ref(false)
+const readToken = ref({})
 const props = defineProps({
   listBigCategories: Object,
   listSmallCategories: Object,
@@ -108,181 +116,201 @@ function addProductDetail() {
 
 async function submitProduct() {
   try {
-    isSubmitting.value = true
-    // Validate cho sản phẩm không có biến thể
-    if (!hasVariants.value) {
-      if (!product.value.tenSanPham.trim()) {
-        Swal.fire('Vui lòng nhập tên sản phẩm', '', 'error')
-        return
-      }
-      if (
-        !detailsproductSingle.value.productDetails[0].donGia ||
-        detailsproductSingle.value.productDetails[0].donGia <= 0
-      ) {
-        Swal.fire('Vui lòng nhập đơn giá là một giá trị lớn hơn 0', '', 'error')
-        return
-      }
-
-      if (
-        !detailsproductSingle.value.productDetails[0].soLuongTon ||
-        detailsproductSingle.value.productDetails[0].soLuongTon <= 0
-      ) {
-        Swal.fire('Vui lòng nhập số lượng tồn là một giá trị lớn hơn 0', '', 'error')
-        return
-      }
-
-      if (detailsproductSingle.value.productDetails[0].images.length === 0) {
-        Swal.fire('Vui lòng chọn ít nhất một ảnh cho sản phẩm', '', 'error')
-        return
-      }
-
-      product.value.productDetails = detailsproductSingle.value.productDetails.map((detail) => ({
-        ...detail,
-        images: [...detail.images],
-      }))
-      for (const file of mainImages.value) {
-        const formData = new FormData()
-        formData.append('file', file)
-        const responseImage = await fetch(getUrlAPI.value + '/UploadImages', {
-          method: 'POST',
-          body: formData,
-        })
-        if (!responseImage.ok) {
-          throw new Error(`Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`)
-        }
-      }
-    }
-    // Validate cho sản phẩm có biến thể
-    else {
-      if (!product.value.tenSanPham.trim()) {
-        Swal.fire('Vui lòng nhập tên sản phẩm', '', 'error')
-        return
-      }
-      // Kiểm tra kích thước và màu sắc của từng biến thể
-      for (let i = 0; i < detailsproductHasVariants.value.productDetails.length; i++) {
-        const detail = detailsproductHasVariants.value.productDetails[i]
-        if (!detail.kichThuoc.trim() && !detail.mauSac.trim()) {
-          Swal.fire(`Vui lòng nhập kích thước hoặc màu sắc cho biến thể thứ ${i + 1}`, '', 'error')
-          return
-        }
-        if (!detail.donGia || detail.donGia <= 0) {
-          Swal.fire(
-            `Vui lòng nhập đơn giá với giá trị lớn hơn 0 cho biến thể thứ ${i + 1}`,
-            '',
-            'error'
-          )
-          return
-        }
-        if (!detail.soLuongTon || detail.soLuongTon <= 0) {
-          Swal.fire(
-            `Vui lòng nhập số lượng tồn với giá trị lớn hơn 0 cho biến thể thứ ${i + 1}`,
-            '',
-            'error'
-          )
-          return
-        }
-      }
-
-      // Cập nhật productDetails này vô product
-      product.value.productDetails = detailsproductHasVariants.value.productDetails.map(
-        (detail) => ({
-          ...detail,
-          images: detail.images.map((image) => ({
-            tenHinhAnh: image.tenHinhAnh,
-          })),
-        })
-      )
-      // Kiểm tra trùng lặp chi tiết sản phẩm
-      var checkVarianrs = hasDuplicatesByColorAndSize(product.value.productDetails)
-      if (checkVarianrs == true) {
-        Swal.fire(`Đã xuất hiện nhiều biến thể giống nhau, vui lòng kiểm tra lại`, '', 'error')
-        return
-      }
-
-      for (const file of multiImages.value) {
-        const formData = new FormData()
-        formData.append('file', file)
-        const responseImage = await fetch(getUrlAPI.value + '/UploadImages', {
-          method: 'POST',
-          body: formData,
-        })
-        if (!responseImage.ok) {
-          throw new Error(`Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`)
-        }
-      }
-      var hasError = false
-      // Kiểm tra ảnh cho từng chi tiết sản phẩm
-      product.value.productDetails.forEach((p, index) => {
-        if (p.images.length == 0) {
-          Swal.fire(`Biến thể số ${index + 1} thiếu hình ảnh`, '', 'error')
-          hasError = true
-        }
-      })
-    }
-    if (hasError) {
-      return // Ngăn chặn cập nhật nếu có lỗi
-    }
-    // Kiểm tra danh mục có bị trống không
-    for (let i = 0; i < product.value.categoryDetails.length; i++) {
-      const detailCategories = product.value.categoryDetails[i]
-      if (detailCategories.maDanhMucCha == 0) {
-        Swal.fire(`Vui lòng chọn danh mục cha cặp danh mục thứ ${i + 1}`, '', 'error')
-        return
-      }
-      if (detailCategories.maDanhMucCon == 0) {
-        Swal.fire(`Vui lòng chọn danh mục cha cặp danh mục thứ ${i + 1}`, '', 'error')
-        return
-      }
-    }
-
-    // Kiểm tra trùng lặp danh mục
-    var checkCategories = hasDuplicateByCategory(product.value.categoryDetails)
-    if (checkCategories == true) {
-      Swal.fire(
-        `Đã xuất hiện nhiều cặp danh mục cha-con giống nhau, vui lòng kiểm tra lại`,
-        '',
-        'error'
-      )
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid == false) {
+      router.push('/Login')
       return
-    }
-    const response = await fetch(`${getUrlAPI.value}/Products`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(product.value),
-    })
-    const result = await response.json()
-    if (result.success) {
-      Swal.fire({
-        title: 'Thêm sản phẩm thành công',
-        icon: 'success',
-        timer: 1500, // 2000 ms = 2 giây
-        showConfirmButton: false, // ẩn nút OK
-        timerProgressBar: true, // hiển thị thanh tiến trình
-      })
-      setTimeout(() => {
-        const modalElement = document.querySelector('.btn-close')
-        modalElement.click()
-        product.value = {
-          tenSanPham: '',
-          isActive: true,
-          categoryDetails: [{ maDanhMucCha: 0, maDanhMucCon: 0 }],
-          productDetails: [
-            {
-              kichThuoc: '',
-              mauSac: '',
-              soLuongTon: 0,
-              donGia: 0,
-              images: [],
-            },
-          ],
+    } else {
+      accessToken.value = validatetoken.newAccessToken
+      readToken.value = decodeToken(accessToken.value)
+      isSubmitting.value = true
+      // Validate cho sản phẩm không có biến thể
+      if (!hasVariants.value) {
+        if (!product.value.tenSanPham.trim()) {
+          Swal.fire('Vui lòng nhập tên sản phẩm', '', 'error')
+          return
         }
-        // Emit event khi cập nhật thành công
-        emit('update-success')
-      }, 1500)
+        if (
+          !detailsproductSingle.value.productDetails[0].donGia ||
+          detailsproductSingle.value.productDetails[0].donGia <= 0
+        ) {
+          Swal.fire('Vui lòng nhập đơn giá là một giá trị lớn hơn 0', '', 'error')
+          return
+        }
+
+        if (
+          !detailsproductSingle.value.productDetails[0].soLuongTon ||
+          detailsproductSingle.value.productDetails[0].soLuongTon <= 0
+        ) {
+          Swal.fire('Vui lòng nhập số lượng tồn là một giá trị lớn hơn 0', '', 'error')
+          return
+        }
+
+        if (detailsproductSingle.value.productDetails[0].images.length === 0) {
+          Swal.fire('Vui lòng chọn ít nhất một ảnh cho sản phẩm', '', 'error')
+          return
+        }
+
+        product.value.productDetails = detailsproductSingle.value.productDetails.map((detail) => ({
+          ...detail,
+          images: [...detail.images],
+        }))
+        for (const file of mainImages.value) {
+          const formData = new FormData()
+          formData.append('file', file)
+          const responseImage = await fetch(getUrlAPI.value + '/api/UploadImages', {
+            method: 'POST',
+            body: formData,
+          })
+          if (!responseImage.ok) {
+            throw new Error(
+              `Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`
+            )
+          }
+        }
+      }
+      // Validate cho sản phẩm có biến thể
+      else {
+        if (!product.value.tenSanPham.trim()) {
+          Swal.fire('Vui lòng nhập tên sản phẩm', '', 'error')
+          return
+        }
+        // Kiểm tra kích thước và màu sắc của từng biến thể
+        for (let i = 0; i < detailsproductHasVariants.value.productDetails.length; i++) {
+          const detail = detailsproductHasVariants.value.productDetails[i]
+          if (!detail.kichThuoc.trim() && !detail.mauSac.trim()) {
+            Swal.fire(
+              `Vui lòng nhập kích thước hoặc màu sắc cho biến thể thứ ${i + 1}`,
+              '',
+              'error'
+            )
+            return
+          }
+          if (!detail.donGia || detail.donGia <= 0) {
+            Swal.fire(
+              `Vui lòng nhập đơn giá với giá trị lớn hơn 0 cho biến thể thứ ${i + 1}`,
+              '',
+              'error'
+            )
+            return
+          }
+          if (!detail.soLuongTon || detail.soLuongTon <= 0) {
+            Swal.fire(
+              `Vui lòng nhập số lượng tồn với giá trị lớn hơn 0 cho biến thể thứ ${i + 1}`,
+              '',
+              'error'
+            )
+            return
+          }
+        }
+
+        // Cập nhật productDetails này vô product
+        product.value.productDetails = detailsproductHasVariants.value.productDetails.map(
+          (detail) => ({
+            ...detail,
+            images: detail.images.map((image) => ({
+              tenHinhAnh: image.tenHinhAnh,
+            })),
+          })
+        )
+        // Kiểm tra trùng lặp chi tiết sản phẩm
+        var checkVarianrs = hasDuplicatesByColorAndSize(product.value.productDetails)
+        if (checkVarianrs == true) {
+          Swal.fire(`Đã xuất hiện nhiều biến thể giống nhau, vui lòng kiểm tra lại`, '', 'error')
+          return
+        }
+
+        for (const file of multiImages.value) {
+          const formData = new FormData()
+          formData.append('file', file)
+          const responseImage = await fetch(getUrlAPI.value + '/api/UploadImages', {
+            method: 'POST',
+            body: formData,
+          })
+          if (!responseImage.ok) {
+            throw new Error(
+              `Lỗi khi upload ảnh: ${responseImage.status} ${responseImage.statusText}`
+            )
+          }
+        }
+        var hasError = false
+        // Kiểm tra ảnh cho từng chi tiết sản phẩm
+        product.value.productDetails.forEach((p, index) => {
+          if (p.images.length == 0) {
+            Swal.fire(`Biến thể số ${index + 1} thiếu hình ảnh`, '', 'error')
+            hasError = true
+          }
+        })
+      }
+      if (hasError) {
+        return // Ngăn chặn cập nhật nếu có lỗi
+      }
+      // Kiểm tra danh mục có bị trống không
+      for (let i = 0; i < product.value.categoryDetails.length; i++) {
+        const detailCategories = product.value.categoryDetails[i]
+        if (detailCategories.maDanhMucCha == 0) {
+          Swal.fire(`Vui lòng chọn danh mục cha cặp danh mục thứ ${i + 1}`, '', 'error')
+          return
+        }
+        if (detailCategories.maDanhMucCon == 0) {
+          Swal.fire(`Vui lòng chọn danh mục con cặp danh mục thứ ${i + 1}`, '', 'error')
+          return
+        }
+      }
+
+      // Kiểm tra trùng lặp danh mục
+      var checkCategories = hasDuplicateByCategory(product.value.categoryDetails)
+      if (checkCategories == true) {
+        Swal.fire(
+          `Đã xuất hiện nhiều cặp danh mục cha-con giống nhau, vui lòng kiểm tra lại`,
+          '',
+          'error'
+        )
+        return
+      }
+      const response = await fetch(`${getUrlAPI.value}/api/Products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + accessToken.value
+        },
+        body: JSON.stringify(product.value),
+      })
+      if(!response.ok){
+
+      }
+      const result = await response.json()
+      if (result.success) {
+        Swal.fire({
+          title: 'Thêm sản phẩm thành công',
+          icon: 'success',
+          timer: 1500, // 2000 ms = 2 giây
+          showConfirmButton: false, // ẩn nút OK
+          timerProgressBar: true, // hiển thị thanh tiến trình
+        })
+        setTimeout(() => {
+          const modalElement = document.querySelector('.btn-close')
+          modalElement.click()
+          product.value = {
+            tenSanPham: '',
+            isActive: true,
+            categoryDetails: [{ maDanhMucCha: 0, maDanhMucCon: 0 }],
+            productDetails: [
+              {
+                kichThuoc: '',
+                mauSac: '',
+                soLuongTon: 0,
+                donGia: 0,
+                images: [],
+              },
+            ],
+          }
+          // Emit event khi cập nhật thành công
+          emit('update-success')
+        }, 1500)
+      }
+      console.log(product.value)
     }
-    console.log(product.value)
   } catch (error) {
     console.log(error)
   } finally {

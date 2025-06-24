@@ -401,8 +401,6 @@ async function HandlePayment() {
       giamGia: item.giamGia,
     })),
   }
-  console.log(content)
-
   const confirmResult = await Swal.fire({
     title: 'Xác nhận đặt hàng?',
     text: 'Bạn có chắc muốn tiến hành thanh toán đơn hàng này?',

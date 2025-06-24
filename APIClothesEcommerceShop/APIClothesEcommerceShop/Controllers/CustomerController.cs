@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading.Tasks;
 using iText.Kernel.Geom;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -26,6 +27,7 @@ public class CustomerController : ControllerBase
         _webHostEnvironment = webHostEnvironment;
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAllCustomers(
         [FromQuery] int pageSize = 10,
@@ -49,7 +51,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpGet("count")]
     public async Task<IActionResult> GetCustomersCount(
         [FromQuery] string hoTen = null,
@@ -66,7 +68,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpGet("{maKH}")]
     public async Task<IActionResult> GetCustomerById(int maKH)
     {
@@ -81,7 +83,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> AddCustomer([FromForm] CustomerDto customerDto)
     {
@@ -97,7 +99,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpGet("search")]
     public async Task<IActionResult> SearchCustomers(
         [FromQuery] int pageSize = 10,
@@ -123,7 +125,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpPut("{maKH}")]
     public async Task<IActionResult> UpdateCustomer(int maKH, [FromForm] CustomerDto customerDto)
     {
@@ -139,7 +141,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{maKH}")]
     public async Task<IActionResult> DeleteCustomer(int maKH)
     {
@@ -155,7 +157,6 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
     [HttpGet("export/pdf")]
     public async Task<IActionResult> ExportCustomersToPdf()
     {
@@ -219,7 +220,6 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server khi xuất PDF: {ex.Message}");
         }
     }
-
     [HttpGet("export/excel")]
     public async Task<IActionResult> ExportCustomersToExcel()
     {
