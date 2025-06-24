@@ -37,6 +37,7 @@ using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Repositories.DetailCombo;
 using APIClothesEcommerceShop.Repositories.Address;
+using APIClothesEcommerceShop.Repositories.FavoriteProduct;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +49,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect"));
 });
 
 // Add services to the container.
@@ -126,6 +127,7 @@ builder.Services.AddScoped<IVnpay, Vnpay>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();
 builder.Services.AddScoped<IOrderComboDetails, OrderComboDetails>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IFavoriteProduct, FavoriteProduct>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();

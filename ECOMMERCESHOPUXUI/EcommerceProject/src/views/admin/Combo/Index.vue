@@ -20,7 +20,9 @@ let accesstoken = Cookies.get('accessToken')
 let refreshtoken = Cookies.get('refreshToken')
 const role = ref('')
 const getUrlAPI = ref('https://localhost:7217')
-
+const isActive = (ngayKetThuc) => {
+  return ngayKetThuc && new Date(ngayKetThuc) >= new Date();
+};
 // Hàm định dạng ngày
 function formatDate(dateString) {
   if (!dateString) return 'Chưa xác định';
@@ -273,6 +275,7 @@ onMounted(() => {
             <th>Mức giảm</th>
             <th>Ngày bắt đầu</th>
             <th>Ngày kết thúc</th>
+            <th>Tình trạng</th>
             <th>Thao tác</th>
           </tr>
         </thead>
@@ -300,30 +303,37 @@ onMounted(() => {
             <td class="text-center">{{ formatDate(combo.ngayBatDau) }}</td>
             <td class="text-center">{{ formatDate(combo.ngayKetThuc) }}</td>
             <td class="text-center">
-              <button
-                type="button"
-                data-bs-toggle="modal"
-                :data-bs-target="`#comboEditModal_${combo.maCombo}`"
-                class="btn btn-sm btn-warning me-1"
-              >
-                Sửa
-              </button>
-              <EditCombo :Combo="combo" :ListProduct="ListProduct" />
-              <button
-                type="button"
-                data-bs-toggle="modal"
-                :data-bs-target="`#comboDetailModal_${combo.maCombo}`"
-                class="btn btn-sm btn-info me-1"
-              >
-                Chi tiết
-              </button>
-              <DetailCombo :Combo="combo" :ListProduct="ListProduct" />
-              <button
-                @click="removeCombo(combo.maCombo)"
-                class="btn btn-danger btn-sm"
-              >
-                Xóa
-              </button>
+              {{ new Date(combo.ngayKetThuc) < new Date() ? 'Hết hạn' : 'Đang hoạt động' }}
+            </td>
+            <td class="text-center">
+              <div class="action-buttons">
+                <div v-if="combo.ngayKetThuc && new Date(combo.ngayKetThuc) >= new Date()">
+                  <button
+                    type="button"
+                    data-bs-toggle="modal"
+                    :data-bs-target="`#comboEditModal_${combo.maCombo}`"
+                    class="btn btn-sm btn-warning me-1"
+                  >
+                    Sửa
+                  </button>
+                  <EditCombo :Combo="combo" :ListProduct="ListProduct" />
+                  <button
+                    @click="removeCombo(combo.maCombo)"
+                    class="btn btn-danger btn-sm me-1"
+                  >
+                    Xóa
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  data-bs-toggle="modal"
+                  :data-bs-target="`#comboDetailModal_${combo.maCombo}`"
+                  class="btn btn-sm btn-info me-1"
+                >
+                  Chi tiết
+                </button>
+                <DetailCombo :Combo="combo" :ListProduct="ListProduct" />
+              </div>
             </td>
           </tr>
         </tbody>
@@ -361,5 +371,16 @@ onMounted(() => {
 }
 .sortable:hover {
   color: #f8d210;
+}
+/* CSS cho cột Thao tác */
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-buttons .btn {
+  margin: 0;
 }
 </style>

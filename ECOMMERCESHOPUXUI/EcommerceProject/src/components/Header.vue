@@ -121,15 +121,20 @@
           <div class="col-lg-3">
             <div class="header__right">
               <div class="header__right__auth">
-                <router-link to="/Login" class="text-primary">Đăng nhập</router-link>
-                <router-link to="/Register" class="text-primary">Đăng ký</router-link>
+                <template v-if="!isLoggedIn">
+                  <router-link to="/Login" class="text-primary">Đăng nhập</router-link>
+                  <router-link to="/Register" class="text-primary">Đăng ký</router-link>
+                </template>
+                <template v-else>
+                  <a href="#" @click.prevent="handleLogout" class="text-danger">Đăng xuất</a>
+                </template>
               </div>
               <ul class="header__right__widget">
                 <li>
-                  <a href="#"
+                 <router-link to='/favoriteproduct'
                     ><span class="icon_heart_alt"></span>
                     <div class="tip">2</div>
-                  </a>
+                 </router-link>
                 </li>
                 <li>
                   <router-link to='/Cart'
@@ -150,10 +155,43 @@
   </div>
 </template>
 
-<script>
-import { RouterLink } from 'vue-router'
-</script>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter, RouterLink } from 'vue-router'
+import Cookies from 'js-cookie'
+import { validateToken } from '@/utils/auth'
 
+const router = useRouter()
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+const isLoggedIn = ref(false)
+
+const checkLogin = async () => {
+  if (accessToken.value && refreshToken.value) {
+    const result = await validateToken(accessToken.value, refreshToken.value)
+    isLoggedIn.value = result.isValid
+    if (result.isValid) {
+      Cookies.set('accessToken', result.newAccessToken)
+    } else {
+      Cookies.remove('accessToken')
+      Cookies.remove('refreshToken')
+    }
+  } else {
+    isLoggedIn.value = false
+  }
+}
+
+const handleLogout = () => {
+  Cookies.remove('accessToken')
+  Cookies.remove('refreshToken')
+  isLoggedIn.value = false
+  router.push('/Login')
+}
+
+onMounted(() => {
+  checkLogin()
+})
+</script>
 <style>
 .header__menu {
   display: flex;
