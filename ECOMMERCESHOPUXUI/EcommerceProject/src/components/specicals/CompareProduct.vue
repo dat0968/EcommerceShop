@@ -7,93 +7,17 @@
     <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
       <div class="compare-modal">
         <div class="modal-header">
-          <h2>So sánh sản phẩm</h2>
-          <button class="close-btn" @click="showModal = false">×</button>
+          <button class="col-1 btn" @click="showSidebarModal = !showSidebarModal">
+            {{ showSidebarModal ? '>' : '=' }}
+          </button>
+          <h2 class="text-center col-10">So sánh sản phẩm</h2>
+          <button class="close-btn col-1" @click="showModal = false">×</button>
         </div>
         <div class="modal-body overflow-auto">
-          <!-- Vùng so sánh chính -->
-          <div class="compare-main">
-            <div class="compare-list">
-              <div
-                v-for="(group, groupIdx) in compareGroups"
-                :key="groupIdx"
-                class="compare-group"
-                @dragover.prevent
-                @drop="onDropToGroup($event, groupIdx)"
-              >
-                <div class="compare-group-products">
-                  <div v-for="(item, idx) in group.products" :key="idx" class="draggable-item">
-                    <div v-if="item.type === 'combo'" class="combo-card">
-                      <div class="combo-title">{{ item.comboName }}</div>
-                      <div class="combo-products">
-                        <div v-for="(prod, pidx) in item.products" :key="pidx">
-                          <div class="product-card mini">
-                            <img :src="prod.image" alt="" />
-                            <div>{{ prod.name }}</div>
-                            <div class="variant">
-                              {{ prod.variant.color }} / {{ prod.variant.size }}
-                            </div>
-                            <div class="price">{{ formatPrice(prod.variant.price) }}</div>
-                            <!-- Không cho tách lẻ combo trong group so sánh -->
-                            <button class="remove-btn" @click="removeFromCombo(groupIdx, idx)">
-                              Xóa
-                            </button>
-                          </div>
-                          <div v-if="pidx < item.products.length - 1" class="combo-divider"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else class="product-card">
-                      <img :src="item.image" alt="" />
-                      <div>{{ item.name }}</div>
-                      <div class="variant">{{ item.variant.color }} / {{ item.variant.size }}</div>
-                      <div class="price">{{ formatPrice(item.variant.price) }}</div>
-                      <button class="remove-btn" @click="removeFromCompare(groupIdx, idx)">
-                        Xóa
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="compare-sum">
-                  Giá tổng: <b>{{ formatPrice(getGroupTotal(group)) }}</b>
-                </div>
-                <div class="compare-tabs">
-                  <button
-                    v-for="tab in infoTabs"
-                    :key="tab"
-                    :class="{ active: group.activeTab === tab }"
-                    @click="group.activeTab = tab"
-                  >
-                    {{ tab }}
-                  </button>
-                </div>
-                <div class="compare-tab-content">
-                  <div v-if="group.activeTab === 'Mô tả'">
-                    <div v-for="item in group.products" :key="item.id">
-                      <b>{{ item.name || item.comboName }}:</b> {{ item.description }}
-                    </div>
-                  </div>
-                  <div v-else-if="group.activeTab === 'Đánh giá'">
-                    <div v-for="item in group.products" :key="item.id">
-                      <b>{{ item.name }}:</b> {{ item.rating }} ★
-                    </div>
-                  </div>
-                  <div v-else-if="group.activeTab === 'Thông tin'">
-                    <div v-for="item in group.products" :key="item.id">
-                      <b>{{ item.name }}:</b> {{ item.info }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Khu vực drop để tạo group mới -->
-              <div class="drop-new-group" @dragover.prevent @drop="onDropToNewGroup($event)">
-                <span>Kéo sản phẩm vào đây để tạo nhóm so sánh mới</span>
-              </div>
-            </div>
-          </div>
           <!-- Cột phải: danh sách sản phẩm đã chọn để so sánh -->
-          <div class="compare-sidebar">
-            <h3>Danh sách đã chọn</h3>
+          <div v-if="showSidebarModal" class="compare-sidebar">
+            <h5>Danh sách đã chọn</h5>
+            <hr />
             <div class="sidebar-list">
               <div
                 v-for="(item, idx) in selectedProducts"
@@ -113,7 +37,7 @@
                         <div class="variant">
                           {{ prod.variant.color }} / {{ prod.variant.size }}
                         </div>
-                        <div class="price">{{ formatPrice(prod.variant.price) }}</div>
+                        <div class="price">{{ formatCurrency(prod.variant.price) }}</div>
                       </div>
                       <div v-if="pidx < item.products.length - 1" class="combo-divider"></div>
                     </div>
@@ -130,7 +54,7 @@
                       <div class="variant">
                         Loại: {{ item.variant.color }} / {{ item.variant.size }}
                       </div>
-                      <div class="price">Giá: {{ formatPrice(item.variant.price) }}</div>
+                      <div class="price">Giá: {{ formatCurrency(item.variant.price) }}</div>
                     </div>
                     <button class="add-btn col-12" @click="addToCompare(item)">
                       Thêm vào so sánh
@@ -140,18 +64,272 @@
               </div>
             </div>
           </div>
+          <!-- Vùng so sánh chính -->
+          <div class="compare-main">
+            <div class="row align-items-stretch" style="min-height: 400px">
+              <div
+                v-for="(group, groupIdx) in compareGroups"
+                :key="groupIdx"
+                class="col-6"
+                @dragover.prevent
+                @drop="onDropToGroup($event, groupIdx)"
+              >
+                <div
+                  class="border rounded p-3 min-vh-50 mb-3 bg-light d-flex flex-column align-items-center justify-content-center flex-grow-1 h-100"
+                  style="min-height: 300px; height: 100%"
+                >
+                  <div v-if="group.products.length === 0">
+                    <div class="text-secondary text-center py-5">
+                      <i class="bi bi-box-arrow-in-down" style="font-size: 2rem"></i><br />
+                      <span>Kéo sản phẩm vào đây để tạo nhóm so sánh mới</span>
+                    </div>
+                  </div>
+                  <template v-else>
+                    <div class="w-100 row">
+                      <div
+                        v-for="(item, idx) in group.products"
+                        :key="idx"
+                        class="draggable-item mb-2"
+                        :class="[
+                          item.type === 'combo' ? 'col-12' : 'col-6',
+                          group.selectedProductIdx === idx ? 'selected' : '',
+                        ]"
+                        @click="selectProduct(groupIdx, idx)"
+                      >
+                        <div
+                          v-if="item.type === 'combo'"
+                          class="combo-card row mb-2"
+                          :class="group.selectedProductIdx === idx ? 'selected' : ''"
+                        >
+                          <div
+                            class="combo-title col-12 d-flex align-items-center justify-content-between"
+                          >
+                            <span>{{ item.comboName }}</span>
+                            <button
+                              class="btn btn-danger btn-sm mt-1"
+                              @click.stop="removeFromCombo(groupIdx, idx)"
+                            >
+                              X
+                            </button>
+                          </div>
+                          <div class="combo-products col-12">
+                            <div
+                              v-for="(prod, pidx) in item.products"
+                              :key="pidx"
+                              class="col-6 mb-2"
+                              :class="item.selectedComboProductIdx === pidx ? 'selected' : ''"
+                              @click.stop="selectComboProduct(groupIdx, idx, pidx)"
+                            >
+                              <div class="">
+                                <div class="product-card mini">
+                                  <img
+                                    :src="prod.image"
+                                    alt=""
+                                    style="cursor: pointer"
+                                    @click.stop="
+                                      openLightboxGroupProduct(groupIdx, idx, pidx, true)
+                                    "
+                                  />
+                                  <div>{{ prod.name }}</div>
+                                  <div class="variant">
+                                    <select
+                                      v-if="prod.variants"
+                                      v-model="prod.variantKey"
+                                      @change="onChangeVariantCombo(groupIdx, idx, pidx)"
+                                      class="form-select form-select-sm"
+                                    >
+                                      <option
+                                        v-for="(v, vIdx) in prod.variants"
+                                        :key="vIdx"
+                                        :value="vIdx"
+                                      >
+                                        {{ v.color }} / {{ v.size }}
+                                      </option>
+                                    </select>
+                                    <span v-else
+                                      >{{ prod.variant.color }} / {{ prod.variant.size }}</span
+                                    >
+                                  </div>
+                                  <div class="price">{{ formatCurrency(prod.variant.price) }}</div>
+                                </div>
+                                <div
+                                  v-if="pidx < item.products.length - 1"
+                                  class="combo-divider"
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          v-else
+                          class="product-card col-12"
+                          :class="group.selectedProductIdx === idx ? 'selected' : ''"
+                        >
+                          <img
+                            :src="item.image"
+                            alt=""
+                            style="cursor: pointer"
+                            @click.stop="openLightboxGroupProduct(groupIdx, idx, null, false)"
+                          />
+                          <div>{{ item.name }}</div>
+                          <div class="variant">
+                            <select
+                              v-if="item.variants"
+                              v-model="item.variantKey"
+                              @change="onChangeVariant(groupIdx, idx)"
+                              class="form-select form-select-sm"
+                            >
+                              <option v-for="(v, vIdx) in item.variants" :key="vIdx" :value="vIdx">
+                                {{ v.color }} / {{ v.size }}
+                              </option>
+                            </select>
+                            <span v-else>{{ item.variant.color }} / {{ item.variant.size }}</span>
+                          </div>
+                          <div class="price">{{ formatCurrency(item.variant.price) }}</div>
+                          <button
+                            class="btn btn-danger btn-sm mt-1"
+                            @click.stop="removeFromCompare(groupIdx, idx)"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                <div class="">
+                  <div class="compare-sum">
+                    Giá tổng: <b>{{ formatCurrency(getGroupTotal(group)) }}</b>
+                  </div>
+                  <div class="compare-tabs">
+                    <button
+                      v-for="tab in infoTabs"
+                      :key="tab"
+                      :class="{ active: group.activeTab === tab }"
+                      @click="group.activeTab = tab"
+                    >
+                      {{ tab }}
+                    </button>
+                  </div>
+                  <div class="compare-tab-content">
+                    <div v-if="group.selectedProductIdx != null">
+                      <div
+                        v-if="
+                          group.products[group.selectedProductIdx] &&
+                          group.products[group.selectedProductIdx].type === 'combo' &&
+                          group.products[group.selectedProductIdx].selectedComboProductIdx != null
+                        "
+                      >
+                        <!-- Focus vào sản phẩm trong combo -->
+                        <div v-if="group.activeTab === 'Mô tả'">
+                          <b
+                            >{{
+                              group.products[group.selectedProductIdx].products[
+                                group.products[group.selectedProductIdx].selectedComboProductIdx
+                              ].name
+                            }}:</b
+                          >
+                          {{
+                            group.products[group.selectedProductIdx].products[
+                              group.products[group.selectedProductIdx].selectedComboProductIdx
+                            ].description
+                          }}
+                        </div>
+                        <div v-else-if="group.activeTab === 'Đánh giá'">
+                          <b
+                            >{{
+                              group.products[group.selectedProductIdx].products[
+                                group.products[group.selectedProductIdx].selectedComboProductIdx
+                              ].name
+                            }}:</b
+                          >
+                          {{
+                            group.products[group.selectedProductIdx].products[
+                              group.products[group.selectedProductIdx].selectedComboProductIdx
+                            ].rating
+                          }}
+                          ★
+                        </div>
+                        <div v-else-if="group.activeTab === 'Thông tin'">
+                          <b
+                            >{{
+                              group.products[group.selectedProductIdx].products[
+                                group.products[group.selectedProductIdx].selectedComboProductIdx
+                              ].name
+                            }}:</b
+                          >
+                          {{
+                            group.products[group.selectedProductIdx].products[
+                              group.products[group.selectedProductIdx].selectedComboProductIdx
+                            ].info
+                          }}
+                        </div>
+                      </div>
+                      <div v-else>
+                        <!-- Focus vào sản phẩm lẻ hoặc combo -->
+                        <div v-if="group.activeTab === 'Mô tả'">
+                          <b
+                            >{{
+                              group.products[group.selectedProductIdx].name ||
+                              group.products[group.selectedProductIdx].comboName
+                            }}:</b
+                          >
+                          {{ group.products[group.selectedProductIdx].description }}
+                        </div>
+                        <div v-else-if="group.activeTab === 'Đánh giá'">
+                          <b
+                            >{{
+                              group.products[group.selectedProductIdx].name ||
+                              group.products[group.selectedProductIdx].comboName
+                            }}:</b
+                          >
+                          {{ group.products[group.selectedProductIdx].rating }} ★
+                        </div>
+                        <div v-else-if="group.activeTab === 'Thông tin'">
+                          <b
+                            >{{
+                              group.products[group.selectedProductIdx].name ||
+                              group.products[group.selectedProductIdx].comboName
+                            }}:</b
+                          >
+                          {{ group.products[group.selectedProductIdx].info }}
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else>
+                      <span style="color: #888">Bấm vào sản phẩm để xem chi tiết</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Khu vực drop để tạo group mới -->
+              <!-- <div class="drop-new-group" @dragover.prevent @drop="onDropToNewGroup($event)">
+                <span>Kéo sản phẩm vào đây để tạo nhóm so sánh mới</span>
+              </div> -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+  <VueEasyLight
+    :visible="isLightboxOpen"
+    :imgs="lightboxImages"
+    :index="lightboxIndex"
+    @hide="closeLightbox"
+  />
 </template>
 
 <script>
+import { formatCurrency } from '@/constants/formatCurrency'
+import VueEasyLight from 'vue-easy-lightbox'
 export default {
   name: 'CompareProduct',
+  components: { VueEasyLight },
   data() {
     return {
       showModal: false,
+      showSidebarModal: true,
       infoTabs: ['Mô tả', 'Đánh giá', 'Thông tin'],
       selectedProducts: [
         {
@@ -160,6 +338,11 @@ export default {
           type: 'single',
           image: 'https://i.imgur.com/1.jpg',
           category: 'Áo dài',
+          variants: [
+            { color: 'Đỏ', size: 'M', price: 350000 },
+            { color: 'Xanh', size: 'L', price: 360000 },
+            { color: 'Vàng', size: 'S', price: 340000 },
+          ],
           variant: { color: 'Đỏ', size: 'M', price: 350000 },
           description: 'Áo dài truyền thống nữ, chất liệu lụa.',
           rating: 4.7,
@@ -171,6 +354,10 @@ export default {
           type: 'single',
           image: 'https://i.imgur.com/2.jpg',
           category: 'Quần đùi',
+          variants: [
+            { color: 'Xanh', size: 'L', price: 120000 },
+            { color: 'Đen', size: 'M', price: 125000 },
+          ],
           variant: { color: 'Xanh', size: 'L', price: 120000 },
           description: 'Quần đùi nam thể thao, thoáng mát.',
           rating: 4.2,
@@ -182,6 +369,10 @@ export default {
           type: 'single',
           image: 'https://i.imgur.com/3.jpg',
           category: 'Áo lót',
+          variants: [
+            { color: 'Be', size: 'S', price: 90000 },
+            { color: 'Hồng', size: 'M', price: 95000 },
+          ],
           variant: { color: 'Be', size: 'S', price: 90000 },
           description: 'Áo lót nữ nâng ngực, thoải mái.',
           rating: 4.5,
@@ -193,6 +384,10 @@ export default {
           type: 'single',
           image: 'https://i.imgur.com/3.jpg',
           category: 'Áo lót',
+          variants: [
+            { color: 'Be', size: 'S', price: 190000 },
+            { color: 'Xám', size: 'L', price: 200000 },
+          ],
           variant: { color: 'Be', size: 'S', price: 190000 },
           description: 'Áo lót nam nâng ngực, thoải mái.',
           rating: 4.5,
@@ -208,6 +403,10 @@ export default {
               name: 'Áo sơ mi nam',
               image: 'https://i.imgur.com/4.jpg',
               category: 'Áo sơ mi',
+              variants: [
+                { color: 'Trắng', size: 'M', price: 220000 },
+                { color: 'Xanh', size: 'L', price: 225000 },
+              ],
               variant: { color: 'Trắng', size: 'M', price: 220000 },
               description: 'Áo sơ mi nam công sở.',
               rating: 4.3,
@@ -218,6 +417,10 @@ export default {
               name: 'Quần đùi nam',
               image: 'https://i.imgur.com/2.jpg',
               category: 'Quần đùi',
+              variants: [
+                { color: 'Xanh', size: 'L', price: 120000 },
+                { color: 'Đen', size: 'M', price: 125000 },
+              ],
               variant: { color: 'Xanh', size: 'L', price: 120000 },
               description: 'Quần đùi nam thể thao, thoáng mát.',
               rating: 4.2,
@@ -229,46 +432,79 @@ export default {
           info: 'Combo được ưa chuộng nhiều nhất',
         },
       ],
-      compareGroups: [],
+      compareGroups: [
+        { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
+        { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
+      ],
       dragItem: null,
+      isLightboxOpen: false,
+      lightboxImages: [],
+      lightboxIndex: 0,
     }
   },
   methods: {
-    formatPrice(val) {
-      return val.toLocaleString('vi-VN') + '₫'
-    },
-    addToCompare(item) {
-      // Cho phép thêm sản phẩm lẻ vào group đã có combo và ngược lại
-      const group = this.compareGroups.find((g) => g.products.length > 0)
-      if (group) {
-        group.products.push(item)
+    formatCurrency,
+    openLightboxGroupProduct(groupIdx, prodIdx, comboIdx, isComboChild) {
+      // Lấy danh sách ảnh của group
+      const group = this.compareGroups[groupIdx]
+      let images = []
+      let index = 0
+      if (isComboChild) {
+        // Combo: gom tất cả ảnh sản phẩm con
+        images = group.products[prodIdx].products.map((p) => p.image)
+        index = comboIdx
       } else {
-        this.compareGroups.push({ products: [item], activeTab: 'Mô tả' })
+        // Sản phẩm lẻ: gom tất cả ảnh sản phẩm lẻ trong group
+        images = group.products.filter((p) => p.type !== 'combo').map((p) => p.image)
+        // Tìm index của item hiện tại trong mảng sản phẩm lẻ
+        const lIndex = group.products
+          .filter((p) => p.type !== 'combo')
+          .findIndex((p, i) => i === prodIdx)
+        index = lIndex >= 0 ? lIndex : 0
+      }
+      this.lightboxImages = images
+      this.lightboxIndex = index
+      this.isLightboxOpen = true
+    },
+    // Chọn sản phẩm trong group (radio style)
+    selectProduct(groupIdx, prodIdx) {
+      const group = this.compareGroups[groupIdx]
+      group.selectedProductIdx = prodIdx
+      // Nếu là combo thì reset selectedComboProductIdx
+      if (group.products[prodIdx] && group.products[prodIdx].type === 'combo') {
+        if (group.products[prodIdx].selectedComboProductIdx == null) {
+          group.products[prodIdx].selectedComboProductIdx = null
+        }
       }
     },
-    addComboToCompare(combo) {
-      // Cho phép thêm combo vào group đã có sản phẩm lẻ
-      const group = this.compareGroups.find((g) => g.products.length > 0)
-      if (group) {
-        group.products.push(combo)
-      } else {
-        this.compareGroups.push({ products: [combo], activeTab: 'Mô tả' })
+    // Chọn sản phẩm con trong combo
+    selectComboProduct(groupIdx, comboIdx, prodIdx) {
+      const group = this.compareGroups[groupIdx]
+      group.selectedProductIdx = comboIdx
+      group.products[comboIdx].selectedComboProductIdx = prodIdx
+    },
+    addToCompare(item, groupIdx = 0) {
+      if (this.compareGroups[groupIdx].products.length < 10) {
+        this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
       }
+    },
+    addComboToCompare(combo, groupIdx = 0) {
+      if (this.compareGroups[groupIdx].products.length < 10) {
+        this.compareGroups[groupIdx].products.push(this.cloneProduct(combo))
+      }
+    },
+    cloneProduct(item) {
+      // Đảm bảo mỗi item thêm vào group là một object mới, tránh ảnh hưởng lẫn nhau
+      return JSON.parse(JSON.stringify(item))
     },
     removeFromCompare(groupIdx, prodIdx) {
       this.compareGroups[groupIdx].products.splice(prodIdx, 1)
-      if (this.compareGroups[groupIdx].products.length === 0) {
-        this.compareGroups.splice(groupIdx, 1)
-      }
     },
-    // Không cho tách l�� combo trong group so sánh
+    // Không cho tách lẻ combo trong group so sánh
     removeFromCombo(groupIdx, comboIdx) {
       const combo = this.compareGroups[groupIdx].products[comboIdx]
       if (combo.type === 'combo') {
         this.compareGroups[groupIdx].products.splice(comboIdx, 1)
-      }
-      if (this.compareGroups[groupIdx].products.length === 0) {
-        this.compareGroups.splice(groupIdx, 1)
       }
     },
     getGroupTotal(group) {
@@ -281,6 +517,19 @@ export default {
         }
       }
       return total
+    },
+    onChangeVariant(groupIdx, prodIdx) {
+      const item = this.compareGroups[groupIdx].products[prodIdx]
+      if (item.variants && item.variantKey != null) {
+        item.variant = { ...item.variants[item.variantKey] }
+      }
+    },
+    onChangeVariantCombo(groupIdx, comboIdx, prodIdx) {
+      const combo = this.compareGroups[groupIdx].products[comboIdx]
+      const prod = combo.products[prodIdx]
+      if (prod.variants && prod.variantKey != null) {
+        prod.variant = { ...prod.variants[prod.variantKey] }
+      }
     },
     onDragStart(e, item) {
       this.dragItem = item
@@ -297,29 +546,19 @@ export default {
       }
       if (!item) return
       // Cho phép thêm bất kỳ sản phẩm hoặc combo vào group
-      this.compareGroups[groupIdx].products.push(item)
+      this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
       this.dragItem = null
     },
-    onDropToNewGroup(e) {
-      e.preventDefault()
-      let item
-      try {
-        item = JSON.parse(e.dataTransfer.getData('text/plain'))
-      } catch {
-        item = this.dragItem
-      }
-      if (!item) return
-      this.compareGroups.push({ products: [item], activeTab: 'Mô tả' })
-      this.dragItem = null
-    },
+    // onDropToNewGroup: không còn logic tạo group mới
     onDoubleClickSidebar(item) {
-      // Double click: cho phép chọn group bất kỳ để thêm vào, không giới hạn
-      if (this.compareGroups.length === 0) {
-        this.compareGroups.push({ products: [item], activeTab: 'Mô tả' })
-      } else {
-        // Thêm vào group đầu tiên (hoặc có thể mở modal chọn group nếu muốn)
-        this.compareGroups[0].products.push(item)
-      }
+      // Khi double click, hỏi người dùng muốn thêm vào group nào (0 hoặc 1)
+      const groupIdx = window.confirm('Thêm vào nhóm so sánh 2? (OK: nhóm 2, Cancel: nhóm 1)')
+        ? 1
+        : 0
+      this.addToCompare(item, groupIdx)
+    },
+    closeLightbox() {
+      this.isLightboxOpen = false
     },
   },
 }
