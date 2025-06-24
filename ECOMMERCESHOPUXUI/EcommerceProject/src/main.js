@@ -8,8 +8,6 @@ import App from './App.vue'
 import router from './router'
 const app = createApp(App)
 
-await initApiBaseUrl()
-
 const pinia = createPinia()
 pinia.use(piniaPersist)
 
@@ -18,4 +16,5 @@ app.use(router)
 
 app.mount('#app')
 
+await initApiBaseUrl()
 replaceBrokenImages()
