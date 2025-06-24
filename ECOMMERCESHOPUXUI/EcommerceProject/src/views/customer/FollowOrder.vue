@@ -200,7 +200,7 @@ function changePage(p) {
               <th>Mã đơn hàng</th>
               <th>Ngày tạo</th>
               <th>Trạng thái</th>
-              <th>Họ tên</th>
+              <th>Người đặt</th>
               <th>SĐT</th>
               <th>Địa chỉ nhận</th>
               <th>Tổng tiền</th>
@@ -214,7 +214,7 @@ function changePage(p) {
               <td>
                 <span class="badge bg-info text-dark">{{ order.tinhTrang }}</span>
               </td>
-              <td>{{ order.hoTen }}</td>
+              <td>{{ order.tenKh }}</td>
               <td>{{ order.sdt }}</td>
               <td>{{ order.diaChiNhanHang }}</td>
               <td>
@@ -267,7 +267,7 @@ function changePage(p) {
                         : 'Chưa xác nhận'
                     }}
                   </div>
-                  <div><strong>Họ tên:</strong> {{ selectedOrder.hoTen }}</div>
+                  <div><strong>Người nhận:</strong> {{ selectedOrder.hoTen }}</div>
                   <div>
                     <strong>Người đặt:</strong> {{ selectedOrder.maKh }} - {{ selectedOrder.tenKh }}
                   </div>

@@ -3,6 +3,7 @@ using APIClothesEcommerceShop.DTO.Product;
 using APIClothesEcommerceShop.DTO.ProductDetails;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -10,6 +11,7 @@ using Newtonsoft.Json;
 namespace APIClothesEcommerceShop.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [ApiController]
     public class ProductsController : ControllerBase
     {

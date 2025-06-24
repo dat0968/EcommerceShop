@@ -14,6 +14,7 @@ const emit = defineEmits(['close'])
 const order = ref({
   maHd: props.Order.maHd,
   maKh: props.Order.maKh,
+  tenKh: props.Order.tenKh,
   maNv: props.Order.maNv,
   tenNv: props.Order.tenNv,
   maCode: props.Order.maCode,
@@ -30,15 +31,11 @@ const order = ref({
   lyDoHuy: props.Order.lyDoHuy,
   phiVanChuyen: props.Order.phiVanChuyen,
   tienGoc: props.Order.tienGoc,
+  giamGiaCoupon: props.Order.giamGiaCoupon || 0,
   chitietcombohoadons: props.Order.chitietcombohoadons ? [...props.Order.chitietcombohoadons] : [],
   cthoadons: props.Order.cthoadons ? [...props.Order.cthoadons] : [],
-  hoTenNguoiNhan: props.Order.hoTenNguoiNhan || props.Order.hoTen,
-  hoTenNguoiDat: props.Order.hoTenNguoiDat || props.Order.hoTen,
-  hoTenNv: props.Order.hoTenNv || 'Chưa có',
-  giamGiaCoupon: props.Order.giamGiaCoupon || 0,
-  tongtien: props.Order.tongtien || props.Order.tienGoc + props.Order.phiVanChuyen,
 })
-
+console.log(order.value)
 // Watch để cập nhật dữ liệu khi props thay đổi
 watch(
   () => props.Order,
@@ -46,7 +43,9 @@ watch(
     order.value = {
       maHd: newOrder.maHd,
       maKh: newOrder.maKh,
+      tenKh: newOrder.tenKh,
       maNv: newOrder.maNv,
+      tenNv: newOrder.tenNv,
       maCode: newOrder.maCode,
       ngayTao: newOrder.ngayTao,
       batDauGiao: newOrder.batDauGiao,
@@ -61,13 +60,9 @@ watch(
       lyDoHuy: newOrder.lyDoHuy,
       phiVanChuyen: newOrder.phiVanChuyen,
       tienGoc: newOrder.tienGoc,
+      giamGiaCoupon: newOrder.giamGiaCoupon || 0,
       chitietcombohoadons: newOrder.chitietcombohoadons ? [...newOrder.chitietcombohoadons] : [],
       cthoadons: newOrder.cthoadons ? [...newOrder.cthoadons] : [],
-      hoTenNguoiNhan: newOrder.hoTenNguoiNhan || newOrder.hoTen,
-      hoTenNguoiDat: newOrder.hoTenNguoiDat || newOrder.hoTen,
-      hoTenNv: newOrder.hoTenNv || 'Chưa có',
-      giamGiaCoupon: newOrder.giamGiaCoupon || 0,
-      tongtien: newOrder.tongtien || newOrder.tienGoc + newOrder.phiVanChuyen,
     }
   },
   { deep: true }
@@ -102,7 +97,6 @@ const formatDate = (dateString) => {
   if (!dateString) return 'Chưa có'
   return new Date(dateString).toLocaleString('vi-VN')
 }
-
 </script>
 
 <template>
@@ -131,10 +125,11 @@ const formatDate = (dateString) => {
             <div class="col-md-6 border-end">
               <h6 class="fw-bold mb-2 text-primary">Thông tin khách hàng</h6>
               <p class="mb-1"><strong>Mã khách hàng:</strong> {{ order.maKh }}</p>
-              <p class="mb-1"><strong>Họ tên người đặt:</strong> {{ order.hoTenNguoiDat }}</p>
-              <p class="mb-1"><strong>Họ tên người nhận:</strong> {{ order.hoTenNguoiNhan }}</p>
+              <p class="mb-1">
+                <strong>Họ tên người đặt:</strong> {{ order.maKh }} - {{ order.tenKh }}
+              </p>
+              <p class="mb-1"><strong>Họ tên người nhận:</strong> {{ order.hoTen }}</p>
               <p class="mb-1"><strong>Số điện thoại:</strong> {{ order.sdt }}</p>
-              <p class="mb-1"><strong>Mã coupon:</strong> {{ order.maCode || 'Không có' }}</p>
             </div>
             <div class="col-md-6 ps-md-4">
               <h6 class="fw-bold mb-2 text-primary">Thông tin đơn hàng</h6>
@@ -167,7 +162,7 @@ const formatDate = (dateString) => {
           </div>
 
           <!-- Danh sách sản phẩm -->
-          <div class="product-list mb-4">
+          <div class="product-list mb-4" v-if="order.cthoadons.some((i) => !i.maCombo)">
             <h6 class="fw-bold mb-3 text-success">Sản phẩm trong đơn hàng</h6>
             <div class="table-responsive">
               <table class="table table-sm align-middle">
@@ -191,7 +186,15 @@ const formatDate = (dateString) => {
                       <div class="font-semibold text-gray-800">
                         {{ item.tenSanPham || 'Không có tên' }}
                       </div>
-                      <div style="color: #6b7280; font-size: 0.875rem; font-style: italic; margin-left: 4px;" class="text-sm text-gray-500 italic">
+                      <div
+                        style="
+                          color: #6b7280;
+                          font-size: 0.875rem;
+                          font-style: italic;
+                          margin-left: 4px;
+                        "
+                        class="text-sm text-gray-500 italic"
+                      >
                         {{ item.bienThe }}
                       </div>
                     </td>
@@ -208,7 +211,7 @@ const formatDate = (dateString) => {
           </div>
 
           <!-- Danh sách combo -->
-          <!-- <div class="combo-list mb-4">
+          <div class="combo-list mb-4" v-if="order.cthoadons.some((i) => i.maCombo)">
             <h6 class="fw-bold mb-3 text-success">Combo trong đơn hàng</h6>
             <div class="table-responsive">
               <table class="table table-sm align-middle">
@@ -218,33 +221,41 @@ const formatDate = (dateString) => {
                     <th>Tên combo</th>
                     <th>Số lượng</th>
                     <th>Đơn giá</th>
-                    <th>Giá gốc</th>
-                    <th>Giảm giá</th>
-                    <th>Tổng giá</th>
+                    <th>Thành tiền</th>
                     <th>Chi tiết sản phẩm</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in order.chitietcombohoadons" :key="index">
-                    <td>{{ index + 1 }}</td>
-                    <td>{{ item.tenCombo }}</td>
-                    <td>{{ item.soLuong }}</td>
-                    <td>{{ formatCurrency(item.gia) }}</td>
-                    <td>{{ formatCurrency(item.gia * item.soLuong) }}</td>
-                    <td class="text-danger">- {{ formatCurrency(item.giamGia || 0) }}</td>
-                    <td>{{ formatCurrency(item.gia * item.soLuong - (item.giamGia || 0)) }}</td>
+                  <tr
+                    v-for="(comboItem, cidx) in order.cthoadons.filter((i) => i.maCombo)"
+                    :key="'combo-' + cidx"
+                  >
+                    <td>{{ cidx + 1 }}</td>
+                    <td>{{ comboItem.tenCombo }}</td>
+                    <td>{{ comboItem.soLuong }}</td>
+                    <td>
+                      {{ formatCurrency(comboItem.gia) }}
+                      <span style="text-decoration-line: line-through; color: red">{{
+                        formatCurrency(comboItem.giaGoc)
+                      }}</span>
+                    </td>
+                    <td>{{ formatCurrency(comboItem.gia * comboItem.soLuong) }}</td>
                     <td>
                       <ul class="list-unstyled mb-0">
-                        <li v-for="(detail, idx) in item.chiTietCombo" :key="idx" class="mb-2">
-                          <div><strong>Tên SP:</strong> {{ detail.tenSpCombo }}</div>
-                          <div v-if="detail.kichThuoc || detail.huongVi">
-                            <strong>Biến thể:</strong> <br />
-                            <span v-if="detail.kichThuoc">Kích thước: {{ detail.kichThuoc }}</span>
-                            <span v-if="detail.kichThuoc && detail.huongVi"> | </span>
-                            <span v-if="detail.huongVi">Hương vị: {{ detail.huongVi }}</span>
+                        <li
+                          v-for="(detail, idx) in order.chitietcombohoadons.filter(
+                            (c) => c.maCombo === comboItem.maCombo
+                          )"
+                          :key="idx"
+                          class="mb-2"
+                        >
+                          <div>
+                            <strong>Tên SP:</strong> {{ detail.tenSanPham }}
+                            <span v-if="detail.mauSac || detail.kichThuoc">
+                              ({{ detail.kichThuoc }} {{ '- ' + detail.mauSac }})</span
+                            >
+                            - <strong>Số lượng:</strong> {{ detail.soLuong }}
                           </div>
-                          <div><strong>Số lượng:</strong> {{ detail.soLuong }}</div>
-                          <div><strong>Đơn giá:</strong> {{ formatCurrency(detail.donGia) }}</div>
                         </li>
                       </ul>
                     </td>
@@ -252,7 +263,7 @@ const formatDate = (dateString) => {
                 </tbody>
               </table>
             </div>
-          </div> -->
+          </div>
 
           <!-- Tổng tiền -->
           <div class="row justify-content-end mt-4">
@@ -272,7 +283,7 @@ const formatDate = (dateString) => {
                 </tr>
                 <tr class="fw-bold text-primary">
                   <td>Tổng cộng:</td>
-                  <td class="text-end">{{ formatCurrency(order.tongtien) }}</td>
+                  <td class="text-end">{{ formatCurrency(order.tienGoc + order.phiVanChuyen - order.giamGiaCoupon) }}</td>
                 </tr>
               </table>
             </div>

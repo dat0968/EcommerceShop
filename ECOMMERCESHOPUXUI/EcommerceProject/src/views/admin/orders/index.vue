@@ -1,23 +1,31 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import detailsOrderModal from '../orders/details.vue'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
+import { read } from 'xlsx'
+const router = useRouter()
 const listOrders = ref([])
 const searchQuery = ref('')
 const statusFilter = ref('')
 const loading = ref(false)
-const selectedOrder = ref(null)
 const statusOrders = ref([])
 const getUrlAPI = ref(GetApiUrl())
 const totalPages = ref(0)
 const pageSelected = ref(1)
 const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
 const isOpenModal = ref(false)
+const reasonCancel = ref('')
 const idUser = ref('')
+const roleUser = ref('')
+const pendingOrder = ref(null)
+const pendingStatus = ref('')
+const readToken = ref({})
 const openModal = () => {
   isOpenModal.value = !isOpenModal.value
 }
@@ -34,12 +42,27 @@ statusOrders.value = [
 // Fetch dữ liệu từ API
 const fetchOrders = async () => {
   try {
-    loading.value = true
-    const response = await axios.get(
-      `${getUrlAPI.value}/api/Orders?search=${searchQuery.value}&filter=${statusFilter.value}&page=${pageSelected.value}`
-    )
-    listOrders.value = response.data.data
-    totalPages.value = response.data.toTalPage
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid == false) {
+      router.push('/Login')
+      return
+    } else {
+      accessToken.value = validatetoken.newAccessToken
+      readToken.value = decodeToken(accessToken.value)
+      idUser.value = readToken.value.IdUser
+      roleUser.value = readToken.value.Role
+      loading.value = true
+      const response = await axios.get(
+        `${getUrlAPI.value}/api/Orders?search=${searchQuery.value}&filter=${statusFilter.value}&page=${pageSelected.value}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken.value}`,
+          },
+        }
+      )
+      listOrders.value = response.data.data
+      totalPages.value = response.data.toTalPage
+    }
   } catch (error) {
     console.error('Lỗi khi tải dữ liệu:', error)
   } finally {
@@ -69,45 +92,124 @@ const formatDate = (dateString) => {
 // Xử lý cập nhật trạng thái
 const handleStatusChange = async (order, oldStatus, newStatus) => {
   try {
-    var readToken = decodeToken(accessToken.value)
-    idUser.value = readToken.IdUser
-    if (idUser.value.toLowerCase() != String(order?.maNv || '').toLowerCase() && order?.maNv != null) {
-      console.log(idUser.value)
-      Swal.fire({
-        title:
-          'Đơn hàng này đang được phụ trách bởi nhân viên khác. Bạn không có quyền thay đổi trạng thái đơn hàng này.',
-        icon: 'error',
-        timer: 2500,
-        showConfirmButton: false,
-        timerProgressBar: true,
-      })
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid == false) {
+      router.push('/Login')
       return
-    }
-    if (['hoàn trả/hoàn tiền', 'đã hủy'].includes(newStatus.toLowerCase())) {
-      isOpenModal.value = true
-    }
-    const response = await fetch(`${getUrlAPI.value}/api/Orders`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    if (!response.ok) {
-      throw new Error('Failed to updateStatusOrder')
-    }
-    const result = await response.json()
-    if (result.success) {
-      Swal.fire({
-        title: 'Cập nhật trạng thái đơn hàng thành công.',
-        icon: 'error',
-        timer: 2500,
-        showConfirmButton: false,
-        timerProgressBar: true,
+    } else {
+      accessToken.value = validatetoken.newAccessToken
+      readToken.value = decodeToken(accessToken.value)
+      idUser.value = readToken.value.IdUser
+      roleUser.value = readToken.value.Role
+      if (
+        idUser.value.toLowerCase() != String(order?.maNv || '').toLowerCase() &&
+        order?.maNv != null &&
+        roleUser.value.toLowerCase() != 'admin'
+      ) {
+        console.log(idUser.value)
+        Swal.fire({
+          title:
+            'Đơn hàng này đang được phụ trách bởi nhân viên khác. Bạn không có quyền thay đổi trạng thái đơn hàng này.',
+          icon: 'error',
+          timer: 2500,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+        return
+      }
+      if (['hoàn trả/hoàn tiền', 'đã hủy'].includes(newStatus.toLowerCase())) {
+        isOpenModal.value = true
+        pendingOrder.value = order
+        pendingStatus.value = newStatus
+        return
+      }
+      // Chỉ gọi API nếu không phải 2 trạng thái đặc biệt
+      const response = await fetch(`${getUrlAPI.value}/api/Orders/${order.maHd}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + accessToken.value
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          maNv: idUser.value,
+          paymentMethod: order.hinhThucTt,
+          reasonCancel: reasonCancel.value,
+        }),
       })
-      await fetchOrders()
+      if (!response.ok) {
+        throw new Error('Failed to updateStatusOrder')
+      }
+      const result = await response.json()
+      if (result.success) {
+        Swal.fire({
+          title: 'Cập nhật trạng thái đơn hàng thành công.',
+          icon: 'success',
+          timer: 2500,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+        await fetchOrders()
+      }
     }
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái:', error)
+  }
+}
+
+const confirmCancel = async () => {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid == false) {
+    router.push('/Login')
+    return
+  } else {
+    accessToken.value = validatetoken.newAccessToken
+    readToken.value = decodeToken(accessToken.value)
+    idUser.value = readToken.value.IdUser
+    roleUser.value = readToken.value.Role
+    if (!reasonCancel.value.trim()) {
+      Swal.fire('Vui lòng nhập lý do!', '', 'warning')
+      return
+    }
+    try {
+      var readtoken = decodeToken(accessToken.value)
+      idUser.value = readtoken.IdUser
+      const content = {
+        status: pendingStatus.value,
+        maNv: idUser.value,
+        paymentMethod: pendingOrder.value.hinhThucTt,
+        reasonCancel: reasonCancel.value,
+      }
+      console.log(content)
+      const response = await fetch(`${getUrlAPI.value}/api/Orders/${pendingOrder.value.maHd}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + accessToken.value
+        },
+        body: JSON.stringify(content),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to updateStatusOrder')
+      }
+      const result = await response.json()
+      if (result.success) {
+        Swal.fire({
+          title: 'Cập nhật trạng thái đơn hàng thành công.',
+          icon: 'success',
+          timer: 2500,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+        isOpenModal.value = false
+        pendingOrder.value = null
+        pendingStatus.value = ''
+        reasonCancel.value = ''
+        await fetchOrders()
+      }
+    } catch (error) {
+      console.error('Lỗi khi cập nhật trạng thái:', error)
+    }
   }
 }
 
@@ -118,8 +220,18 @@ function ChangePage(page) {
     fetchOrders()
   }
 }
-onMounted(() => {
-  fetchOrders()
+onMounted(async () => {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid == false) {
+    router.push('/Login')
+    return
+  } else {
+    accessToken.value = validatetoken.newAccessToken
+    readToken.value = decodeToken(accessToken.value)
+    idUser.value = readToken.value.IdUser
+    roleUser.value = readToken.value.Role
+    fetchOrders()
+  }
 })
 
 const filteredStatusOptions = computed(() => {
@@ -213,14 +325,19 @@ const filteredStatusOptions = computed(() => {
         </div>
       </div>
     </div>
-
+    <div v-if="loading" class="my-loading-spinner text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải...</span>
+      </div>
+      <div class="fw-semibold text-primary mt-2">Đang tải dữ liệu...</div>
+    </div>
     <!-- Table -->
-    <div class="table-responsive">
+    <div v-else class="table-responsive">
       <table class="table table-hover">
         <thead class="table-light">
           <tr>
             <th>Mã đơn hàng</th>
-            <th>Khách hàng</th>
+            <th>Người đặt</th>
             <th>Ngày đặt</th>
             <th>Tổng tiền</th>
             <th>Trạng thái</th>
@@ -230,12 +347,18 @@ const filteredStatusOptions = computed(() => {
         <tbody>
           <tr v-for="order in listOrders" :key="order.maHd">
             <td>{{ order.maHd }}</td>
-            <td>{{ order.hoTen }}</td>
+            <td>{{ order.tenKh }}</td>
             <td>{{ formatDate(order.ngayTao) }}</td>
-            <td>{{ formatCurrency(order.tienGoc + order.phiVanChuyen) }}</td>
+            <td>
+              {{ formatCurrency(order.tienGoc + order.phiVanChuyen - (order.giamGiaCoupon || 0)) }}
+            </td>
             <td>
               <select
-                :disabled="idUser !== order.maNv && order.maNv != null"
+                :disabled="
+                  idUser != order.maNv &&
+                  order.maNv != undefined &&
+                  roleUser.toLowerCase() != 'admin'
+                "
                 class="form-select form-select-sm w-50"
                 :value="order.tinhTrang"
                 @change="handleStatusChange(order, order.tinhTrang, $event.target.value)"
@@ -249,8 +372,16 @@ const filteredStatusOptions = computed(() => {
                   {{ status }}
                 </option>
               </select>
-              <span v-if="idUser !== order.maNv && order.maNv != ''" class="text-danger small fst-italic">
-                Đơn hàng này đang được phụ trách bởi nhân viên khác. Bạn không có quyền thay đổi trạng thái đơn hàng này.
+              <span
+                v-if="
+                  idUser != order.maNv &&
+                  order.maNv != undefined &&
+                  roleUser.toLowerCase() != 'admin'
+                "
+                class="text-danger small fst-italic"
+              >
+                Đơn hàng này đang được phụ trách bởi nhân viên khác. Bạn không có quyền thay đổi
+                trạng thái đơn hàng này.
               </span>
             </td>
             <td>
@@ -288,57 +419,37 @@ const filteredStatusOptions = computed(() => {
         </li>
       </ul>
     </nav>
+    <!-- Modal nhập lý do hủy/hoàn trả -->
     <div
-      class="modal show"
-      tabindex="-1"
-      role="dialog"
-      style="
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1050;
-      "
       v-if="isOpenModal"
+      class="modal fade show"
+      style="display: block; background-color: rgba(0, 0, 0, 0.5)"
     >
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h6 class="modal-title">Lý do hủy/hoàn trả hàng</h6>
-            <button
-              type="button"
-              data-dismiss="modal"
-              aria-label="Close"
-              style="
-                background: none;
-                border: none;
-                font-size: 20px;
-                color: #333;
-                cursor: pointer;
-                margin-left: auto;
-              "
-              @click="openModal"
-            >
-              <i class="fas fa-times"></i>
-            </button>
+            <h5 class="modal-title">
+              Nhập lý do {{ pendingStatus === 'đã hủy' ? 'hủy' : 'hoàn tiền' }}
+            </h5>
+            <button type="button" class="btn-close" @click="isOpenModal = false"></button>
           </div>
           <div class="modal-body">
-            <textarea
-              class="form-control"
-              name=""
-              id=""
-              cols="30"
-              rows="10"
-              placeholder="Nhập lý do hủy/hoàn trả hàng"
-            ></textarea>
+            <div class="form-group">
+              <label for="cancelReason" class="form-label">Lý do:</label>
+              <textarea
+                id="cancelReason"
+                v-model="reasonCancel"
+                class="form-control"
+                rows="4"
+                placeholder="Nhập lý do..."
+              ></textarea>
+            </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary">Lưu</button>
+            <button type="button" class="btn btn-secondary" @click="isOpenModal = false">
+              Đóng
+            </button>
+            <button type="button" class="btn btn-primary" @click="confirmCancel">Xác nhận</button>
           </div>
         </div>
       </div>
