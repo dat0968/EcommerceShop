@@ -249,11 +249,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                         }
                     }
                 }
-<<<<<<< HEAD
-                if (paymentmethod.ToLower() == "đã hủy" || paymentmethod.ToLower() == "hoàn trả/hoàn tiền")
-=======
-                if(status.ToLower() == "đã hủy" || status.ToLower() == "hoàn trả/hoàn tiền")
->>>>>>> origin/master
+                if (status.ToLower() == "đã hủy" || status.ToLower() == "hoàn trả/hoàn tiền")
                 {
                     await CancelOrders(id, paymentmethod, reasonCancel);
                 }
@@ -271,7 +267,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
         public async Task<Hoadon> GetbyId(int id)
         {
             var findOrder = await db.Hoadons.AsNoTracking().FirstOrDefaultAsync(p => p.MaHd == id);
-            if(findOrder == null)
+            if (findOrder == null)
             {
                 throw new Exception("Not found Order");
             }
@@ -296,7 +292,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     .Include(p => p.Cthoadons)
                         .ThenInclude(p => p.MaComboNavigation)
                     .Where(p => p.MaKh == Makh).OrderByDescending(p => p.MaHd)
-                    .ToListAsync(); 
+                    .ToListAsync();
 
                 var ListOrder = ordersRaw.Select(order => new OrderResponseDTO
                 {
@@ -330,7 +326,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                         MaHd = ctcb.MaHd,
                         MaCtsp = ctcb.MaCtsp,
                         TenSanPham = ctcb.MaCtspNavigation.MaSpNavigation.TenSanPham,
-                        MauSac = ctcb.MaCtspNavigation.MauSac, 
+                        MauSac = ctcb.MaCtspNavigation.MauSac,
                         KichThuoc = ctcb.MaCtspNavigation.KichThuoc,
                         MaCombo = ctcb.MaCombo,
                         SoLuong = ctcb.SoLuong,
@@ -369,7 +365,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                 }
                 return ListOrder;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("Error", ex);
             }
