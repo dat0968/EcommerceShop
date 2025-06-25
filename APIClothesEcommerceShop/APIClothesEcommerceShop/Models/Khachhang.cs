@@ -33,7 +33,7 @@ public partial class Khachhang
 
     public bool? IsActive { get; set; }
     public int Streak { get; set; } = 0;
-    public DateTime LastLogged { get; set; } = DateTime.Now;
+    public DateTime TruyCapLlanCuoi { get; set; } = DateTime.Now;
     public virtual ICollection<Macoupon>? MaCoupons { get; set; }
 
     public virtual ICollection<Giohang> Giohangs { get; set; } = new List<Giohang>();

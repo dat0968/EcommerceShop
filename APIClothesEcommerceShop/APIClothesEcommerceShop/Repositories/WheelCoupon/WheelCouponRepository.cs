@@ -92,5 +92,48 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
+
+        public async Task<ResponseAPI<Models.Macoupon>> CreatePrivateCoupon(int? userId, int? decreasePrice, bool? isPercent = true)
+        {
+            ResponseAPI<Models.Macoupon> response = new();
+            try
+            {
+                if (userId == 0 || decreasePrice == 0)
+                {
+                    throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
+                }
+                var customer = await _db.Khachhangs.Include(kh => kh.Hoadons)
+                                                    .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+                if (customer == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
+                }
+
+                Models.Macoupon coupon = new()
+                {
+                    MoTa = $"Mã coupon riêng cho khách hàng ${customer.HoTen}",
+                    DonHangToiThieu = 1,
+                    NgayBatDau = DateTime.MaxValue,
+                    SoLuong = 1,
+                    SoLuongDaDung = 0,
+                    TrangThai = true,
+                };
+
+                if (isPercent!.Value && decreasePrice < 100)
+                {
+                    coupon.PhanTramGiam = decreasePrice;
+                }
+                else coupon.SoTienGiam = decreasePrice;
+
+                await base.AddAsync(coupon);
+
+                response.SetSuccessResponse(data: coupon);
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
     }
 }
