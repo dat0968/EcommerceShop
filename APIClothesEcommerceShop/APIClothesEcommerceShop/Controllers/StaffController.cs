@@ -12,6 +12,7 @@ using System.IO;
 using System.Threading.Tasks;
 using iText.Kernel.Geom;
 using ClosedXML.Excel;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -25,7 +26,7 @@ public class StaffController : ControllerBase
         _staffRepository = staffRepository;
         _webHostEnvironment = webHostEnvironment;
     }
-
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet]
     public async Task<IActionResult> GetAllStaff(
         [FromQuery] int pageSize = 10,
@@ -49,7 +50,7 @@ public class StaffController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet("count")]
     public async Task<IActionResult> GetStaffCount(
         [FromQuery] string hoTen = null,
@@ -66,7 +67,7 @@ public class StaffController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet("{maNV}")]
     public async Task<IActionResult> GetStaffById(int maNV)
     {
@@ -81,7 +82,7 @@ public class StaffController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpPost]
     public async Task<IActionResult> AddStaff([FromForm] StaffDto staffDto)
     {
@@ -97,7 +98,7 @@ public class StaffController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet("search")]
     public async Task<IActionResult> SearchStaff(
         [FromQuery] int pageSize = 10,
@@ -123,7 +124,7 @@ public class StaffController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpPut("{maNV}")]
     public async Task<IActionResult> UpdateStaff(int maNV, [FromForm] StaffDto staffDto)
     {
@@ -139,7 +140,7 @@ public class StaffController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpDelete("{maNV}")]
     public async Task<IActionResult> DeleteStaff(int maNV)
     {
@@ -155,6 +156,7 @@ public class StaffController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet("chucvus")]
     public async Task<IActionResult> GetAllChucvus()
     {

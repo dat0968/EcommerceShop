@@ -16,6 +16,18 @@ namespace APIClothesEcommerceShop.Repositories.Category
     public class CategoryRepository(EcommerceShopContext db) : Repository<Danhmuccha>(db), ICategoryRepository
     {
         private readonly EcommerceShopContext _db = db;
+        public async Task<List<CategoryResponseDTO>> GetAllSmallCategories()
+        {
+            var GetSmallCategories = await db.Danhmuccons.ToListAsync();
+
+
+            var result = GetSmallCategories.Select(d => new CategoryResponseDTO
+            {
+                MaDanhMucCon = d.MaDanhMucCon,
+                TenDanhMucCon = d.TenDanhMucCon,
+            }).ToList();
+            return result;
+        }
         public async Task<List<CategoryResponseDTO>> GetAllBigCategories()
         {
             var GetBigCategories = await _db.Danhmucchas

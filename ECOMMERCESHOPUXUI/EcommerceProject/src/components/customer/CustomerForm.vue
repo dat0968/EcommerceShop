@@ -17,7 +17,13 @@
           </label>
           <div class="image-container">
             <!-- Input file phủ lên toàn bộ image-preview -->
-            <input type="file" id="hinhDaiDien" @change="handleFileUpload" accept="image/*" class="file-input" />
+            <input
+              type="file"
+              id="hinhDaiDien"
+              @change="handleFileUpload"
+              accept="image/*"
+              class="file-input"
+            />
             <div class="image-preview" :class="{ 'empty-preview': !imagePreview }">
               <img v-if="imagePreview" :src="imagePreview" alt="Xem trước hình ảnh" />
               <div v-else class="placeholder-content">
@@ -46,10 +52,15 @@
 
         <!-- CCCD -->
         <div class="form-group">
-          <label class="section-title" for="cccd">
-            CCCD <span class="required">*</span>
-          </label>
-          <input type="text" id="cccd" v-model="form.cccd" class="info-input" maxlength="12" @input="validateCCCD" />
+          <label class="section-title" for="cccd"> CCCD <span class="required">*</span> </label>
+          <input
+            type="text"
+            id="cccd"
+            v-model="form.cccd"
+            class="info-input"
+            maxlength="12"
+            @input="validateCCCD"
+          />
           <div class="error-message" v-if="errors.cccd">{{ errors.cccd }}</div>
         </div>
 
@@ -58,7 +69,14 @@
           <label class="section-title" for="sdt">
             Số điện thoại <span class="required">*</span>
           </label>
-          <input type="text" id="sdt" v-model="form.sdt" @blur="handlePhoneBlur" class="info-input" maxlength="12" />
+          <input
+            type="text"
+            id="sdt"
+            v-model="form.sdt"
+            @blur="handlePhoneBlur"
+            class="info-input"
+            maxlength="12"
+          />
           <div class="error-message" v-if="errors.sdt">{{ errors.sdt }}</div>
         </div>
       </div>
@@ -67,9 +85,7 @@
       <div class="right-column">
         <!-- Họ tên -->
         <div class="form-group">
-          <label class="section-title" for="hoTen">
-            Họ tên <span class="required">*</span>
-          </label>
+          <label class="section-title" for="hoTen"> Họ tên <span class="required">*</span> </label>
           <input type="text" id="hoTen" v-model="form.hoTen" class="info-input" />
           <div class="error-message" v-if="errors.hoTen">{{ errors.hoTen }}</div>
         </div>
@@ -91,9 +107,7 @@
 
         <!-- Email -->
         <div class="form-group">
-          <label class="section-title" for="email">
-            Email <span class="required">*</span>
-          </label>
+          <label class="section-title" for="email"> Email <span class="required">*</span> </label>
           <input type="email" id="email" v-model="form.email" class="info-input" />
           <div class="error-message" v-if="errors.email">{{ errors.email }}</div>
         </div>
@@ -131,17 +145,20 @@
     <div class="buttons">
       <button type="button" class="btn-cancel" @click="cancelForm">Hủy</button>
       <button type="submit" class="btn-submit" :disabled="isSubmitting">
-        {{ isSubmitting ? 'Đang xử lý...' : (isEdit ? 'Cập nhật' : 'Thêm mới') }}
+        {{ isSubmitting ? 'Đang xử lý...' : isEdit ? 'Cập nhật' : 'Thêm mới' }}
       </button>
     </div>
   </form>
 </template>
 
 <script>
-import { ref, reactive, onMounted, watch } from 'vue';
-import axios from 'axios';
-import Swal from 'sweetalert2';
-
+import { ref, reactive, onMounted, watch } from 'vue'
+import axios from 'axios'
+import Swal from 'sweetalert2'
+import { useRouter } from 'vue-router'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
 export default {
   name: 'CustomerForm',
   props: {
@@ -156,8 +173,6 @@ export default {
   },
   emits: ['submit-success', 'cancel'],
   setup(props, { emit }) {
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://localhost:7217/api';
-
     const form = reactive({
       hoTen: '',
       gioiTinh: 'Nam',
@@ -170,12 +185,16 @@ export default {
       matKhau: '',
       tinhTrang: 'Đang hoạt động',
       isActive: true,
-    });
-
-    const errors = reactive({});
-    const isSubmitting = ref(false);
-    const imagePreview = ref('');
-    const fileSelected = ref(null);
+    })
+    const accessToken = ref(Cookies.get('accessToken'))
+    const refreshToken = ref(Cookies.get('refreshToken'))
+    const readToken = ref({})
+    const router = useRouter()
+    const apiUrl = ref(GetApiUrl())
+    const errors = reactive({})
+    const isSubmitting = ref(false)
+    const imagePreview = ref('')
+    const fileSelected = ref(null)
 
     const showSuccessMessage = (message) => {
       Swal.fire({
@@ -184,8 +203,8 @@ export default {
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#4CAF50',
-      });
-    };
+      })
+    }
 
     const showErrorMessage = (message) => {
       Swal.fire({
@@ -194,8 +213,8 @@ export default {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#f44336',
-      });
-    };
+      })
+    }
 
     const showWarningMessage = (message) => {
       Swal.fire({
@@ -204,8 +223,8 @@ export default {
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#ff9800',
-      });
-    };
+      })
+    }
 
     const showConfirmDialog = (message, callback) => {
       Swal.fire({
@@ -219,10 +238,10 @@ export default {
         cancelButtonColor: '#f44336',
       }).then((result) => {
         if (result.isConfirmed && callback) {
-          callback();
+          callback()
         }
-      });
-    };
+      })
+    }
 
     const showLoadingIndicator = (message = 'Đang xử lý...') => {
       Swal.fire({
@@ -230,276 +249,311 @@ export default {
         allowOutsideClick: false,
         showConfirmButton: false,
         willOpen: () => {
-          Swal.showLoading();
+          Swal.showLoading()
         },
-      });
-    };
+      })
+    }
 
     const validateAge = (birthDate) => {
-      const today = new Date();
-      const birthDateObj = new Date(birthDate);
-      let age = today.getFullYear() - birthDateObj.getFullYear();
-      const monthDiff = today.getMonth() - birthDateObj.getMonth();
+      const today = new Date()
+      const birthDateObj = new Date(birthDate)
+      let age = today.getFullYear() - birthDateObj.getFullYear()
+      const monthDiff = today.getMonth() - birthDateObj.getMonth()
 
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
-        age--;
+        age--
       }
 
-      return age >= 10;
-    };
+      return age >= 10
+    }
 
     const formatPhoneNumber = (phone) => {
-      if (!phone) return '';
-      const cleaned = phone.replace(/\D/g, '');
-      const truncated = cleaned.substring(0, 10);
+      if (!phone) return ''
+      const cleaned = phone.replace(/\D/g, '')
+      const truncated = cleaned.substring(0, 10)
       if (truncated.length >= 7) {
-        return `${truncated.substring(0, 4)} ${truncated.substring(4, 7)} ${truncated.substring(7)}`.trim();
+        return `${truncated.substring(0, 4)} ${truncated.substring(4, 7)} ${truncated.substring(
+          7
+        )}`.trim()
       } else if (truncated.length >= 4) {
-        return `${truncated.substring(0, 4)} ${truncated.substring(4)}`.trim();
+        return `${truncated.substring(0, 4)} ${truncated.substring(4)}`.trim()
       }
-      return truncated;
-    };
+      return truncated
+    }
 
     const validateCCCD = () => {
-      const cccd = form.cccd.replace(/\D/g, '');
-      form.cccd = cccd;
+      const cccd = form.cccd.replace(/\D/g, '')
+      form.cccd = cccd
       if (cccd.length > 12) {
-        form.cccd = cccd.substring(0, 12);
+        form.cccd = cccd.substring(0, 12)
       }
-    };
+    }
 
     const handleFileUpload = (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
+      const file = event.target.files[0]
+      if (!file) return
 
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 5 * 1024 * 1024 // 5MB
       if (file.size > maxSize) {
-        showWarningMessage('Kích thước hình ảnh không được vượt quá 5MB');
-        event.target.value = '';
-        return;
+        showWarningMessage('Kích thước hình ảnh không được vượt quá 5MB')
+        event.target.value = ''
+        return
       }
 
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg']
       if (!allowedTypes.includes(file.type)) {
-        showWarningMessage('Chỉ chấp nhận các định dạng hình ảnh: JPG, JPEG, PNG, GIF');
-        event.target.value = '';
-        return;
+        showWarningMessage('Chỉ chấp nhận các định dạng hình ảnh: JPG, JPEG, PNG, GIF')
+        event.target.value = ''
+        return
       }
 
-      fileSelected.value = file;
-      const reader = new FileReader();
+      fileSelected.value = file
+      const reader = new FileReader()
       reader.onload = (e) => {
-        imagePreview.value = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    };
+        imagePreview.value = e.target.result
+      }
+      reader.readAsDataURL(file)
+    }
 
     const handlePhoneBlur = () => {
       if (form.sdt) {
-        form.sdt = formatPhoneNumber(form.sdt);
+        form.sdt = formatPhoneNumber(form.sdt)
       }
-    };
+    }
 
-    watch(() => form.sdt, (newValue) => {
-      if (document.activeElement?.id !== 'sdt') {
-        form.sdt = formatPhoneNumber(newValue);
+    watch(
+      () => form.sdt,
+      (newValue) => {
+        if (document.activeElement?.id !== 'sdt') {
+          form.sdt = formatPhoneNumber(newValue)
+        }
       }
-    });
+    )
 
     const validateForm = () => {
-      Object.keys(errors).forEach((key) => (errors[key] = ''));
+      Object.keys(errors).forEach((key) => (errors[key] = ''))
 
-      let isValid = true;
+      let isValid = true
 
       if (!form.hoTen?.trim()) {
-        errors.hoTen = 'Họ tên không được để trống';
-        isValid = false;
+        errors.hoTen = 'Họ tên không được để trống'
+        isValid = false
       }
 
       if (!form.ngaySinh) {
-        errors.ngaySinh = 'Ngày sinh không được để trống';
-        isValid = false;
+        errors.ngaySinh = 'Ngày sinh không được để trống'
+        isValid = false
       } else if (!validateAge(form.ngaySinh)) {
-        errors.ngaySinh = 'Khách hàng phải từ 10 tuổi trở lên';
-        isValid = false;
+        errors.ngaySinh = 'Khách hàng phải từ 10 tuổi trở lên'
+        isValid = false
       }
 
       if (!form.cccd?.trim()) {
-        errors.cccd = 'CCCD không được để trống';
-        isValid = false;
+        errors.cccd = 'CCCD không được để trống'
+        isValid = false
       } else if (!/^[0][0-9]{11}$/.test(form.cccd.trim())) {
-        errors.cccd = 'CCCD phải là 12 số và bắt đầu bằng 0';
-        isValid = false;
+        errors.cccd = 'CCCD phải là 12 số và bắt đầu bằng 0'
+        isValid = false
       }
 
       if (!form.sdt?.trim()) {
-        errors.sdt = 'Số điện thoại không được để trống';
-        isValid = false;
+        errors.sdt = 'Số điện thoại không được để trống'
+        isValid = false
       } else {
-        const cleanPhone = form.sdt.replace(/\s+/g, '');
+        const cleanPhone = form.sdt.replace(/\s+/g, '')
         if (!/^[0-9]{10}$/.test(cleanPhone)) {
-          errors.sdt = 'Số điện thoại phải là 10 số';
-          isValid = false;
+          errors.sdt = 'Số điện thoại phải là 10 số'
+          isValid = false
         }
       }
 
       if (!form.email?.trim()) {
-        errors.email = 'Email không được để trống';
-        isValid = false;
+        errors.email = 'Email không được để trống'
+        isValid = false
       } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(form.email.trim())) {
-        errors.email = 'Email không hợp lệ';
-        isValid = false;
+        errors.email = 'Email không hợp lệ'
+        isValid = false
       }
 
       if (!props.isEdit) {
         if (!form.tenTaiKhoan?.trim()) {
-          errors.tenTaiKhoan = 'Tên tài khoản không được để trống';
-          isValid = false;
+          errors.tenTaiKhoan = 'Tên tài khoản không được để trống'
+          isValid = false
         }
 
         if (!form.matKhau?.trim()) {
-          errors.matKhau = 'Mật khẩu không được để trống';
-          isValid = false;
+          errors.matKhau = 'Mật khẩu không được để trống'
+          isValid = false
         } else if (form.matKhau.trim().length < 6) {
-          errors.matKhau = 'Mật khẩu phải có ít nhất 6 ký tự';
-          isValid = false;
+          errors.matKhau = 'Mật khẩu phải có ít nhất 6 ký tự'
+          isValid = false
         }
 
         if (!fileSelected.value && !imagePreview.value) {
-          errors.hinh = 'Vui lòng chọn hình đại diện';
-          isValid = false;
+          errors.hinh = 'Vui lòng chọn hình đại diện'
+          isValid = false
         }
       }
 
-      return isValid;
-    };
+      return isValid
+    }
 
     const submitForm = async () => {
       if (!validateForm()) {
-        const firstError = Object.values(errors).find((error) => error);
-        showWarningMessage(firstError);
-        return;
+        const firstError = Object.values(errors).find((error) => error)
+        showWarningMessage(firstError)
+        return
       }
 
-      isSubmitting.value = true;
-      showLoadingIndicator();
+      isSubmitting.value = true
+      showLoadingIndicator()
 
       try {
-        const formData = new FormData();
-        formData.append('hoTen', form.hoTen?.trim() || '');
-        formData.append('gioiTinh', form.gioiTinh);
-        formData.append('ngaySinh', form.ngaySinh);
-        formData.append('diaChi', form.diaChi?.trim() || '');
-        formData.append('cccd', form.cccd?.trim() || '');
-        formData.append('sdt', form.sdt?.replace(/\s+/g, '') || '');
-        formData.append('email', form.email?.trim() || '');
+        const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+        if (validatetoken.isValid == false) {
+          router.push('/Login')
+          return
+        }
+        accessToken.value = validatetoken.newAccessToken
+        const formData = new FormData()
+        formData.append('hoTen', form.hoTen?.trim() || '')
+        formData.append('gioiTinh', form.gioiTinh)
+        formData.append('ngaySinh', form.ngaySinh)
+        formData.append('diaChi', form.diaChi?.trim() || '')
+        formData.append('cccd', form.cccd?.trim() || '')
+        formData.append('sdt', form.sdt?.replace(/\s+/g, '') || '')
+        formData.append('email', form.email?.trim() || '')
 
         if (!props.isEdit) {
-          formData.append('tenTaiKhoan', form.tenTaiKhoan?.trim() || '');
-          formData.append('matKhau', form.matKhau?.trim() || '');
+          formData.append('tenTaiKhoan', form.tenTaiKhoan?.trim() || '')
+          formData.append('matKhau', form.matKhau?.trim() || '')
         } else if (form.matKhau) {
-          formData.append('matKhau', form.matKhau?.trim() || '');
+          formData.append('matKhau', form.matKhau?.trim() || '')
         }
 
         if (fileSelected.value) {
-          formData.append('hinhDaiDien', fileSelected.value);
+          formData.append('hinhDaiDien', fileSelected.value)
         }
 
         if (props.isEdit) {
-          formData.append('tinhTrang', form.tinhTrang);
-          formData.append('isActive', form.isActive);
-          await axios.put(`${apiUrl}/Customer/${props.customerId}`, formData);
+          formData.append('tinhTrang', form.tinhTrang)
+          formData.append('isActive', form.isActive)
+          await axios.put(`${apiUrl.value}/api/Customer/${props.customerId}`, formData, {
+            headers: {
+              Authorization: `Bearer ${accessToken.value}`,
+              'Content-Type': 'multipart/form-data', // nếu formData là FormData
+            },
+          })
         } else {
-          await axios.post(`${apiUrl}/Customer`, formData);
+          await axios.post(`${apiUrl.value}/api/Customer`, formData, {
+            headers: {
+              Authorization: `Bearer ${accessToken.value}`,
+              'Content-Type': 'multipart/form-data', // nếu formData là FormData
+            },
+          })
         }
 
-        Swal.close();
-        console.log('Attempting to show success message'); // Debug
+        Swal.close()
+        console.log('Attempting to show success message') // Debug
         await Swal.fire({
           title: 'Thành công!',
-          text: props.isEdit ? 'Cập nhật khách hàng thành công!' : 'Thêm mới khách hàng thành công!',
+          text: props.isEdit
+            ? 'Cập nhật khách hàng thành công!'
+            : 'Thêm mới khách hàng thành công!',
           icon: 'success',
           confirmButtonText: 'OK',
           confirmButtonColor: '#4CAF50',
           customClass: {
-            container: 'my-swal-container'
-          }
-        });
-        console.log('Success message shown'); // Debug
-        emit('submit-success');
+            container: 'my-swal-container',
+          },
+        })
+        console.log('Success message shown') // Debug
+        emit('submit-success')
       } catch (error) {
-        Swal.close();
-        console.error('Error in submitForm:', error); // Debug
+        Swal.close()
+        console.error('Error in submitForm:', error) // Debug
         if (error.response?.data) {
-          const errorMessage = error.response.data;
+          const errorMessage = error.response.data
           if (errorMessage.includes('CCCD đã tồn tại')) {
-            errors.cccd = 'CCCD đã tồn tại';
-            showWarningMessage('CCCD đã tồn tại trong hệ thống!');
+            errors.cccd = 'CCCD đã tồn tại'
+            showWarningMessage('CCCD đã tồn tại trong hệ thống!')
           } else if (errorMessage.includes('SĐT đã tồn tại')) {
-            errors.sdt = 'Số điện thoại đã tồn tại';
-            showWarningMessage('Số điện thoại đã tồn tại trong hệ thống!');
+            errors.sdt = 'Số điện thoại đã tồn tại'
+            showWarningMessage('Số điện thoại đã tồn tại trong hệ thống!')
           } else if (errorMessage.includes('Email đã tồn tại')) {
-            errors.email = 'Email đã tồn tại';
-            showWarningMessage('Email đã tồn tại trong hệ thống!');
+            errors.email = 'Email đã tồn tại'
+            showWarningMessage('Email đã tồn tại trong hệ thống!')
           } else if (errorMessage.includes('Tên tài khoản đã tồn tại')) {
-            errors.tenTaiKhoan = 'Tên tài khoản đã tồn tại';
-            showWarningMessage('Tên tài khoản đã tồn tại trong hệ thống!');
+            errors.tenTaiKhoan = 'Tên tài khoản đã tồn tại'
+            showWarningMessage('Tên tài khoản đã tồn tại trong hệ thống!')
           } else {
-            showErrorMessage(errorMessage || 'Đã xảy ra lỗi khi xử lý yêu cầu!');
+            showErrorMessage(errorMessage || 'Đã xảy ra lỗi khi xử lý yêu cầu!')
           }
         } else {
-          showErrorMessage('Không thể kết nối đến server. Vui lòng thử lại sau!');
+          showErrorMessage('Không thể kết nối đến server. Vui lòng thử lại sau!')
         }
       } finally {
-        isSubmitting.value = false;
+        isSubmitting.value = false
       }
-    };
+    }
     const cancelForm = () => {
       showConfirmDialog('Bạn có muốn hủy? Các thay đổi sẽ không được lưu!', () => {
-        emit('cancel');
-      });
-    };
+        emit('cancel')
+      })
+    }
 
     const fetchCustomerData = async () => {
       if (props.isEdit && props.customerId) {
         try {
-          showLoadingIndicator('Đang tải thông tin khách hàng...');
-          const response = await axios.get(`${apiUrl}/Customer/${props.customerId}`);
-          const customerData = response.data;
+          const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+          if (validatetoken.isValid == false) {
+            router.push('/Login')
+            return
+          }
+          accessToken.value = validatetoken.newAccessToken
+          showLoadingIndicator('Đang tải thông tin khách hàng...')
+          const response = await axios.get(`${apiUrl.value}/api/Customer/${props.customerId}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken.value}`,
+            },
+          })
+          const customerData = response.data
 
-          form.hoTen = customerData.hoTen?.trim() || '';
-          form.gioiTinh = customerData.gioiTinh || 'Nam';
+          form.hoTen = customerData.hoTen?.trim() || ''
+          form.gioiTinh = customerData.gioiTinh || 'Nam'
           form.ngaySinh = customerData.ngaySinh
             ? new Date(customerData.ngaySinh).toISOString().split('T')[0]
-            : '';
-          form.diaChi = customerData.diaChi?.trim() || '';
-          form.cccd = customerData.cccd?.trim() || '';
-          form.sdt = formatPhoneNumber(customerData.sdt?.trim() || '');
-          form.email = customerData.email?.trim() || '';
-          form.tinhTrang = customerData.tinhTrang || 'Đang hoạt động';
-          form.isActive = customerData.isActive ?? true;
+            : ''
+          form.diaChi = customerData.diaChi?.trim() || ''
+          form.cccd = customerData.cccd?.trim() || ''
+          form.sdt = formatPhoneNumber(customerData.sdt?.trim() || '')
+          form.email = customerData.email?.trim() || ''
+          form.tinhTrang = customerData.tinhTrang || 'Đang hoạt động'
+          form.isActive = customerData.isActive ?? true
 
-          const imagePath = customerData.hinhDaiDien || customerData.hinh || '';
+          const imagePath = customerData.hinhDaiDien || customerData.hinh || ''
           if (imagePath) {
             if (imagePath.includes('AnhKhachHang')) {
-              const fileName = imagePath.split('/').pop();
-              imagePreview.value = `${apiUrl}/Customer/image/${fileName}`;
+              const fileName = imagePath.split('/').pop()
+              imagePreview.value = `${apiUrl.value}/api/Customer/image/${fileName}`
             } else {
-              imagePreview.value = `${apiUrl}${imagePath.startsWith('/') ? '' : '/'}${imagePath}`;
+              imagePreview.value = `${apiUrl.value}/api/${
+                imagePath.startsWith('/') ? '' : '/'
+              }${imagePath}`
             }
           } else {
-            imagePreview.value = '';
+            imagePreview.value = ''
           }
 
-          Swal.close();
+          Swal.close()
         } catch (error) {
-          Swal.close();
-          showErrorMessage('Không thể tải thông tin khách hàng. Vui lòng thử lại sau!');
+          Swal.close()
+          showErrorMessage('Không thể tải thông tin khách hàng. Vui lòng thử lại sau!')
         }
       }
-    };
+    }
 
-    onMounted(fetchCustomerData);
+    onMounted(fetchCustomerData)
 
     return {
       form,
@@ -511,9 +565,9 @@ export default {
       submitForm,
       cancelForm,
       validateCCCD,
-    };
+    }
   },
-};
+}
 </script>
 
 <style scoped>

@@ -1,10 +1,13 @@
-﻿using APIClothesEcommerceShop.Repositories.Order;
+﻿using APIClothesEcommerceShop.DTO.Order;
+using APIClothesEcommerceShop.Repositories.Order;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIClothesEcommerceShop.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [ApiController]
     public class OrdersController : ControllerBase
     {
@@ -36,12 +39,12 @@ namespace APIClothesEcommerceShop.Controllers
             }
             
         }
-        [HttpPut]
-        public async Task<IActionResult> Update(int id, string status, int MaNv, string paymentmethod, string? reasonCancel)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update([FromRoute]int id, UpdateOrderDto model)
         {
             try
             {
-                await orderRepository.UpdateStatusOrders(id, status, MaNv, paymentmethod, reasonCancel);
+                await orderRepository.UpdateStatusOrders(id, model.Status, model.MaNv, model.PaymentMethod, model.ReasonCancel);
                 return Ok(new
                 {
                     Success = true,

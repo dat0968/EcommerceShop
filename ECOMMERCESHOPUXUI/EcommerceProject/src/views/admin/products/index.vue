@@ -1,22 +1,33 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
 import CreateProductModal from '../products/create.vue'
 import EditProductModel from '../products/edit.vue'
 import DetailProductModel from '../products/details.vue'
 import Swal from 'sweetalert2'
+import Cookies from 'js-cookie'
 const search = ref('')
 const categoryBigSelected = ref('')
 const categorySmallSelected = ref('')
 const sortByPrice = ref('')
-const getUrlAPI = ref('https://localhost:7217/api')
+const getUrlAPI = ref(GetApiUrl())
 const products = ref([])
 const toTalPages = ref(1)
 const pageSelected = ref(1)
 const listBigCategories = ref([])
 const listSmallCategories = ref([])
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+const loading = ref(false)
+const readToken = ref()
+const roleUser = ref('')
+const router = useRouter()
 const fetchAPICategories = async () => {
   try {
-    const response = await fetch(`${getUrlAPI.value}/Categories/GetAllCategories`, {
+    loading.value = true
+    const response = await fetch(`${getUrlAPI.value}/api/Categories/GetCategoriesforShop`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -26,38 +37,62 @@ const fetchAPICategories = async () => {
     if (!response.ok) throw new Error('Lỗi khi gọi API')
 
     const result = await response.json()
-    listBigCategories.value = result.listBigCategories
-    listSmallCategories.value = result.listSmallCategories
+    listBigCategories.value = result.listBigCategory.map((p) => {
+      return {
+        maDanhMucCha: p.maDanhMucCha,
+        tenDanhMucCha: p.tenDanhMucCha,
+      }
+    })
+    listSmallCategories.value = result.listSmallCategory.map((p) => {
+      return {
+        maDanhMucCon: p.maDanhMucCon,
+        tenDanhMucCon: p.tenDanhMucCon,
+      }
+    })
   } catch (error) {
     console.error('Lỗi fetchAPICategories:', error)
+  } finally {
+    loading.value = false
   }
 }
 const fetchAPIProducts = async () => {
   try {
-    const response = await fetch(
-      `${getUrlAPI.value}/Products?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&sortByPrice=${sortByPrice.value}&page=${pageSelected.value}`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    )
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid == false) {
+      router.push('/Login')
+      return
+    } else {
+      accessToken.value = validatetoken.newAccessToken
+      readToken.value = decodeToken(accessToken.value)
+      loading.value = true
+      roleUser.value = readToken.value.Role
+      const response = await fetch(
+        `${getUrlAPI.value}/api/Products?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&sortByPrice=${sortByPrice.value}&page=${pageSelected.value}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + accessToken.value,
+          },
+        }
+      )
 
-    if (!response.ok) throw new Error('Lỗi khi gọi API')
+      if (!response.ok) throw new Error('Lỗi khi gọi API')
 
-    const result = await response.json()
-    products.value = result.data
-    toTalPages.value = result.toTalPages
+      const result = await response.json()
+      products.value = result.data
+      toTalPages.value = result.toTalPages
+    }
   } catch (error) {
     console.error('Lỗi fetchAPIProducts:', error)
+  } finally {
+    loading.value = false
   }
 }
-onMounted(() => {
+onMounted(async () => {
   fetchAPIProducts()
   fetchAPICategories()
 })
-
 
 // Chuyển trang
 function ChangePage(page) {
@@ -82,22 +117,32 @@ async function RemoveProducts(productid) {
       denyButtonText: `Không`,
     }).then(async (result) => {
       if (result.isConfirmed) {
-        const response = await fetch(`${getUrlAPI.value}/Products/${productid}/Cancel`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        const result = await response.json()
-        if (result.success) {
-          Swal.fire({
-            title: 'Đã xóa thông tin sản phẩm',
-            icon: 'success',
-            timer: 1500, // 2000 ms = 2 giây
-            showConfirmButton: false, // ẩn nút OK
-            timerProgressBar: true, // hiển thị thanh tiến trình
+        const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+        if (validatetoken.isValid == false) {
+          router.push('/Login')
+          return
+        } else {
+          accessToken.value = validatetoken.newAccessToken
+          readToken.value = decodeToken(accessToken.value)
+          roleUser.value = readToken.value.Role
+          const response = await fetch(`${getUrlAPI.value}/api/Products/${productid}/Cancel`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + accessToken.value,
+            },
           })
-          fetchAPIProducts()
+          const result = await response.json()
+          if (result.success) {
+            Swal.fire({
+              title: 'Đã xóa thông tin sản phẩm',
+              icon: 'success',
+              timer: 1500, // 2000 ms = 2 giây
+              showConfirmButton: false, // ẩn nút OK
+              timerProgressBar: true, // hiển thị thanh tiến trình
+            })
+            fetchAPIProducts()
+          }
         }
       } else if (result.isDenied) {
         Swal.clickCancel()
@@ -149,6 +194,7 @@ async function RemoveProducts(productid) {
     <!-- Tiêu đề phụ và nút thêm -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <button
+        v-if="roleUser.toLowerCase() == 'admin'"
         type="button"
         data-bs-toggle="modal"
         data-bs-target="#productModal"
@@ -158,12 +204,19 @@ async function RemoveProducts(productid) {
       </button>
     </div>
     <CreateProductModal
+      v-if="roleUser.toLowerCase() == 'admin'"
       :listBigCategories="listBigCategories"
       :listSmallCategories="listSmallCategories"
       @update-success="fetchAPIProducts"
     />
+    <div v-if="loading" class="my-loading-spinner text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải...</span>
+      </div>
+      <div class="fw-semibold text-primary mt-2">Đang tải dữ liệu...</div>
+    </div>
     <!-- Bảng sản phẩm -->
-    <div class="table-responsive">
+    <div v-else class="table-responsive">
       <table class="table table-bordered table-hover" style="text-align: center">
         <thead class="table-light">
           <tr>
@@ -198,6 +251,7 @@ async function RemoveProducts(productid) {
             <td>{{ product.soLuong }}</td>
             <td>
               <button
+                v-if="roleUser.toLowerCase() == 'admin'"
                 type="button"
                 data-bs-toggle="modal"
                 :data-bs-target="`#productModal_${product.maSp}`"
@@ -206,6 +260,7 @@ async function RemoveProducts(productid) {
                 Sửa
               </button>
               <EditProductModel
+                v-if="roleUser.toLowerCase() == 'admin'"
                 :productinformation="product"
                 :listBigCategories="listBigCategories"
                 :listSmallCategories="listSmallCategories"
@@ -224,7 +279,7 @@ async function RemoveProducts(productid) {
                 :listBigCategories="listBigCategories"
                 :listSmallCategories="listSmallCategories"
               />
-              <button @click="RemoveProducts(product.maSp)" class="btn btn-sm btn-danger">
+              <button v-if="roleUser.toLowerCase() == 'admin'" @click="RemoveProducts(product.maSp)" class="btn btn-sm btn-danger">
                 Xóa
               </button>
             </td>

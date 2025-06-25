@@ -169,7 +169,10 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-
+import { useRouter } from 'vue-router'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
 export default {
     name: 'StaffForm',
     props: {
@@ -180,14 +183,17 @@ export default {
     },
     emits: ['submit-success', 'cancel'],
     setup(props, { emit }) {
-        const apiUrl = 'https://localhost:7217';
+        const apiUrl = ref(GetApiUrl());
         const loading = ref(false);
         const imagePreview = ref(null);
         const imageFile = ref(null);
         const showPassword = ref(false);
         const originalStaffData = ref(null);
         const chucvus = ref([]);
-
+        const accessToken = ref(Cookies.get('accessToken'))
+        const refreshToken = ref(Cookies.get('refreshToken'))
+        const router = useRouter()
+        const readToken = ref({})
         // Khởi tạo form data
         const formData = ref({
             maNV: null,
@@ -241,7 +247,15 @@ export default {
         // Fetch danh sách chức vụ
         const fetchChucvus = async () => {
             try {
-                const response = await axios.get(`${apiUrl}/api/Staff/chucvus`);
+                const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+                if (validatetoken.isValid == false) {
+                    router.push('/Login')
+                    return
+                }
+                accessToken.value = validatetoken.newAccessToken
+                const response = await axios.get(`${apiUrl.value}/api/Staff/chucvus`, {
+                    headers: {'Authorization': 'Bearer ' + accessToken.value}
+                });
                 chucvus.value = response.data;
             } catch (error) {
                 console.error('Lỗi khi lấy danh sách chức vụ:', error);
@@ -261,9 +275,17 @@ export default {
         const fetchStaffData = async () => {
             if (!props.staffId) return;
             try {
+                const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+                if (validatetoken.isValid == false) {
+                    router.push('/Login')
+                    return
+                }
+                accessToken.value = validatetoken.newAccessToken
                 loading.value = true;
                 showLoadingIndicator('Đang tải thông tin nhân viên...');
-                const response = await axios.get(`${apiUrl}/api/Staff/${props.staffId}`);
+                const response = await axios.get(`${apiUrl.value}/api/Staff/${props.staffId}`, {
+                    headers: {'Authorization': 'Bearer ' + accessToken.value}
+                });
                 const staffData = response.data;
 
                 // Lưu dữ liệu gốc đã được trim để so sánh chính xác
@@ -384,15 +406,20 @@ export default {
                 if (imageFile.value) {
                     formDataToSend.append('hinhDaiDien', imageFile.value);
                 }
-
+                const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+                if (validatetoken.isValid == false) {
+                    router.push('/Login')
+                    return
+                }
+                accessToken.value = validatetoken.newAccessToken
                 let response;
                 if (isEditing.value) {
-                    response = await axios.put(`${apiUrl}/api/Staff/${props.staffId}`, formDataToSend, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
+                    response = await axios.put(`${apiUrl.value}/api/Staff/${props.staffId}`, formDataToSend, {
+                        headers: { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + accessToken.value },
                     });
                 } else {
-                    response = await axios.post(`${apiUrl}/api/Staff`, formDataToSend, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
+                    response = await axios.post(`${apiUrl.value}/api/Staff`, formDataToSend, {
+                        headers: { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + accessToken.value },
                     });
                 }
 
@@ -509,7 +536,7 @@ export default {
                 errors.value.cccd = 'CCCD phải có đúng 12 số và bắt đầu bằng 0';
             } else if (!isEditing.value || (isEditing.value && trimmedCCCD !== originalStaffData.value?.cccd)) {
                 try {
-                    const response = await axios.get(`${apiUrl}/api/Staff/check-cccd`, {
+                    const response = await axios.get(`${apiUrl.value}/api/Staff/check-cccd`, {
                         params: {
                             cccd: trimmedCCCD,
                             maNV: isEditing.value ? props.staffId : null
@@ -540,7 +567,7 @@ export default {
                 errors.value.sdt = 'Số điện thoại phải có đúng 10 số';
             } else if (!isEditing.value || (isEditing.value && trimmedSDT !== originalStaffData.value?.sdt)) {
                 try {
-                    const response = await axios.get(`${apiUrl}/api/Staff/check-sdt`, {
+                    const response = await axios.get(`${apiUrl.value}/api/Staff/check-sdt`, {
                         params: {
                             sdt: trimmedSDT,
                             maNV: isEditing.value ? props.staffId : null
@@ -571,7 +598,7 @@ export default {
                 errors.value.email = 'Email không hợp lệ';
             } else if (!isEditing.value || (isEditing.value && trimmedEmail !== originalStaffData.value?.email)) {
                 try {
-                    const response = await axios.get(`${apiUrl}/api/Staff/check-email`, {
+                    const response = await axios.get(`${apiUrl.value}/api/Staff/check-email`, {
                         params: {
                             email: trimmedEmail,
                             maNV: isEditing.value ? props.staffId : null
@@ -663,7 +690,7 @@ export default {
                     errors.value.tenTaiKhoan = 'Tên tài khoản không được để trống và phải có ít nhất 4 ký tự';
                 } else {
                     try {
-                        const response = await axios.get(`${apiUrl}/api/Staff/check-ten-tai-khoan`, {
+                        const response = await axios.get(`${apiUrl.value}/api/Staff/check-ten-tai-khoan`, {
                             params: {
                                 tenTaiKhoan: trimmedTenTaiKhoan,
                                 maNV: null // Không cần maNV khi thêm mới
@@ -707,7 +734,7 @@ export default {
 
         const getImageUrl = (relativePath) => {
             if (!relativePath) return 'https://via.placeholder.com/150';
-            return `${apiUrl}${relativePath}`;
+            return `${apiUrl.value}${relativePath}`;
         };
 
         watch(() => props.staffId, (newValue) => {

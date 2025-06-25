@@ -33,8 +33,13 @@ namespace APIClothesEcommerceShop.Controllers
         {
             try
             {
-                var listCategory = await _unit.Category.GetAllBigCategories();
-                return Ok(listCategory);
+                var listBigCategory = await _unit.Category.GetAllBigCategories();
+                var listSmallCategory = await _unit.Category.GetAllSmallCategories();
+                return Ok(new
+                {
+                    listBigCategory = listBigCategory,
+                    listSmallCategory = listSmallCategory
+                });
             }
             catch (Exception ex)
             {
