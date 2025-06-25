@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace APIClothesEcommerceShop.Models;
 
@@ -26,4 +27,8 @@ public partial class Macoupon
     public bool? TrangThai { get; set; }
 
     public virtual ICollection<Hoadon> Hoadons { get; set; } = new List<Hoadon>();
+
+    public int? MaKhachHang { get; set; }
+    [ForeignKey("MaKhachHang")]
+    public virtual Khachhang? KhachHang { get; set; }
 }
