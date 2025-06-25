@@ -19,49 +19,60 @@
             <h5>Danh sách đã chọn</h5>
             <hr />
             <div class="sidebar-list">
-              <div
-                v-for="(item, idx) in selectedProducts"
-                :key="idx"
-                :draggable="true"
-                @dragstart="onDragStart($event, item)"
-                class="sidebar-draggable"
-                @dblclick="onDoubleClickSidebar(item)"
-              >
-                <div v-if="item.type === 'combo'" class="combo-card sidebar">
-                  <div class="combo-title">{{ item.comboName }}</div>
-                  <div class="combo-products">
-                    <div v-for="(prod, pidx) in item.products" :key="pidx">
-                      <div class="product-card mini">
-                        <img :src="prod.image" alt="" />
-                        <div>{{ prod.name }}</div>
-                        <div class="variant">
-                          {{ prod.variant.color }} / {{ prod.variant.size }}
+              <template v-if="selectedProducts.length === 0">
+                <div class="text-center py-5 w-100">
+                  <i class="bi bi-search" style="font-size: 2.5rem; color: #1976d2;"></i><br />
+                  <div style="font-size: 1.2rem; color: #888; margin: 12px 0;">
+                    Chưa có sản phẩm nào trong danh sách so sánh.<br />
+                    <router-link to="/" style="color: #1976d2; text-decoration: underline; font-weight: 500;">Khám phá sản phẩm ngay!</router-link>
+                  </div>
+                </div>
+              </template>
+              <template v-else>
+                <div
+                  v-for="(item, idx) in selectedProducts"
+                  :key="idx"
+                  :draggable="true"
+                  @dragstart="onDragStart($event, item)"
+                  class="sidebar-draggable"
+                  @dblclick="onDoubleClickSidebar(item)"
+                >
+                  <div v-if="item.type === 'combo'" class="combo-card sidebar">
+                    <div class="combo-title">{{ item.comboName }}</div>
+                    <div class="combo-products">
+                      <div v-for="(prod, pidx) in item.products" :key="pidx">
+                        <div class="product-card mini">
+                          <img :src="prod.image" alt="" />
+                          <div>{{ prod.name }}</div>
+                          <div class="variant">
+                            {{ prod.variant.color }} / {{ prod.variant.size }}
+                          </div>
+                          <div class="price">{{ formatCurrency(prod.variant.price) }}</div>
                         </div>
-                        <div class="price">{{ formatCurrency(prod.variant.price) }}</div>
+                        <div v-if="pidx < item.products.length - 1" class="combo-divider"></div>
                       </div>
-                      <div v-if="pidx < item.products.length - 1" class="combo-divider"></div>
+                    </div>
+                    <button class="add-btn" @click="addComboToCompare(item)">Thêm vào so sánh</button>
+                  </div>
+                  <div v-else class="product-card sidebar">
+                    <div class="row p-2">
+                      <div class="col-4 d-flex justify-content-center align-items-center border-end">
+                        <img :src="item.image" alt="" class="img-fluid" />
+                      </div>
+                      <div class="col-8 d-flex flex-column align-items-start grap-2">
+                        <div>{{ item.name }}</div>
+                        <div class="variant">
+                          Loại: {{ item.variant.color }} / {{ item.variant.size }}
+                        </div>
+                        <div class="price">Giá: {{ formatCurrency(item.variant.price) }}</div>
+                      </div>
+                      <button class="add-btn col-12" @click="addToCompare(item)">
+                        Thêm vào so sánh
+                      </button>
                     </div>
                   </div>
-                  <button class="add-btn" @click="addComboToCompare(item)">Thêm vào so sánh</button>
                 </div>
-                <div v-else class="product-card sidebar">
-                  <div class="row p-2">
-                    <div class="col-4 d-flex justify-content-center align-items-center border-end">
-                      <img :src="item.image" alt="" class="img-fluid" />
-                    </div>
-                    <div class="col-8 d-flex flex-column align-items-start grap-2">
-                      <div>{{ item.name }}</div>
-                      <div class="variant">
-                        Loại: {{ item.variant.color }} / {{ item.variant.size }}
-                      </div>
-                      <div class="price">Giá: {{ formatCurrency(item.variant.price) }}</div>
-                    </div>
-                    <button class="add-btn col-12" @click="addToCompare(item)">
-                      Thêm vào so sánh
-                    </button>
-                  </div>
-                </div>
-              </div>
+              </template>
             </div>
           </div>
           <!-- Vùng so sánh chính -->
@@ -323,6 +334,7 @@
 <script>
 import { formatCurrency } from '@/constants/formatCurrency'
 import VueEasyLight from 'vue-easy-lightbox'
+import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 export default {
   name: 'CompareProduct',
   components: { VueEasyLight },
@@ -331,107 +343,7 @@ export default {
       showModal: false,
       showSidebarModal: true,
       infoTabs: ['Mô tả', 'Đánh giá', 'Thông tin'],
-      selectedProducts: [
-        {
-          id: 1,
-          name: 'Áo dài nữ',
-          type: 'single',
-          image: 'https://i.imgur.com/1.jpg',
-          category: 'Áo dài',
-          variants: [
-            { color: 'Đỏ', size: 'M', price: 350000 },
-            { color: 'Xanh', size: 'L', price: 360000 },
-            { color: 'Vàng', size: 'S', price: 340000 },
-          ],
-          variant: { color: 'Đỏ', size: 'M', price: 350000 },
-          description: 'Áo dài truyền thống nữ, chất liệu lụa.',
-          rating: 4.7,
-          info: 'Chất liệu: Lụa, Xuất xứ: Việt Nam',
-        },
-        {
-          id: 2,
-          name: 'Quần đùi nam',
-          type: 'single',
-          image: 'https://i.imgur.com/2.jpg',
-          category: 'Quần đùi',
-          variants: [
-            { color: 'Xanh', size: 'L', price: 120000 },
-            { color: 'Đen', size: 'M', price: 125000 },
-          ],
-          variant: { color: 'Xanh', size: 'L', price: 120000 },
-          description: 'Quần đùi nam thể thao, thoáng mát.',
-          rating: 4.2,
-          info: 'Chất liệu: Cotton, Xuất xứ: Việt Nam',
-        },
-        {
-          id: 3,
-          name: 'Áo lót nữ',
-          type: 'single',
-          image: 'https://i.imgur.com/3.jpg',
-          category: 'Áo lót',
-          variants: [
-            { color: 'Be', size: 'S', price: 90000 },
-            { color: 'Hồng', size: 'M', price: 95000 },
-          ],
-          variant: { color: 'Be', size: 'S', price: 90000 },
-          description: 'Áo lót nữ nâng ngực, thoải mái.',
-          rating: 4.5,
-          info: 'Chất liệu: Thun lạnh, Xuất xứ: Việt Nam',
-        },
-        {
-          id: 4,
-          name: 'Áo lót nam',
-          type: 'single',
-          image: 'https://i.imgur.com/3.jpg',
-          category: 'Áo lót',
-          variants: [
-            { color: 'Be', size: 'S', price: 190000 },
-            { color: 'Xám', size: 'L', price: 200000 },
-          ],
-          variant: { color: 'Be', size: 'S', price: 190000 },
-          description: 'Áo lót nam nâng ngực, thoải mái.',
-          rating: 4.5,
-          info: 'Chất liệu: Thun lạnh, Xuất xứ: Việt Nam',
-        },
-        {
-          id: 100,
-          type: 'combo',
-          comboName: 'Combo Hè Năng Động',
-          products: [
-            {
-              id: 4,
-              name: 'Áo sơ mi nam',
-              image: 'https://i.imgur.com/4.jpg',
-              category: 'Áo sơ mi',
-              variants: [
-                { color: 'Trắng', size: 'M', price: 220000 },
-                { color: 'Xanh', size: 'L', price: 225000 },
-              ],
-              variant: { color: 'Trắng', size: 'M', price: 220000 },
-              description: 'Áo sơ mi nam công sở.',
-              rating: 4.3,
-              info: 'Chất liệu: Cotton, Xuất xứ: Việt Nam',
-            },
-            {
-              id: 5,
-              name: 'Quần đùi nam',
-              image: 'https://i.imgur.com/2.jpg',
-              category: 'Quần đùi',
-              variants: [
-                { color: 'Xanh', size: 'L', price: 120000 },
-                { color: 'Đen', size: 'M', price: 125000 },
-              ],
-              variant: { color: 'Xanh', size: 'L', price: 120000 },
-              description: 'Quần đùi nam thể thao, thoáng mát.',
-              rating: 4.2,
-              info: 'Chất liệu: Cotton, Xuất xứ: Việt Nam',
-            },
-          ],
-          description: 'Nhóm hàng tốt.',
-          rating: 3.7,
-          info: 'Combo được ưa chuộng nhiều nhất',
-        },
-      ],
+      selectedProducts: [],
       compareGroups: [
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
@@ -442,8 +354,19 @@ export default {
       lightboxIndex: 0,
     }
   },
+  mounted() {
+    this.loadSelectedProducts()
+  },
+  watch: {
+    showModal(val) {
+      if (val) this.loadSelectedProducts()
+    }
+  },
   methods: {
     formatCurrency,
+    loadSelectedProducts() {
+      this.selectedProducts = CompareStorageHelper.getCompareList()
+    },
     openLightboxGroupProduct(groupIdx, prodIdx, comboIdx, isComboChild) {
       // Lấy danh sách ảnh của group
       const group = this.compareGroups[groupIdx]
@@ -487,11 +410,13 @@ export default {
       if (this.compareGroups[groupIdx].products.length < 10) {
         this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
       }
+      this.loadSelectedProducts()
     },
     addComboToCompare(combo, groupIdx = 0) {
       if (this.compareGroups[groupIdx].products.length < 10) {
         this.compareGroups[groupIdx].products.push(this.cloneProduct(combo))
       }
+      this.loadSelectedProducts()
     },
     cloneProduct(item) {
       // Đảm bảo mỗi item thêm vào group là một object mới, tránh ảnh hưởng lẫn nhau
@@ -499,6 +424,7 @@ export default {
     },
     removeFromCompare(groupIdx, prodIdx) {
       this.compareGroups[groupIdx].products.splice(prodIdx, 1)
+      this.loadSelectedProducts()
     },
     // Không cho tách lẻ combo trong group so sánh
     removeFromCombo(groupIdx, comboIdx) {
@@ -506,6 +432,7 @@ export default {
       if (combo.type === 'combo') {
         this.compareGroups[groupIdx].products.splice(comboIdx, 1)
       }
+      this.loadSelectedProducts()
     },
     getGroupTotal(group) {
       let total = 0
@@ -548,6 +475,7 @@ export default {
       // Cho phép thêm bất kỳ sản phẩm hoặc combo vào group
       this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
       this.dragItem = null
+      this.loadSelectedProducts()
     },
     // onDropToNewGroup: không còn logic tạo group mới
     onDoubleClickSidebar(item) {
