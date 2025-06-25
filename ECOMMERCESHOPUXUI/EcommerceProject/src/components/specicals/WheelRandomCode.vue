@@ -1,56 +1,96 @@
 <template>
-  <div class="wheel-container">
-    <div class="wheel-wrapper">
-      <svg
-        :width="size"
-        :height="size"
-        :style="{ transform: `rotate(${rotation}deg)` }"
-        class="wheel-svg"
-      >
-        <g v-for="(item, idx) in codes" :key="idx">
-          <path
-            :d="describeArc(size / 2, size / 2, size / 2 - 10, idx * arc, (idx + 1) * arc)"
-            :fill="colors[idx % colors.length]"
-            stroke="#fff"
-            stroke-width="2"
-          />
-          <text
-            :x="getTextPos(idx).x"
-            :y="getTextPos(idx).y"
-            text-anchor="middle"
-            alignment-baseline="middle"
-            class="wheel-label"
-            :transform="getTextTransform(idx)"
+  <a href="#" @click.prevent="showModal = !showModal">
+    <span class="icon_heart_alt"></span>
+    <div class="tip">{{ maxSpins - spinCount }}</div>
+  </a>
+  <div
+    v-if="showModal"
+    class="modal fade show d-block"
+    tabindex="-1"
+    style="background: rgba(0, 0, 0, 0.45)"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-4 position-relative">
+        <div class="modal-header position-relative text-center">
+          Vòng quay may mắn
+          <button
+            type="button"
+            class="btn-close position-absolute end-0 top-0 m-3"
+            @click="showModal = false"
+          ></button>
+        </div>
+        <div class="d-flex flex-column align-items-center">
+          <div class="position-relative" style="width: 320px; height: 320px">
+            <svg
+              :width="size"
+              :height="size"
+              :style="{ transform: `rotate(${rotation}deg)` }"
+              style="border-radius: 50%; box-shadow: 0 2px 12px #0002; background: #fff"
+            >
+              <g v-for="(item, idx) in codes" :key="idx">
+                <path
+                  :d="describeArc(size / 2, size / 2, size / 2 - 10, idx * arc, (idx + 1) * arc)"
+                  :fill="colors[idx % colors.length]"
+                  stroke="#fff"
+                  stroke-width="2"
+                />
+                <text
+                  :x="getTextPos(idx).x"
+                  :y="getTextPos(idx).y"
+                  text-anchor="middle"
+                  alignment-baseline="middle"
+                  font-size="14"
+                  font-weight="bold"
+                  fill="#222"
+                  :transform="getTextTransform(idx)"
+                  style="pointer-events: none; user-select: none"
+                >
+                  {{ item.name }}
+                </text>
+              </g>
+            </svg>
+            <div
+              class="position-absolute top-0 start-50 translate-middle-x"
+              style="font-size: 2rem; color: #e53935; font-weight: bold; z-index: 2"
+            >
+              ▼
+            </div>
+          </div>
+          <button
+            class="btn btn-primary mt-4 px-4"
+            :disabled="spinning || spinCount >= maxSpins"
+            @click="spin"
           >
-            {{ item.name }}
-          </text>
-        </g>
-      </svg>
-      <div class="wheel-pointer">▼</div>
-    </div>
-    <button class="spin-btn" :disabled="spinning || spinCount >= maxSpins" @click="spin">
-      Quay ({{ maxSpins - spinCount }} lượt còn lại)
-    </button>
-    <div v-if="selectedIndex !== null" class="result-box">
-      <h3>Kết quả:</h3>
-      <div>
-        <b>{{ codes[selectedIndex].name }}</b>
+            Quay ({{ maxSpins - spinCount }} lượt còn lại)
+          </button>
+          <div v-if="selectedIndex !== null" class="alert alert-info mt-4 text-center w-100">
+            <h5 class="mb-2">Kết quả:</h5>
+            <div>
+              <b>{{ codes[selectedIndex].name }}</b>
+            </div>
+            <div class="mt-2">
+              Mã code:
+              <code
+                class="bg-light text-primary rounded px-2 py-1 ms-1"
+                style="cursor: pointer"
+                @click="copyCode(codes[selectedIndex].code)"
+                >{{ codes[selectedIndex].code }}</code
+              >
+            </div>
+            <transition name="fade">
+              <div v-if="copied" class="text-success mt-2">Đã copy!</div>
+            </transition>
+          </div>
+        </div>
       </div>
-      <div class="code-copy-box">
-        Mã code:
-        <code class="copyable" @click="copyCode(codes[selectedIndex].code)">{{
-          codes[selectedIndex].code
-        }}</code>
-      </div>
-      <transition name="fade">
-        <div v-if="copied" class="copied-msg">Đã copy!</div>
-      </transition>
     </div>
   </div>
 </template>
 
 <script>
-// Hàm vẽ cung tròn SVG
+import ConfigsRequest from '@/models/ConfigsRequest'
+import { getFromApi, postToApi, patchToApi } from '@/utils/axiosClient'
+
 function polarToCartesian(cx, cy, r, angle) {
   const a = ((angle - 90) * Math.PI) / 180.0
   return {
@@ -81,66 +121,124 @@ function describeArc(cx, cy, r, startAngle, endAngle) {
   ].join(' ')
 }
 
+function randomString(length = 10) {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
+function randomCouponList() {
+  const coupons = []
+  for (let i = 0; i < 10; i++) {
+    const isPercent = Math.random() < 0.5
+    let value, name
+    if (isPercent) {
+      value = Math.floor(Math.random() * 46) + 5 // 5% - 50%
+      name = `Giảm ${value}%`
+    } else {
+      value = (Math.floor(Math.random() * 14) + 1) * 50000 // 50k - 700k
+      name = `Giảm ${value.toLocaleString()}đ`
+    }
+    coupons.push({
+      name,
+      code: randomString(10),
+      isPercent,
+      value,
+    })
+  }
+  return coupons
+}
+
 export default {
   name: 'WheelRandomCode',
   data() {
     return {
-      codes: [
-        { name: 'Code 1', code: 'ABC123' },
-        { name: 'Code 2', code: 'XYZ789' },
-        { name: 'Code 3', code: 'LMN456' },
-        { name: 'Code 4', code: 'QWE321' },
-        { name: 'Code 5', code: 'RTY654' },
-      ],
+      showModal: false,
+      codes: [],
       colors: ['#FFB300', '#FF7043', '#66BB6A', '#42A5F5', '#AB47BC', '#EC407A', '#26C6DA'],
       size: 320,
       rotation: 0,
       spinning: false,
       selectedIndex: null,
-      arc: 360 / 5, // Số phần bằng số code
-      maxSpins: 3,
+      arc: 36, // 360/10
+      maxSpins: 0,
       spinCount: 0,
       copied: false,
+      lastSpinDate: '',
     }
   },
+  created() {
+    this.initWheel()
+  },
   methods: {
+    async initWheel() {
+      // Lấy ngày hiện tại
+      const today = new Date().toISOString().slice(0, 10)
+      this.lastSpinDate = localStorage.getItem('wheel_last_spin_date') || ''
+      // Nếu khác ngày thì request cập nhật streak và số lượt quay
+      if (this.lastSpinDate !== today) {
+        try {
+          await patchToApi(
+            '/WheelCoupon/update-last-login-streak',
+            '',
+            ConfigsRequest.getSkipAuthConfig(),
+          )
+        } catch (e) {}
+        localStorage.setItem('wheel_last_spin_date', today)
+      }
+      // Lấy số lượt quay thực tế từ API
+      try {
+        const res = await getFromApi('/WheelCoupon/time-spin-wheel-coupon')
+        if (res && res.success && typeof res.data === 'boolean') {
+          this.maxSpins = res.data ? 1 : 0 // Nếu true thì còn lượt quay, false thì hết
+        } else if (res && res.success && typeof res.data === 'number') {
+          this.maxSpins = res.data
+        } else {
+          this.maxSpins = 1 // fallback
+        }
+      } catch (e) {
+        this.maxSpins = 0
+      }
+      // Sinh danh sách coupon mẫu
+      this.codes = randomCouponList()
+      this.arc = 360 / this.codes.length
+    },
     describeArc(cx, cy, r, startAngle, endAngle) {
       return describeArc(cx, cy, r, startAngle, endAngle)
     },
     getTextPos(idx) {
-      // Đặt text ở giữa mỗi mảng, căn đều theo cung tròn
+      // Đặt text gần tâm hơn để không bị tràn ra ngoài
       const angle = (idx + 0.5) * this.arc
-      const r = this.size / 2 - 40 // Đưa text gần mép hơn
+      const r = this.size / 2 - 70 // Giảm bán kính để chữ nằm trong wheel
       const cx = this.size / 2
       const cy = this.size / 2
       const pos = polarToCartesian(cx, cy, r, angle)
       return pos
     },
     getTextTransform(idx) {
-      // Xoay text để luôn hướng ra ngoài, căn đều với mảng
       const angle = (idx + 0.5) * this.arc
-      const cx = this.size / 2
-      const cy = this.size / 2
-      return `rotate(${angle} ${this.getTextPos(idx).x} ${this.getTextPos(idx).y})`
+      // Xoay chữ về hướng tâm vòng quay
+      return `rotate(${angle - 90} ${this.getTextPos(idx).x} ${this.getTextPos(idx).y})`
     },
-    spin() {
+    async spin() {
       if (this.spinning || this.spinCount >= this.maxSpins) return
       this.spinning = true
       this.selectedIndex = null
       this.copied = false
-      // Quay ít nhất 3 vòng, rồi dừng ở 1 phần ngẫu nhiên
       const minRounds = 3
       const randomIdx = Math.floor(Math.random() * this.codes.length)
       const finalDeg = 360 * minRounds + (360 - randomIdx * this.arc - this.arc / 2)
       const duration = 3500
-      // Animate
       const start = this.rotation % 360
       const change = finalDeg - start
       const startTime = performance.now()
       const animate = (now) => {
         const elapsed = now - startTime
         if (elapsed < duration) {
-          const ease = 1 - Math.pow(1 - elapsed / duration, 3) // easeOut
+          const ease = 1 - Math.pow(1 - elapsed / duration, 3)
           this.rotation = start + change * ease
           requestAnimationFrame(animate)
         } else {
@@ -148,9 +246,25 @@ export default {
           this.spinning = false
           this.selectedIndex = randomIdx
           this.spinCount++
+          this.handleSpinResult()
         }
       }
       requestAnimationFrame(animate)
+    },
+    async handleSpinResult() {
+      // Khi quay xong, tạo coupon ngẫu nhiên tương ứng và gửi lên API
+      const coupon = this.codes[this.selectedIndex]
+      try {
+        await postToApi('/WheelCoupon/private-coupon', null, {
+          params: {
+            couponCode: coupon.code,
+            decreasePrice: coupon.value,
+            isPercent: coupon.isPercent,
+          },
+        })
+      } catch (e) {
+        // Có thể show thông báo lỗi nếu cần
+      }
     },
     copyCode(code) {
       if (!code) return
@@ -162,7 +276,6 @@ export default {
           }, 1200)
         })
       } else {
-        // Fallback cho trình duyệt cũ
         const textarea = document.createElement('textarea')
         textarea.value = code
         document.body.appendChild(textarea)
@@ -187,108 +300,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.wheel-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 24px;
-}
-.wheel-wrapper {
-  position: relative;
-  width: 320px;
-  height: 320px;
-}
-.wheel-svg {
-  border-radius: 50%;
-  box-shadow: 0 2px 12px #0002;
-  background: #fff;
-}
-.wheel-pointer {
-  position: absolute;
-  left: 50%;
-  top: -24px;
-  transform: translateX(-50%);
-  font-size: 2rem;
-  color: #e53935;
-  font-weight: bold;
-  z-index: 2;
-}
-.spin-btn {
-  margin-top: 24px;
-  padding: 10px 32px;
-  font-size: 1.2rem;
-  background: #42a5f5;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.spin-btn:disabled {
-  background: #bdbdbd;
-  cursor: not-allowed;
-}
-.result-box {
-  margin-top: 24px;
-  padding: 16px 32px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 2px 8px #0001;
-  position: relative;
-}
-.code-copy-box {
-  margin-top: 8px;
-  font-size: 1.1rem;
-}
-.copyable {
-  background: #e3f2fd;
-  color: #1976d2;
-  border-radius: 4px;
-  padding: 2px 8px;
-  margin-left: 4px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.copyable:hover {
-  background: #bbdefb;
-}
-.copied-msg {
-  position: absolute;
-  right: 16px;
-  top: 8px;
-  background: #66bb6a;
-  color: #fff;
-  padding: 2px 12px;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  animation: fadeout 1.2s linear;
-}
-@keyframes fadeout {
-  0% {
-    opacity: 1;
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-.wheel-label {
-  font-size: 1rem;
-  fill: #222;
-  font-weight: bold;
-  pointer-events: none;
-  user-select: none;
-}
-</style>
+<!-- Không cần style custom, chỉ giữ lại style SVG nếu cần -->

@@ -190,6 +190,9 @@
                   <li>
                     <NavigationUserReview />
                   </li>
+                  <li>
+                    <WheelRandomCode />
+                  </li>
                 </ul>
               </div>
             </div>
@@ -207,10 +210,11 @@
 <script>
 import { RouterLink } from 'vue-router'
 import NavigationUserReview from './ui/navigationUserReview.vue'
+import WheelRandomCode from './specicals/WheelRandomCode.vue'
 
 export default {
   name: 'HeaderComponent',
-  components: { NavigationUserReview },
+  components: { NavigationUserReview, WheelRandomCode },
   props: {},
   data() {
     return {}
