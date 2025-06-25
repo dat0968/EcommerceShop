@@ -10,9 +10,16 @@ namespace APIClothesEcommerceShop.Repositories.WheelCoupon
 {
     public interface IWheelCouponRepository : IRepository<Models.Macoupon>
     {
+        public Task<ResponseAPI<dynamic>> TimeCanSpinWheelCoupon(int? userId);
         public Task<ResponseAPI<dynamic>> HavePrivateCoupon(int? userId);
         public Task<ResponseAPI<dynamic>> Over2MillionUse(int? userId);
         public Task<ResponseAPI<dynamic>> IsInWeekSteak(int? userId);
-        Task<ResponseAPI<Models.Macoupon>> CreatePrivateCoupon(int? userId, int? decreasePrice, bool? isPercent = true);
+        Task<ResponseAPI<Models.Macoupon>> CreatePrivateCoupon(int? userId, string? couponCode, int? decreasePrice, bool? isPercent = true);
+        /// <summary>
+        /// Cập nhật lần đăng nhập cuối và streak cho khách hàng
+        /// </summary>
+        /// <param name="userId">ID người dùng</param>
+        /// <returns>ResponseAPI với thông tin khách hàng đã cập nhật</returns>
+        Task<ResponseAPI<Khachhang>> UpdateLastLoginAndStreak(int? userId);
     }
 }
