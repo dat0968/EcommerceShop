@@ -90,7 +90,7 @@
 <script>
 import ConfigsRequest from '@/models/ConfigsRequest'
 import { getFromApi, postToApi, patchToApi } from '@/utils/axiosClient'
-
+import Swal from 'sweetalert2'
 function polarToCartesian(cx, cy, r, angle) {
   const a = ((angle - 90) * Math.PI) / 180.0
   return {
@@ -197,7 +197,7 @@ export default {
         } else if (res && res.success && typeof res.data === 'number') {
           this.maxSpins = res.data
         } else {
-          this.maxSpins = 1 // fallback
+          this.maxSpins = 0 // fallback
         }
       } catch (e) {
         this.maxSpins = 0
@@ -205,6 +205,26 @@ export default {
       // Sinh danh sách coupon mẫu
       this.codes = randomCouponList()
       this.arc = 360 / this.codes.length
+
+      // Hiển thị Swal lần đầu trong ngày nếu còn lượt quay
+      const wheelSwalDate = localStorage.getItem('wheel_swal_date') || ''
+      if (this.maxSpins > 0 && today !== wheelSwalDate) {
+        Swal.fire({
+          title: 'Vòng quay may mắn!',
+          text: 'Bạn có lượt quay miễn phí hôm nay, muốn thử vận may ngay không?',
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Quay ngay',
+          cancelButtonText: 'Để sau',
+          allowOutsideClick: false,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.showModal = true
+          }
+          // Lưu lại để không hỏi lại trong ngày
+          localStorage.setItem('wheel_swal_date', today)
+        })
+      }
     },
     describeArc(cx, cy, r, startAngle, endAngle) {
       return describeArc(cx, cy, r, startAngle, endAngle)
