@@ -1,6 +1,6 @@
 <template>
   <div>
-    <button class="btn btn-primary" @click="showModal = true">.</button>
+    <li><a href="#" @click="showModal = true">QR/Barcode</a></li>
 
     <!-- Modal -->
     <div v-if="showModal" class="modal-backdrop fade show" style="z-index: 1050"></div>

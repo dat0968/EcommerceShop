@@ -89,6 +89,7 @@
                 <li><a href="#">Blog</a></li>
                 <li><RouterLink to="/contactus">Liên hệ</RouterLink></li>
                 <li><a href="#">Câu hỏi thường gặp</a></li>
+                <TestCodeQr />
               </ul>
             </div>
           </div>
@@ -124,10 +125,15 @@
 </template>
 
 <script>
-export default {}
+import TestCodeQr from './tests/TestCodeQr.vue'
+
+export default {
+  name: 'FooterComponent',
+  components: { TestCodeQr },
+}
 </script>
 
-<style scoped>
+<style>
 .footer {
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
   padding: 40px 0;
