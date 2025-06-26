@@ -1,4 +1,5 @@
 <script setup>
+import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
 import $ from 'jquery'
 
@@ -284,7 +285,55 @@ const fetchRcmProduct = async () => {
   }
 }
 const activeTab = ref('desc')
-
+const addProductToCompare = () => {
+  // Lấy thông tin sản phẩm và biến thể đang chọn
+  const matched = product.value.productDetails.find(
+    (p) =>
+      p.mauSac?.toLowerCase() === selectedColor.value?.toLowerCase() &&
+      p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase(),
+  )
+  if (!matched) {
+    Swal.fire({
+      title: 'Vui lòng chọn màu và kích thước!',
+      icon: 'warning',
+      timer: 1500,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+    return
+  }
+  const productObj = {
+    id: product.value.maSp,
+    name: product.value.tenSanPham,
+    image: allImages.value.find((img) => img.maCtsp === matched.maCtsp)?.tenHinhAnh
+      ? `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${
+          allImages.value.find((img) => img.maCtsp === matched.maCtsp).tenHinhAnh
+        }`
+      : '',
+    category: product.value.tenDanhMuc || '',
+    variants: product.value.productDetails.map((d) => ({
+      color: d.mauSac,
+      size: d.kichThuoc,
+      price: d.donGia,
+    })),
+    variant: {
+      color: matched.mauSac,
+      size: matched.kichThuoc,
+      price: matched.donGia,
+    },
+    description: product.value.moTa || '',
+    rating: product.value.danhGia || null,
+    info: product.value.thongTin || '',
+  }
+  CompareStorageHelper.addProductToCompare(productObj)
+  Swal.fire({
+    title: 'Đã thêm sản phẩm vào danh sách so sánh!',
+    icon: 'success',
+    timer: 1500,
+    showConfirmButton: false,
+    timerProgressBar: true,
+  })
+}
 watch(
   () => route.params.id,
   async () => {
@@ -397,6 +446,9 @@ watch(
                 </div>
                 <button @click="addToCart" class="cart-btn">
                   <span class="icon_bag_alt"></span> Thêm giỏ hàng
+                </button>
+                <button @click="addProductToCompare" class="btn btn-info" style="margin-left: 8px">
+                  <span class="icon_adjust-horiz"></span> So sánh sản phẩm
                 </button>
                 <ul>
                   <li>

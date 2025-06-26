@@ -21,10 +21,14 @@
             <div class="sidebar-list">
               <template v-if="selectedProducts.length === 0">
                 <div class="text-center py-5 w-100">
-                  <i class="bi bi-search" style="font-size: 2.5rem; color: #1976d2;"></i><br />
-                  <div style="font-size: 1.2rem; color: #888; margin: 12px 0;">
+                  <i class="bi bi-search" style="font-size: 2.5rem; color: #1976d2"></i><br />
+                  <div style="font-size: 1.2rem; color: #888; margin: 12px 0">
                     Chưa có sản phẩm nào trong danh sách so sánh.<br />
-                    <router-link to="/" style="color: #1976d2; text-decoration: underline; font-weight: 500;">Khám phá sản phẩm ngay!</router-link>
+                    <router-link
+                      to="/"
+                      style="color: #1976d2; text-decoration: underline; font-weight: 500"
+                      >Khám phá sản phẩm ngay!</router-link
+                    >
                   </div>
                 </div>
               </template>
@@ -52,11 +56,15 @@
                         <div v-if="pidx < item.products.length - 1" class="combo-divider"></div>
                       </div>
                     </div>
-                    <button class="add-btn" @click="addComboToCompare(item)">Thêm vào so sánh</button>
+                    <button class="add-btn" @click="addComboToCompare(item)">
+                      Thêm vào so sánh
+                    </button>
                   </div>
                   <div v-else class="product-card sidebar">
                     <div class="row p-2">
-                      <div class="col-4 d-flex justify-content-center align-items-center border-end">
+                      <div
+                        class="col-4 d-flex justify-content-center align-items-center border-end"
+                      >
                         <img :src="item.image" alt="" class="img-fluid" />
                       </div>
                       <div class="col-8 d-flex flex-column align-items-start grap-2">
@@ -86,125 +94,176 @@
                 @drop="onDropToGroup($event, groupIdx)"
               >
                 <div
-                  class="border rounded p-3 min-vh-50 mb-3 bg-light d-flex flex-column align-items-center justify-content-center flex-grow-1 h-100"
+                  class="border rounded p-3 min-vh-50 mb-3 bg-light d-flex flex-column align-items-center justify-content-center flex-grow-1 h-100 position-relative"
                   style="min-height: 300px; height: 100%"
                 >
-                  <div v-if="group.products.length === 0">
-                    <div class="text-secondary text-center py-5">
-                      <i class="bi bi-box-arrow-in-down" style="font-size: 2rem"></i><br />
-                      <span>Kéo sản phẩm vào đây để tạo nhóm so sánh mới</span>
+                  <!-- Nút lật mặt ở góc phải trên -->
+                  <button
+                    class="btn btn-outline-secondary btn-sm position-absolute"
+                    style="top: 8px; right: 8px; z-index: 2"
+                    :disabled="!tryOnResults[groupIdx]"
+                    @click="groupFlipped[groupIdx] = !groupFlipped[groupIdx]"
+                  >
+                    {{ groupFlipped[groupIdx] ? 'Xem sản phẩm' : 'Xem mẫu thử đồ' }}
+                  </button>
+                  <div
+                    v-if="!groupFlipped[groupIdx]"
+                    class="position-relative justify-content-between"
+                  >
+                    <div v-if="group.products.length === 0">
+                      <div class="text-secondary text-center py-5">
+                        <i class="bi bi-box-arrow-in-down" style="font-size: 2rem"></i><br />
+                        <span>Kéo sản phẩm vào đây để tạo nhóm so sánh mới</span>
+                      </div>
                     </div>
-                  </div>
-                  <template v-else>
-                    <div class="w-100 row">
-                      <div
-                        v-for="(item, idx) in group.products"
-                        :key="idx"
-                        class="draggable-item mb-2"
-                        :class="[
-                          item.type === 'combo' ? 'col-12' : 'col-6',
-                          group.selectedProductIdx === idx ? 'selected' : '',
-                        ]"
-                        @click="selectProduct(groupIdx, idx)"
-                      >
+                    <template v-else>
+                      <div class="w-100 row">
                         <div
-                          v-if="item.type === 'combo'"
-                          class="combo-card row mb-2"
-                          :class="group.selectedProductIdx === idx ? 'selected' : ''"
+                          v-for="(item, idx) in group.products"
+                          :key="idx"
+                          class="draggable-item mb-2"
+                          :class="[
+                            item.type === 'combo' ? 'col-12' : 'col-6',
+                            group.selectedProductIdx === idx ? 'selected' : '',
+                          ]"
+                          @click="selectProduct(groupIdx, idx)"
                         >
                           <div
-                            class="combo-title col-12 d-flex align-items-center justify-content-between"
+                            v-if="item.type === 'combo'"
+                            class="combo-card row mb-2"
+                            :class="group.selectedProductIdx === idx ? 'selected' : ''"
                           >
-                            <span>{{ item.comboName }}</span>
-                            <button
-                              class="btn btn-danger btn-sm mt-1"
-                              @click.stop="removeFromCombo(groupIdx, idx)"
-                            >
-                              X
-                            </button>
-                          </div>
-                          <div class="combo-products col-12">
                             <div
-                              v-for="(prod, pidx) in item.products"
-                              :key="pidx"
-                              class="col-6 mb-2"
-                              :class="item.selectedComboProductIdx === pidx ? 'selected' : ''"
-                              @click.stop="selectComboProduct(groupIdx, idx, pidx)"
+                              class="combo-title col-12 d-flex align-items-center justify-content-between"
                             >
-                              <div class="">
-                                <div class="product-card mini">
-                                  <img
-                                    :src="prod.image"
-                                    alt=""
-                                    style="cursor: pointer"
-                                    @click.stop="
-                                      openLightboxGroupProduct(groupIdx, idx, pidx, true)
-                                    "
-                                  />
-                                  <div>{{ prod.name }}</div>
-                                  <div class="variant">
-                                    <select
-                                      v-if="prod.variants"
-                                      v-model="prod.variantKey"
-                                      @change="onChangeVariantCombo(groupIdx, idx, pidx)"
-                                      class="form-select form-select-sm"
-                                    >
-                                      <option
-                                        v-for="(v, vIdx) in prod.variants"
-                                        :key="vIdx"
-                                        :value="vIdx"
+                              <span>{{ item.comboName }}</span>
+                              <button
+                                class="btn btn-danger btn-sm mt-1"
+                                @click.stop="removeFromCombo(groupIdx, idx)"
+                              >
+                                X
+                              </button>
+                            </div>
+                            <div class="combo-products col-12">
+                              <div
+                                v-for="(prod, pidx) in item.products"
+                                :key="pidx"
+                                class="col-6 mb-2"
+                                :class="item.selectedComboProductIdx === pidx ? 'selected' : ''"
+                                @click.stop="selectComboProduct(groupIdx, idx, pidx)"
+                              >
+                                <div class="">
+                                  <div class="product-card mini">
+                                    <img
+                                      :src="prod.image"
+                                      alt=""
+                                      style="cursor: pointer"
+                                      @click.stop="
+                                        openLightboxGroupProduct(groupIdx, idx, pidx, true)
+                                      "
+                                    />
+                                    <div>{{ prod.name }}</div>
+                                    <div class="variant">
+                                      <select
+                                        v-if="prod.variants"
+                                        v-model="prod.variantKey"
+                                        @change="onChangeVariantCombo(groupIdx, idx, pidx)"
+                                        class="form-select form-select-sm"
                                       >
-                                        {{ v.color }} / {{ v.size }}
-                                      </option>
-                                    </select>
-                                    <span v-else
-                                      >{{ prod.variant.color }} / {{ prod.variant.size }}</span
-                                    >
+                                        <option
+                                          v-for="(v, vIdx) in prod.variants"
+                                          :key="vIdx"
+                                          :value="vIdx"
+                                        >
+                                          {{ v.color }} / {{ v.size }}
+                                        </option>
+                                      </select>
+                                      <span v-else
+                                        >{{ prod.variant.color }} / {{ prod.variant.size }}</span
+                                      >
+                                    </div>
+                                    <div class="price">
+                                      {{ formatCurrency(prod.variant.price) }}
+                                    </div>
                                   </div>
-                                  <div class="price">{{ formatCurrency(prod.variant.price) }}</div>
+                                  <div
+                                    v-if="pidx < item.products.length - 1"
+                                    class="combo-divider"
+                                  ></div>
                                 </div>
-                                <div
-                                  v-if="pidx < item.products.length - 1"
-                                  class="combo-divider"
-                                ></div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                        <div
-                          v-else
-                          class="product-card col-12"
-                          :class="group.selectedProductIdx === idx ? 'selected' : ''"
-                        >
-                          <img
-                            :src="item.image"
-                            alt=""
-                            style="cursor: pointer"
-                            @click.stop="openLightboxGroupProduct(groupIdx, idx, null, false)"
-                          />
-                          <div>{{ item.name }}</div>
-                          <div class="variant">
-                            <select
-                              v-if="item.variants"
-                              v-model="item.variantKey"
-                              @change="onChangeVariant(groupIdx, idx)"
-                              class="form-select form-select-sm"
-                            >
-                              <option v-for="(v, vIdx) in item.variants" :key="vIdx" :value="vIdx">
-                                {{ v.color }} / {{ v.size }}
-                              </option>
-                            </select>
-                            <span v-else>{{ item.variant.color }} / {{ item.variant.size }}</span>
-                          </div>
-                          <div class="price">{{ formatCurrency(item.variant.price) }}</div>
-                          <button
-                            class="btn btn-danger btn-sm mt-1"
-                            @click.stop="removeFromCompare(groupIdx, idx)"
+                          <div
+                            v-else
+                            class="product-card col-12"
+                            :class="group.selectedProductIdx === idx ? 'selected' : ''"
                           >
-                            Xóa
-                          </button>
+                            <img
+                              :src="item.image"
+                              alt=""
+                              style="cursor: pointer"
+                              @click.stop="openLightboxGroupProduct(groupIdx, idx, null, false)"
+                            />
+                            <div>{{ item.name }}</div>
+                            <div class="variant">
+                              <select
+                                v-if="item.variants"
+                                v-model="item.variantKey"
+                                @change="onChangeVariant(groupIdx, idx)"
+                                class="form-select form-select-sm"
+                              >
+                                <option
+                                  v-for="(v, vIdx) in item.variants"
+                                  :key="vIdx"
+                                  :value="vIdx"
+                                >
+                                  {{ v.color }} / {{ v.size }}
+                                </option>
+                              </select>
+                              <span v-else>{{ item.variant.color }} / {{ item.variant.size }}</span>
+                            </div>
+                            <div class="price">{{ formatCurrency(item.variant.price) }}</div>
+                            <button
+                              class="btn btn-danger btn-sm mt-1"
+                              @click.stop="removeFromCompare(groupIdx, idx)"
+                            >
+                              Xóa
+                            </button>
+                          </div>
                         </div>
                       </div>
+                    </template>
+
+                    <div class="mt-3 text-center">
+                      <button class="btn btn-primary" @click="tryOnModel(groupIdx)">
+                        Thử đồ trên người mẫu
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Mặt sau: hình ảnh thử đồ nếu có -->
+                  <template v-else>
+                    <div v-if="tryOnResults[groupIdx]">
+                      <div class="text-center">
+                        <b>Ảnh người mẫu đã ghép:</b><br />
+                        <img
+                          :src="tryOnResults[groupIdx].image"
+                          style="max-width: 220px; border-radius: 8px; border: 1px solid #ccc"
+                        />
+                        <div class="mt-2">
+                          <b>Điểm thẩm mỹ:</b>
+                          <span style="font-size: 1.3rem; color: #e67e22"
+                            >{{ tryOnResults[groupIdx].score }}/10</span
+                          >
+                        </div>
+                        <button class="btn btn-success mt-2" @click="downloadTryOnResult(groupIdx)">
+                          Tải về kết quả thử đồ
+                        </button>
+                      </div>
+                    </div>
+                    <div v-else class="text-center text-secondary py-5">
+                      <i class="bi bi-image" style="font-size: 2rem"></i><br />
+                      <span>Chưa có hình ảnh thử đồ cho nhóm này.</span>
                     </div>
                   </template>
                 </div>
@@ -335,6 +394,19 @@
 import { formatCurrency } from '@/constants/formatCurrency'
 import VueEasyLight from 'vue-easy-lightbox'
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
+
+function dataURLtoBlob(dataurl) {
+  var arr = dataurl.split(','),
+    mime = arr[0].match(/:(.*?);/)[1],
+    bstr = atob(arr[1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  return new Blob([u8arr], { type: mime })
+}
+
 export default {
   name: 'CompareProduct',
   components: { VueEasyLight },
@@ -348,10 +420,12 @@ export default {
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
       ],
+      groupFlipped: [false, false], // Trạng thái lật mặt của từng group
       dragItem: null,
       isLightboxOpen: false,
       lightboxImages: [],
       lightboxIndex: 0,
+      tryOnResults: {},
     }
   },
   mounted() {
@@ -360,7 +434,7 @@ export default {
   watch: {
     showModal(val) {
       if (val) this.loadSelectedProducts()
-    }
+    },
   },
   methods: {
     formatCurrency,
@@ -487,6 +561,151 @@ export default {
     },
     closeLightbox() {
       this.isLightboxOpen = false
+    },
+    async tryOnModel(groupIdx) {
+      try {
+        // 1. Chọn mẫu người mẫu (ở đây demo lấy sẵn 2 mẫu, bạn có thể mở rộng)
+        const models = [
+          {
+            name: 'Nữ đứng',
+            url: 'https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?w=400',
+            gender: 'female',
+            pose: 'standing',
+          },
+          {
+            name: 'Nam ngồi',
+            url: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?w=400',
+            gender: 'male',
+            pose: 'sitting',
+          },
+        ]
+        const selectedModel = await this.selectModel(models)
+        if (!selectedModel) {
+          alert('Bạn chưa chọn mẫu người mẫu.')
+          return
+        }
+        // 2. Ghép ảnh sản phẩm lên người mẫu (canvas)
+        const group = this.compareGroups[groupIdx]
+        if (!group || !group.products || group.products.length === 0) {
+          alert('Nhóm này chưa có sản phẩm để thử đồ.')
+          return
+        }
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        canvas.width = 400
+        canvas.height = 600
+        // Vẽ người mẫu
+        let modelImg
+        try {
+          modelImg = await this.loadImage(selectedModel.url)
+        } catch (e) {
+          alert('Không thể tải ảnh người mẫu.')
+          return
+        }
+        ctx.drawImage(modelImg, 0, 0, 400, 600)
+        // Vẽ từng sản phẩm lên (demo: xếp chồng lên nhau, thực tế cần mapping vị trí theo danh mục)
+        let y = 200
+        for (const item of group.products) {
+          let imgUrl = item.image || (item.products && item.products[0]?.image)
+          if (!imgUrl) continue
+          let prodImg
+          try {
+            prodImg = await this.loadImage(imgUrl)
+          } catch (e) {
+            alert('Không thể tải ảnh sản phẩm: ' + (item.name || ''))
+            continue
+          }
+          ctx.drawImage(prodImg, 100, y, 200, 120) // demo vị trí
+          y += 120
+        }
+        // 3. Lấy base64
+        const base64 = canvas.toDataURL('image/jpeg')
+        // 4. Gửi lên DeepAI lấy điểm thẩm mỹ
+        let score = 0
+        try {
+          score = await this.getAestheticScore(base64)
+        } catch (e) {
+          alert('Lỗi khi gửi ảnh lên AI chấm điểm.')
+          score = 0
+        }
+        // 5. Lưu kết quả
+        this.tryOnResults[groupIdx] = {
+          model: selectedModel,
+          image: base64,
+          score,
+          products: group.products,
+          time: new Date().toISOString(),
+        }
+        this.tryOnResults = { ...this.tryOnResults }
+      } catch (err) {
+        alert('Đã xảy ra lỗi không xác định khi thử đồ trên người mẫu.')
+      }
+    },
+    async selectModel(models) {
+      // Đơn giản: prompt chọn mẫu (có thể làm UI modal đẹp hơn)
+      let msg = 'Chọn mẫu người mẫu:\\n'
+      models.forEach((m, i) => (msg += `${i + 1}. ${m.name}\\n`))
+      const idx = parseInt(window.prompt(msg, '1'), 10) - 1
+      if (isNaN(idx) || idx < 0 || idx >= models.length) return null
+      return models[idx]
+    },
+    loadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new window.Image()
+        img.crossOrigin = 'Anonymous'
+        img.onload = () => resolve(img)
+        img.onerror = reject
+        img.src = url
+      })
+    },
+
+    async getAestheticScore(canvas) {
+      const apiKey = 'YOUR_DEEPAI_API_KEY' // Thay bằng API Key thật
+      try {
+        let blob
+        if (canvas.toBlob) {
+          blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg'))
+        } else {
+          // Fallback: convert base64 to blob
+          const dataUrl = canvas.toDataURL('image/jpeg')
+          blob = dataURLtoBlob(dataUrl)
+        }
+        const formData = new FormData()
+        formData.append('image', blob, 'tryon.jpg')
+        const resp = await fetch('https://api.deepai.org/api/aesthetic-score', {
+          method: 'POST',
+          headers: {
+            'Api-Key': apiKey,
+            // KHÔNG đặt Content-Type, để browser tự set multipart/form-data
+          },
+          body: formData,
+        })
+        if (!resp.ok) {
+          const text = await resp.text()
+          alert('Lỗi AI: ' + resp.status + ' - ' + text)
+          return 0
+        }
+        const data = await resp.json()
+        return data.output || 0
+      } catch (e) {
+        alert('Lỗi khi gửi ảnh lên AI: ' + e.message)
+        return 0
+      }
+    },
+    downloadTryOnResult(groupIdx) {
+      const result = this.tryOnResults[groupIdx]
+      if (!result) return
+      const data = {
+        ...result,
+        image: undefined, // Không nhúng base64 vào JSON
+      }
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `tryon_result_${groupIdx + 1}.json`
+      a.click()
+      URL.revokeObjectURL(url)
     },
   },
 }

@@ -1,6 +1,7 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
+import { computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
@@ -197,6 +198,17 @@ async function addToCart() {
     console.log(content)
   }
 }
+
+function addComboToCompare() {
+  CompareStorageHelper.addComboToCompare(combo.value, selectedVariants.value)
+  Swal.fire({
+    title: 'Đã thêm combo vào danh sách so sánh!',
+    icon: 'success',
+    timer: 1500,
+    showConfirmButton: false,
+    timerProgressBar: true,
+  })
+}
 </script>
 <template>
   <div>
@@ -245,8 +257,16 @@ async function addToCart() {
                     ></a>
                     <a
                       href="#"
-                      style="border-radius: 50%; width: 50px; height: 50px"
+                      style="
+                        height: 50px;
+                        background: #1976d2;
+                        color: #fff;
+                        border-radius: 50px;
+                        margin-left: 8px;
+                      "
                       class="action-btn"
+                      @click.prevent="addComboToCompare"
+                      title="Thêm vào so sánh Combo"
                       ><span class="icon_adjust-horiz"></span
                     ></a>
                   </button>
