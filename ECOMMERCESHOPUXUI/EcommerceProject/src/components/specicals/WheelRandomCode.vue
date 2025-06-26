@@ -1,6 +1,6 @@
 <template>
   <a href="#" @click.prevent="showModal = !showModal">
-    <span class="icon_heart_alt"></span>
+    <span class="icon_ribbon_alt"></span>
     <div class="tip">{{ maxSpins - spinCount }}</div>
   </a>
   <div
@@ -186,7 +186,9 @@ export default {
             '',
             ConfigsRequest.getSkipAuthConfig(),
           )
-        } catch (e) {}
+        } catch (e) {
+          console.log('Request Error: ' + e)
+        }
         localStorage.setItem('wheel_last_spin_date', today)
       }
       // Lấy số lượt quay thực tế từ API
@@ -201,6 +203,7 @@ export default {
         }
       } catch (e) {
         this.maxSpins = 0
+        console.log('Request Error: ' + e)
       }
       // Sinh danh sách coupon mẫu
       this.codes = randomCouponList()
@@ -283,7 +286,7 @@ export default {
           },
         })
       } catch (e) {
-        // Có thể show thông báo lỗi nếu cần
+        console.log('Request Error: ' + e)
       }
     },
     copyCode(code) {
