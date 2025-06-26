@@ -37,7 +37,6 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
-
         public async Task<ResponseAPI<dynamic>> TimeCanSpinWheelCoupon(int? userId)
         {
             ResponseAPI<dynamic> response = new();
@@ -58,14 +57,17 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 decimal totalCompleted = customer.Hoadons
                     .Where(x => x.TinhTrang == CompletelyStatus)
                     .Sum(x => x.TienGoc - x.PhiVanChuyen);
-                int times = (int)(totalCompleted / 2000000);
-                bool timeCanSpinWheelCoupon = numPrivateCoupon < times + Convert.ToInt32(isInWeekSteak);
+                int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
 
-                response.SetSuccessResponse(data: timeCanSpinWheelCoupon);
+                int spinsLeft = totalSpin - numPrivateCoupon;
+                if (spinsLeft < 0) spinsLeft = 0;
+
+                response.SetSuccessResponse(data: spinsLeft);
             }
             catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, response);
+                response.Data = 0;
             }
             return response;
         }
@@ -141,6 +143,19 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 if (customer == null)
                 {
                     throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
+                }
+
+                // Kiểm tra số lượt quay còn lại
+                bool isInWeekSteak = customer.Streak > 0 && customer.Streak % 7 == 0;
+                int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
+                decimal totalCompleted = customer.Hoadons
+                    .Where(x => x.TinhTrang == CompletelyStatus)
+                    .Sum(x => x.TienGoc - x.PhiVanChuyen);
+                int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
+                int spinsLeft = totalSpin - numPrivateCoupon;
+                if (spinsLeft <= 0)
+                {
+                    throw new Exception("Bạn đã sử dụng hết lượt quay hôm nay hoặc không đủ điều kiện nhận coupon.");
                 }
 
                 Models.Macoupon coupon = new()
