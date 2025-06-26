@@ -294,44 +294,44 @@
                         <div v-if="group.activeTab === 'Mô tả'">
                           <b
                             >{{
-                              group.products[group.selectedProductIdx].products[
-                                group.products[group.selectedProductIdx].selectedComboProductIdx
-                              ].name
+                              group.products[group.selectedProductIdx]?.products?.[
+                                group.products[group.selectedProductIdx]?.selectedComboProductIdx
+                              ]?.name || ''
                             }}:</b
                           >
                           {{
-                            group.products[group.selectedProductIdx].products[
-                              group.products[group.selectedProductIdx].selectedComboProductIdx
-                            ].description
+                            group.products[group.selectedProductIdx]?.products?.[
+                              group.products[group.selectedProductIdx]?.selectedComboProductIdx
+                            ]?.description || ''
                           }}
                         </div>
                         <div v-else-if="group.activeTab === 'Đánh giá'">
                           <b
                             >{{
-                              group.products[group.selectedProductIdx].products[
-                                group.products[group.selectedProductIdx].selectedComboProductIdx
-                              ].name
+                              group.products[group.selectedProductIdx]?.products?.[
+                                group.products[group.selectedProductIdx]?.selectedComboProductIdx
+                              ]?.name || ''
                             }}:</b
                           >
                           {{
-                            group.products[group.selectedProductIdx].products[
-                              group.products[group.selectedProductIdx].selectedComboProductIdx
-                            ].rating
+                            group.products[group.selectedProductIdx]?.products?.[
+                              group.products[group.selectedProductIdx]?.selectedComboProductIdx
+                            ]?.rating || ''
                           }}
                           ★
                         </div>
                         <div v-else-if="group.activeTab === 'Thông tin'">
                           <b
                             >{{
-                              group.products[group.selectedProductIdx].products[
-                                group.products[group.selectedProductIdx].selectedComboProductIdx
-                              ].name
+                              group.products[group.selectedProductIdx]?.products?.[
+                                group.products[group.selectedProductIdx]?.selectedComboProductIdx
+                              ]?.name || ''
                             }}:</b
                           >
                           {{
-                            group.products[group.selectedProductIdx].products[
-                              group.products[group.selectedProductIdx].selectedComboProductIdx
-                            ].info
+                            group.products[group.selectedProductIdx]?.products?.[
+                              group.products[group.selectedProductIdx]?.selectedComboProductIdx
+                            ]?.info || ''
                           }}
                         </div>
                       </div>
@@ -341,7 +341,8 @@
                           <b
                             >{{
                               group.products[group.selectedProductIdx].name ||
-                              group.products[group.selectedProductIdx].comboName
+                              group.products[group.selectedProductIdx].comboName ||
+                              ''
                             }}:</b
                           >
                           {{ group.products[group.selectedProductIdx].description }}
@@ -350,7 +351,8 @@
                           <b
                             >{{
                               group.products[group.selectedProductIdx].name ||
-                              group.products[group.selectedProductIdx].comboName
+                              group.products[group.selectedProductIdx].comboName ||
+                              ''
                             }}:</b
                           >
                           {{ group.products[group.selectedProductIdx].rating }} ★
@@ -359,7 +361,8 @@
                           <b
                             >{{
                               group.products[group.selectedProductIdx].name ||
-                              group.products[group.selectedProductIdx].comboName
+                              group.products[group.selectedProductIdx].comboName ||
+                              ''
                             }}:</b
                           >
                           {{ group.products[group.selectedProductIdx].info }}
