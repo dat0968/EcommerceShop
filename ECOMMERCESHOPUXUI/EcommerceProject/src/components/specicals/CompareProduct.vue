@@ -42,7 +42,10 @@
                   @dblclick="onDoubleClickSidebar(item)"
                 >
                   <div v-if="item.type === 'combo'" class="combo-card sidebar">
-                    <div class="combo-title">{{ item.comboName }}</div>
+                    <div class="combo-header">
+                      <div class="combo-title">{{ item.comboName }}</div>
+                      <button class="delete-sidebar-btn" @click="removeFromSidebar(item)">×</button>
+                    </div>
                     <div class="combo-products">
                       <div v-for="(prod, pidx) in item.products" :key="pidx">
                         <div class="product-card mini">
@@ -78,6 +81,7 @@
                         Thêm vào so sánh
                       </button>
                     </div>
+                    <button class="delete-sidebar-btn" @click="removeFromSidebar(item)">×</button>
                   </div>
                 </div>
               </template>
@@ -382,6 +386,27 @@
             </div>
           </div>
         </div>
+        <div v-if="showModelSelection" class="model-selection-overlay">
+          <div class="model-selection-modal">
+            <h3>Chọn mẫu người mẫu</h3>
+            <div class="model-list">
+              <div
+                v-for="(model, index) in models"
+                :key="index"
+                class="model-item"
+                :class="{ selected: selectedTryOnModel === model }"
+                @click="selectedTryOnModel = model"
+              >
+                <img :src="model.url" :alt="model.name" class="model-thumbnail" />
+                <span>{{ model.name }}</span>
+              </div>
+            </div>
+            <div class="model-selection-actions">
+              <button class="btn btn-secondary" @click="cancelModelSelection">Hủy</button>
+              <button class="btn btn-primary" @click="confirmModelSelection">Xác nhận</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -429,6 +454,23 @@ export default {
       lightboxImages: [],
       lightboxIndex: 0,
       tryOnResults: {},
+      showModelSelection: false,
+      selectedTryOnModel: null,
+      currentTryOnGroupIdx: null,
+      models: [
+        {
+          name: 'Nữ đứng',
+          url: 'https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?w=400',
+          gender: 'female',
+          pose: 'standing',
+        },
+        {
+          name: 'Nam ngồi',
+          url: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?w=400',
+          gender: 'male',
+          pose: 'sitting',
+        },
+      ],
     }
   },
   mounted() {
@@ -566,67 +608,52 @@ export default {
       this.isLightboxOpen = false
     },
     async tryOnModel(groupIdx) {
+      this.showModelSelection = true
+      this.currentTryOnGroupIdx = groupIdx
+    },
+    async confirmModelSelection() {
+      if (!this.selectedTryOnModel) {
+        alert('Vui lòng chọn một mẫu người mẫu.')
+        return
+      }
+
+      const groupIdx = this.currentTryOnGroupIdx
+      const selectedModel = this.selectedTryOnModel
+
       try {
-        // 1. Chọn mẫu người mẫu (ở đây demo lấy sẵn 2 mẫu, bạn có thể mở rộng)
-        const models = [
-          {
-            name: 'Nữ đứng',
-            url: 'https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?w=400',
-            gender: 'female',
-            pose: 'standing',
-          },
-          {
-            name: 'Nam ngồi',
-            url: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?w=400',
-            gender: 'male',
-            pose: 'sitting',
-          },
-        ]
-        const selectedModel = await this.selectModel(models)
-        if (!selectedModel) {
-          alert('Bạn chưa chọn mẫu người mẫu.')
-          return
-        }
         // 2. Ghép ảnh sản phẩm lên người mẫu (canvas)
         const group = this.compareGroups[groupIdx]
         if (!group || !group.products || group.products.length === 0) {
           alert('Nhóm này chưa có sản phẩm để thử đồ.')
           return
         }
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-        canvas.width = 400
-        canvas.height = 600
-        // Vẽ người mẫu
-        let modelImg
-        try {
-          modelImg = await this.loadImage(selectedModel.url)
-        } catch (e) {
-          alert('Không thể tải ảnh người mẫu.')
-          return
-        }
-        ctx.drawImage(modelImg, 0, 0, 400, 600)
-        // Vẽ từng sản phẩm lên (demo: xếp chồng lên nhau, thực tế cần mapping vị trí theo danh mục)
-        let y = 200
+
+        // Load all product images
+        const productImages = []
         for (const item of group.products) {
           let imgUrl = item.image || (item.products && item.products[0]?.image)
-          if (!imgUrl) continue
-          let prodImg
-          try {
-            prodImg = await this.loadImage(imgUrl)
-          } catch (e) {
-            alert('Không thể tải ảnh sản phẩm: ' + (item.name || ''))
-            continue
+          if (imgUrl) {
+            try {
+              const prodImg = await this.loadImage(imgUrl)
+              productImages.push(prodImg)
+            } catch (e) {
+              console.error('Error loading product image:', imgUrl, e)
+              alert('Không thể tải ảnh sản phẩm: ' + (item.name || ''))
+              return // Stop if any product image fails to load
+            }
           }
-          ctx.drawImage(prodImg, 100, y, 200, 120) // demo vị trí
-          y += 120
         }
-        // 3. Lấy base64
-        const base64 = canvas.toDataURL('image/jpeg')
-        // 4. Gửi lên DeepAI lấy điểm thẩm mỹ
+
+        // Simulate AI change clothes
+        const tryOnImageBase64 = await this.simulateChangeClothesAI(
+          selectedModel.url,
+          productImages,
+        )
+
+        // 4. Gửi lên AI lấy điểm thẩm mỹ
         let score = 0
         try {
-          score = await this.getAestheticScore(base64)
+          score = await this.getAestheticScore(tryOnImageBase64)
         } catch (e) {
           alert('Lỗi khi gửi ảnh lên AI chấm điểm.')
           score = 0
@@ -634,7 +661,7 @@ export default {
         // 5. Lưu kết quả
         this.tryOnResults[groupIdx] = {
           model: selectedModel,
-          image: base64,
+          image: tryOnImageBase64,
           score,
           products: group.products,
           time: new Date().toISOString(),
@@ -642,57 +669,81 @@ export default {
         this.tryOnResults = { ...this.tryOnResults }
       } catch (err) {
         alert('Đã xảy ra lỗi không xác định khi thử đồ trên người mẫu.')
+      } finally {
+        this.showModelSelection = false
+        this.selectedTryOnModel = null
+        this.currentTryOnGroupIdx = null
       }
     },
-    async selectModel(models) {
-      // Đơn giản: prompt chọn mẫu (có thể làm UI modal đẹp hơn)
-      let msg = 'Chọn mẫu người mẫu:\\n'
-      models.forEach((m, i) => (msg += `${i + 1}. ${m.name}\\n`))
-      const idx = parseInt(window.prompt(msg, '1'), 10) - 1
-      if (isNaN(idx) || idx < 0 || idx >= models.length) return null
-      return models[idx]
+    async simulateChangeClothesAI(modelUrl, productImages) {
+      // This function simulates a call to a "change clothes" AI API.
+      // In a real scenario, you would send modelUrl and productImages
+      // to an external AI service and receive a processed image.
+
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      canvas.width = 400
+      canvas.height = 600
+
+      // Load model image
+      let modelImg
+      try {
+        modelImg = await this.loadImage(modelUrl)
+      } catch (e) {
+        console.error('Error loading model image for simulation:', modelUrl, e)
+        throw new Error('Failed to load model image for AI simulation.')
+      }
+      ctx.drawImage(modelImg, 0, 0, 400, 600)
+
+      // Overlay product images (simple demo, real AI would do complex processing)
+      let y = 200
+      for (const prodImg of productImages) {
+        ctx.drawImage(prodImg, 100, y, 200, 120) // demo position
+        y += 120
+      }
+
+      return canvas.toDataURL('image/jpeg')
+    },
+    cancelModelSelection() {
+      this.showModelSelection = false
+      this.selectedTryOnModel = null
+      this.currentTryOnGroupIdx = null
     },
     loadImage(url) {
       return new Promise((resolve, reject) => {
         const img = new window.Image()
-        img.crossOrigin = 'Anonymous'
+        img.crossOrigin = 'Anonymous' // Request CORS. Server must also send Access-Control-Allow-Origin header.
         img.onload = () => resolve(img)
-        img.onerror = reject
+        img.onerror = (e) => {
+          console.error('Error loading image:', url, e)
+          reject(new Error(`Failed to load image from ${url}. Check URL and CORS settings.`))
+        }
         img.src = url
       })
     },
 
-    async getAestheticScore(canvas) {
-      const apiKey = 'YOUR_DEEPAI_API_KEY' // Thay bằng API Key thật
-      try {
-        let blob
-        if (canvas.toBlob) {
-          blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg'))
-        } else {
-          // Fallback: convert base64 to blob
-          const dataUrl = canvas.toDataURL('image/jpeg')
-          blob = dataURLtoBlob(dataUrl)
-        }
-        const formData = new FormData()
-        formData.append('image', blob, 'tryon.jpg')
-        const resp = await fetch('https://api.deepai.org/api/aesthetic-score', {
-          method: 'POST',
-          headers: {
-            'Api-Key': apiKey,
-            // KHÔNG đặt Content-Type, để browser tự set multipart/form-data
-          },
-          body: formData,
-        })
-        if (!resp.ok) {
-          const text = await resp.text()
-          alert('Lỗi AI: ' + resp.status + ' - ' + text)
-          return 0
-        }
-        const data = await resp.json()
-        return data.output || 0
-      } catch (e) {
-        alert('Lỗi khi gửi ảnh lên AI: ' + e.message)
-        return 0
+    async getAestheticScore(dataUrl) {
+      // This is a placeholder for a real AI API call.
+      // In a real application, you would send 'dataUrl' (base64 image)
+      // and a prompt to a multimodal AI (e.g., Google Gemini API, OpenAI GPT-4o).
+      // You would need to handle authentication (API Key) and the specific API request format.
+
+      // Example prompt you might send to a multimodal AI:
+      // "Review this image for its aesthetic quality and provide a score out of 10.
+      //  For example: 'The aesthetic score for this image is 7.5/10.'"
+
+      // --- SIMULATED AI RESPONSE (REPLACE WITH ACTUAL API CALL) ---
+      const simulatedAiResponse =
+        'The aesthetic score for this image is 7.8/10. The composition is good, but lighting could be improved.'
+      // --- END SIMULATED AI RESPONSE ---
+
+      // Regex to extract the score (e.g., "7.8" from "7.8/10")
+      const scoreMatch = simulatedAiResponse.match(/(\d+\.?\d*)\/10/)
+      if (scoreMatch && scoreMatch[1]) {
+        return parseFloat(scoreMatch[1])
+      } else {
+        console.warn('Could not parse aesthetic score from AI response:', simulatedAiResponse)
+        return 0 // Default score if parsing fails
       }
     },
     downloadTryOnResult(groupIdx) {
@@ -709,6 +760,20 @@ export default {
       a.download = `tryon_result_${groupIdx + 1}.json`
       a.click()
       URL.revokeObjectURL(url)
+    },
+    removeFromSidebar(item) {
+      // Use the provided CompareStorageHelper.removeProductFromCompare method
+      if (item.type === 'single') {
+        CompareStorageHelper.removeProductFromCompare(
+          item.id,
+          'single',
+          item.variant?.color,
+          item.variant?.size,
+        )
+      } else if (item.type === 'combo') {
+        CompareStorageHelper.removeProductFromCompare(item.id, 'combo')
+      }
+      this.loadSelectedProducts() // Refresh the sidebar list
     },
   },
 }
@@ -970,5 +1035,129 @@ export default {
 }
 .sidebar-draggable {
   cursor: grab;
+}
+
+.model-selection-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1003;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.model-selection-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.model-selection-modal h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.model-list {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.model-item {
+  cursor: pointer;
+  padding: 10px;
+  border: 2px solid #eee;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.model-item:hover {
+  border-color: #42a5f5;
+  box-shadow: 0 0 8px rgba(66, 165, 245, 0.3);
+}
+
+.model-item.selected {
+  border-color: #1976d2;
+  background-color: #e3f2fd;
+  box-shadow: 0 0 10px rgba(25, 118, 210, 0.5);
+}
+
+.model-thumbnail {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.model-selection-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.model-selection-actions .btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.model-selection-actions .btn-primary {
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+}
+
+.model-selection-actions .btn-secondary {
+  background-color: #ccc;
+  color: #333;
+  border: none;
+}
+
+.delete-sidebar-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.delete-sidebar-btn:hover {
+  opacity: 1;
+  background: #c62828;
+}
+
+.combo-card.sidebar .combo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
 }
 </style>
