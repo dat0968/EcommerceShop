@@ -107,7 +107,7 @@ export default {
         this.data?.totalInactiveCustomers ?? 0,
       ]
       this.customerChart = new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
           labels: labels,
           datasets: [
