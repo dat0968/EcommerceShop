@@ -16,224 +16,226 @@
     <!-- Breadcrumb End -->
 
     <section class="shop spad">
-      <div class="container overflow-auto" style="min-height: 50vh">
+      <div class="container" style="min-height: 50vh">
         <div class="row">
-          <div class="d-flex align-items-center mb-3 position-relative">
-            <ul class="nav nav-tabs flex-grow-1">
-              <li class="nav-item">
-                <a
-                  class="nav-link p-1 rounded"
-                  :class="{ active: activeTab === 'notReviewed' }"
-                  href="#"
-                  @click.prevent="activeTab = 'notReviewed'"
-                  >Chưa đánh giá</a
-                >
-              </li>
-              <li class="nav-item">
-                <a
-                  class="nav-link p-1 rounded"
-                  :class="{ active: activeTab === 'reviewed' }"
-                  href="#"
-                  @click.prevent="activeTab = 'reviewed'"
-                  >Đã đánh giá</a
-                >
-              </li>
-            </ul>
-            <div class="ms-3 position-absolute end-0">
-              <button class="btn" @click="reloadReviews" title="Tải lại danh sách đánh giá">
-                <span class="icon-check"></span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Tab Chưa đánh giá -->
-          <div v-if="activeTab === 'notReviewed'">
-            <div v-if="notReviewed.length">
-              <div
-                v-for="item in notReviewed"
-                :key="item.id"
-                class="border rounded p-3 mb-4 shadow-sm"
-              >
-                <!-- Đánh giá -->
-                <div class="row mb-2">
-                  <div class="col-md-6">
-                    <label class="fw-bold">Số sao:</label>
-                    <select
-                      v-model.number="item._editSoSao"
-                      class="form-control d-inline-block w-auto ms-2"
-                    >
-                      <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
-                    </select>
-                    <span class="ms-2">
-                      <span v-for="n in item._editSoSao" :key="n" style="color: #ffc107">★</span>
-                      <span
-                        v-for="n in 5 - item._editSoSao"
-                        :key="'empty' + n"
-                        style="color: #e4e5e9"
-                        >★</span
-                      >
-                    </span>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="fw-bold">Nội dung đánh giá:</label>
-                    <input
-                      v-model="item._editNoiDung"
-                      class="form-control"
-                      placeholder="Nội dung..."
-                    />
-                  </div>
-                </div>
-                <!-- Ảnh đánh giá -->
-                <div class="mb-2">
-                  <label class="fw-bold">Hình ảnh kèm đánh giá:</label>
-                  <br />
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    :disabled="getImageCount(item) >= maxImages"
-                    @change="onImagesChange($event, item)"
-                  />
-                  <small class="text-muted ms-2"
-                    >{{ getImageCount(item) }}/{{ maxImages }} ảnh</small
+          <div class="col-lg-12">
+            <div class="d-flex align-items-center mb-4 position-relative">
+              <ul class="nav nav-tabs flex-grow-1">
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    :class="{ active: activeTab === 'notReviewed' }"
+                    href="#"
+                    @click.prevent="activeTab = 'notReviewed'"
+                    >Chưa đánh giá
+                    <span v-if="notReviewed.length" class="badge bg-primary ms-1">{{
+                      notReviewed.length
+                    }}</span></a
                   >
-                  <div class="d-flex flex-wrap mt-2">
-                    <img
-                      v-for="(img, idx) in item._previewImgs || []"
-                      :key="idx"
-                      :src="img"
-                      class="img-fluid me-2 border border-light rounded-5"
-                      style="max-width: 10em; height: 10em; cursor: pointer"
-                      @click="openLightbox(item._previewImgs, idx)"
-                    />
-                  </div>
-                </div>
-                <!-- Thông tin đối tượng -->
-                <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
-                  <div v-if="item.tenHinhAnh" class="me-3">
-                    <img
-                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
-                      alt="Ảnh sản phẩm"
-                      class="img-fluid border border-light rounded"
-                      style="width: 7em; height: 5em; object-fit: cover; cursor: pointer"
-                      @click="
-                        openLightbox(
-                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
-                          0,
-                        )
-                      "
-                    />
-                  </div>
-                  <div>
-                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
-                    {{ item.maSp || item.maCombo }}
-                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
-                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
-                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
-                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
-                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
-                  </div>
-                </div>
-                <!-- Nút gửi -->
-                <button class="btn btn-success btn-sm" @click="submitReview(item)">
-                  Lưu đánh giá
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    :class="{ active: activeTab === 'reviewed' }"
+                    href="#"
+                    @click.prevent="activeTab = 'reviewed'"
+                    >Đã đánh giá</a
+                  >
+                </li>
+              </ul>
+              <div class="ms-3">
+                <button
+                  class="btn btn-outline-secondary"
+                  @click="reloadReviews"
+                  :disabled="isLoading"
+                  title="Tải lại danh sách đánh giá"
+                >
+                  <i class="fa fa-refresh" :class="{ 'fa-spin': isLoading }"></i>
                 </button>
               </div>
             </div>
-            <EmptySuggestBox
-              v-else
-              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
-              linkNav="/shop"
-            />
-          </div>
 
-          <!-- Tab Đã đánh giá -->
-          <div v-else>
-            <div v-if="reviewed.length">
-              <div
-                v-for="item in reviewed"
-                :key="item.id"
-                class="border rounded p-3 mb-4 shadow-sm"
-              >
-                <!-- Số sao và nội dung -->
-                <div class="mb-2">
-                  <span>
-                    <span v-for="n in item.soSao" :key="n" style="color: #ffc107">★</span>
-                    <span v-for="n in 5 - item.soSao" :key="'empty' + n" style="color: #e4e5e9"
-                      >★</span
-                    >
-                  </span>
-                  <span class="ms-2 text-muted">{{ item.soSao }} sao</span>
-                </div>
-                <div class="mb-2"><strong>Nội dung:</strong> {{ item.noiDung }}</div>
-                <!-- Ảnh đánh giá -->
-                <div v-if="item.hinhAnhs && item.hinhAnhs.length" class="mb-2">
-                  <div class="bg-light border rounded-3 p-2 mb-2 d-inline-block">
-                    <strong class="text-secondary" style="font-size: 0.95em">
-                      Hình ảnh kèm đánh giá:
-                    </strong>
-                    <div class="d-flex flex-wrap mt-2">
+            <div v-if="isLoading" class="text-center my-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2">Đang tải dữ liệu...</p>
+            </div>
+
+            <!-- Tab Chưa đánh giá -->
+            <div v-if="!isLoading && activeTab === 'notReviewed'">
+              <div v-if="notReviewed.length">
+                <div
+                  v-for="item in notReviewed"
+                  :key="item.maCthd"
+                  class="border rounded p-3 mb-4 shadow-sm review-item"
+                >
+                  <div class="row">
+                    <div class="col-md-2">
                       <img
-                        v-for="(img, idx) in Array.isArray(item.hinhAnhs)
-                          ? item.hinhAnhs
-                          : item.hinhAnhs.split(',')"
-                        :key="idx"
-                        :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                        class="img-fluid me-2 border border-light rounded-5"
-                        style="max-width: 10em; height: 10em; cursor: pointer"
-                        @click="openLightbox(getReviewImagesFullPath(item), idx)"
+                        :src="item.hinhAnhUrl"
+                        alt="Ảnh sản phẩm"
+                        class="img-fluid rounded border"
+                        style="width: 100%; height: 150px; object-fit: cover; cursor: pointer"
+                        @click="openLightbox([item.hinhAnhUrl], 0)"
                       />
+                    </div>
+                    <div class="col-md-10">
+                      <h5 class="mb-1">
+                        {{ item.tenDoiTuong }}
+                      </h5>
+                      <p class="text-muted small mb-2">
+                        <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
+                        {{ item.maSp || item.maCombo }}
+                        <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
+                        <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
+                      </p>
+
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Đánh giá của bạn:</label>
+                        <div class="star-rating mb-2">
+                          <span
+                            v-for="n in 5"
+                            :key="n"
+                            class="star"
+                            :class="{ filled: n <= item._editSoSao }"
+                            @click="item._editSoSao = n"
+                            >★</span
+                          >
+                        </div>
+                        <textarea
+                          v-model.trim="item._editNoiDung"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Sản phẩm dùng có tốt không? Bạn có hài lòng không? Hãy chia sẻ cảm nhận của bạn tại đây nhé."
+                        ></textarea>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Hình ảnh kèm theo:</label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          class="form-control"
+                          :disabled="getImageCount(item) >= maxImages"
+                          @change="onImagesChange($event, item)"
+                        />
+                        <small class="form-text text-muted"
+                          >Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá 5MB.</small
+                        >
+                        <div
+                          v-if="item._previewImgs && item._previewImgs.length"
+                          class="d-flex flex-wrap mt-2"
+                        >
+                          <div
+                            v-for="(img, idx) in item._previewImgs"
+                            :key="idx"
+                            class="position-relative me-2 mb-2"
+                          >
+                            <img
+                              :src="img"
+                              class="img-fluid border rounded"
+                              style="width: 100px; height: 100px; object-fit: cover"
+                              @click="openLightbox(item._previewImgs, idx)"
+                            />
+                            <button
+                              class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                              @click="removePreviewImage(item, idx)"
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        class="btn btn-primary"
+                        @click="submitReview(item)"
+                        :disabled="item._isSubmitting"
+                      >
+                        <span
+                          v-if="item._isSubmitting"
+                          class="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        Gửi đánh giá
+                      </button>
                     </div>
                   </div>
                 </div>
-                <!-- Phản hồi của shop -->
-                <blockquote
-                  v-if="item.shopPhanHoi"
-                  class="col-12"
-                  style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0"
+              </div>
+              <EmptySuggestBox
+                v-else
+                contentText="Bạn không có sản phẩm nào cần đánh giá. Hãy mua sắm thêm nhé!"
+                linkNav="/shop"
+              />
+            </div>
+
+            <!-- Tab Đã đánh giá -->
+            <div v-if="!isLoading && activeTab === 'reviewed'">
+              <div v-if="reviewed.length">
+                <div
+                  v-for="item in reviewed"
+                  :key="item.id"
+                  class="border rounded p-3 mb-4 shadow-sm review-item"
                 >
-                  <strong>Phản hồi của shop:</strong>
-                  {{ item.shopPhanHoi }}
-                </blockquote>
-                <!-- Thông tin đối tượng -->
-                <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
-                  <div v-if="item.tenHinhAnh" class="me-3">
+                  <div class="d-flex align-items-start">
                     <img
-                      :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)"
+                      :src="item.hinhAnhUrl"
                       alt="Ảnh sản phẩm"
-                      class="img-fluid border border-light rounded"
-                      style="width: 7em; height: 5em; object-fit: cover; cursor: pointer"
-                      @click="
-                        openLightbox(
-                          [pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh)],
-                          0,
-                        )
-                      "
+                      class="img-fluid rounded border me-3"
+                      style="width: 80px; height: 80px; object-fit: cover; cursor: pointer"
+                      @click="openLightbox([item.hinhAnhUrl], 0)"
                     />
-                  </div>
-                  <div>
-                    <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
-                    {{ item.maSp || item.maCombo }}
-                    <span v-if="item.tenDoiTuong">| {{ item.tenDoiTuong }}</span>
-                    <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
-                    <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
-                    <span v-if="item.donGia">| Giá: {{ formatCurrency(item.donGia) }}</span>
-                    <span v-if="item.soLuongTon !== undefined">| Tồn: {{ item.soLuongTon }}</span>
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1">{{ item.tenDoiTuong }}</h6>
+                      <div class="star-rating mb-2">
+                        <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= item.soSao }"
+                          >★</span
+                        >
+                        <span class="ms-2 text-muted small">{{
+                          new Date(item.ngayDanhGia).toLocaleDateString('vi-VN')
+                        }}</span>
+                      </div>
+                      <p class="mb-2">{{ item.noiDung }}</p>
+                      <div
+                        v-if="item.hinhAnhs && item.hinhAnhs.length"
+                        class="d-flex flex-wrap my-2"
+                      >
+                        <img
+                          v-for="(img, idx) in item.hinhAnhs"
+                          :key="idx"
+                          :src="img"
+                          class="img-fluid me-2 mb-2 border rounded"
+                          style="width: 100px; height: 100px; object-fit: cover; cursor: pointer"
+                          @click="openLightbox(item.hinhAnhs, idx)"
+                        />
+                      </div>
+                      <blockquote
+                        v-if="item.shopPhanHoi"
+                        class="blockquote bg-light p-2 rounded mt-2"
+                      >
+                        <p class="mb-0 small">
+                          <strong>Phản hồi từ Shop:</strong> {{ item.shopPhanHoi }}
+                        </p>
+                      </blockquote>
+                    </div>
                   </div>
                 </div>
               </div>
+              <EmptySuggestBox
+                v-else
+                contentText="Bạn chưa đánh giá sản phẩm nào."
+                linkNav="/shop"
+              />
             </div>
-            <EmptySuggestBox
-              v-else
-              contentText="Bạn chưa có sản phẩm cần đánh giá nào. Hãy khám phá thêm sản phẩm!"
-              linkNav="/shop"
-            />
           </div>
         </div>
       </div>
     </section>
-    <!-- Shop Section End -->
-    <VueEasyLight
+    <VueEasyLightbox
       :visible="isLightboxOpen"
       :imgs="lightboxImages"
       :index="lightboxIndex"
@@ -248,55 +250,52 @@ import * as axiosConfig from '@/utils/axiosClient'
 import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
 import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
-import { formatCurrency } from '@/constants/formatCurrency'
 import offensiveWords from '@/assets/default/texts/vn_offensive_words.json'
 
 import Swal from 'sweetalert2'
-import VueEasyLight from 'vue-easy-lightbox'
+import VueEasyLightbox from 'vue-easy-lightbox'
 
 export default {
   name: 'CustomerReview',
+  components: { EmptySuggestBox, VueEasyLightbox },
   data() {
     return {
       activeTab: 'notReviewed',
       notReviewed: [],
       reviewed: [],
-      pathReplaceImg,
+      isLoading: true,
       maxImages: 5,
       maxImageSize: 5 * 1024 * 1024, // 5MB
       isLightboxOpen: false,
       lightboxImages: [],
       lightboxIndex: 0,
+      offensiveWordsList: [],
     }
   },
-  components: { EmptySuggestBox, VueEasyLight },
-  mounted() {
-    this.loadFromCookieOrApi()
+  created() {
+    this.loadOffensiveWords()
+    this.reloadReviews()
   },
   methods: {
-    formatCurrency,
+    loadOffensiveWords() {
+      // Normalize offensive words list for efficient checking
+      this.offensiveWordsList = offensiveWords.map((word) =>
+        word
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, ''),
+      )
+    },
     isProfanity(text) {
-      if (!offensiveWords.length) return false
-      const normalized = text
+      if (!this.offensiveWordsList.length) return false
+      const normalizedText = text
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-      return offensiveWords.some((word) => normalized.includes(word))
-    },
-    loadFromCookieOrApi() {
-      const cookie = document.cookie.split('; ').find((row) => row.startsWith('userReviews='))
-      if (cookie) {
-        try {
-          const data = JSON.parse(decodeURIComponent(cookie.split('=')[1]))
-          this.prepareData(data)
-        } catch {
-          this.reloadReviews()
-        }
-      } else {
-        this.reloadReviews()
-      }
+      return this.offensiveWordsList.some((word) => normalizedText.includes(word))
     },
     async reloadReviews() {
+      this.isLoading = true
       try {
         const res = await axiosConfig.getFromApi('/Review/users', ConfigsRequest.takeAuth())
         if (ResponseAPI.handleNotificationAndIsFailResponse(res)) {
@@ -304,132 +303,179 @@ export default {
           this.reviewed = []
           return
         }
-        document.cookie =
-          'userReviews=' + encodeURIComponent(JSON.stringify(res.data)) + '; path=/;'
         this.prepareData(res.data)
-      } catch {
+      } catch (error) {
+        console.error('Failed to load reviews:', error)
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: 'Không thể tải danh sách đánh giá. Vui lòng thử lại sau.',
+        })
         this.notReviewed = []
         this.reviewed = []
+      } finally {
+        this.isLoading = false
       }
     },
     prepareData(data) {
       this.notReviewed = (data.notReviewIn7days || []).map((item) => ({
         ...item,
+        hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
         _editSoSao: 5,
         _editNoiDung: '',
         _selectedFiles: [],
         _previewImgs: [],
+        _isSubmitting: false,
       }))
-      this.reviewed = data.listReviewed || []
+      this.reviewed = (data.listReviewed || []).map((item) => ({
+        ...item,
+        hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
+        hinhAnhs: (item.hinhAnhs || '')
+          .split(',')
+          .filter(Boolean)
+          .map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+      }))
     },
-    onImagesChange(e, item) {
-      const files = Array.from(e.target.files)
-      // Kiểm tra số lượng ảnh
-      if (files.length > this.maxImages) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Chỉ được chọn tối đa 5 ảnh!',
-          timer: 2000,
-          showConfirmButton: false,
-        })
-        e.target.value = ''
+    onImagesChange(event, item) {
+      const files = Array.from(event.target.files)
+      if (!files.length) return
+
+      const totalImages = (item._selectedFiles?.length || 0) + files.length
+      if (totalImages > this.maxImages) {
+        Swal.fire(
+          'Số lượng ảnh vượt quá giới hạn',
+          `Bạn chỉ có thể tải lên tối đa ${this.maxImages} ảnh.`,
+          'warning',
+        )
+        event.target.value = ''
         return
       }
-      // Kiểm tra dung lượng từng ảnh
-      const oversize = files.find((f) => f.size > this.maxImageSize)
-      if (oversize) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Ảnh vượt quá 5MB!',
-          text: `Ảnh "${oversize.name}" vượt quá dung lượng cho phép.`,
-        })
-        e.target.value = ''
+
+      const oversizedFiles = files.filter((file) => file.size > this.maxImageSize)
+      if (oversizedFiles.length > 0) {
+        Swal.fire(
+          'Kích thước ảnh quá lớn',
+          `Các ảnh sau vượt quá dung lượng ${
+            this.maxImageSize / 1024 / 1024
+          }MB: ${oversizedFiles.map((f) => f.name).join(', ')}`,
+          'error',
+        )
+        event.target.value = ''
         return
       }
-      // Xóa preview cũ
-      if (item._previewImgs) item._previewImgs.forEach((url) => URL.revokeObjectURL(url))
-      item._selectedFiles = files
-      item._previewImgs = files.map((file) => URL.createObjectURL(file))
+
+      item._selectedFiles.push(...files)
+      item._previewImgs.push(...files.map((file) => URL.createObjectURL(file)))
+      event.target.value = '' // Reset input for next selection
+    },
+    removePreviewImage(item, index) {
+      item._selectedFiles.splice(index, 1)
+      const removedUrl = item._previewImgs.splice(index, 1)[0]
+      URL.revokeObjectURL(removedUrl)
     },
     async submitReview(item) {
+      if (!item._editSoSao) {
+        Swal.fire('Chưa chọn sao', 'Vui lòng chọn số sao để đánh giá.', 'warning')
+        return
+      }
+      if (!item._editNoiDung) {
+        Swal.fire('Chưa nhập nội dung', 'Vui lòng chia sẻ cảm nhận của bạn.', 'warning')
+        return
+      }
+      if (this.isProfanity(item._editNoiDung)) {
+        Swal.fire(
+          'Nội dung không phù hợp',
+          'Vui lòng không sử dụng từ ngữ thô tục, phản cảm trong đánh giá của bạn.',
+          'error',
+        )
+        return
+      }
+
+      item._isSubmitting = true
       try {
-        if (!item._editNoiDung || !item._editSoSao) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Vui lòng nhập nội dung và chọn số sao!',
-            timer: 2000,
-            showConfirmButton: false,
-          })
-          return
-        }
-        if (this.isProfanity(item._editNoiDung)) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Nội dung không phù hợp!',
-            text: 'Vui lòng không sử dụng từ ngữ thô tục trong đánh giá.',
-            timer: 2000,
-            showConfirmButton: false,
-          })
-          return
-        }
         const formData = new FormData()
         formData.append('noiDung', item._editNoiDung)
         formData.append('soSao', item._editSoSao)
         if (item.maSp) formData.append('maSp', item.maSp)
         if (item.maCombo) formData.append('maCombo', item.maCombo)
         formData.append('maCtHd', item.maCthd)
-        if (item._selectedFiles) {
-          item._selectedFiles.forEach((file) => formData.append('hinhAnhs', file))
-        }
+        item._selectedFiles.forEach((file) => {
+          formData.append('hinhAnhs', file)
+        })
+
         const res = await axiosConfig.postToApi(
           `/Review?isProduct=${!!item.maSp}`,
           formData,
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) return
-        Swal.fire({
-          icon: 'success',
-          title: 'Đã gửi đánh giá!',
-          timer: 1200,
-          showConfirmButton: false,
-        })
-        this.reloadReviews()
-      } catch (e) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi',
-          text: e.message,
-        })
+
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+          return
+        }
+
+        Swal.fire('Thành công!', 'Cảm ơn bạn đã gửi đánh giá.', 'success')
+        await this.reloadReviews()
+      } catch (error) {
+        console.error('Submit review failed:', error)
+        Swal.fire('Gửi thất bại', 'Đã có lỗi xảy ra, vui lòng thử lại.', 'error')
+      } finally {
+        item._isSubmitting = false
       }
     },
     getImageCount(item) {
-      return item._selectedFiles ? item._selectedFiles.length : 0
+      return item._selectedFiles?.length || 0
     },
-    openLightbox(imgs, idx = 0) {
+    openLightbox(imgs, index = 0) {
       this.lightboxImages = imgs
-      this.lightboxIndex = idx
+      this.lightboxIndex = index
       this.isLightboxOpen = true
     },
     closeLightbox() {
       this.isLightboxOpen = false
     },
-    getReviewImages(item) {
-      // Trả về mảng tên file ảnh (không path)
-      if (!item.hinhAnhs) return []
-      return Array.isArray(item.hinhAnhs) ? item.hinhAnhs : item.hinhAnhs.split(',')
-    },
-    getReviewImagesFullPath(item) {
-      // Trả về mảng path đầy đủ cho lightbox
-      return this.getReviewImages(item).map((img) =>
-        this.pathReplaceImg(undefined, 'HinhAnh/Reviews', img),
-      )
-    },
   },
 }
 </script>
 
-<style scope>
-* {
-  color: black;
+<style scoped>
+.nav-tabs .nav-link {
+  color: #666;
+  border-bottom: 2px solid transparent;
+}
+.nav-tabs .nav-link.active {
+  color: #007bff;
+  border-color: #007bff;
+  font-weight: bold;
+}
+.review-item {
+  transition: box-shadow 0.3s ease-in-out;
+}
+.review-item:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+.star-rating .star {
+  font-size: 1.75rem;
+  color: #e4e5e9;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.star-rating .star.filled,
+.star-rating .star:hover,
+.star-rating .star:hover ~ .star {
+  color: #ffc107;
+}
+.star-rating:hover .star {
+  color: #ffc107;
+}
+.star-rating .star:hover ~ .star {
+  color: #e4e5e9;
+}
+.btn-danger {
+  line-height: 1;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.8rem;
+}
+.blockquote {
+  border-left: 4px solid #eee;
 }
 </style>

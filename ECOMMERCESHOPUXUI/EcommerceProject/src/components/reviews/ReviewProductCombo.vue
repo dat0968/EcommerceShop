@@ -1,144 +1,144 @@
 <template>
-  <div class="">
-    <!-- Thanh lọc và tìm kiếm -->
-    <div class="row mb-3">
+  <div class="review-product-combo">
+    <!-- Filter and Search Bar -->
+    <div class="row mb-3 align-items-center filter-bar">
       <div class="col-md-3 mb-2">
-        <select class="form-control" disabled>
-          <option value="">Tất cả ({{ reviews.length }})</option>
-        </select>
+        <div class="total-reviews-display">Tổng số: {{ reviews.length }} đánh giá</div>
       </div>
       <div class="col-md-3 mb-2">
-        <select v-model="filterStar" class="form-control">
+        <select v-model="filterStar" class="form-select">
           <option value="">Tất cả sao</option>
           <option v-for="n in 5" :key="n" :value="n">
-            <span>
-              <span style="color: #ffc107">{{ '★'.repeat(n) }}</span>
-              <span style="color: #e4e5e9">{{ '★'.repeat(5 - n) }}</span>
-            </span>
+            {{ n }} sao {{ '★'.repeat(n) }}{{ '☆'.repeat(5 - n) }}
           </option>
         </select>
       </div>
       <div class="col-md-3 mb-2">
-        <select v-model="filterHasImage" class="form-control">
+        <select v-model="filterHasImage" class="form-select">
           <option value="">Có/không ảnh</option>
           <option value="1">Có ảnh</option>
           <option value="0">Không ảnh</option>
         </select>
       </div>
       <div class="col-md-3 mb-2">
-        <input v-model="searchText" class="form-control" placeholder="Tìm theo nội dung..." />
+        <input
+          v-model="searchText"
+          class="form-control"
+          placeholder="Tìm theo tên, nội dung..."
+        />
       </div>
     </div>
 
-    <div v-if="loading" class="text-muted">Đang tải...</div>
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải...</span>
+      </div>
+      <p class="mt-2">Đang tải đánh giá...</p>
+    </div>
+
+    <!-- Reviews List -->
     <div v-else>
-      <div v-if="filteredReviews.length">
-        <ul class="list-group">
+      <div v-if="paginatedReviews.length" class="reviews-list">
+        <ul class="list-group list-group-flush">
           <li
-            v-for="review in filteredReviews"
+            v-for="review in paginatedReviews"
             :key="review.id"
-            class="list-group-item rounded shadow"
-            style="margin-bottom: 12px"
+            class="list-group-item review-item"
           >
-            <div class="d-flex align-items-center mb-2">
+            <div class="review-header">
               <img
                 :src="pathReplaceImg(undefined, '', review.avatar)"
                 alt="avatar"
-                style="
-                  width: 40px;
-                  height: 40px;
-                  border-radius: 50%;
-                  object-fit: cover;
-                  margin-right: 10px;
-                "
-                @click="
-                  openLightbox([pathReplaceImg(undefined, 'HinhAnh/SanPham', review.avatar)], 0)
-                "
+                class="reviewer-avatar"
+                @click="openLightbox([pathReplaceImg(undefined, 'HinhAnh/Avatars', review.avatar)], 0)"
               />
-              <div>
-                <strong>{{ review.tenKhachHang || 'Ẩn danh' }}</strong>
-                <span class="text-muted ms-2" style="font-size: 13px">
-                  {{ formatDate(review.ngayDanhGia) }}
-                </span>
+              <div class="reviewer-info">
+                <strong class="reviewer-name">{{ review.tenKhachHang || 'Ẩn danh' }}</strong>
+                <span class="review-date">{{ formatDate(review.ngayDanhGia) }}</span>
               </div>
             </div>
 
-            <div class="mb-1">
-              <span>
-                <span v-for="n in review.soSao" :key="n" style="color: #ffc107">★</span>
-                <span v-for="n in 5 - review.soSao" :key="'empty' + n" style="color: #e4e5e9"
-                  >★</span
-                >
-              </span>
+            <div class="review-rating">
+              <span v-for="n in review.soSao" :key="n" class="star-filled">★</span>
+              <span v-for="n in 5 - review.soSao" :key="'empty-' + n" class="star-empty">☆</span>
             </div>
-            <div class="mb-2">
-              <strong>Nội dung:</strong>
-              <span>{{ review.noiDung }}</span>
+
+            <div class="review-content">
+              <p>{{ review.noiDung }}</p>
             </div>
-            <div v-if="review.hinhAnhs && review.hinhAnhs.length" class="mb-2 mx-2">
-              <div class="bg-light border rounded-3 p-2 mb-2 d-inline-block">
-                <strong class="text-secondary" style="font-size: 0.95em">
-                  Hình ảnh đánh giá:
-                </strong>
-                <div class="d-flex flex-wrap mt-2">
-                  <img
-                    v-for="(img, idx) in Array.isArray(review.hinhAnhs)
-                      ? review.hinhAnhs
-                      : review.hinhAnhs.split(',')"
-                    :key="idx"
-                    :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
-                    class="img-fluid me-2 border border-light rounded-5"
-                    style="max-width: 7em; height: 7em; cursor: pointer"
-                    alt="Hình đánh giá"
-                    @click="openLightbox(getReviewImagesFullPath(review), idx)"
-                  />
-                </div>
-              </div>
-            </div>
-            <blockquote
-              v-if="review.shopPhanHoi"
-              class="col-12"
-              style="border-left: 2px solid #ccc; padding-left: 10px; margin: 10px 0"
-            >
-              <strong>Phản hồi của shop:</strong>
-              {{ review.shopPhanHoi ? review.shopPhanHoi : 'Chưa có phản hồi' }}
-            </blockquote>
-            <hr />
-            <!-- Thông tin sản phẩm/combo -->
-            <div class="mb-2 p-2 bg-light d-flex align-items-center">
-              <div v-if="review.tenHinhAnh" class="me-3">
+
+            <div v-if="getReviewImages(review).length" class="review-images">
+              <div
+                v-for="(img, idx) in getReviewImages(review)"
+                :key="idx"
+                class="review-image-container"
+                @click="openLightbox(getReviewImagesFullPath(review), idx)"
+              >
                 <img
-                  :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
-                  alt="Ảnh sản phẩm"
-                  class="img-fluid border border-light rounded"
-                  style="width: 7em; height: 5em; object-fit: cover"
+                  :src="pathReplaceImg(undefined, 'HinhAnh/Reviews', img)"
+                  class="review-image"
+                  alt="Hình đánh giá"
                 />
               </div>
-              <div>
-                <span v-if="review.maSp"><strong>Sản phẩm:</strong> {{ review.maSp }}</span>
-                <span v-if="review.maCombo"><strong>Combo:</strong> {{ review.maCombo }}</span>
-                <span v-if="review.tenDoiTuong">| {{ review.tenDoiTuong ?? 'N/A' }}</span>
-                <span v-if="review.kichThuoc">| Size: {{ review.kichThuoc }}</span>
-                <span v-if="review.mauSac">| Màu: {{ review.mauSac }}</span>
-                <span v-if="review.donGia">| Giá: {{ review.donGia.toLocaleString() }}₫</span>
-                <span v-if="review.soLuongTon !== undefined">| Tồn: {{ review.soLuongTon }}</span>
+            </div>
+
+            <div v-if="review.shopPhanHoi" class="shop-reply">
+              <strong>Phản hồi từ Shop:</strong>
+              <p>{{ review.shopPhanHoi }}</p>
+            </div>
+
+            <div class="review-product-info">
+              <img
+                v-if="review.tenHinhAnh"
+                :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
+                alt="Ảnh sản phẩm"
+                class="product-thumbnail"
+              />
+              <div class="product-details">
+                <span class="product-name">
+                  <strong v-if="review.maSp">Sản phẩm:</strong>
+                  <strong v-if="review.maCombo">Combo:</strong>
+                  {{ review.tenDoiTuong || 'N/A' }}
+                </span>
+                <span v-if="review.kichThuoc" class="product-variant">Size: {{ review.kichThuoc }}</span>
+                <span v-if="review.mauSac" class="product-variant">Màu: {{ review.mauSac }}</span>
+                <span v-if="review.donGia" class="product-price">Giá: {{ review.donGia.toLocaleString() }}₫</span>
               </div>
             </div>
           </li>
         </ul>
+        <!-- Pagination -->
+        <nav v-if="totalPages > 1" aria-label="Page navigation" class="mt-4 d-flex justify-content-center">
+          <ul class="pagination">
+            <li class="page-item" :class="{ disabled: currentPage === 1 }">
+              <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">&laquo;</a>
+            </li>
+            <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
+              <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+            </li>
+            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+              <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">&raquo;</a>
+            </li>
+          </ul>
+        </nav>
       </div>
-      <div v-else-if="errorMessage" class="">
+      <!-- Empty/Error State -->
+      <div v-else-if="errorMessage" class="empty-state">
         <EmptySuggestBox
           :contentText="errorMessage"
-          :iconSub="'fa fa-star'"
-          :linkNav="'/review'"
-          :suggestContent="'Đánh giá ngay'"
+          iconSub="fa fa-star"
+          linkNav="/review"
+          suggestContent="Đánh giá ngay"
         />
       </div>
-      <div v-else class="text-muted">Không tìm thấy đánh giá phù hợp.</div>
+      <div v-else class="empty-state">
+        <p>Không tìm thấy đánh giá nào phù hợp với tiêu chí của bạn.</p>
+      </div>
     </div>
   </div>
-  <VueEasyLight
+  <!-- Lightbox -->
+  <VueEasyLightbox
     :visible="isLightboxOpen"
     :imgs="lightboxImages"
     :index="lightboxIndex"
@@ -147,125 +147,366 @@
 </template>
 
 <script>
-import ConfigsRequest from '@/models/ConfigsRequest'
-import * as axiosConfig from '@/utils/axiosClient'
-import pathReplaceImg from '@/utils/processPathImg'
-import { formatDate } from '@/constants/formatDatetime'
-import ResponseAPI from '@/models/ResponseAPI'
-import VueEasyLight from 'vue-easy-lightbox'
-import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
+import { ref, watch, computed, onMounted } from 'vue';
+import ConfigsRequest from '@/models/ConfigsRequest';
+import * as axiosConfig from '@/utils/axiosClient';
+import pathReplaceImg from '@/utils/processPathImg';
+import { formatDate } from '@/constants/formatDatetime';
+import ResponseAPI from '@/models/ResponseAPI';
+import VueEasyLightbox from 'vue-easy-lightbox';
+import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue';
+import { debounce } from 'lodash';
 
 export default {
   name: 'ReviewProductCombo',
   props: {
-    objectId: String,
-    isProduct: Boolean,
-  },
-  components: { VueEasyLight, EmptySuggestBox },
-  data() {
-    return {
-      objectIdLocal: this.objectId || null,
-      reviews: [],
-      loading: false,
-      pathReplaceImg,
-      formatDate,
-      errorMessage: null,
-      filterStar: '',
-      filterHasImage: '',
-      searchText: '',
-      isLightboxOpen: false,
-      lightboxImages: [],
-      lightboxIndex: 0,
-    }
-  },
-  watch: {
-    objectId(val) {
-      this.objectIdLocal = val
-      if (this.isValidId(val)) this.fetchReviews()
-      else this.reviews = []
+    objectId: {
+      type: [String, Number],
+      required: true,
     },
-    isProduct() {
-      this.reviews = []
+    isProduct: {
+      type: Boolean,
+      default: true,
     },
   },
-  computed: {
-    filteredReviews() {
-      return this.reviews.filter((r) => {
-        // Lọc theo số sao
-        if (this.filterStar && r.soSao != this.filterStar) return false
-        // Lọc theo có ảnh/không ảnh
-        const hasImg = r.hinhAnhs && r.hinhAnhs.length > 0
-        if (this.filterHasImage === '1' && !hasImg) return false
-        if (this.filterHasImage === '0' && hasImg) return false
-        // Lọc theo nội dung tìm kiếm
-        const text = this.searchText.trim().toLowerCase()
+  components: { VueEasyLightbox, EmptySuggestBox },
+  setup(props) {
+    const reviews = ref([]);
+    const loading = ref(false);
+    const errorMessage = ref(null);
+    
+    const filterStar = ref('');
+    const filterHasImage = ref('');
+    const searchText = ref('');
+    const debouncedSearchText = ref('');
+
+    const isLightboxOpen = ref(false);
+    const lightboxImages = ref([]);
+    const lightboxIndex = ref(0);
+
+    const currentPage = ref(1);
+    const itemsPerPage = ref(5);
+
+    const isValidId = (id) => id !== null && id !== undefined && id !== 0 && !isNaN(id);
+
+    const fetchReviews = async () => {
+      if (!isValidId(props.objectId)) return;
+      loading.value = true;
+      reviews.value = [];
+      errorMessage.value = null;
+      try {
+        const url = props.isProduct
+          ? `/review/products/${props.objectId}`
+          : `/review/combos/${props.objectId}`;
+        const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig());
+
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
+          errorMessage.value = res.data?.message || 'Không thể tải đánh giá.';
+          reviews.value = [];
+          return;
+        }
+        reviews.value = res?.data || [];
+      } catch (e) {
+        reviews.value = [];
+        errorMessage.value = 'Đã xảy ra lỗi khi tải danh sách đánh giá.';
+        console.error(e);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    watch(() => props.objectId, (newId) => {
+      if (isValidId(newId)) fetchReviews();
+      else reviews.value = [];
+    }, { immediate: true });
+
+    watch(() => props.isProduct, () => {
+        if (isValidId(props.objectId)) fetchReviews();
+        else reviews.value = [];
+    });
+
+    watch(searchText, debounce((newValue) => {
+      debouncedSearchText.value = newValue;
+      currentPage.value = 1; // Reset page when search text changes
+    }, 300));
+
+    const filteredReviews = computed(() => {
+      return reviews.value.filter((r) => {
+        // Filter by star rating
+        if (filterStar.value && r.soSao != filterStar.value) return false;
+
+        // Filter by presence of images
+        const hasImg = r.hinhAnhs && r.hinhAnhs.length > 0;
+        if (filterHasImage.value === '1' && !hasImg) return false;
+        if (filterHasImage.value === '0' && hasImg) return false;
+
+        // Filter by search text
+        const text = debouncedSearchText.value.trim().toLowerCase();
         if (text) {
           const inContent =
             (r.noiDung && r.noiDung.toLowerCase().includes(text)) ||
             (r.tenKhachHang && r.tenKhachHang.toLowerCase().includes(text)) ||
-            (r.shopPhanHoi && r.shopPhanHoi.toLowerCase().includes(text))
-          if (!inContent) return false
+            (r.shopPhanHoi && r.shopPhanHoi.toLowerCase().includes(text));
+          if (!inContent) return false;
         }
-        return true
-      })
-    },
-  },
-  methods: {
-    isValidId(id) {
-      return id !== null && id !== undefined && id !== 0 && !isNaN(id)
-    },
-    async fetchReviews() {
-      if (!this.isValidId(this.objectIdLocal)) return
-      this.loading = true
-      this.reviews = []
-      try {
-        const url = this.isProduct
-          ? `/review/products/${this.objectIdLocal}`
-          : `/review/combos/${this.objectIdLocal}`
-        const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig())
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
-          this.errorMessage = res.data.message
-          this.reviews = []
-          return
+        return true;
+      });
+    });
+
+    const totalPages = computed(() => {
+      return Math.ceil(filteredReviews.value.length / itemsPerPage.value);
+    });
+
+    const paginatedReviews = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return filteredReviews.value.slice(start, end);
+    });
+
+    const changePage = (page) => {
+      if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+      }
+    };
+
+    const openLightbox = (imgs, idx = 0) => {
+      lightboxImages.value = imgs;
+      lightboxIndex.value = idx;
+      isLightboxOpen.value = true;
+    };
+
+    const closeLightbox = () => {
+      isLightboxOpen.value = false;
+    };
+
+    const getReviewImages = (item) => {
+      if (!item.hinhAnhs) return [];
+      return Array.isArray(item.hinhAnhs) ? item.hinhAnhs : item.hinhAnhs.split(',').filter(img => img);
+    };
+
+    const getReviewImagesFullPath = (item) => {
+      return getReviewImages(item).map((img) =>
+        pathReplaceImg(undefined, 'HinhAnh/Reviews', img)
+      );
+    };
+
+    onMounted(() => {
+        if (isValidId(props.objectId)) {
+            fetchReviews();
         }
-        this.reviews = res?.data || []
-      } catch (e) {
-        this.reviews = []
-        this.errorMessage = 'Hiện tại không thể tải nội dung đánh giá'
-        console.warn(e)
-      } finally {
-        this.loading = false
-      }
-    },
-    onInputId() {
-      if (this.isValidId(this.objectIdLocal)) {
-        this.fetchReviews()
-      } else {
-        this.reviews = []
-      }
-    },
-    openLightbox(imgs, idx = 0) {
-      this.lightboxImages = imgs
-      this.lightboxIndex = idx
-      this.isLightboxOpen = true
-    },
-    closeLightbox() {
-      this.isLightboxOpen = false
-    },
-    getReviewImages(item) {
-      // Trả về mảng tên file ảnh (không path)
-      if (!item.hinhAnhs) return []
-      return Array.isArray(item.hinhAnhs) ? item.hinhAnhs : item.hinhAnhs.split(',')
-    },
-    getReviewImagesFullPath(item) {
-      // Trả về mảng path đầy đủ cho lightbox
-      return this.getReviewImages(item).map((img) =>
-        this.pathReplaceImg(undefined, 'HinhAnh/Reviews', img),
-      )
-    },
+    });
+
+    return {
+      reviews,
+      loading,
+      errorMessage,
+      filterStar,
+      filterHasImage,
+      searchText,
+      isLightboxOpen,
+      lightboxImages,
+      lightboxIndex,
+      paginatedReviews,
+      currentPage,
+      totalPages,
+      pathReplaceImg,
+      formatDate,
+      fetchReviews,
+      openLightbox,
+      closeLightbox,
+      getReviewImages,
+      getReviewImagesFullPath,
+      changePage,
+    };
   },
-  mounted() {
-    if (this.isValidId(this.objectIdLocal)) this.fetchReviews()
-  },
-}
+};
 </script>
+
+<style scoped>
+.review-product-combo {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+.filter-bar {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.total-reviews-display {
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
+}
+
+.reviews-list {
+  margin-top: 1rem;
+}
+
+.review-item {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 1.5rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.review-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.reviewer-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+  border: 2px solid #eee;
+}
+
+.reviewer-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewer-name {
+  font-weight: 600;
+  color: #212529;
+}
+
+.review-date {
+  font-size: 0.85em;
+  color: #6c757d;
+}
+
+.review-rating {
+  margin-bottom: 0.75rem;
+  font-size: 1.2em;
+}
+
+.star-filled {
+  color: #ffc107;
+}
+
+.star-empty {
+  color: #e0e0e0;
+}
+
+.review-content {
+  margin-bottom: 1rem;
+  color: #343a40;
+  line-height: 1.6;
+}
+
+.review-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.review-image-container {
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.review-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  transition: transform 0.2s ease;
+}
+
+.review-image:hover {
+  transform: scale(1.05);
+}
+
+.shop-reply {
+  background-color: #f8f9fa;
+  border-left: 4px solid #0d6efd;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.shop-reply p {
+  margin-bottom: 0;
+}
+
+.review-product-info {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 1rem;
+}
+
+.product-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.product-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.9em;
+}
+
+.product-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.product-variant {
+  color: #555;
+}
+
+.product-price {
+  font-weight: bold;
+  color: #d9534f;
+}
+
+.form-select, .form-control {
+  font-size: 0.95rem;
+}
+
+.pagination .page-link {
+  color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+}
+</style>
