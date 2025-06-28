@@ -64,14 +64,11 @@ namespace APIClothesEcommerceShop.Controllers
         /// <summary>
         /// CreatePrivateCoupon (POST): Tạo coupon riêng cho người dùng. Lấy userId từ token.
         /// </summary>
-        /// <param name="couponCode"></param>
-        /// <param name="decreasePrice">Giá trị giảm</param>
-        /// <param name="isPercent">Có phải giảm theo phần trăm không (true/false)</param>
         [HttpPost("private-coupon")]
-        public async Task<IActionResult> CreatePrivateCoupon([FromQuery] string? couponCode, [FromQuery] int decreasePrice, [FromQuery] bool isPercent = true)
+        public async Task<IActionResult> CreatePrivateCoupon()
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.CreatePrivateCoupon(userId, couponCode, decreasePrice, isPercent);
+            var response = await _unit.WheelCoupon.CreatePrivateCoupon(userId);
             return Ok(response);
         }
         /// <summary>

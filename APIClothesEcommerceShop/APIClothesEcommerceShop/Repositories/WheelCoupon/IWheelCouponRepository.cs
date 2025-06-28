@@ -14,7 +14,7 @@ namespace APIClothesEcommerceShop.Repositories.WheelCoupon
         public Task<ResponseAPI<dynamic>> HavePrivateCoupon(int? userId);
         public Task<ResponseAPI<dynamic>> Over2MillionUse(int? userId);
         public Task<ResponseAPI<dynamic>> IsInWeekSteak(int? userId);
-        Task<ResponseAPI<Models.Macoupon>> CreatePrivateCoupon(int? userId, string? couponCode, int? decreasePrice, bool? isPercent = true);
+        Task<ResponseAPI<dynamic>> CreatePrivateCoupon(int? userId);
         /// <summary>
         /// Cập nhật lần đăng nhập cuối và streak cho khách hàng
         /// </summary>
