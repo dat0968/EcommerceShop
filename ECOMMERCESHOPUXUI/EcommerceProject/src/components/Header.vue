@@ -88,6 +88,9 @@
                 <li>
                   <RouterLink to="/Shop">Cửa Hàng</RouterLink>
                 </li>
+                <li>
+                                    <RouterLink to='Profile'>Thông tin cá nhân</RouterLink>
+                                </li>
               </ul>
             </nav>
           </div>
@@ -125,6 +128,7 @@
       <!-- Header Section End -->
     </header>
   </div>
+
 </template>
 
 <!-- <script>

@@ -35,6 +35,7 @@ import Cookies from 'js-cookie'
 import { decodeToken, validateToken } from '@/utils/auth'
 import CustomerChat from '../views/customer/CustomerChat.vue'
 import StaffChat from '../views/admin/chat/StaffChat.vue'
+import Profile from '../views/accounts/Profile.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -55,6 +56,7 @@ const router = createRouter({
         { path: 'favoriteproduct', name: 'favoriteproduct', component: FavoriteProduct },   
         {path: 'chat', name: 'CustomerChat', component: CustomerChat},
         {path: 'chat/:id', name: 'CustomerChatDetail', component: CustomerChat}, 
+        { path: 'Profile', name: 'Profile', component: Profile },
       ],
     },
     {

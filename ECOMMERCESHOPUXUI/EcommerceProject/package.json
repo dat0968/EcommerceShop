@@ -41,7 +41,7 @@
     "qrcode": "^1.5.4",
     "quagga": "^0.12.1",
     "slicknav": "^1.0.8",
-    "sweetalert2": "^11.21.2",
+    "sweetalert2": "^11.22.0",
     "swiper": "^11.2.6",
     "vue": "^3.5.13",
     "vue-easy-lightbox": "^1.19.0",
