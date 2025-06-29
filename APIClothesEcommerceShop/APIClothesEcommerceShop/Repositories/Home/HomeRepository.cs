@@ -1,4 +1,5 @@
 ﻿using APIClothesEcommerceShop.Data;
+using APIClothesEcommerceShop.DTO.Category.CategoryParent;
 using APIClothesEcommerceShop.DTO.ImageProduct;
 using APIClothesEcommerceShop.DTO.Product;
 using APIClothesEcommerceShop.DTO.ProductDetails;
@@ -132,6 +133,29 @@ namespace APIClothesEcommerceShop.Repositories.Home
                 throw new Exception("Error", ex);
             }
             
+        }
+        public async Task<List<CategoryParentResponseDTO>> GetPublicCategories()
+        {
+            try
+            {
+                var categories = await db.Danhmucchas
+                    .Where(c => c.IsActive == true)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                var result = categories.Select(x => new CategoryParentResponseDTO
+                {
+                    MaDanhMucCha = x.MaDanhMucCha,
+                    TenDanhMucCha = x.TenDanhMucCha,
+                    IsActive = x.IsActive
+                }).ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Không thể lấy danh mục", ex);
+            }
         }
     }
 }

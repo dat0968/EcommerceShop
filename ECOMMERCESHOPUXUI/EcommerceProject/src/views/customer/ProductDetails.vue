@@ -580,10 +580,7 @@ watch(
   </div>
 </template>
 
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/NTHH_FavoriteProduct
 <style scoped>
 .carousel-item img {
   object-fit: cover;
