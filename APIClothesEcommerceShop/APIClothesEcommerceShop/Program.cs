@@ -38,6 +38,7 @@ using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Repositories.DetailCombo;
 using APIClothesEcommerceShop.Repositories.Address;
 using QuestPDF.Infrastructure;
+using APIClothesEcommerceShop.Repositories.FavoriteProduct;
 
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
@@ -127,6 +128,7 @@ builder.Services.AddScoped<IVnpay, Vnpay>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();
 builder.Services.AddScoped<IOrderComboDetails, OrderComboDetails>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IFavoriteProduct, FavoriteProduct>();
 builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();

@@ -4,6 +4,7 @@ import LayoutCustomer from '../views/layouts/customerlayout.vue'
 import LayoutAdmin from '../views/layouts/adminlayout.vue'
 import home from '../views/customer/Home.vue'
 import shop from '../views/customer/Shop.vue'
+import FavoriteProduct from '../views/customer/FavoriteProduct.vue'
 import detailProduct from '../views/customer/ProductDetails.vue'
 import detailCombo from '../views/customer/ComboDetails.vue'
 import Combo from '../views/admin/Combo/Index.vue'
@@ -49,6 +50,7 @@ const router = createRouter({
         { path: 'order', name: 'order', component: order },
         { path: 'review', name: CustomerReview, component: CustomerReview },
         { path: 'contactus', name: ContactUs, component: ContactUs },
+        { path: 'favoriteproduct', name: 'favoriteproduct', component: FavoriteProduct },    
       ],
     },
     {

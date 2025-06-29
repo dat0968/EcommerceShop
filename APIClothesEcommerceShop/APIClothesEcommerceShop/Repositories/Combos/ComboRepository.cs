@@ -28,7 +28,7 @@ namespace APIClothesEcommerceShop.Repositories.Combos
             {
                 var query = _context.Combos
                     .AsNoTracking()
-                    .Where(p => p.IsActive == true && p.NgayKetThuc > DateTime.Now)
+                    .Where(p => p.IsActive == true )
                     .Include(c => c.Chitietcombos)
                         .ThenInclude(cc => cc.MaComboNavigation)  // Giữ nguyên navigation property
                     .Include(c => c.Chitietcombos)

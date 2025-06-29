@@ -8,6 +8,7 @@ import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
+import { jwtDecode } from 'jwt-decode'
 import recommendationview from '@/components/RecommendationProduct/RecomendationProduct.vue'
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
@@ -22,7 +23,68 @@ const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const router = useRouter()
 const quantity = ref('1')
+function ReadToken(token) {
+  if (token) {
+    const decoded = jwtDecode(token);
+    return {
+      IdUser: decoded.sub,
+      Phone: decoded.PhoneNumber,
+      Name: decoded.FullName,
+      Role: decoded.role,
+      Exp: decoded.exp // Đơn vị giây
+    };
+  }
+  return null;
+}
+const token = Cookies.get('accessToken');
+const decodedToken = ReadToken(token);
+const idKhachHang = decodedToken ? decodedToken.IdUser : null;
+const isFavorited = ref(false)
+const addFavoriteProduct = async () => {
+  try {
+    const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        maSp: id,
+        maKh: idKhachHang
+      })
+    })
 
+    const data = await response.json()
+
+    if (data.message === 'Sản phẩm yêu thích đã tồn tại') {
+      Swal.fire({
+        title: 'Sản phẩm đã nằm trong danh sách yêu thích.',
+        icon: 'info',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      })
+    } else {
+      Swal.fire({
+        title: 'Đã thêm vào yêu thích!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      })
+    }
+
+    isFavorited.value = true
+  } catch (error) {
+    Swal.fire({
+      title: 'Lỗi khi thêm vào yêu thích!',
+      text: error.message,
+      icon: 'error',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+  }
+}
 // Call Api ProductDetails
 const fetchAPI = async () => {
   const response = await fetch(`${getUrlAPI.value}/api/Shop/Product/${id}`, {
@@ -320,76 +382,45 @@ watch(
         <div class="row">
           <div class="col-lg-6">
             <div class="product__details__pic">
-              <div
-                style="position: relative; margin-bottom: 20px"
-                class="product__details__slider__content"
-              >
+              <div style="position: relative; margin-bottom: 20px" class="product__details__slider__content">
                 <div class="product__details__pic__slider owl-carousel">
                   <div v-for="(image, index) in allImages" :key="index">
-                    <img
-                      v-if="index + 1 == currentImage"
-                      :data-hash="`product-${index}`"
-                      class="product__big__img"
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
-                      alt=""
-                    />
+                    <img v-if="index + 1 == currentImage" :data-hash="`product-${index}`" class="product__big__img"
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`" alt="" />
                   </div>
                 </div>
               </div>
               <!-- Thumbnail ảnh nhỏ nằm dưới ảnh lớn -->
-              <div
-                class="product__details__thumbnails d-flex justify-content-center col-lg-6"
-                style="max-width: 100%; display: flex; justify-content: center; margin: 20px"
-              >
+              <div class="product__details__thumbnails d-flex justify-content-center col-lg-6"
+                style="max-width: 100%; display: flex; justify-content: center; margin: 20px">
                 <div class="carousel slide w-100">
                   <div class="carousel-inner">
-                    <div
-                      v-for="(imageGroup, index) in slideChunks"
-                      :key="index"
-                      :class="['carousel-item', { active: currentSlider === index + 1 }]"
-                    >
+                    <div v-for="(imageGroup, index) in slideChunks" :key="index"
+                      :class="['carousel-item', { active: currentSlider === index + 1 }]">
                       <div class="d-flex gap-2 justify-content-center" style="width: 100%">
-                        <img
-                          v-for="(image, imageindex) in imageGroup"
-                          :key="imageindex"
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                            image.tenHinhAnh
-                          }`"
-                          class="img-fluid"
-                          :style="{ width: `${100 / imageGroup.length}%`, height: '100px' }"
-                          alt=""
-                          @click.prevent="changeImage(index * chunkSize + imageindex + 1)"
-                        />
+                        <img v-for="(image, imageindex) in imageGroup" :key="imageindex" :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh
+                          }`" class="img-fluid" :style="{ width: `${100 / imageGroup.length}%`, height: '100px' }"
+                          alt="" @click.prevent="changeImage(index * chunkSize + imageindex + 1)" />
                       </div>
                     </div>
                   </div>
 
-                  <button
-                    @click="prevImage"
-                    class="carousel-control-prev"
-                    type="button"
-                    style="
+                  <button @click="prevImage" class="carousel-control-prev" type="button" style="
                       width: 40px;
                       height: 40px;
                       top: 50%;
                       transform: translateY(-50%);
                       background-color: gray;
-                    "
-                  >
+                    ">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                   </button>
-                  <button
-                    @click="nextImage"
-                    class="carousel-control-next"
-                    type="button"
-                    style="
+                  <button @click="nextImage" class="carousel-control-next" type="button" style="
                       width: 40px;
                       height: 40px;
                       top: 50%;
                       transform: translateY(-50%);
                       background-color: gray;
-                    "
-                  >
+                    ">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                   </button>
                 </div>
@@ -413,9 +444,14 @@ watch(
                   <span class="icon_bag_alt"></span> Thêm giỏ hàng
                 </button>
                 <ul>
-                  <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
-                  </li>
+                <li>
+                  <a href="#" @click.prevent="addFavoriteProduct">
+                    <span
+                      :class="[isFavorited ? 'icon_heart' : 'icon_heart_alt']"
+                      style="color: red; font-size: 20px; transition: 0.3s"
+                    ></span>
+                  </a>
+                </li>
                   <li>
                     <a href="#"><span class="icon_adjust-horiz"></span></a>
                   </li>
@@ -426,13 +462,9 @@ watch(
                   <li style="display: flex; align-items: center" v-if="colors.length > 0">
                     <span style="min-width: 120px">Màu:</span>
                     <div class="color__checkbox" style="display: flex; gap: 8px">
-                      <button
-                        v-for="(color, index) in colors"
-                        :key="index"
-                        :class="['btn', 'btn-light', { active: selectedColor === color }]"
-                        @click="selectColor(color)"
-                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
-                      >
+                      <button v-for="(color, index) in colors" :key="index"
+                        :class="['btn', 'btn-light', { active: selectedColor === color }]" @click="selectColor(color)"
+                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500">
                         {{ color }}
                       </button>
                     </div>
@@ -440,13 +472,9 @@ watch(
                   <li style="display: flex; align-items: center" v-if="sizes.length > 0">
                     <span style="min-width: 120px">Kích thước:</span>
                     <div class="size__checkbox" style="display: flex; gap: 8px">
-                      <button
-                        v-for="(size, index) in sizes"
-                        :key="index"
-                        :class="['btn', 'btn-light', { active: selectedSize === size }]"
-                        @click="selectSize(size)"
-                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
-                      >
+                      <button v-for="(size, index) in sizes" :key="index"
+                        :class="['btn', 'btn-light', { active: selectedSize === size }]" @click="selectSize(size)"
+                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500">
                         {{ size }}
                       </button>
                     </div>
@@ -552,11 +580,16 @@ watch(
   </div>
 </template>
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/NTHH_FavoriteProduct
 <style scoped>
 .carousel-item img {
   object-fit: cover;
   max-height: 150px;
 }
+
 /* Slider container */
 .product__details__pic__slider {
   position: relative;
@@ -620,13 +653,17 @@ watch(
   width: 100%;
   height: 500px;
 }
+
 .product__details__pic__left .pt img {
-  width: 100px; /* Hoặc điều chỉnh kích thước phù hợp */
+  width: 100px;
+  /* Hoặc điều chỉnh kích thước phù hợp */
   height: 100px;
-  object-fit: cover; /* Đảm bảo ảnh không bị méo */
+  object-fit: cover;
+  /* Đảm bảo ảnh không bị méo */
   border-radius: 5px;
   margin-bottom: 10px;
 }
+
 .btn.active {
   background-color: #4a90e2 !important;
   color: white !important;
