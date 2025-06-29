@@ -1,63 +1,55 @@
 <template>
-  <!-- Start XP Contentbar -->
   <div style="margin-top: 100px" class="xp-contentbar">
-    <!-- Start Widget -->
-    <RevenueStatistic :data="revenueStatisticData" :is-loading="isLoading"></RevenueStatistic>
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
+      </ol>
+      <hr />
+    </nav>
 
-    <!-- Start XP Row -->
+    <RevenueStatistic
+      :data="revenueStatisticData"
+      :is-loading="revenueIsLoading"
+    ></RevenueStatistic>
+
     <div class="row align-items-stretch">
-      <!-- Start XP Col -->
       <div class="col-md-12 col-lg-12 col-xl-7 m-b-30">
-        <ProductStatistic :data="productStatisticData" :is-loading="isLoading"></ProductStatistic>
+        <ProductStatistic
+          :data="productStatisticData"
+          :is-loading="productIsLoading"
+        ></ProductStatistic>
       </div>
-      <!-- End XP Col -->
 
-      <!-- Start XP Col -->
       <div class="col-md-12 col-lg-12 col-xl-5">
-        <!-- Start XP Col -->
         <div class="flex-grow-1">
           <EmployeeStatistic
             :data="employeeStatisticsData"
-            :is-loading="isLoading"
+            :is-loading="employeeIsLoading"
           ></EmployeeStatistic>
         </div>
         <div class="flex-grow-1">
-          <!-- End XP Col -->
           <CustomerStatistic
             :data="customerStatisticsData"
-            :is-loading="isLoading"
+            :is-loading="customerIsLoading"
           ></CustomerStatistic>
         </div>
       </div>
-      <!-- End XP Col -->
     </div>
-    <!-- End XP Row -->
 
-    <!-- End XP Row -->
-    <OrderSummary :data="orderSummaryData" :is-loading="isLoading"></OrderSummary>
+    <OrderSummary :data="orderSummaryData" :is-loading="orderSummaryIsLoading"></OrderSummary>
 
-    <!-- End XP Row -->
-
-    <!-- Start Project -->
-    <!-- End XP Row -->
     <DatatableStatistic
       :data="datatableStatisticsResponse"
-      :is-loading="isLoading"
+      :is-loading="datatableIsLoading"
     ></DatatableStatistic>
-    <!-- End XP Row -->
   </div>
-  <!-- End XP Contentbar -->
-
-  <!-- <div class="">
-    <ComboStatistic :data="comboStatisticsaryData" :is-loading="isLoading"></ComboStatistic>
-  </div> -->
 </template>
 
 <script>
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 
-import toastr from 'toastr'
+import Swal from 'sweetalert2'
 
 import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
 import CustomerStatisticsResponse from '@/models/dtos/statisticsDtos/customerStatisticsResponse'
@@ -67,13 +59,13 @@ import RevenueStatisticsResponse from '@/models/dtos/statisticsDtos/revenueStati
 import ComboStatisticsResponse from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
 import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 
-import OrderSummary from '@/components/pages/statistics/OrderSummary.vue'
-import ProductStatistic from '@/components/pages/statistics/ProductStatistic.vue'
-import CustomerStatistic from '@/components/pages/statistics/CustomerStatistic.vue'
-import EmployeeStatistic from '@/components/pages/statistics/EmployeeStatistic.vue'
-import RevenueStatistic from '@/components/pages/statistics/RevenueStatistic.vue'
-// import ComboStatistic from '@/components/pages/statistics/ComboStatistic.vue'
-import DatatableStatistic from '@/components/pages/statistics/DatatableStatistic.vue'
+import OrderSummary from '@/components/pages/admin/statistics/OrderSummary.vue'
+import ProductStatistic from '@/components/pages/admin/statistics/ProductStatistic.vue'
+import CustomerStatistic from '@/components/pages/admin/statistics/CustomerStatistic.vue'
+import EmployeeStatistic from '@/components/pages/admin/statistics/EmployeeStatistic.vue'
+import RevenueStatistic from '@/components/pages/admin/statistics/RevenueStatistic.vue'
+// import ComboStatistic from '@/components/pages/admin/statistics/ComboStatistic.vue'
+import DatatableStatistic from '@/components/pages/admin/statistics/DatatableStatistic.vue'
 
 export default {
   name: 'StatisticsView',
@@ -94,9 +86,14 @@ export default {
       customerStatisticsData: {},
       employeeStatisticsData: {},
       revenueStatisticData: {},
-      comboStatisticsaryData: {},
       datatableStatisticsResponse: {},
-      isLoading: true,
+      comboStatisticsaryData: {}, // Đã thêm biến này để tránh lỗi runtime
+      revenueIsLoading: true,
+      productIsLoading: true,
+      customerIsLoading: true,
+      employeeIsLoading: true,
+      orderSummaryIsLoading: true,
+      datatableIsLoading: true,
     }
   },
   computed: {},
@@ -105,9 +102,9 @@ export default {
     this.isLoading = true
 
     const CACHE_KEY = 'statisticsData'
-    const CACHE_EXPIRE = 5 * 60 * 1000 // 5 phút
+    const CACHE_EXPIRE = 1 * 60 * 1000 // 5 phút
 
-    let cached = await localStorage.getItem(CACHE_KEY)
+    let cached = localStorage.getItem(CACHE_KEY)
     let now = Date.now()
     if (cached) {
       try {
@@ -119,9 +116,15 @@ export default {
           this.customerStatisticsData = await parsed.customerStatisticsData
           this.employeeStatisticsData = await parsed.employeeStatisticsData
           this.revenueStatisticData = await parsed.revenueStatisticData
-          this.comboStatisticsaryData = await parsed.comboStatisticsaryData
+          this.comboStatisticsaryData = (await parsed.comboStatisticsaryData) || {} // Đảm bảo không lỗi khi lấy cache
           this.datatableStatisticsResponse = await parsed.datatableStatisticsResponse
           this.isLoading = false
+          this.revenueIsLoading = false
+          this.productIsLoading = false
+          this.customerIsLoading = false
+          this.employeeIsLoading = false
+          this.orderSummaryIsLoading = false
+          this.datatableIsLoading = false
           return // Dừng nếu dữ liệu không hết hạn
         }
         localStorage.removeItem(CACHE_KEY) // Xóa cache nếu hết hạn
@@ -179,19 +182,19 @@ export default {
     }
 
     if (errorMessage !== '') {
-      toastr.error('Hiện không thể load dữ liệu: ' + errorMessage)
+      Swal.fire('Hiện không thể load các dữ liệu dưới', errorMessage, 'error')
       console.warn(errorLogs)
     }
     // Lưu cache với thời gian hết hạn
     localStorage.setItem(
       CACHE_KEY,
       JSON.stringify({
-        orderSummaryData: JSON.parse(JSON.stringify(this.orderSummaryData)), // Chuyển đổi thành đối tượng thường
+        orderSummaryData: JSON.parse(JSON.stringify(this.orderSummaryData)),
         productStatisticData: JSON.parse(JSON.stringify(this.productStatisticData)),
         customerStatisticsData: JSON.parse(JSON.stringify(this.customerStatisticsData)),
         employeeStatisticsData: JSON.parse(JSON.stringify(this.employeeStatisticsData)),
         revenueStatisticData: JSON.parse(JSON.stringify(this.revenueStatisticData)),
-        comboStatisticsaryData: JSON.parse(JSON.stringify(this.comboStatisticsaryData)),
+        comboStatisticsaryData: JSON.parse(JSON.stringify(this.comboStatisticsaryData)), // Đã thêm vào cache
         datatableStatisticsResponse: JSON.parse(JSON.stringify(this.datatableStatisticsResponse)),
         expire: now + CACHE_EXPIRE,
       }),
@@ -201,39 +204,54 @@ export default {
   },
   methods: {
     async loadOrderSummaryData() {
+      this.orderSummaryIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetOrderSummary',
         ConfigsRequest.takeAuth(),
       )
       this.orderSummaryData = OrderSummaryResponse.fromApiResponse(response.data)
+      await this.$nextTick()
+      this.orderSummaryIsLoading = false
     },
     async loadProductStatisticsData() {
+      this.productIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetProductStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.productStatisticData = ProductStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
+      this.productIsLoading = false
     },
     async loadCustomerStatisticsData() {
+      this.customerIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetCustomerStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.customerStatisticsData = CustomerStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
+      this.customerIsLoading = false
     },
     async loadEmployeeStatisticsData() {
+      this.employeeIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetEmployeeStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.employeeStatisticsData = EmployeeStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
+      this.employeeIsLoading = false
     },
     async loadRevenueStatisticsData() {
+      this.revenueIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetRevenueStatistics',
         ConfigsRequest.takeAuth(),
       )
       this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
+      this.revenueIsLoading = false
     },
     async loadComboStatisticsData() {
       const response = await axiosConfig.getFromApi(
@@ -241,18 +259,21 @@ export default {
         ConfigsRequest.takeAuth(),
       )
       this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
+      await this.$nextTick()
     },
     async loadDatatableData() {
+      this.datatableIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
       )
-      // console.log(response.data)
-      this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(response.data)
-      // console.log(this.datatableStatisticsResponse)
+      this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(
+        await response.data,
+      )
+      await this.$nextTick()
+      this.datatableIsLoading = false
     },
   },
 }
 </script>
-
 <style scoped></style>

@@ -1,4 +1,4 @@
-import defaultImage from '@/assets/default/default.jpg' // Import ảnh
+import defaultImage from '@/assets/default/default.webp' // Import ảnh
 
 const replaceBrokenImages = () => {
   const checkAndReplace = (img) => {

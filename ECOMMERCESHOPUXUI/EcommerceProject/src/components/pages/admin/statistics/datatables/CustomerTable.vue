@@ -1,8 +1,8 @@
 <template>
-  <div v-if="employees.length" class="table-responsive">
-    <table id="employeeDatatable" class="table table-hover"></table>
+  <div v-if="customers.length" class="table-responsive">
+    <table id="customerDatatable" class="table table-hover"></table>
   </div>
-  <p v-else>Không có nhân viên nào để hiển thị.</p>
+  <p v-else>Không có khách hàng nào để hiển thị.</p>
 </template>
 
 <script>
@@ -11,11 +11,12 @@ import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
+import pathReplaceImg from '@/utils/processPathImg'
 
 export default {
-  name: 'EmployeeTable',
+  name: 'CustomerTable',
   props: {
-    employees: {
+    customers: {
       type: Array,
       required: true,
     },
@@ -25,48 +26,48 @@ export default {
   },
   methods: {
     initDataTable() {
-      const dataSet = this.employees.map((employee) => ({
-        employeeId: employee.employeeId,
-        employeeName: employee.employeeName,
-        performanceScore: employee.performanceScore,
-        positionName: employee.positionName,
-        salesAmount: formatCurrency(employee.salesAmount), // Định dạng doanh số
+      const dataSet = this.customers.map((customer) => ({
+        customerId: customer.customerId,
+        customerName: customer.customerName,
+        revenue: formatCurrency(customer.revenue), // Định dạng doanh thu
+        location: customer.location,
+        ageGroup: customer.ageGroup,
       }))
 
       // Khởi tạo DataTable
-      $('#employeeDatatable').DataTable({
+      $('#customerDatatable').DataTable({
         data: dataSet,
         destroy: true,
         columns: [
           configsDt.defaultTdToShowDetail,
-          { data: 'employeeId', title: 'Mã nhân viên', className: 'text-center' },
-          { data: 'employeeName', title: 'Tên nhân viên' },
-          { data: 'performanceScore', title: 'Điểm hiệu suất', className: 'text-center' },
-          { data: 'positionName', title: 'Chức vụ' },
-          { data: 'salesAmount', title: 'Doanh số', className: 'text-right' },
+          { data: 'customerId', title: 'Mã khách hàng', className: 'text-center' },
+          { data: 'customerName', title: 'Tên khách hàng' },
+          { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
+          { data: 'location', title: 'Địa điểm' },
+          { data: 'ageGroup', title: 'Nhóm tuổi' },
         ],
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
         initComplete: () => {
-          configsDt.attachDetailsControl(`#employeeDatatable`, this.formatDetails.bind(this))
+          configsDt.attachDetailsControl(`#customerDatatable`, this.formatDetails.bind(this))
         },
       })
     },
     formatDetails(rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')
-      const employee = this.employees.find((x) => x.employeeId == rowData.employeeId)
+      const customer = this.customers.find((x) => x.customerId == rowData.customerId)
 
       const detailsHtml = `
     <div class="container">
       <div class="row mb-3 gap-1 justify-content-between detail-list">
         ${
-          employee.orderRecents && employee.orderRecents.length > 0
-            ? employee.orderRecents
+          customer.orderRecents && customer.orderRecents.length > 0
+            ? customer.orderRecents
                 .map(
                   (order) => `
                     <div class="col-sm-12 col-md-6 p-3 detail-item">
                       <div class="row border p-1 rounded bg-light">
-                        <div class="col-4 d-flex align-items-center">
-                          <img src="${order.avatar || '/images/default.png'}" class="img-fluid rounded" alt="Khách hàng">
+                        <div class="col-4 d-flex align-items-center justify-content-center">
+                          <img src="${pathReplaceImg(undefined, 'HinhAnh/Avatar', order.avatar)}" class="img-fluid rounded" alt="Khách hàng">
                         </div>
                         <div class="col-8">
                           <div class="text-primary flex flex-flow-column justify-content-between">
@@ -75,7 +76,12 @@ export default {
                           <p><strong>Tên khách hàng:</strong> ${order.hoTen}</p>
                           <p><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
                           <p><strong>Trạng thái:</strong> <span class="${order.isActive ? 'text-success' : 'text-danger'}">${order.tinhTrang}</span></p>
-                          <p><strong>Địa chỉ nhận:</strong> ${order.diaChiNhanHang}</p>
+                          <p>
+                            <strong>Địa chỉ nhận:</strong>
+                            <span title="${order.diaChiNhanHang}">
+                              ${order.diaChiNhanHang}
+                            </span>
+                          </p>
                         </div>
                       </div>
                     </div>

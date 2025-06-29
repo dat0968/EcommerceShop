@@ -40,6 +40,25 @@ export default {
           configsDt.defaultTdToShowDetail,
           { data: 'comboId', title: 'Mã combo', className: 'text-center' },
           { data: 'comboName', title: 'Tên combo' },
+          {
+            data: null,
+            title: 'Đánh giá',
+            render: function (data, type, row) {
+              const totalReviewStar = row.starCount ?? 0
+              return `
+              <span>
+                ${Array.from(
+                  { length: totalReviewStar },
+                  () => `<span style="color: #ffc107">★</span>`,
+                ).join('')}
+                ${Array.from(
+                  { length: 5 - totalReviewStar },
+                  () => `<span style="color: #e4e5e9">★</span>`,
+                ).join('')}
+              </span>
+              `
+            },
+          },
           { data: 'salesCount', title: 'Số lượng bán', className: 'text-center' },
           { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
         ],
@@ -49,7 +68,7 @@ export default {
         },
       })
     },
-    // ! Not certainly about this method
+    // ! Not certainly about this method. Damn
     formatDetails(rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')
       const combo = this.combos.find((x) => x.comboId == rowData.comboId)

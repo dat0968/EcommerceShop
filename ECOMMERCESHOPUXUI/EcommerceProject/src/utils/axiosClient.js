@@ -1,5 +1,5 @@
 import axios from 'axios'
-import toastr from 'toastr'
+import Swal from 'sweetalert2'
 import { jwtDecode } from 'jwt-decode'
 import ResponseAPI from '@/models/ResponseAPI'
 import ConfigsRequest from '@/models/ConfigsRequest'
@@ -10,14 +10,14 @@ const API_PATHS = [
   'http://localhost:5031/api', // Cái này là path http của API
 ]
 
-// Hàm kiểm tra endpoint khả dụng
+// #region [Hàm kiểm tra endpoint khả dụng]
 async function detectAvailableApi(paths = API_PATHS) {
   // Kiểm tra xem đã có baseUrl trong localStorage chưa
   const storedBaseUrl = localStorage.getItem('apiBaseUrl')
   if (storedBaseUrl) {
     // Nếu có, kiểm tra xem nó có khả dụng không
     try {
-      const res = await axios.options(storedBaseUrl + '/Health', { timeout: 1000 })
+      const res = await axios.options(storedBaseUrl + '/Health', { timeout: 2000 })
       console.info(`API endpoint ${storedBaseUrl} khả dụng!`, `[${res.status}]`)
       return storedBaseUrl // Trả về baseURL đã lưu
     } catch (e) {
@@ -32,7 +32,7 @@ async function detectAvailableApi(paths = API_PATHS) {
   for (const path of paths) {
     try {
       // Gửi request OPTIONS để kiểm tra CORS và server
-      const res = await axios.options(path + '/Health', { timeout: 1000 })
+      const res = await axios.options(path + '/Health', { timeout: 2000 })
       console.info(`API endpoint ${path} khả dụng!`, `[${res.status}]`)
       localStorage.setItem('apiBaseUrl', path) // Lưu vào localStorage
       return path
@@ -42,23 +42,23 @@ async function detectAvailableApi(paths = API_PATHS) {
       continue
     }
   }
-  toastr.error(
-    'Không tìm thấy API endpoint khả dụng! Vui lòng kiểm tra lại cấu hình hoặc kết nối mạng.',
-    'Lỗi kết nối API',
-  )
+  Swal.fire({
+    icon: 'error',
+    title: 'Lỗi kết nối',
+    text: 'Hiện không thể kết nối, vui lòng kiếm tra lại kết nối mạng',
+  })
 
   console.error('Không tìm thấy API endpoint khả dụng!')
   return '' // Trả về chuỗi rỗng nếu không tìm thấy endpoint nào khả dụng
 }
+// #endregion
 
-// Khởi tạo axiosClient với baseURL tạm thời
+// #region [Khởi tạo axiosClient với baseURL tạm thời]
 const axiosClient = axios.create({
   baseURL: localStorage.getItem('apiBaseUrl') ?? API_PATHS[0],
   timeout: 500000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
+// #endregion
 
 // Hàm khởi tạo baseURL động
 export async function initApiBaseUrl() {
@@ -66,7 +66,7 @@ export async function initApiBaseUrl() {
   axiosClient.defaults.baseURL = url ?? ''
 }
 
-// Hàm đọc accesstoken (tương tự hàm ReadToken auth.js)
+// #region Hàm đọc accesstoken (tương tự hàm ReadToken auth.js)
 export function ReadToken(token) {
   if (token) {
     const decoded = jwtDecode(token)
@@ -81,6 +81,7 @@ export function ReadToken(token) {
     return null
   }
 }
+//#endregion
 
 // Hàm refresh token (dựa trên logic auth.js)
 async function refreshAccessToken() {
@@ -94,7 +95,6 @@ async function refreshAccessToken() {
   try {
     const readtoken = ReadToken(Cookies.get('accessToken')) // Đọc thông tin từ access token
     if (!readtoken) {
-      // console.log('Không thể đọc thông tin từ access token.')
       return false // Hoặc ném lỗi
     }
 
@@ -106,7 +106,10 @@ async function refreshAccessToken() {
       refreshToken: refreshToken,
     }
 
-    const response = await axios.post(`${axiosClient.baseURL}/Account/RenewAccessToken`, content)
+    const response = await axios.post(
+      `${localStorage.getItem('apiBaseUrl')}/Account/RenewAccessToken`,
+      content,
+    )
 
     if (response.status === 200 && response.data.success) {
       const { accessToken } = response.data.data
@@ -126,21 +129,22 @@ async function refreshAccessToken() {
 axiosClient.interceptors.request.use(
   async (config) => {
     const isRequiresAuth = !config.headers.skipAuth
-    // console.log(isRequiresAuth)
-    const requiresAuth = isRequiresAuth
+    const isSkipNavigation = config.headers['Skip-Navigation'] ?? false
 
-    if (!requiresAuth) {
-      return config // Không yêu cầu xác thực, bỏ qua
+    if (config.data && !(config.data instanceof FormData) && !config.headers['Content-Type']) {
+      config.headers['Content-Type'] = 'application/json'
     }
 
     const accessToken = Cookies.get('accessToken')
 
-    if (!accessToken) {
-      // Yêu cầu xác thực nhưng không có token
-      console.warn('Không có access token, chuyển hướng đến trang đăng nhập.')
-      router.push('/login') // Chuyển hướng đến trang đăng nhập
-      return config // Quan trọng: Ngăn chặn request được gửi đi
+    if (isRequiresAuth && !accessToken) {
+      if (!isSkipNavigation) {
+        console.warn('Không có access token, chuyển hướng đến trang đăng nhập.')
+        router.push('/login')
+      }
+      throw new Error('Tài khoản chưa truy cập, không thể sử dụng 1 số tính năng.')
     }
+
     // Kiểm tra token hết hạn bằng cách sử dụng ReadToken
     const readtoken = ReadToken(accessToken)
     if (readtoken && readtoken.Exp * 1000 < Date.now()) {
@@ -149,21 +153,17 @@ axiosClient.interceptors.request.use(
       if (newAccessToken) {
         config.headers.Authorization = `Bearer ${newAccessToken}`
       } else {
-        // Không thể làm mới token, chuyển hướng đến trang đăng nhập
-        // console.log('Không thể làm mới token, chuyển hướng đến trang đăng nhập.')
-        router.push('/login')
-        return config // Hoặc ném lỗi nếu cần
+        if (!isSkipNavigation) router.push('/login')
+        throw new Error('Không thể làm mới access token.')
       }
-    } else {
+    } else if (accessToken) {
       // Token còn hiệu lực, thêm vào header
       config.headers.Authorization = `Bearer ${accessToken}`
     }
 
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  },
+  (error) => Promise.reject(error),
 )
 
 // Xử lý phản hồi với các lỗi
@@ -174,11 +174,20 @@ axiosClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error(`API Error: ${error.response.status}`, error.response.data)
-
-      // Ném lỗi để các promise khác có thể bắt được
-      throw new Error(error.response?.data?.message ?? 'Lỗi không xác định từ API.')
+      Swal.fire({
+        title: error.status,
+        text: error.response.message || 'Bạn không có quyền truy cập nội dung này.',
+        icon: 'error',
+      })
+      if (error.status == 403) {
+        router.push('/')
+        return
+      }
     }
-    throw error
+    if (error.response.data) {
+      return error.response.data
+    }
+    return error.response
   },
 )
 
@@ -186,6 +195,7 @@ axiosClient.interceptors.response.use(
 const handleResponse = async (callback) => {
   try {
     const result = await callback()
+    console.log(result)
     return new ResponseAPI(result)
   } catch (error) {
     return new ResponseAPI(null, false, error.message)
@@ -239,6 +249,9 @@ async function handleCastResponse(callback, castFn) {
 function isEndpointAvailable() {
   return axiosClient.defaults.baseURL !== '' && axiosClient.defaults.baseURL !== null
 }
+function getEndpoint() {
+  return axiosClient.defaults.baseURL
+}
 export {
   getFromApi,
   postToApi,
@@ -247,4 +260,5 @@ export {
   deleteFromApi,
   handleCastResponse,
   isEndpointAvailable,
+  getEndpoint,
 }

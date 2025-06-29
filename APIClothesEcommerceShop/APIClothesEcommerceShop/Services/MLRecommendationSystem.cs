@@ -73,12 +73,12 @@ namespace APIClothesEcommerceShop.Services
                 Console.WriteLine($"RMSE: {metrics.RootMeanSquaredError}");
                 Console.WriteLine($"MAE: {metrics.MeanAbsoluteError}");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Lỗi khi huấn luyện mô hình: {ex.Message}");
                 throw;
             }
-            
+
         }
         public async Task<List<ProductResponseDTO>> Recommend(int? userId, int? maSp = null, int numberOfRecommendations = 8)
         {

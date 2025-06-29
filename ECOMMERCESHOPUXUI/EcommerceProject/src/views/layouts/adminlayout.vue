@@ -22,9 +22,6 @@ import 'bootstrap-datepicker'
 //import '../../assets/admin/plugins/datepicker/i18n/datepicker.en.js'
 import 'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'
 import '../../assets/Admin/js/main.js'
-import statistics from '../admin/statistics/statistics.vue'
-import products from '../admin/products/index.vue'
-import CustomerManagement from '../admin/Customer/CustomerManagement.vue'
 import { onMounted } from 'vue'
 
 onMounted(() => {
@@ -167,7 +164,12 @@ onMounted(() => {
               </li>
               <li>
                 <RouterLink to="/admin/coupon">
-                  <i class="icon-people"></i><span class="font-color" >Coupon</span>
+                  <i class="icon-people"></i><span class="font-color">Coupon</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/Admin/Review">
+                  <i class="icon-star"></i><span class="font-color">Đánh giá</span>
                 </RouterLink>
               </li>
             </ul>

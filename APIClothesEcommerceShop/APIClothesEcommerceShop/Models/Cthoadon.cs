@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace APIClothesEcommerceShop.Models;
 
@@ -23,4 +24,5 @@ public partial class Cthoadon
     public virtual Chitietsanpham? MaCtspNavigation { get; set; }
 
     public virtual Hoadon MaHdNavigation { get; set; } = null!;
+    public virtual DanhGia? DanhGia { get; set; }
 }

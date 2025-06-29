@@ -25,7 +25,7 @@ namespace APIClothesEcommerceShop.Services.EmailService.GoogleSenderService
         /// <param name="subject"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        public async Task SendEmailAsync(string toEmail, string subject, string message)
+        public async Task SendEmailAsync(string toEmail, string subject, string message, IFormFile? file = null)
         {
             var email = new MimeMessage();
             email.Sender = MailboxAddress.Parse(emailSettings.Email);
@@ -44,7 +44,25 @@ namespace APIClothesEcommerceShop.Services.EmailService.GoogleSenderService
                 .Replace("{{email}}", toEmail)
                 .Replace("{{message}}", message);
 
-            email.Body = new TextPart("html") { Text = htmlBody };
+            if (file != null)
+            {
+                var bodyBuilder = new BodyBuilder
+                {
+                    HtmlBody = htmlBody
+                };
+                using (var stream = new MemoryStream())
+                {
+                    await file.CopyToAsync(stream);
+                    stream.Position = 0;
+                    bodyBuilder.Attachments.Add(file.FileName, stream.ToArray(), ContentType.Parse(file.ContentType));
+                }
+                email.Body = bodyBuilder.ToMessageBody();
+            }
+            else
+            {
+                email.Body = new TextPart("html") { Text = htmlBody };
+            }
+
             var smtp = new SmtpClient();
             smtp.Connect(emailSettings.Host, emailSettings.Port, SecureSocketOptions.StartTls);
             smtp.Authenticate(emailSettings.Email, emailSettings.Password);
@@ -52,7 +70,7 @@ namespace APIClothesEcommerceShop.Services.EmailService.GoogleSenderService
             smtp.Disconnect(true);
         }
 
-        public async Task SendTemplateEmailAsync(string toEmail)
+        public async Task SendTemplateEmailAsync(string toEmail, IFormFile? file = null)
         {
             // Tạo đối tượng MimeMessage
             MimeMessage message = new MimeMessage();
@@ -66,14 +84,28 @@ namespace APIClothesEcommerceShop.Services.EmailService.GoogleSenderService
             // Thiết lập tiêu đề email
             message.Subject = "Tiêu đề email";
 
-            // Thiết lập nội dung email
             BodyBuilder bodyBuilder = new BodyBuilder();
 
             // Đọc nội dung HTML từ tệp
             var templatePath = DefaultPathAndGetNameTemplate("dark-bee-food-template.html");
+
             bodyBuilder.HtmlBody = await File.ReadAllTextAsync(templatePath); // Thiết lập nội dung HTML Markdown.ToHtml
 
-            message.Body = bodyBuilder.ToMessageBody(); // Tạo nội dung email từ bodyBuilder
+            // Thiết lập nội dung email
+            if (file != null)
+            {
+                using (var stream = new MemoryStream())
+                {
+                    await file.CopyToAsync(stream);
+                    stream.Position = 0;
+                    bodyBuilder.Attachments.Add(file.FileName, stream.ToArray(), ContentType.Parse(file.ContentType));
+                }
+                message.Body = bodyBuilder.ToMessageBody();
+            }
+            else
+            {
+                message.Body = bodyBuilder.ToMessageBody(); // Tạo nội dung email từ bodyBuilder
+            }
 
             // Thiết lập thông tin SMTP server và gửi email
             using (SmtpClient client = new SmtpClient())

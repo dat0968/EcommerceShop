@@ -1,5 +1,8 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
+import $ from 'jquery'
+
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
@@ -129,7 +132,6 @@ watch(showMainImage, (newIndex) => {
   currentImage.value = newIndex
 })
 
-console.log(accessToken.value)
 onMounted(() => {
   fetchAPI()
   fetchRcmProduct()
@@ -139,29 +141,45 @@ onMounted(() => {
     behavior: 'smooth', // Cuộn mượt mà
   })
 
-  // Initialize Owl Carousel
-  const owl = $('.product__details__pic__slider').owlCarousel({
-    items: 1,
-    loop: true,
-    autoplay: false,
-    nav: false,
-    dots: true,
-    animateOut: 'fadeOut',
-    animateIn: 'fadeIn',
+  // Đợi Vue render DOM xong
+  nextTick(() => {
+    const $carousel = $('.product__details__pic__slider')
+
+    if ($carousel.length === 0) {
+      console.warn('Không tìm thấy .product__details__pic__slider trong DOM')
+      return
+    }
+
+    // Kiểm tra xem owlCarousel có thực sự tồn tại chưa
+    if (typeof $carousel.owlCarousel !== 'function') {
+      console.error('owlCarousel is not a function. OwlCarousel chưa được attach vào jQuery')
+      return
+    }
+
+    const owl = $carousel.owlCarousel({
+      items: 1,
+      loop: true,
+      autoplay: false,
+      nav: false,
+      dots: true,
+      animateOut: 'fadeOut',
+      animateIn: 'fadeIn',
+    })
+
+    $('.pt').on('click', function () {
+      const index = $(this).index()
+      owl.trigger('to.owl.carousel', [index, 300])
+      currentImage.value = index + 1
+    })
+
+    owl.on('changed.owl.carousel', function (event) {
+      currentImage.value = event.item.index + 1 - event.item.count
+      if (currentImage.value < 1) currentImage.value += event.item.count
+    })
   })
 
-  // Sync thumbnail clicks with large image
-  $('.pt').on('click', function () {
-    const index = $(this).index()
-    owl.trigger('to.owl.carousel', [index, 300])
-    currentImage.value = index + 1
-  })
-
-  // Update active thumbnail when carousel changes
-  owl.on('changed.owl.carousel', function (event) {
-    currentImage.value = event.item.index + 1 - event.item.count
-    if (currentImage.value < 1) currentImage.value += event.item.count
-  })
+  console.log($)
+  console.log(typeof $.fn.owlCarousel)
 })
 
 const changeImage = (index) => {
@@ -277,9 +295,9 @@ const fetchRcmProduct = async () => {
     }
     const result = await response.json()
     recommendationProduct.value = result
-    console.log(recommendationProduct.value)
   }
 }
+const activeTab = ref('desc')
 
 watch(
   () => route.params.id,
@@ -438,16 +456,45 @@ watch(
             </div>
           </div>
           <div class="col-lg-12">
-            <div class="product__details__tab">
-              <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item">
-                  <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">Mô tả</a>
-                </li>
-              </ul>
-              <div class="tab-content">
-                <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                  <p v-html="product.moTa"></p>
-                </div>
+            <!-- Thay thế phần tab hiện tại bằng đoạn này -->
+            <ul class="nav nav-tabs" role="tablist">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  :class="{ active: activeTab === 'desc' }"
+                  href="#"
+                  @click.prevent="activeTab = 'desc'"
+                  >Mô tả</a
+                >
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  :class="{ active: activeTab === 'review' }"
+                  href="#"
+                  @click.prevent="activeTab = 'review'"
+                  >Đánh giá</a
+                >
+              </li>
+            </ul>
+            <div class="tab-content vh-100 overflow-auto">
+              <div
+                v-show="activeTab == 'desc'"
+                class="tab-pane"
+                :class="[activeTab == 'desc' ? 'active' : '']"
+                id="tabs-1"
+                role="tabpanel"
+              >
+                <p v-html="product.moTa"></p>
+              </div>
+              <div
+                v-show="activeTab == 'review'"
+                class="tab-pane"
+                :class="[activeTab == 'review' ? 'active' : '']"
+                id="tabs-2"
+                role="tabpanel"
+              >
+                <ReviewProductCombo :objectId="id" :isProduct="true" />
               </div>
             </div>
           </div>
@@ -488,11 +535,9 @@ watch(
               </div>
               <div class="product__item__text">
                 <h6>
-                  <router-link
-                    :to="`/product/${item.maSp}`"
-                    style="text-decoration-line: none"        
-                    >{{ item.tenSanPham }}</router-link
-                  >
+                  <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none">{{
+                    item.tenSanPham
+                  }}</router-link>
                 </h6>
                
                 <div style="color: red" class="product__price">{{ item.khoangGia }}</div>
@@ -506,9 +551,8 @@ watch(
     <!-- Product Details Section End -->
   </div>
 </template>
-  
-  
-  <style scoped>
+
+<style scoped>
 .carousel-item img {
   object-fit: cover;
   max-height: 150px;

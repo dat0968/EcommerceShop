@@ -8,8 +8,9 @@
     <!-- Breadcrumb trạng thái -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item active h5">Quản lý danh mục</li>
+        <li class="breadcrumb-item active h5"><strong>Quản lý danh mục</strong></li>
       </ol>
+      <hr />
     </nav>
     <!-- Chọn chế độ -->
     <div class="mb-3 d-flex align-items-center gap-3">
@@ -48,49 +49,100 @@
       </div>
     </div>
 
-    <!-- Chế độ xem chi tiết sản phẩm -->
-    <div v-show="focusMode === 'view'" class="col-md-12">
-      <div class="row mb-3">
-        <div class="col-md-3">
-          <label class="form-label">Lọc theo mã danh mục cha</label>
-          <select class="form-select" v-model="selectedMaDanhMucCha" @change="onFilterChange">
-            <option value="">Tất cả</option>
-            <option
-              v-for="item in optionsParentCategory"
-              :key="item.maDanhMucCha"
-              :value="item.maDanhMucCha"
-            >
-              {{ item.tenDanhMucCha }} {{ item.isActive ? '✔️' : '❌' }}
-            </option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Lọc theo mã danh mục con</label>
-          <select class="form-select" v-model="selectedMaDanhMucCon" @change="onFilterChange">
-            <option value="">Tất cả</option>
-            <option
-              v-for="item in optionsChildCategory"
-              :key="item.maDanhMucCon"
-              :value="item.maDanhMucCon"
-            >
-              {{ item.tenDanhMucCon }} {{ item.isActive ? '✔️' : '❌' }}
-            </option>
-          </select>
+    <!-- Bộ lọc danh mục -->
+    <div v-show="focusMode === 'view'" class="row">
+      <!-- Cột bộ lọc -->
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-light fw-bold"><i class="bi bi-funnel"></i> Bộ lọc</div>
+          <div class="card-body">
+            <details class="mb-3">
+              <summary class="form-label bg-light rounded p-1">
+                Danh mục cha (Đã chọn {{ selectedMaDanhMucCha.length }})
+              </summary>
+              <div class="border rounded p-1" style="max-height: 10em; overflow-y: auto">
+                <div
+                  v-for="item in optionsParentCategory"
+                  :key="item.maDanhMucCha"
+                  class="form-check"
+                >
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    :id="'parent-' + item.maDanhMucCha"
+                    :value="item.maDanhMucCha"
+                    v-model="selectedMaDanhMucCha"
+                    @change="onFilterChange"
+                  />
+                  <div
+                    class="form-check-label d-flex justify-content-between"
+                    :for="'parent-' + item.maDanhMucCha"
+                  >
+                    <span>{{ item.tenDanhMucCha }}</span>
+                    <span>{{ item.isActive ? '🟢' : '🔴' }}</span>
+                  </div>
+                </div>
+              </div>
+            </details>
+            <hr />
+            <details class="mb-3">
+              <summary class="form-label bg-light rounded p-1">
+                Danh mục con (Đã chọn {{ selectedMaDanhMucCon.length }})
+              </summary>
+              <div class="border rounded p-1" style="max-height: 10em; overflow-y: auto">
+                <div
+                  v-for="item in optionsChildCategory"
+                  :key="item.maDanhMucCon"
+                  class="form-check"
+                >
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    :id="'child-' + item.maDanhMucCon"
+                    :value="item.maDanhMucCon"
+                    v-model="selectedMaDanhMucCon"
+                    @change="onFilterChange"
+                  />
+
+                  <div
+                    class="form-check-label d-flex justify-content-between"
+                    :for="'child-' + item.maDanhMucCon"
+                  >
+                    <span>{{ item.tenDanhMucCon }}</span>
+                    <span>{{ item.isActive ? '🟢' : '🔴' }}</span>
+                  </div>
+                </div>
+              </div>
+            </details>
+            <button class="btn btn-outline-secondary w-100" @click="resetFilters">
+              <i class="bi bi-x-circle"></i> Xóa lọc
+            </button>
+          </div>
         </div>
       </div>
-      <table
-        id="datatableCategories"
-        class="table table-bordered table-striped"
-        style="width: 100%"
-      ></table>
+      <!-- Cột bảng dữ liệu -->
+      <div class="col-md-9">
+        <div class="card">
+          <div class="card-header text-center">
+            <h5>Danh sách danh mục</h5>
+          </div>
+          <div class="card-body">
+            <table
+              id="datatableCategories"
+              class="table table-bordered table-striped"
+              style="width: 100%"
+            ></table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Chế độ quản lý danh mục cha -->
-    <div v-show="focusMode === 'parent'" class="row">
-      <div class="col-lg-3 col-md-3 col-sm-12 position-relative">
-        <div class="card position-sticky start-0 top-5" style="margin-top: 5rem">
-          <div class="card-header">
-            {{ isEditParent ? 'Cập nhật danh mục cha' : 'Thêm danh mục cha' }}
+    <div v-show="focusMode === 'parent'" class="row mt-4">
+      <div class="col-lg-3 col-md-3 col-sm-12">
+        <div class="card">
+          <div class="card-header text-center">
+            <h5>{{ isEditParent ? 'Cập nhật danh mục cha' : 'Thêm danh mục cha' }}</h5>
           </div>
           <div class="card-body">
             <form @submit.prevent="onSubmitParent">
@@ -126,23 +178,27 @@
         </div>
       </div>
       <div class="col-md-9">
-        <div class="mt-4">
-          <h5>Danh sách danh mục cha</h5>
-          <table
-            id="datatableParent"
-            class="table table-bordered table-striped"
-            style="width: 100%"
-          ></table>
+        <div class="card">
+          <div class="card-header text-center">
+            <h5>Danh sách danh mục cha</h5>
+          </div>
+          <div class="card-body">
+            <table
+              id="datatableParent"
+              class="table table-bordered table-striped"
+              style="width: 100%"
+            ></table>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Chế độ quản lý danh mục con -->
-    <div v-show="focusMode === 'child'" class="row">
+    <div v-show="focusMode === 'child'" class="row mt-4">
       <div class="col-lg-3 col-md-3 col-sm-12 position-relative">
-        <div class="card position-sticky start-0 top-5" style="margin-top: 5rem">
-          <div class="card-header">
-            {{ isEditChild ? 'Cập nhật danh mục con' : 'Thêm danh mục con' }}
+        <div class="card">
+          <div class="card-header text-center">
+            <h5>{{ isEditChild ? 'Cập nhật danh mục con' : 'Thêm danh mục con' }}</h5>
           </div>
           <div class="card-body">
             <form @submit.prevent="onSubmitChild">
@@ -178,13 +234,17 @@
         </div>
       </div>
       <div class="col-md-9">
-        <div class="mt-4">
-          <h5>Danh sách danh mục con</h5>
-          <table
-            id="datatableChild"
-            class="table table-bordered table-striped"
-            style="width: 100%"
-          ></table>
+        <div class="card">
+          <div class="card-header text-center">
+            <h5>Danh sách danh mục con</h5>
+          </div>
+          <div class="card-body">
+            <table
+              id="datatableChild"
+              class="table table-bordered table-striped"
+              style="width: 100%"
+            ></table>
+          </div>
         </div>
       </div>
     </div>
@@ -215,8 +275,8 @@ export default {
       optionsParentCategory: [],
       optionsChildCategory: [],
       isLoading: true,
-      selectedMaDanhMucCha: '',
-      selectedMaDanhMucCon: '',
+      selectedMaDanhMucCha: [],
+      selectedMaDanhMucCon: [],
       isEditParent: false,
       isEditChild: false,
       formParent: {
@@ -240,12 +300,14 @@ export default {
   computed: {
     filteredCategories() {
       return this.listCategories.filter((x) => {
-        let matchCha = this.selectedMaDanhMucCha
-          ? x.maDanhMucCha == this.selectedMaDanhMucCha
-          : true
-        let matchCon = this.selectedMaDanhMucCon
-          ? x.maDanhMucCon == this.selectedMaDanhMucCon
-          : true
+        let matchCha =
+          !this.selectedMaDanhMucCha.length ||
+          this.selectedMaDanhMucCha.includes('') ||
+          this.selectedMaDanhMucCha.includes(x.maDanhMucCha)
+        let matchCon =
+          !this.selectedMaDanhMucCon.length ||
+          this.selectedMaDanhMucCon.includes('') ||
+          this.selectedMaDanhMucCon.includes(x.maDanhMucCon)
         return matchCha && matchCon
       })
     },
@@ -277,6 +339,9 @@ export default {
         '/categories/parents',
         ConfigsRequest.takeAuth(),
       )
+      if (ResponseAPI.handleNotificationAndIsFailResponse(resOptionParen)) {
+        return
+      }
       this.optionsParentCategory = resOptionParen.data
 
       const resOptionChild = await axiosConfig.getFromApi(
@@ -288,7 +353,10 @@ export default {
       this.reloadDataTableChild()
     },
     async getCategories() {
-      const res = await axiosConfig.getFromApi('/categories', ConfigsRequest.takeAuth())
+      const res = await axiosConfig.getFromApi(
+        '/categories/GetAllCategories',
+        ConfigsRequest.takeAuth(),
+      )
       this.listCategories = res.data
       this.reloadDataTable()
     },
@@ -309,8 +377,8 @@ export default {
           `/categories/parent/${item.maDanhMucCha}`,
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(response)) {
-          alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
+        if (ResponseAPI.handleNotificationAndIsFailResponse(response, true)) {
+          return
         } else {
           this.optionsParentCategory = this.optionsParentCategory.filter(
             (x) => x.maDanhMucCha !== item.maDanhMucCha,
@@ -331,8 +399,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
-          alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
           return
         }
         this.optionsParentCategory = this.optionsParentCategory.map((x) =>
@@ -349,8 +416,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
-          alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
           return
         }
         this.optionsParentCategory.push(res.data)
@@ -382,8 +448,7 @@ export default {
           `/categories/child/${item.maDanhMucCon}`,
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(response)) {
-          alert('Đã có dữ liệu liên kết với danh mục, xóa thất bại')
+        if (ResponseAPI.handleNotificationAndIsFailResponse(response, true)) {
           return
         }
         this.optionsChildCategory = this.optionsChildCategory.filter(
@@ -406,8 +471,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
-          alert('Đã có dữ liệu liên kết với danh mục, cập nhật thất bại')
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
           return
         }
         this.optionsChildCategory = this.optionsChildCategory.map((x) =>
@@ -426,8 +490,7 @@ export default {
           },
           ConfigsRequest.takeAuth(),
         )
-        if (ResponseAPI.handleNotification(res)) {
-          alert('Đã có dữ liệu liên kết với danh mục, thêm mới thất bại')
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
           return
         }
         this.optionsChildCategory.push(res.data)
@@ -640,13 +703,18 @@ export default {
         this.initDataTableChild()
       }
     },
+    resetFilters() {
+      this.selectedMaDanhMucCha = []
+      this.selectedMaDanhMucCon = []
+    },
   },
   watch: {
     selectedMaDanhMucCha() {
-      this.selectedMaDanhMucCon = ''
+      // this.selectedMaDanhMucCon = ''
       this.reloadDataTable()
     },
     selectedMaDanhMucCon() {
+      // this.selectedMaDanhMucCon = ''
       this.reloadDataTable()
     },
     optionsParentCategory() {
@@ -672,5 +740,11 @@ export default {
 .xp-contentbar[disabled] {
   pointer-events: none;
   opacity: 0.6;
+}
+select > option {
+  max-height: 10em;
+  overflow-y: auto;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

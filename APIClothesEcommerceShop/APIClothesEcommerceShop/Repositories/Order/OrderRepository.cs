@@ -12,7 +12,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
 {
     public class OrderRepository : IOrderRepository
     {
-        private readonly EcommerceShopContext db; 
+        private readonly EcommerceShopContext db;
         public OrderRepository(EcommerceShopContext db)
         {
             this.db = db;
@@ -214,11 +214,11 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     throw new Exception("Not found Order");
                 }
 
-                if(status.ToLower() != "chờ xác nhận")
+                if (status.ToLower() != "chờ xác nhận")
                 {
                     FindOrder.MaNv = MaNv;
                 }
-                if(status.ToLower() == "đã giao cho đơn vị vận chuyển")
+                if (status.ToLower() == "đã giao cho đơn vị vận chuyển")
                 {
                     FindOrder.BatDauGiao = DateTime.Now;
                 }
@@ -231,7 +231,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                             FindOrder.NgayNhan = DateTime.Now;
                         }
                     }
-                    if(FindOrder.NgayThanhToan == null)
+                    if (FindOrder.NgayThanhToan == null)
                     {
                         if (status.ToLower() == "đã thanh toán")
                         {

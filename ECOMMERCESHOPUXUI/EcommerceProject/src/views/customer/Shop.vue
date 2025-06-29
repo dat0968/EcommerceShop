@@ -27,7 +27,7 @@ const fetchBigCategories = async () => {
     throw new Error('Failed to fetch')
   }
   const result = await fetchAPI.json()
-  listCategories.value = result
+  listCategories.value = result.listBigCategory
 }
 const fetchAPIProducts = async () => {
   try {

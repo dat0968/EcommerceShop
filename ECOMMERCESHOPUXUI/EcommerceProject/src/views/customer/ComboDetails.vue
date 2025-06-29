@@ -99,7 +99,7 @@ function selectedvariant(productIndex, type, value) {
     (v) =>
       v.mauSac === (selectedVariants.value[productIndex].color || product.colors[0]) &&
       v.kichThuoc ===
-        (selectedVariants.value[productIndex].size || availableSizes.value[productIndex]?.[0])
+        (selectedVariants.value[productIndex].size || availableSizes.value[productIndex]?.[0]),
   )
   if (!variant || variant.soLuongTon <= 0) {
     Swal.fire('Lỗi', 'Biến thể này không có sẵn hoặc đã hết hàng!', 'error')
@@ -112,7 +112,7 @@ const OrginalPriceCombo = computed(() => {
     const selectedColor = selectedVariants.value[index].color
     const selectedSize = selectedVariants.value[index].size
     const variant = combo.variants.find(
-      (p) => p.kichThuoc == selectedSize && p.mauSac == selectedColor
+      (p) => p.kichThuoc == selectedSize && p.mauSac == selectedColor,
     )
     return variant.donGia * combo.quantity
   })
@@ -157,7 +157,7 @@ async function addToCart() {
         const selectedColor = selectedVariants.value[index]?.color
         const selectedSize = selectedVariants.value[index]?.size
         const variant = product.variants.find(
-          (v) => v.mauSac === selectedColor && v.kichThuoc === selectedSize
+          (v) => v.mauSac === selectedColor && v.kichThuoc === selectedSize,
         )
         return {
           maCtsp: variant?.maCtsp,
@@ -236,6 +236,20 @@ async function addToCart() {
                   <button style="height: 50px" href="#" class="cart-btn" @click.prevent="addToCart">
                     <span class="icon_bag_alt"></span> Thêm giỏ hàng
                   </button>
+                  <button style="margin-bottom: 14px" class="action-buttons">
+                    <a
+                      href="#"
+                      style="border-radius: 50%; width: 50px; height: 50px"
+                      class="action-btn"
+                      ><span class="icon_heart_alt"></span
+                    ></a>
+                    <a
+                      href="#"
+                      style="border-radius: 50%; width: 50px; height: 50px"
+                      class="action-btn"
+                      ><span class="icon_adjust-horiz"></span
+                    ></a>
+                  </button>
                   <div style="margin-bottom: 14px" class="action-buttons">
                     <a
                       href="#"
@@ -305,16 +319,177 @@ async function addToCart() {
           </div>
           <div class="col-lg-12">
             <div class="product__details__tab">
+              <!-- Thay thế phần tab hiện tại bằng đoạn này -->
               <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    :class="{ active: activeTab === 'desc' }"
+                    href="#"
+                    @click.prevent="activeTab = 'desc'"
+                    >Mô tả</a
+                  >
+                </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    :class="{ active: activeTab === 'review' }"
+                    href="#"
+                    @click.prevent="activeTab = 'review'"
+                    >Đánh giá</a
+                  >
                   <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">MÔ TẢ</a>
                 </li>
               </ul>
-              <div class="tab-content">
-                <div class="tab-pane active" id="tabs-1" role="tabpanel">
+              <div class="tab-content vh-100 overflow-auto">
+                <div
+                  v-show="activeTab == 'desc'"
+                  class="tab-pane"
+                  :class="[activeTab == 'desc' ? 'active' : '']"
+                  id="tabs-1"
+                  role="tabpanel"
+                >
                   <p>
                     {{ combo.description }}
                   </p>
+                </div>
+                <div
+                  v-show="activeTab == 'review'"
+                  class="tab-pane"
+                  :class="[activeTab == 'review' ? 'active' : '']"
+                  id="tabs-2"
+                  role="tabpanel"
+                >
+                  <ReviewProductCombo :objectId="comboId" :isProduct="false" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 text-center">
+              <div class="related__title">
+                <h5>RELATED PRODUCTS</h5>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-1.jpg">
+                  <div class="label new">New</div>
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-1.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="product__item__text">
+                  <h6><a href="#">Buttons tweed blazer</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 59.0</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-2.jpg">
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-2.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="product__item__text">
+                  <h6><a href="#">Flowy striped skirt</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 49.0</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-3.jpg">
+                  <div class="label stockout">out of stock</div>
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-3.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="product__item__text">
+                  <h6><a href="#">Cotton T-Shirt</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 59.0</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="product__item">
+                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-4.jpg">
+                  <ul class="product__hover">
+                    <li>
+                      <a href="img/product/related/rp-4.jpg" class="image-popup"
+                        ><span class="arrow_expand"></span
+                      ></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_heart_alt"></span></a>
+                    </li>
+                    <li>
+                      <a href="#"><span class="icon_bag_alt"></span></a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="product__item__text">
+                  <h6><a href="#">Slim striped pocket shirt</a></h6>
+                  <div class="rating">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                  </div>
+                  <div class="product__price">$ 59.0</div>
                 </div>
               </div>
             </div>
@@ -326,6 +501,122 @@ async function addToCart() {
     <!-- Combo Details Section End -->
   </div>
 </template>
+
+<script>
+import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
+import { ref, onMounted } from 'vue'
+import $ from 'jquery'
+import { useRoute } from 'vue-router'
+
+export default {
+  name: 'ComboDetails',
+  components: { ReviewProductCombo },
+  setup() {
+    const route = useRoute()
+    const comboId = route.params.id
+
+    const currentSlider = ref(1)
+    const quantity = ref(1)
+    const selectedVariants = ref([])
+
+    const combo = ref({
+      id: 1,
+      name: 'Combo Sản Phẩm Tốt',
+      image: '/images/combo.jpg',
+      price: 1500000,
+      originalPrice: 2000000,
+      description: 'Combo bao gồm các sản phẩm chất lượng cao với giá ưu đãi',
+      products: [
+        {
+          id: 1,
+          name: 'Sản phẩm 1',
+          image: '/images/product1.jpg',
+          price: 500000,
+          colors: ['Đỏ', 'Xanh', 'Vàng'],
+          sizes: ['S', 'M', 'L'],
+        },
+        {
+          id: 2,
+          name: 'Sản phẩm 2',
+          image: '/images/product2.jpg',
+          price: 700000,
+          colors: ['Đen', 'Trắng', 'Xám'],
+          sizes: ['M', 'L', 'XL'],
+        },
+        {
+          id: 3,
+          name: 'Sản phẩm 3',
+          image: '/images/product3.jpg',
+          price: 800000,
+          colors: ['Hồng', 'Tím', 'Cam'],
+          sizes: ['S', 'M', 'L'],
+        },
+      ],
+      details: '<p>Chi tiết về combo sản phẩm...</p>',
+    })
+
+    const formatPrice = (price) => {
+      return price.toLocaleString('vi-VN')
+    }
+
+    const changeImage = (index) => {
+      currentSlider.value = index
+      $('.product__details__pic__slider').trigger('to.owl.carousel', [index - 1, 300])
+    }
+
+    const selectVariant = (productIndex, type, value) => {
+      if (!selectedVariants.value[productIndex]) {
+        selectedVariants.value[productIndex] = {}
+      }
+      selectedVariants.value[productIndex][type] = value
+    }
+
+    const addToCart = () => {
+      console.log('Thêm vào giỏ hàng:', {
+        comboId: combo.value.id,
+        quantity: quantity.value,
+        variants: selectedVariants.value,
+      })
+    }
+
+    const activeTab = ref('desc')
+
+    onMounted(() => {
+      // Initialize Owl Carousel
+      const owl = $('.product__details__pic__slider').owlCarousel({
+        items: 1,
+        loop: true,
+        autoplay: false,
+        nav: false,
+        dots: true,
+        animateOut: 'fadeOut',
+        animateIn: 'fadeIn',
+      })
+
+      // Khởi tạo biến thể mặc định
+      combo.value.products.forEach((product, index) => {
+        selectedVariants.value[index] = {
+          color: product.colors[0],
+          size: product.sizes[0],
+        }
+      })
+    })
+
+    return {
+      comboId,
+      combo,
+      currentSlider,
+      quantity,
+      selectedVariants,
+      formatPrice,
+      changeImage,
+      selectVariant,
+      addToCart,
+      activeTab,
+    }
+  },
+}
+</script>
 
 <style scoped>
 .product__details__pic {

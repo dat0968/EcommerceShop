@@ -12,6 +12,7 @@ import insta3 from '@/assets/Customer/img/instagram/insta-3.jpg'
 import insta4 from '@/assets/Customer/img/instagram/insta-4.jpg'
 import insta5 from '@/assets/Customer/img/instagram/insta-5.jpg'
 import insta6 from '@/assets/Customer/img/instagram/insta-6.jpg'
+
 import { ref } from 'vue'
 const setBackgroundImages = () => {
   const elements = document.querySelectorAll('[data-setbg]')
@@ -542,4 +543,3 @@ onMounted(() => {
   }
 }
 </style>
-

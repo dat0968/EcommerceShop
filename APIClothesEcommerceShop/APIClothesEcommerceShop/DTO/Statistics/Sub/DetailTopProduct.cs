@@ -15,6 +15,7 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
             int soLuongTon,
             int donGia,
             string hinhAnh,
+            int soSao,
             bool? isActive)
         {
             MaCtsp = maCtsp;
@@ -24,6 +25,7 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
             SoLuongTon = soLuongTon;
             DonGia = donGia;
             HinhAnh = hinhAnh;
+            SoSao = soSao;
             IsActive = isActive;
         }
         public int MaCtsp { get; set; }
@@ -38,6 +40,7 @@ namespace APIClothesEcommerceShop.DTO.Statistics.Sub
 
         public int DonGia { get; set; }
         public string HinhAnh { get; set; } = string.Empty;
+        public int SoSao { get; set; }
         public bool? IsActive { get; set; }
     }
 }

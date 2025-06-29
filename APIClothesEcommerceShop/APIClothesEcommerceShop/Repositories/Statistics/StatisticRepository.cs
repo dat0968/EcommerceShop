@@ -111,9 +111,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         /// </summary>
         /// <param name="dataOrder"></param>
         /// <param name="dataProduct"></param>
-        /// <param name="dataCategory"></param>
         /// <returns></returns>
-        private static List<TopProduct> GetTopProducts(IEnumerable<Hoadon> dataOrder, IEnumerable<Sanpham> dataProduct, IEnumerable<Danhmuccha> dataCategory)
+        private static List<TopProduct> GetTopProducts(IEnumerable<Hoadon> dataOrder, IEnumerable<Sanpham> dataProduct)
         {
             // Tạo dictionary ánh xạ MaSp -> Tên danh mục cha
             var productCategoryDict = dataProduct
@@ -131,7 +130,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             // Gom nhóm theo MaSp (sản phẩm cha)
             var topProducts = allDetails
                 .Where(x => x.MaCtspNavigation != null)
-                .GroupBy(x => x.MaCtspNavigation!.MaSp) // ? Here has a !
+                .GroupBy(x => x.MaCtspNavigation!.MaSp)
                 .Select(g =>
                 {
                     var maSp = g.Key;
@@ -146,13 +145,14 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         {
                             var ctsp = ctspGroup.First().MaCtspNavigation;
                             return new DetailTopProduct(
-                                ctsp!.MaCtsp, // ? Here has a !
+                                ctsp!.MaCtsp,
                                 ctsp.MaSp,
                                 ctsp.KichThuoc,
                                 ctsp.MauSac,
                                 ctsp.SoLuongTon,
                                 ctsp.DonGia,
                                 ctsp.Hinhanhs?.FirstOrDefault()?.TenHinhAnh ?? string.Empty,
+                                ctsp.Cthoadons.Sum(cthd => cthd.DanhGia?.SoSao ?? 0),
                                 ctsp.IsActive
                             );
                         })
@@ -186,8 +186,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         {
             // Tạo dictionary để truy xuất nhanh các đơn hàng theo mã khách hàng
             var ordersByCustomer = dataOrder
-                .Where(x => x.MaKhNavigation != null)
-                .GroupBy(x => x.MaKh)
+                .Where(x => x != null && x.MaKhNavigation != null && x.MaKh.HasValue)
+                .GroupBy(x => x.MaKh.HasValue ? x.MaKh.Value : 0)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
 
             return ordersByCustomer.Select(kvp =>
@@ -645,23 +645,26 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 // Lấy dữ liệu cần thiết song song để tối ưu hiệu năng
                 var dataProduct = await GetSanphamsAsync();
                 var dataEmployee = await GetNhanviensAsync();
-                var dataCategory = await _context.Danhmucchas.Include(x => x.Chitietdanhmucs).AsNoTracking().ToListAsync();
                 var dataCombo = await _context.Combos
                     .Include(c => c.Cthoadons)
+                    .Include(c => c.DanhGias)
                     .Select(c => new
                     {
                         c.MaCombo,
                         c.TenCombo,
-                        //c.GiaCombo,
+                        // c.GiaCombo,
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
-                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong))
+                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong)),
+                        StarCount = c.DanhGias.Any() ? (int)c.DanhGias.Average(dg => dg.SoSao) : 0
                     })
                     .AsNoTracking().ToListAsync();
                 var dataOrder = await _context.Hoadons
                     .Include(h => h.Cthoadons)
                         .ThenInclude(h => h.MaCtspNavigation)
                             .ThenInclude(h => h.MaSpNavigation)
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.DanhGia)
                     .Include(h => h.MaKhNavigation)
                     .Include(h => h.MaCodeNavigation)
                     .AsNoTracking().ToListAsync();
@@ -679,7 +682,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     })
                     .AsNoTracking().ToListAsync();
 
-                var topProducts = GetTopProducts(dataOrder, dataProduct, dataCategory);
+                var topProducts = GetTopProducts(dataOrder, dataProduct);
                 var topCustomers = GetTopCustomers(dataOrder);
                 var topEmployees = GetTopEmployees(dataOrder, dataEmployee);
 
@@ -688,7 +691,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     {
                         ComboId = x.MaCombo,
                         ComboName = x.TenCombo ?? string.Empty,
-                        SalesCount = x.SalesCount
+                        SalesCount = x.SalesCount,
+                        Revenue = x.Revenue,
+                        StarCount = x.StarCount
                     }).ToList();
 
                 // Khởi tạo response
@@ -741,6 +746,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 data = await _context.Sanphams
                                 .Include(x => x.Chitietsanphams)
                                 .Include(x => x.Chitietdanhmucs)
+                                    .ThenInclude(ctdm => ctdm.MaDanhMucChaNavigation)
+                                .Include(x => x.Chitietdanhmucs)
+                                    .ThenInclude(ctdm => ctdm.MaDanhMucConNavigation)
                                 .AsNoTracking().ToListAsync();
             }
             catch (Exception ex)

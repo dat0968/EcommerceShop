@@ -87,7 +87,7 @@
               <ul>
                 <li><a href="#">Giới thiệu</a></li>
                 <li><a href="#">Blog</a></li>
-                <li><a href="#">Liên hệ</a></li>
+                <li><RouterLink to="/contactus">Liên hệ</RouterLink></li>
                 <li><a href="#">Câu hỏi thường gặp</a></li>
               </ul>
             </div>

@@ -11,6 +11,7 @@ import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
+import pathReplaceImg from '@/utils/processPathImg'
 
 export default {
   name: 'ProductTable',
@@ -40,6 +41,28 @@ export default {
           configsDt.defaultTdToShowDetail,
           { data: 'productId', title: 'Mã sản phẩm', className: 'text-center' },
           { data: 'productName', title: 'Tên sản phẩm' },
+          {
+            data: null,
+            title: 'Đánh giá',
+            render: function (data, type, row) {
+              const totalReviewStar =
+                row.detailTopProducts && Array.isArray(row.detailTopProducts)
+                  ? row.detailTopProducts.reduce((total, x) => total + x.soSao, 0)
+                  : 0
+              return `
+              <span>
+                ${Array.from(
+                  { length: totalReviewStar },
+                  () => `<span style="color: #ffc107">★</span>`,
+                ).join('')}
+                ${Array.from(
+                  { length: 5 - totalReviewStar },
+                  () => `<span style="color: #e4e5e9">★</span>`,
+                ).join('')}
+              </span>
+              `
+            },
+          },
           { data: 'categoryName', title: 'Tên danh mục' },
           { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
           { data: 'count', title: 'Số lượng bán', className: 'text-center' },
@@ -65,7 +88,7 @@ export default {
                                 <div class="col-sm-12 col-md-6 p-3 detail-item">
                                     <div class="row border p-1 rounded bg-light">
                                         <div class="col-4 d-flex align-items-center">
-                                            <img src="${detail.hinhAnh || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
+                                            <img src="${pathReplaceImg(undefined, 'HinhAnh/Avatar', detail.hinhAnh)}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
                                         </div>
                                         <div class="col-8">
                                             <div class="text-primary flex flex-flow-column justify-content-between"><span class="col-auto">Màu: ${detail.mauSac || '-'}</span> | <span class="col-auto">Size: ${detail.kichThuoc || '-'}</span></div>

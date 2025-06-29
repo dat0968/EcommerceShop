@@ -52,6 +52,9 @@ public partial class EcommerceShopContext : DbContext
     public virtual DbSet<Chitietcombo> Chitietcombos { get; set; }
     public virtual DbSet<Diachi> Diachis { get; set; }
     public virtual DbSet<Sanphamyeuthich> Sanphamyeuthiches { get; set; }
+    public virtual DbSet<DanhGia> DanhGias { get; set; }
+
+    // ? public virtual DbSet<BinhLuan> BinhLuans { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -442,7 +445,7 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("REFRESHTOKEN");
 
             entity.Property(e => e.Id)
-                //.ValueGeneratedNever()
+                // .ValueGeneratedNever()
                 .ValueGeneratedOnAdd()
                 .HasColumnName("ID");
             entity.Property(e => e.ExpiredAt).HasColumnType("datetime");
@@ -470,6 +473,24 @@ public partial class EcommerceShopContext : DbContext
 
             entity.Property(e => e.MaSp).HasColumnName("MaSP");
         });
+
+        /* ? modelBuilder.Entity<YeuThich>()
+            .HasOne(y => y.KhachHang)
+            .WithMany()
+            .HasForeignKey(y => y.MaKh)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<YeuThich>()
+            .HasOne(y => y.DanhGia)
+            .WithMany()
+            .HasForeignKey(y => y.IdDanhGia)
+            .OnDelete(DeleteBehavior.Cascade); */
+
+        /*  modelBuilder.Entity<DanhGia>(entity =>
+         {
+             entity.HasIndex(r => new { r.MaKh, r.MaSp }).IsUnique();
+             entity.HasIndex(r => new { r.MaKh, r.MaCombo }).IsUnique();
+         }); */
 
         OnModelCreatingPartial(modelBuilder);
     }
