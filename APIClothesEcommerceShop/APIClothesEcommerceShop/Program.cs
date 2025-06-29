@@ -326,7 +326,7 @@ logger.LogInformation("🚀 =================================");
 app.Run();
 
 #region Func tạo CConstantsL 
-void SeedDatabaes()
+void SeedDatabase()
 {
     using (var seedScope = app.Services.CreateScope())
     {

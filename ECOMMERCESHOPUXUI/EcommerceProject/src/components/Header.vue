@@ -89,8 +89,8 @@
                   <RouterLink to="/Shop">Cửa Hàng</RouterLink>
                 </li>
                 <li>
-                                    <RouterLink to='Profile'>Thông tin cá nhân</RouterLink>
-                                </li>
+                  <RouterLink to="/Profile">Thông tin cá nhân</RouterLink>
+                </li>
               </ul>
             </nav>
           </div>
@@ -100,47 +100,29 @@
                 <template v-if="!isLoggedIn">
                   <router-link to="/Login" class="text-primary">Đăng nhập</router-link>
                   <router-link to="/Register" class="text-primary">Đăng ký</router-link>
-<<<<<<< HEAD
-                </div>
-                <ul class="header__right__widget">
-                  <li>
-                    <a href="#"
-                      ><span class="icon_heart_alt"></span>
-                      <div class="tip">2</div>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#"
-                      ><span class="icon_bag_alt"></span>
-                      <div class="tip">2</div>
-                    </a>
-                  </li>
-                  <li>
-                    <NavigationUserReview />
-                  </li>
-                  <li>
-                    <WheelRandomCode />
-                  </li>
-                </ul>
-=======
                 </template>
                 <template v-else>
                   <a href="#" @click.prevent="handleLogout" class="text-danger">Đăng xuất</a>
                 </template>
->>>>>>> origin/master
               </div>
               <ul class="header__right__widget">
                 <li>
-                 <router-link to='/favoriteproduct'
-                    ><span class="icon_heart_alt"></span>
-                    <div class="tip">2</div>
-                 </router-link>
-                </li>
-                <li>
-                  <router-link to='/Cart'
-                    ><span class="icon_bag_alt"></span>
+                  <router-link to="/favoriteproduct">
+                    <span class="icon_heart_alt"></span>
                     <div class="tip">2</div>
                   </router-link>
+                </li>
+                <li>
+                  <router-link to="/Cart">
+                    <span class="icon_bag_alt"></span>
+                    <div class="tip">2</div>
+                  </router-link>
+                </li>
+                <li v-if="isLoggedIn">
+                  <NavigationUserReview />
+                </li>
+                <li>
+                  <WheelRandomCode />
                 </li>
               </ul>
             </div>
@@ -148,37 +130,18 @@
         </div>
         <div id="mobile-menu-wrap"></div>
       </div>
-      <!-- Offcanvas Menu End -->
-      <!-- Header Section End -->
     </header>
+    <!-- Header Section End -->
   </div>
-
 </template>
-
-<!-- <script>
-import { RouterLink } from 'vue-router'
-import NavigationUserReview from './ui/navigationUserReview.vue'
-import WheelRandomCode from './specicals/WheelRandomCode.vue'
-
-export default {
-  name: 'HeaderComponent',
-  components: { NavigationUserReview, WheelRandomCode },
-  props: {},
-  data() {
-    return {}
-  },
-  computed: {},
-  watch: {},
-  mounted() {},
-  methods: {},
-}
-</script> -->
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
 import { validateToken } from '@/utils/auth'
+import NavigationUserReview from './ui/navigationUserReview.vue'
+import WheelRandomCode from './specicals/WheelRandomCode.vue'
 
 const router = useRouter()
 const accessToken = ref(Cookies.get('accessToken'))
@@ -211,12 +174,9 @@ onMounted(() => {
   checkLogin()
 })
 </script>
+
 <style>
 .header__menu {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -228,20 +188,13 @@ onMounted(() => {
   padding: 0;
   margin: 0;
   display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
 }
 
 .header__menu li {
   margin: 0 15px;
-  margin: 0 15px;
 }
 
 .header__menu li a {
-  text-decoration: none;
-  color: #333;
   text-decoration: none;
   color: #333;
 }
