@@ -3,12 +3,13 @@ import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
 import $ from 'jquery'
 
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
+import { jwtDecode } from 'jwt-decode'
 import recommendationview from '@/components/RecommendationProduct/RecomendationProduct.vue'
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
@@ -23,6 +24,135 @@ const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const router = useRouter()
 const quantity = ref('1')
+function ReadToken(token) {
+  if (token) {
+    const decoded = jwtDecode(token);
+    return {
+      IdUser: decoded.sub,
+      Phone: decoded.PhoneNumber,
+      Name: decoded.FullName,
+      Role: decoded.role,
+      Exp: decoded.exp // Đơn vị giây
+    };
+  }
+  return null;
+}
+const token = Cookies.get('accessToken');
+const decodedToken = ReadToken(token);
+const idKhachHang = decodedToken ? decodedToken.IdUser : null;
+const isFavorited = ref(false)
+const checkFavoriteProduct = async () => {
+  if (!idKhachHang) return
+  try {
+    const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        maSp: id,
+        maKh: idKhachHang
+      })
+    })
+    const data = await response.json()
+    isFavorited.value = data.isFavorited
+  } catch (error) {
+    console.error('Lỗi khi kiểm tra sản phẩm yêu thích:', error)
+  }
+}
+
+const toggleFavoriteProduct = async () => {
+  if (!idKhachHang) {
+    Swal.fire({
+      title: 'Vui lòng đăng nhập để thêm sản phẩm yêu thích!',
+      icon: 'warning',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true
+    })
+    router.push('/Login')
+    return
+  }
+ 
+  try {
+    console.log(isFavorited.value)
+    if (isFavorited.value == true) {
+      const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          maKh: idKhachHang,
+          maSp: id,
+          
+        })
+
+      })
+      const data = await response.json()
+      if (response.ok) {
+        isFavorited.value = !isFavorited.value
+        Swal.fire({
+          title: 'Đã xóa khỏi danh sách yêu thích!',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      } else {
+        Swal.fire({
+          title: data.message || 'Đã xảy ra lỗi!',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      }
+    }
+    else if (isFavorited.value == false) {
+      const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          maSp: id,
+          maKh: idKhachHang
+        })
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        isFavorited.value = !isFavorited.value
+        Swal.fire({
+          title:  'Đã thêm vào danh sách yêu thích!',
+
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      } else {
+        Swal.fire({
+          title: data.message || 'Đã xảy ra lỗi!',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      }
+    }
+  } catch (error) {
+    Swal.fire({
+      title: 'Lỗi khi xử lý yêu thích!',
+      text: error.message,
+      icon: 'error',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true
+    })
+  }
+}
 
 // Call Api ProductDetails
 const fetchAPI = async () => {
@@ -51,7 +181,7 @@ const fetchAPI = async () => {
   }
   colors.value = [
     ...new Set(
-      product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== ''),
+      product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== '')
     ),
   ]
 
@@ -76,7 +206,7 @@ const originalPrice = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
   )
   return match ? match.donGia : 0
 })
@@ -86,7 +216,7 @@ const maxQuantity = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
   )
   quantity.value = '1'
   return match ? match.soLuongTon : 'Hết hàng'
@@ -123,7 +253,7 @@ const showMainImage = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
   )
   var maCtsp = match.maCtsp
   return allImages.value.findIndex((p) => p.maCtsp == maCtsp) + 1
@@ -133,39 +263,55 @@ watch(showMainImage, (newIndex) => {
   currentImage.value = newIndex
 })
 
-console.log(accessToken.value)
 onMounted(() => {
   fetchAPI()
   fetchRcmProduct()
+  checkFavoriteProduct()
   // Cuộn lên đầu trang
   window.scrollTo({
     top: 0,
     behavior: 'smooth', // Cuộn mượt mà
   })
 
-  // Initialize Owl Carousel
-  /* const owl = $('.product__details__pic__slider').owlCarousel({
-    items: 1,
-    loop: true,
-    autoplay: false,
-    nav: false,
-    dots: true,
-    animateOut: 'fadeOut',
-    animateIn: 'fadeIn',
+  // Đợi Vue render DOM xong
+  nextTick(() => {
+    const $carousel = $('.product__details__pic__slider')
+
+    if ($carousel.length === 0) {
+      console.warn('Không tìm thấy .product__details__pic__slider trong DOM')
+      return
+    }
+
+    // Kiểm tra xem owlCarousel có thực sự tồn tại chưa
+    if (typeof $carousel.owlCarousel !== 'function') {
+      console.error('owlCarousel is not a function. OwlCarousel chưa được attach vào jQuery')
+      return
+    }
+
+    const owl = $carousel.owlCarousel({
+      items: 1,
+      loop: true,
+      autoplay: false,
+      nav: false,
+      dots: true,
+      animateOut: 'fadeOut',
+      animateIn: 'fadeIn',
+    })
+
+    $('.pt').on('click', function () {
+      const index = $(this).index()
+      owl.trigger('to.owl.carousel', [index, 300])
+      currentImage.value = index + 1
+    })
+
+    owl.on('changed.owl.carousel', function (event) {
+      currentImage.value = event.item.index + 1 - event.item.count
+      if (currentImage.value < 1) currentImage.value += event.item.count
+    })
   })
 
-  // Sync thumbnail clicks with large image
-  $('.pt').on('click', function () {
-    const index = $(this).index()
-    owl.trigger('to.owl.carousel', [index, 300])
-    currentImage.value = index + 1
-  })
-
-  // Update active thumbnail when carousel changes
-  owl.on('changed.owl.carousel', function (event) {
-    currentImage.value = event.item.index + 1 - event.item.count
-    if (currentImage.value < 1) currentImage.value += event.item.count
-  }) */
+  console.log($)
+  console.log(typeof $.fn.owlCarousel)
 })
 
 const changeImage = (index) => {
@@ -207,7 +353,7 @@ const addToCart = async () => {
       const matched = product.value.productDetails.find(
         (p) =>
           p.mauSac?.toLowerCase() === selectedColor.value?.toLowerCase() &&
-          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase(),
+          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase()
       )
 
       const content = {
@@ -273,7 +419,7 @@ const fetchRcmProduct = async () => {
         headers: {
           'Content-Type': 'application/json',
         },
-      },
+      }
     )
 
     if (!response.ok) {
@@ -281,7 +427,6 @@ const fetchRcmProduct = async () => {
     }
     const result = await response.json()
     recommendationProduct.value = result
-    console.log(recommendationProduct.value)
   }
 }
 const activeTab = ref('desc')
@@ -344,7 +489,7 @@ watch(
     currentSlider.value = 1
     currentImage.value = 1
     await fetchAPI()
-  },
+  }
 )
 </script>
 <template>
@@ -355,76 +500,45 @@ watch(
         <div class="row">
           <div class="col-lg-6">
             <div class="product__details__pic">
-              <div
-                style="position: relative; margin-bottom: 20px"
-                class="product__details__slider__content"
-              >
+              <div style="position: relative; margin-bottom: 20px" class="product__details__slider__content">
                 <div class="product__details__pic__slider owl-carousel">
                   <div v-for="(image, index) in allImages" :key="index">
-                    <img
-                      v-if="index + 1 == currentImage"
-                      :data-hash="`product-${index}`"
-                      class="product__big__img"
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
-                      alt=""
-                    />
+                    <img v-if="index + 1 == currentImage" :data-hash="`product-${index}`" class="product__big__img"
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`" alt="" />
                   </div>
                 </div>
               </div>
               <!-- Thumbnail ảnh nhỏ nằm dưới ảnh lớn -->
-              <div
-                class="product__details__thumbnails d-flex justify-content-center col-lg-6"
-                style="max-width: 100%; display: flex; justify-content: center; margin: 20px"
-              >
+              <div class="product__details__thumbnails d-flex justify-content-center col-lg-6"
+                style="max-width: 100%; display: flex; justify-content: center; margin: 20px">
                 <div class="carousel slide w-100">
                   <div class="carousel-inner">
-                    <div
-                      v-for="(imageGroup, index) in slideChunks"
-                      :key="index"
-                      :class="['carousel-item', { active: currentSlider === index + 1 }]"
-                    >
+                    <div v-for="(imageGroup, index) in slideChunks" :key="index"
+                      :class="['carousel-item', { active: currentSlider === index + 1 }]">
                       <div class="d-flex gap-2 justify-content-center" style="width: 100%">
-                        <img
-                          v-for="(image, imageindex) in imageGroup"
-                          :key="imageindex"
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                            image.tenHinhAnh
-                          }`"
-                          class="img-fluid"
-                          :style="{ width: `${100 / imageGroup.length}%`, height: '100px' }"
-                          alt=""
-                          @click.prevent="changeImage(index * chunkSize + imageindex + 1)"
-                        />
+                        <img v-for="(image, imageindex) in imageGroup" :key="imageindex" :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh
+                          }`" class="img-fluid" :style="{ width: `${100 / imageGroup.length}%`, height: '100px' }"
+                          alt="" @click.prevent="changeImage(index * chunkSize + imageindex + 1)" />
                       </div>
                     </div>
                   </div>
 
-                  <button
-                    @click="prevImage"
-                    class="carousel-control-prev"
-                    type="button"
-                    style="
+                  <button @click="prevImage" class="carousel-control-prev" type="button" style="
                       width: 40px;
                       height: 40px;
                       top: 50%;
                       transform: translateY(-50%);
                       background-color: gray;
-                    "
-                  >
+                    ">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                   </button>
-                  <button
-                    @click="nextImage"
-                    class="carousel-control-next"
-                    type="button"
-                    style="
+                  <button @click="nextImage" class="carousel-control-next" type="button" style="
                       width: 40px;
                       height: 40px;
                       top: 50%;
                       transform: translateY(-50%);
                       background-color: gray;
-                    "
-                  >
+                    ">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                   </button>
                 </div>
@@ -452,7 +566,10 @@ watch(
                 </button>
                 <ul>
                   <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
+                    <a href="#" @click="toggleFavoriteProduct()">
+                      <span :class="[isFavorited.value ? 'icon_heart' : 'icon_heart_alt']"
+                        style="color: red; font-size: 20px; transition: 0.3s"></span>
+                    </a>
                   </li>
                   <li>
                     <a href="#"><span class="icon_adjust-horiz"></span></a>
@@ -464,13 +581,9 @@ watch(
                   <li style="display: flex; align-items: center" v-if="colors.length > 0">
                     <span style="min-width: 120px">Màu:</span>
                     <div class="color__checkbox" style="display: flex; gap: 8px">
-                      <button
-                        v-for="(color, index) in colors"
-                        :key="index"
-                        :class="['btn', 'btn-light', { active: selectedColor === color }]"
-                        @click="selectColor(color)"
-                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
-                      >
+                      <button v-for="(color, index) in colors" :key="index"
+                        :class="['btn', 'btn-light', { active: selectedColor === color }]" @click="selectColor(color)"
+                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500">
                         {{ color }}
                       </button>
                     </div>
@@ -478,13 +591,9 @@ watch(
                   <li style="display: flex; align-items: center" v-if="sizes.length > 0">
                     <span style="min-width: 120px">Kích thước:</span>
                     <div class="size__checkbox" style="display: flex; gap: 8px">
-                      <button
-                        v-for="(size, index) in sizes"
-                        :key="index"
-                        :class="['btn', 'btn-light', { active: selectedSize === size }]"
-                        @click="selectSize(size)"
-                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
-                      >
+                      <button v-for="(size, index) in sizes" :key="index"
+                        :class="['btn', 'btn-light', { active: selectedSize === size }]" @click="selectSize(size)"
+                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500">
                         {{ size }}
                       </button>
                     </div>
@@ -590,11 +699,13 @@ watch(
   </div>
 </template>
 
+
 <style scoped>
 .carousel-item img {
   object-fit: cover;
   max-height: 150px;
 }
+
 /* Slider container */
 .product__details__pic__slider {
   position: relative;
@@ -658,13 +769,17 @@ watch(
   width: 100%;
   height: 500px;
 }
+
 .product__details__pic__left .pt img {
-  width: 100px; /* Hoặc điều chỉnh kích thước phù hợp */
+  width: 100px;
+  /* Hoặc điều chỉnh kích thước phù hợp */
   height: 100px;
-  object-fit: cover; /* Đảm bảo ảnh không bị méo */
+  object-fit: cover;
+  /* Đảm bảo ảnh không bị méo */
   border-radius: 5px;
   margin-bottom: 10px;
 }
+
 .btn.active {
   background-color: #4a90e2 !important;
   color: white !important;

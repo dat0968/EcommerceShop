@@ -115,7 +115,7 @@
               }}</span>
             </td>
             <td>{{ customer.gioiTinh }}</td>
-            <td>{{ customer.ngaySinh ? formatDate(customer.ngaySinh) : '' }}</td>
+          
             <td>{{ customer.sdt }}</td>
             <td>{{ customer.email }}</td>
             <td>
@@ -1394,7 +1394,7 @@ tbody tr:hover {
 main.table {
   width: 100%;
   height: 90vh;
-  background: url('@/assets/images/html_table.jpg') center / cover;
+  /* background: url('@/assets/images/html_table.jpg') center / cover; */
   background-color: #fff5;
   backdrop-filter: blur(7px);
   box-shadow: 0 0.4rem 0.8rem #0005;

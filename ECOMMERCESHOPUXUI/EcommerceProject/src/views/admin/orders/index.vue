@@ -289,6 +289,27 @@ const filteredStatusOptions = computed(() => {
     return statusOrders.value
   }
 })
+
+const exportOrder = async (order) => {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid == false) {
+    router.push('/Login')
+    return
+  }
+  accessToken.value = validatetoken.newAccessToken
+  axios.get(getUrlAPI.value + `/api/Orders/xuat-pdf/${order.maHd}`, {
+  headers: { Authorization: `Bearer ${accessToken.value}` },
+  responseType: 'blob'
+}).then((res) => {
+  const blob = new Blob([res.data], { type: 'application/pdf' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `HoaDon_${order.maHd}.pdf`
+  link.click()
+})
+
+}
 </script>
 
 <template>
@@ -392,6 +413,12 @@ const filteredStatusOptions = computed(() => {
                 :data-bs-target="`#orderDetailModal_${order.maHd}`"
               >
                 <i class="fas fa-eye"></i>
+              </button>
+              <button
+                @click="exportOrder(order)"
+                class="btn btn-sm btn-danger me-1"
+              >
+                <i class="fas fa-file-download"></i>
               </button>
               <detailsOrderModal :Order="order" @close="fetchOrders" />
             </td>

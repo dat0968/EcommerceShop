@@ -1,5 +1,9 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import Cookies from 'js-cookie'
+import Swal from 'sweetalert2'
+import { jwtDecode } from 'jwt-decode'
+import router from '@/router'
 import category1 from '@/assets/Customer/img/categories/category-1.jpg'
 import category2 from '@/assets/Customer/img/categories/category-2.jpg'
 import category3 from '@/assets/Customer/img/categories/category-3.jpg'
@@ -12,9 +16,9 @@ import insta3 from '@/assets/Customer/img/instagram/insta-3.jpg'
 import insta4 from '@/assets/Customer/img/instagram/insta-4.jpg'
 import insta5 from '@/assets/Customer/img/instagram/insta-5.jpg'
 import insta6 from '@/assets/Customer/img/instagram/insta-6.jpg'
-import { ref } from 'vue'
 import TestCodeQr from '@/components/tests/TestCodeQr.vue'
 import CompareProduct from '@/components/specicals/CompareProduct.vue'
+const favoriteStatus = ref({})
 const setBackgroundImages = () => {
   const elements = document.querySelectorAll('[data-setbg]')
   elements.forEach((element) => {
@@ -68,6 +72,135 @@ const setBackgroundImages = () => {
     }
   })
 }
+function ReadToken(token) {
+  if (token) {
+    const decoded = jwtDecode(token)
+    return {
+      IdUser: decoded.sub,
+      Phone: decoded.PhoneNumber,
+      Name: decoded.FullName,
+      Role: decoded.role,
+      Exp: decoded.exp, // Đơn vị giây
+    }
+  }
+  return null
+}
+const token = Cookies.get('accessToken')
+const decodedToken = ReadToken(token)
+const idKhachHang = decodedToken ? decodedToken.IdUser : null
+const isFavorited = ref(false)
+console.log(isFavorited.value)
+const checkFavoriteProduct = async (maSp) => {
+  if (!idKhachHang) return
+  try {
+    const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        maSp: maSp,
+        maKh: idKhachHang,
+      }),
+    })
+    const data = await response.json()
+    isFavorited.value = data
+  } catch (error) {
+    console.error('Lỗi khi kiểm tra sản phẩm yêu thích:', error)
+  }
+}
+
+const toggleFavoriteProduct = async (maSp) => {
+  if (!idKhachHang) {
+    Swal.fire({
+      title: 'Vui lòng đăng nhập để thêm sản phẩm yêu thích!',
+      icon: 'warning',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+    router.push('/Login')
+    return
+  }
+
+  try {
+    if (isFavorited.value == true) {
+      const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          maKh: idKhachHang,
+          maSp: maSp,
+        }),
+      })
+      const data = await response.json()
+      if (response.ok) {
+        isFavorited.value = !isFavorited.value
+
+        Swal.fire({
+          title: 'Đã xóa khỏi danh sách yêu thích!',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+      } else {
+        Swal.fire({
+          title: data.message || 'Đã xảy ra lỗi!',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+      }
+    } else if (isFavorited.value == false) {
+      const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          maSp: maSp,
+          maKh: idKhachHang,
+        }),
+      })
+
+      const data = await response.json()
+      if (response.ok) {
+        isFavorited.value = !isFavorited.value
+
+        Swal.fire({
+          title: 'Đã thêm vào danh sách yêu thích!',
+
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+      } else {
+        Swal.fire({
+          title: data.message || 'Đã xảy ra lỗi!',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true,
+        })
+      }
+    }
+  } catch (error) {
+    Swal.fire({
+      title: 'Lỗi khi xử lý yêu thích!',
+      text: error.message,
+      icon: 'error',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true,
+    })
+  }
+}
+
 const getUrlAPI = ref(`https://localhost:7217/api`)
 const ListNewProducts = ref([])
 const ListBestSellerProducts = ref([])
@@ -118,6 +251,7 @@ onMounted(() => {
   setBackgroundImages(), fetchAPINewProduts()
   fetchAPIBestSellerProduts()
   fetchAPIHotProduts()
+  //checkFavoriteProduct()
 })
 </script>
 <template>
@@ -242,7 +376,12 @@ onMounted(() => {
                     ></a>
                   </li>
                   <li>
-                    <a href="#"><span class="icon_heart_alt"></span></a>
+                    <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
+                      <span
+                        :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
+                        style="color: red; font-size: 20px; transition: 0.3s"
+                      ></span>
+                    </a>
                   </li>
                   <li>
                     <a href="#"><span class="icon_bag_alt"></span></a>

@@ -138,11 +138,11 @@ public class CustomerRepository : ICustomerRepository
             return new ValidationResult(false, "Trường HinhDaiDien là bắt buộc");
 
         // Validate tuổi (không dưới 10 tuổi)
-        int age = DateTime.Now.Year - customerDto.NgaySinh.Year;
+        int age = DateTime.Now.Year - customerDto.NgaySinh.Value.Year;
 
         // Kiểm tra xem ngày sinh nhật trong năm nay đã qua chưa
-        if (DateTime.Now.Month < customerDto.NgaySinh.Month ||
-            (DateTime.Now.Month == customerDto.NgaySinh.Month && DateTime.Now.Day < customerDto.NgaySinh.Day))
+        if (DateTime.Now.Month < customerDto.NgaySinh?.Month ||
+            (DateTime.Now.Month == customerDto.NgaySinh?.Month && DateTime.Now.Day < customerDto.NgaySinh?.Day))
         {
             age--; // Giảm 1 tuổi nếu ngày sinh nhật trong năm nay chưa đến
         }
@@ -206,7 +206,7 @@ public class CustomerRepository : ICustomerRepository
         {
             HoTen = customerDto.HoTen,
             GioiTinh = customerDto.GioiTinh,
-            NgaySinh = DateOnly.FromDateTime(customerDto.NgaySinh),
+            NgaySinh = DateOnly.FromDateTime(customerDto.NgaySinh.Value),
             DiaChi = customerDto.DiaChi,
             Cccd = customerDto.CCCD,
             Sdt = customerDto.SDT,
@@ -333,10 +333,10 @@ public class CustomerRepository : ICustomerRepository
         if (customerDto.NgaySinh != DateTime.MinValue)
         {
             var today = DateTime.Today;
-            var birthDate = customerDto.NgaySinh.Date;
-            var age = today.Year - birthDate.Year;
+            var birthDate = customerDto.NgaySinh?.Date;
+            var age = today.Year - birthDate?.Year;
 
-            if (birthDate.AddYears(age) > today)
+            if (birthDate?.AddYears((int)age) > today)
             {
                 age--;
             }
@@ -372,7 +372,7 @@ public class CustomerRepository : ICustomerRepository
         existingCustomer.GioiTinh = string.IsNullOrEmpty(customerDto.GioiTinh) ? existingCustomer.GioiTinh : customerDto.GioiTinh;
 
         if (customerDto.NgaySinh != DateTime.MinValue)
-            existingCustomer.NgaySinh = DateOnly.FromDateTime(customerDto.NgaySinh);
+            existingCustomer.NgaySinh = DateOnly.FromDateTime((DateTime)customerDto.NgaySinh);
 
         existingCustomer.DiaChi = string.IsNullOrEmpty(customerDto.DiaChi) ? existingCustomer.DiaChi : customerDto.DiaChi;
         existingCustomer.Cccd = string.IsNullOrEmpty(customerDto.CCCD) ? existingCustomer.Cccd : customerDto.CCCD;

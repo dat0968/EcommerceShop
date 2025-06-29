@@ -191,7 +191,13 @@ const handleLogin = async () => {
                           <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
                         </span>
                       </div>
-                     
+                     <div class="form-row">
+                        <div class="form-group col-12 text-center">
+                          <label class="forgot-psw">
+                            <router-link to="/ForgotPasswordStaff">Quên mật khẩu</router-link>
+                          </label>
+                        </div>
+                      </div>
                       <button type="submit" class="btn btn-primary btn-rounded btn-lg btn-block">
                         Đăng nhập
                       </button>

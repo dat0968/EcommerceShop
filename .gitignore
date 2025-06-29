@@ -10,3 +10,10 @@ APIClothesEcommerceShop/APIClothesEcommerceShop/note.txt
 ECOMMERCESHOPUXUI/EcommerceProject/package-lock.json
 /ECOMMERCESHOPUXUI/EcommerceProject/package-lock.json
 APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/HinhAnh/Reviews
+APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/AnhKhachHang
+APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/HinhAnh/AnhCombo
+APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/HinhAnh/Products
+APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/images/chat
+APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/media/chat
+*node_modules
+*package-lock.json

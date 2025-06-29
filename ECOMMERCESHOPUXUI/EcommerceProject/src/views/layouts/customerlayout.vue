@@ -6,7 +6,6 @@ import 'bootstrap'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import 'jquery-ui-dist/jquery-ui.css'
 import 'magnific-popup/dist/magnific-popup.css'
-import 'owl.carousel/dist/assets/owl.carousel.min.css'
 import 'slicknav/dist/slicknav.min.css'
 import '../../assets/Customer/css/elegant-icons.css'
 import '../../assets/Customer/css/style.css'
@@ -22,6 +21,7 @@ import '../../assets/Customer/js/jquery.slicknav'
 import 'owl.carousel'
 import 'jquery.nicescroll'
 import '../../assets/Customer/js/main.js'
+// import 'owl.carousel/dist/assets/owl.carousel.min.css'
 </script>
 <template>
   <div>

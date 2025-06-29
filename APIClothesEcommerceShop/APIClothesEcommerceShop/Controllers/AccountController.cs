@@ -1,16 +1,16 @@
-﻿using APIClothesEcommerceShop.DTO;
-using APIClothesEcommerceShop.DTO.Account;
-using APIClothesEcommerceShop.Models;
-using APIClothesEcommerceShop.Repositories.Account;
-using APIClothesEcommerceShop.Repositories.HashPassword;
-using APIClothesEcommerceShop.Repositories.Token;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net.Mail;
-using System.Security.Claims;
+﻿    using APIClothesEcommerceShop.DTO;
+    using APIClothesEcommerceShop.DTO.Account;
+    using APIClothesEcommerceShop.Models;
+    using APIClothesEcommerceShop.Repositories.Account;
+    using APIClothesEcommerceShop.Repositories.HashPassword;
+    using APIClothesEcommerceShop.Repositories.Token;
+    using Microsoft.AspNetCore.Authentication;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+    using System;
+    using System.IdentityModel.Tokens.Jwt;
+    using System.Net.Mail;
+    using System.Security.Claims;
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -35,7 +35,6 @@ namespace APIClothesEcommerceShop.Controllers
         {
             return await _accountRepository.Register(model);
         }
-
         /// <summary>
         /// 
         /// </summary>
@@ -120,7 +119,6 @@ namespace APIClothesEcommerceShop.Controllers
             await _accountRepository.LoginGoogle();
         }
 
-
         [HttpGet("GoogleResponse")]
         public async Task<IActionResult> GoogleResponse()
         {
@@ -156,11 +154,26 @@ namespace APIClothesEcommerceShop.Controllers
             return await _accountRepository.SendVerificationCode(email);
         }
 
-
         [HttpGet("VerifyEmail")]
         public async Task<IActionResult> VerifyEmail(string email, string code)
         {
             return await _accountRepository.VerifyEmail(email, code);
+        }
+        [HttpPost("MobileGoogleLogin")]
+        public async Task<IActionResult> MobileGoogleLogin([FromBody] MobileGoogleLoginDTO model)
+        {
+            return await _accountRepository.MobileGoogleLogin(model);
+        }
+        [HttpGet("LoginGoogleCustom")]
+        public async Task LoginGoogleCustom(string redirectUri = null)
+        {
+            await _accountRepository.LoginGoogleCustom(redirectUri);
+        }
+
+        [HttpGet("GoogleResponseCustom")]
+        public async Task<IActionResult> GoogleResponseCustom()
+        {
+            return await _accountRepository.GoogleResponseCustom();
         }
     }
 }

@@ -8,6 +8,7 @@ import EditProductModel from '../products/edit.vue'
 import DetailProductModel from '../products/details.vue'
 import Swal from 'sweetalert2'
 import Cookies from 'js-cookie'
+import axios from 'axios'
 const search = ref('')
 const categoryBigSelected = ref('')
 const categorySmallSelected = ref('')
@@ -21,7 +22,7 @@ const listSmallCategories = ref([])
 const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const loading = ref(false)
-const readToken = ref()
+const readToken = ref({})
 const roleUser = ref('')
 const router = useRouter()
 const fetchAPICategories = async () => {
@@ -152,6 +153,37 @@ async function RemoveProducts(productid) {
     console.log(error)
   }
 }
+
+async function ExportExcel() {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid == false) {
+    router.push('/Login')
+    return
+  }
+  accessToken.value = validatetoken.newAccessToken
+  axios
+    .get(getUrlAPI.value + '/api/Products/xuat-excel', {
+      headers: {
+        Authorization: `Bearer ${accessToken.value}`,
+      },
+      responseType: 'blob',
+    })
+    .then((response) => {
+      //Chuyển Blod file thành URL để trình duyệt tải về
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      //Khi người dùng tải về, trình duyệt sẽ lưu file với tên này.
+      link.setAttribute('download', 'DanhSachSanPham.xlsx')
+      //Thêm thẻ vào trang để có thể gọi click().
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    })
+    .catch((error) => {
+      console.error('Tải file thất bại:', error)
+    })
+}
 </script>
 <template>
   <div class="container mt-4">
@@ -161,7 +193,7 @@ async function RemoveProducts(productid) {
     </div>
     <!-- Bộ lọc và tìm kiếm -->
     <div class="row g-3 mb-3">
-      <div class="col-md-4">
+      <div class="col-md-3">
         <input
           style="background-color: white"
           v-model="search"
@@ -171,7 +203,7 @@ async function RemoveProducts(productid) {
           placeholder="Tìm kiếm sản phẩm..."
         />
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <select @change="filterProducts()" v-model="categoryBigSelected" class="form-select">
           <option value="">Tất cả danh mục</option>
           <option
@@ -183,12 +215,15 @@ async function RemoveProducts(productid) {
           </option>
         </select>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
         <select @change="filterProducts()" v-model="sortByPrice" class="form-select">
           <option value="">Sắp xếp theo...</option>
           <option value="desc">Khoảng giá (giảm dần)</option>
           <option value="asc">Khoảng giá (tăng dần)</option>
         </select>
+      </div>
+      <div class="col-md-3">
+        <button type="button" class="btn btn-danger" @click="ExportExcel()">Xuất Excel</button>
       </div>
     </div>
     <!-- Tiêu đề phụ và nút thêm -->
@@ -279,7 +314,11 @@ async function RemoveProducts(productid) {
                 :listBigCategories="listBigCategories"
                 :listSmallCategories="listSmallCategories"
               />
-              <button v-if="roleUser.toLowerCase() == 'admin'" @click="RemoveProducts(product.maSp)" class="btn btn-sm btn-danger">
+              <button
+                v-if="roleUser.toLowerCase() == 'admin'"
+                @click="RemoveProducts(product.maSp)"
+                class="btn btn-sm btn-danger"
+              >
                 Xóa
               </button>
             </td>

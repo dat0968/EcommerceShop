@@ -1,4 +1,6 @@
-﻿using APIClothesEcommerceShop.Repositories.Home;
+﻿using APIClothesEcommerceShop.DTO.Category.CategoryParent;
+using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.Repositories.Home;
 using APIClothesEcommerceShop.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -65,6 +67,28 @@ namespace APIClothesEcommerceShop.Controllers
             catch (Exception ex)
             {
                 throw new Exception("Error", ex);
+            }
+        }
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            try
+            {
+                var categories = await homeRepository.GetPublicCategories();
+                return Ok(new ResponseAPI<List<CategoryParentResponseDTO>>
+                {
+                    Success = true,
+                    Message = "Lấy danh mục thành công",
+                    Data = categories
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ResponseAPI<string>
+                {
+                    Success = false,
+                    Message = ex.Message
+                });
             }
         }
     }
