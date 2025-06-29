@@ -115,7 +115,7 @@
               }}</span>
             </td>
             <td>{{ customer.gioiTinh }}</td>
-            <td>{{ customer.ngaySinh ? formatDate(customer.ngaySinh) : '' }}</td>
+          
             <td>{{ customer.sdt }}</td>
             <td>{{ customer.email }}</td>
             <td>

@@ -5,7 +5,6 @@
       <div class="input-group" style="height: 40px">
         <input type="search" placeholder="Tìm kiếm..." v-model="searchQuery" @input="searchTable" />
       </div>
-
       <div class="export__file">
         <label for="export-file" class="export__file-btn" title="Xuất File"></label>
         <input type="checkbox" id="export-file" v-model="showExportOptions" />

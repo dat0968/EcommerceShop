@@ -1,4 +1,4 @@
-using APIClothesEcommerceShop.Data;
+﻿using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.Repositories.Cart;
 using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Category;
@@ -38,6 +38,7 @@ using APIClothesEcommerceShop.Repositories.Address;
 using QuestPDF.Infrastructure;
 using APIClothesEcommerceShop.Repositories.FavoriteProduct;
 using APIClothesEcommerceShop.Repositories.Combos;
+using APIClothesEcommerceShop.Controllers;
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
@@ -63,7 +64,6 @@ builder.Services.AddDbContext<EcommerceShopContext>(options =>
 // Add services to the container.
 builder.Services.AddControllers(options =>
 {
-    // Vô hiệu hóa validate tự động để tránh thông báo lỗi mặc định
     options.ModelValidatorProviders.Clear();
 });
 
@@ -89,6 +89,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", securitySchema);
 
+    #region Format thÃªm comment lÃªn mÃ´i action
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
@@ -110,6 +111,11 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyOrigin()
               .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        //ops.WithOrigins("http://localhost:8080", "http://192.168.1.150:8080", "http://localhost:5173") // Thêm IP nội bộ
+        //   .AllowAnyHeader()
+        //   .AllowAnyMethod()
+        //   .AllowCredentials()
+        //   .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
 
@@ -311,7 +317,6 @@ logger.LogInformation("💡 Note: Same APIs available on both ports");
 logger.LogInformation("🚀 =================================");
 
 app.Run();
-
 void SeedDatabase()
 {
     using (var seedScope = app.Services.CreateScope())
@@ -327,3 +332,4 @@ void SeedDatabase()
         }
     }
 }
+#endregion

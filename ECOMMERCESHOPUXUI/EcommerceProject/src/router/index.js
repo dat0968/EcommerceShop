@@ -1,4 +1,4 @@
-// Cấu hình router được sửa lỗi
+
 import { createRouter, createWebHistory } from 'vue-router'
 import LayoutCustomer from '../views/layouts/customerlayout.vue'
 import LayoutAdmin from '../views/layouts/adminlayout.vue'
@@ -33,6 +33,8 @@ import ContactUs from '@/views/customer/ContactUs.vue'
 import error from '../views/error/Error.vue'
 import Cookies from 'js-cookie'
 import { decodeToken, validateToken } from '@/utils/auth'
+import CustomerChat from '../views/customer/CustomerChat.vue'
+import StaffChat from '../views/admin/chat/StaffChat.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -50,7 +52,9 @@ const router = createRouter({
         { path: 'order', name: 'order', component: order },
         { path: 'review', name: CustomerReview, component: CustomerReview },
         { path: 'contactus', name: ContactUs, component: ContactUs },
-        { path: 'favoriteproduct', name: 'favoriteproduct', component: FavoriteProduct },    
+        { path: 'favoriteproduct', name: 'favoriteproduct', component: FavoriteProduct },   
+        {path: 'chat', name: 'CustomerChat', component: CustomerChat},
+        {path: 'chat/:id', name: 'CustomerChatDetail', component: CustomerChat}, 
       ],
     },
     {
@@ -67,6 +71,8 @@ const router = createRouter({
         { path: 'customer', name: 'CustomerManagement', component: customerManagement },
         { path: 'staff', name: 'StaffManagement', component: staffManagement },
         { path: 'coupon', name: 'couponManagement', component: couponManagement },
+        {path: 'chat', name: 'StaffChat', component: StaffChat},
+        {path: 'chat/:id', name: 'StaffChatDetail', component: StaffChat},
       ],
     },
     { path: '/VNPAYresponse/:orderId/:total', name: 'VNPAYresponse', component: VNPAYresponse },

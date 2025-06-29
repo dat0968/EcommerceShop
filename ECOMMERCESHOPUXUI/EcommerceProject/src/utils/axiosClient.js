@@ -9,6 +9,14 @@ const API_PATHS = [
   'https://localhost:7217/api', // Cái này là path https của API
   'http://localhost:5031/api', // Cái này là path http của API
 ]
+// Base Axios Client
+const axiosClient = axios.create({
+  baseURL: 'https://localhost:7217/api', // Thay bằng base URL của API bạn
+  timeout: 500000, // Giới hạn timeout (ms)
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
 
 // #region [Hàm kiểm tra endpoint khả dụng]
 async function detectAvailableApi(paths = API_PATHS) {
@@ -53,12 +61,6 @@ async function detectAvailableApi(paths = API_PATHS) {
 }
 // #endregion
 
-// #region [Khởi tạo axiosClient với baseURL tạm thời]
-const axiosClient = axios.create({
-  baseURL: localStorage.getItem('apiBaseUrl') ?? API_PATHS[0],
-  timeout: 500000,
-})
-// #endregion
 
 // Hàm khởi tạo baseURL động
 export async function initApiBaseUrl() {

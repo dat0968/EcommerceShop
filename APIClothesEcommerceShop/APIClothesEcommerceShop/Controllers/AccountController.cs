@@ -167,6 +167,16 @@ namespace APIClothesEcommerceShop.Controllers
         {
             return await _accountRepository.MobileGoogleLogin(model);
         }
-        
+        [HttpGet("LoginGoogleCustom")]
+        public async Task LoginGoogleCustom(string redirectUri = null)
+        {
+            await _accountRepository.LoginGoogleCustom(redirectUri);
+        }
+
+        [HttpGet("GoogleResponseCustom")]
+        public async Task<IActionResult> GoogleResponseCustom()
+        {
+            return await _accountRepository.GoogleResponseCustom();
+        }
     }
 }

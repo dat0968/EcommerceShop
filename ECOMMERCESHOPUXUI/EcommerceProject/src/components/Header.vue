@@ -122,8 +122,6 @@
         <div id="mobile-menu-wrap"></div>
       </div>
       <!-- Offcanvas Menu End -->
-
-      
       <!-- Header Section End -->
     </header>
   </div>

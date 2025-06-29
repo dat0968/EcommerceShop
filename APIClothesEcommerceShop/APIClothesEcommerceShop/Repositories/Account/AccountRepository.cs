@@ -800,7 +800,6 @@ namespace APIClothesEcommerceShop.Repositories.Account
                 await client.DisconnectAsync(true);
             }
         }
-       
 
         public async Task<IActionResult> MobileGoogleLogin(MobileGoogleLoginDTO model)
         {
@@ -897,6 +896,70 @@ namespace APIClothesEcommerceShop.Repositories.Account
                     Message = "Lỗi đăng nhập Google trên mobile: " + ex.Message
                 });
             }
+        }
+        public async Task LoginGoogleCustom(string redirectUri)
+        {
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = redirectUri != null
+                    ? $"{redirectUri}?returnUrl=/api/Account/GoogleResponseCustom"
+                    : "/api/Account/GoogleResponseCustom"
+            };
+            await _httpContextAccessor.HttpContext.ChallengeAsync(GoogleDefaults.AuthenticationScheme, properties);
+        }
+
+        public async Task<IActionResult> GoogleResponseCustom()
+        {
+            var result = await _httpContextAccessor.HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
+            if (!result.Succeeded || result.Principal == null)
+            {
+                return new RedirectResult($"http://localhost:8080/google-login-success?error={HttpUtility.UrlEncode("Xác thực Google thất bại. Vui lòng thử lại!")}");
+            }
+
+            var email = result.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = result.Principal.FindFirstValue(ClaimTypes.Name);
+            var existingUser = await _db.Khachhangs.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (existingUser != null && (string.IsNullOrWhiteSpace(existingUser.TinhTrang) || existingUser.TinhTrang.Trim().ToLower() != "đang hoạt động"))
+            {
+                return new RedirectResult($"http://localhost:8080/google-login-success?error={HttpUtility.UrlEncode("Tài khoản đang bị tạm khóa hoặc không hợp lệ")}");
+            }
+
+            if (existingUser == null)
+            {
+                existingUser = new Khachhang
+                {
+                    HoTen = name,
+                    Email = email,
+                    TinhTrang = "Đang hoạt động",
+                    NgayTao = DateTime.UtcNow,
+                    IsActive = true,
+                };
+                _db.Khachhangs.Add(existingUser);
+                await _db.SaveChangesAsync();
+            }
+
+            var model = new PersonalInformationDTO
+            {
+                Id = existingUser.MaKh,
+                HoTen = existingUser.HoTen ?? "",
+                SDT = existingUser.Sdt ?? "",
+                VaiTro = "Customer"
+            };
+
+            var accessToken = _tokenServices.GenerateAccessToken(model);
+            var refreshToken = _tokenServices.GenerateRefreshToken();
+            var addRefreshTokenDb = new Refreshtoken
+            {
+                UserId = existingUser.MaKh,
+                Token = refreshToken,
+                IssuedAt = DateTime.UtcNow,
+                ExpiredAt = DateTime.UtcNow.AddDays(1),
+            };
+            _db.Refreshtokens.Add(addRefreshTokenDb);
+            await _db.SaveChangesAsync();
+
+            return new RedirectResult($"http://localhost:8080/google-login-success?access_token={accessToken}&refresh_token={refreshToken}");
         }
     }
 }
