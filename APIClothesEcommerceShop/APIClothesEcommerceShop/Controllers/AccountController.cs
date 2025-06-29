@@ -142,5 +142,11 @@ namespace APIClothesEcommerceShop.Controllers
         {
             return await _accountRepository.VerifyEmail(email, code);
         }
+        [HttpPost("MobileGoogleLogin")]
+        public async Task<IActionResult> MobileGoogleLogin([FromBody] MobileGoogleLoginDTO model)
+        {
+            return await _accountRepository.MobileGoogleLogin(model);
+        }
+        
     }
 }

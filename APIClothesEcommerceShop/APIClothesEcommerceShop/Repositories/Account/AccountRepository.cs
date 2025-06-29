@@ -20,6 +20,7 @@ using Microsoft.Extensions.Caching.Memory;
 using APIClothesEcommerceShop.DTO.Account;
 using Newtonsoft.Json;
 using System.Net.Http;
+using static APIClothesEcommerceShop.Controllers.AccountController;
 
 namespace APIClothesEcommerceShop.Repositories.Account
 {
@@ -797,6 +798,104 @@ namespace APIClothesEcommerceShop.Repositories.Account
                 await client.AuthenticateAsync("khongbiet12kk@gmail.com", "vupb omuo wppx iccu");
                 await client.SendAsync(emailMessage);
                 await client.DisconnectAsync(true);
+            }
+        }
+       
+
+        public async Task<IActionResult> MobileGoogleLogin(MobileGoogleLoginDTO model)
+        {
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                JwtSecurityToken jwtToken;
+                try
+                {
+                    jwtToken = handler.ReadJwtToken(model.AccessToken);
+                }
+                catch (Exception ex)
+                {
+                    return new OkObjectResult(new
+                    {
+                        Success = false,
+                        Message = "Invalid Google access token: " + ex.Message
+                    });
+                }
+
+                var email = jwtToken.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
+                var name = jwtToken.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    return new OkObjectResult(new
+                    {
+                        Success = false,
+                        Message = "Không thể lấy email từ Google token"
+                    });
+                }
+
+                var existingUser = await _db.Khachhangs.FirstOrDefaultAsync(u => u.Email.Trim().ToLower() == email.Trim().ToLower());
+                if (existingUser != null && (string.IsNullOrWhiteSpace(existingUser.TinhTrang) || existingUser.TinhTrang.Trim().ToLower() != "đang hoạt động"))
+                {
+                    return new OkObjectResult(new
+                    {
+                        Success = false,
+                        Message = "Tài khoản đang bị tạm khóa hoặc không hợp lệ"
+                    });
+                }
+
+                if (existingUser == null)
+                {
+                    existingUser = new Khachhang
+                    {
+                        HoTen = name,
+                        Email = email,
+                        TinhTrang = "Đang hoạt động",
+                        NgayTao = DateTime.Now,
+                        IsActive = true,
+                    };
+                    _db.Khachhangs.Add(existingUser);
+                    await _db.SaveChangesAsync();
+                }
+
+                var userInfo = new PersonalInformationDTO
+                {
+                    Id = existingUser.MaKh,
+                    HoTen = existingUser.HoTen ?? "",
+                    SDT = existingUser.Sdt ?? "",
+                    VaiTro = "Customer"
+                };
+
+                var accessToken = _tokenServices.GenerateAccessToken(userInfo);
+                var refreshToken = _tokenServices.GenerateRefreshToken();
+
+                var addRefreshTokenDb = new Refreshtoken
+                {
+                    UserId = existingUser.MaKh,
+                    Token = refreshToken,
+                    IssuedAt = DateTime.UtcNow,
+                    ExpiredAt = DateTime.UtcNow.AddDays(1),
+                };
+                _db.Refreshtokens.Add(addRefreshTokenDb);
+                await _db.SaveChangesAsync();
+
+                return new OkObjectResult(new
+                {
+                    Success = true,
+                    Message = "Mobile Google login successful",
+                    Data = new TokenResponseDTO
+                    {
+                        AccessToken = accessToken,
+                        RefreshToken = refreshToken
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return new OkObjectResult(new
+                {
+                    Success = false,
+                    Message = "Lỗi đăng nhập Google trên mobile: " + ex.Message
+                });
             }
         }
     }

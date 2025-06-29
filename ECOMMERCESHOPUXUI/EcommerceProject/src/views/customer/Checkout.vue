@@ -8,7 +8,7 @@ import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import { read } from 'xlsx'
 const cartStore = useCartStore()
-const selectedItems = ref([])
+const selectedItems = ref([]) 
 const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const readToken = ref({})
