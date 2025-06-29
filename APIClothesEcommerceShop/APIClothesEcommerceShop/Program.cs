@@ -37,9 +37,10 @@ using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Repositories.DetailCombo;
 using APIClothesEcommerceShop.Repositories.Address;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-
+QuestPDF.Settings.License = LicenseType.Community;
 /* 
 Cấu hình kết nối đến database
 EcommerceShopConnect_TD - Data Source=NGUYENTHANHDATP

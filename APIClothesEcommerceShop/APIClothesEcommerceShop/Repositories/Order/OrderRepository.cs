@@ -264,14 +264,81 @@ namespace APIClothesEcommerceShop.Repositories.Order
 
         }
 
-        public async Task<Hoadon> GetbyId(int id)
+        public async Task<OrderResponseDTO> GetbyId(int id)
         {
-            var findOrder = await db.Hoadons.AsNoTracking().FirstOrDefaultAsync(p => p.MaHd == id);
-            if(findOrder == null)
+            var ordersRaw = await db.Hoadons
+                    .AsNoTracking()
+                    .Include(p => p.MaKhNavigation)
+                    .Include(p => p.MaCodeNavigation)
+                    .Include(p => p.MaNvNavigation)
+                    .Include(p => p.Chitietcombohoadons)
+                        .ThenInclude(p => p.MaCtspNavigation)
+                            .ThenInclude(p => p.MaSpNavigation)
+                    .Include(p => p.Cthoadons)
+                        .ThenInclude(ct => ct.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.MaSpNavigation)
+                    .Include(p => p.Cthoadons)
+                        .ThenInclude(p => p.MaComboNavigation)
+                    .FirstOrDefaultAsync(p => p.MaHd == id);
+
+            var orderDto = new OrderResponseDTO
             {
-                throw new Exception("Not found Order");
-            }
-            return findOrder;
+                MaHd = ordersRaw.MaHd,
+                MaKh = ordersRaw.MaKh,
+                TenKh = ordersRaw.MaKhNavigation?.HoTen,
+                MaNv = ordersRaw.MaNv,
+                TenNv = ordersRaw.MaNvNavigation?.HoTen,
+                MaCode = ordersRaw.MaCode,
+                NgayNhan = ordersRaw.NgayNhan,
+                NgayTao = ordersRaw.NgayTao,
+                NgayThanhToan = ordersRaw.NgayThanhToan,
+                BatDauGiao = ordersRaw.BatDauGiao,
+                DiaChiNhanHang = ordersRaw.DiaChiNhanHang,
+                HinhThucTt = ordersRaw.HinhThucTt,
+                TinhTrang = ordersRaw.TinhTrang,
+                MoTa = ordersRaw.MoTa,
+                HoTen = ordersRaw.HoTen,
+                Sdt = ordersRaw.Sdt,
+                LyDoHuy = ordersRaw.LyDoHuy,
+                PhiVanChuyen = ordersRaw.PhiVanChuyen,
+                TienGoc = ordersRaw.TienGoc,
+
+                GiamGiaCoupon = ordersRaw.MaCodeNavigation != null
+        ? (ordersRaw.MaCodeNavigation.SoTienGiam != null && ordersRaw.MaCodeNavigation.SoTienGiam > 0
+            ? ordersRaw.MaCodeNavigation.SoTienGiam
+            : (ordersRaw.MaCodeNavigation.PhanTramGiam * ordersRaw.TienGoc / 100))
+        : 0m,
+
+                Chitietcombohoadons = ordersRaw.Chitietcombohoadons.Select(ctcb => new ComboDetails_OrdersResponseDTO
+                {
+                    MaHd = ctcb.MaHd,
+                    MaCtsp = ctcb.MaCtsp,
+                    TenSanPham = ctcb.MaCtspNavigation.MaSpNavigation.TenSanPham,
+                    MauSac = ctcb.MaCtspNavigation.MauSac,
+                    KichThuoc = ctcb.MaCtspNavigation.KichThuoc,
+                    MaCombo = ctcb.MaCombo,
+                    SoLuong = ctcb.SoLuong,
+                    DonGia = ctcb.DonGia,
+                }).ToList(),
+
+                Cthoadons = ordersRaw.Cthoadons.Select(cthd => new OrderDetailsResponseDTO
+                {
+                    Id = cthd.Id,
+                    TenSanPham = cthd.MaCtspNavigation?.MaSpNavigation?.TenSanPham,
+                    TenCombo = cthd.MaComboNavigation?.TenCombo,
+                    BienThe = cthd.MaCtspNavigation != null
+                        ? $"Màu: {cthd.MaCtspNavigation.MauSac} - Kích thước: {cthd.MaCtspNavigation.KichThuoc}"
+                        : null,
+                    MaHd = cthd.MaHd,
+                    MaCtsp = cthd.MaCtsp,
+                    MaCombo = cthd.MaCombo,
+                    SoLuong = cthd.SoLuong,
+                    Gia = cthd.Gia,
+                    GiamGia = cthd.GiamGia,
+                    GiaGoc = cthd.Gia + (decimal)(cthd.GiamGia != null && cthd.GiamGia > 0 ? cthd.GiamGia : 0),
+                }).ToList()
+            };
+            return orderDto;
         }
 
         public async Task<List<OrderResponseDTO>> GetByMakh(int Makh, string? search, string? filter)

@@ -1,8 +1,10 @@
 ﻿using APIClothesEcommerceShop.DTO.Order;
 using APIClothesEcommerceShop.Repositories.Order;
+using APIClothesEcommerceShop.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Fluent;
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -40,7 +42,7 @@ namespace APIClothesEcommerceShop.Controllers
             
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute]int id, UpdateOrderDto model)
+        public async Task<IActionResult> Update([FromRoute]int id, UpdateOrderDTO model)
         {
             try
             {
@@ -56,6 +58,17 @@ namespace APIClothesEcommerceShop.Controllers
                 throw new Exception("Error", ex);
             }
 
+        }
+        [HttpGet("xuat-pdf/{maHd}")]
+        public async Task<IActionResult> XuatHoaDonPdf(int maHd)
+        {
+            var order = await orderRepository.GetbyId(maHd);
+            if (order == null) return NotFound();
+
+            var document = new HoaDonDocument(order);
+            var pdfBytes = document.GeneratePdf();
+
+            return File(pdfBytes, "application/pdf", $"HoaDon_{maHd}.pdf");
         }
     }
 }

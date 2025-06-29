@@ -1,6 +1,6 @@
 ﻿namespace APIClothesEcommerceShop.DTO.Order
 {
-    public class UpdateOrderDto
+    public class UpdateOrderDTO
     {
         public string Status { get; set; }
         public int MaNv { get; set; }
