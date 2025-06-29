@@ -17,6 +17,23 @@ namespace APIClothesEcommerceShop.Controllers
         {
             _favoriteProduct = favoriteProduct;
         }
+        [HttpPost("CheckFavoriteProduct")]
+        public async Task<IActionResult> CheckFavoriteProduct(FavoriteProductDTO fv)
+        {
+            if (fv == null )
+            {
+                return BadRequest(new { message = "Dữ liệu đầu vào không hợp lệ." });
+            }
+            var result = await _favoriteProduct.CheckFavoriteProduct(fv);
+
+
+            return Ok(new
+            {
+                isFavorited = result,
+                
+            });
+        }
+
         [HttpPost("AddFavoriteProduct")]
         public async Task<IActionResult> AddFavoriteProduct(FavoriteProductDTO fv)
         {
@@ -47,11 +64,11 @@ namespace APIClothesEcommerceShop.Controllers
             });
         }
         [HttpDelete("DeleteFavoriteProducts")]
-        public async Task<IActionResult> DeleteFavoriteProducts(int idKhachHang, int idSp)
+        public async Task<IActionResult> DeleteFavoriteProducts(FavoriteProductDTO fv)
         {
             try
             {
-                await _favoriteProduct.DeleteFavoriteProduct(idKhachHang, idSp);
+                await _favoriteProduct.DeleteFavoriteProduct(fv);
                 return Ok(new
                 {
                     Message = "Xóa sản phẩm yêu thích thành công"

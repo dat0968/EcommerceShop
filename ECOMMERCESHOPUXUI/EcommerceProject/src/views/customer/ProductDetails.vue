@@ -40,9 +40,10 @@ const token = Cookies.get('accessToken');
 const decodedToken = ReadToken(token);
 const idKhachHang = decodedToken ? decodedToken.IdUser : null;
 const isFavorited = ref(false)
-const addFavoriteProduct = async () => {
+const checkFavoriteProduct = async () => {
+  if (!idKhachHang) return
   try {
-    const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+    const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -52,39 +53,106 @@ const addFavoriteProduct = async () => {
         maKh: idKhachHang
       })
     })
-
     const data = await response.json()
+    isFavorited.value = data.isFavorited
+  } catch (error) {
+    console.error('Lỗi khi kiểm tra sản phẩm yêu thích:', error)
+  }
+}
 
-    if (data.message === 'Sản phẩm yêu thích đã tồn tại') {
-      Swal.fire({
-        title: 'Sản phẩm đã nằm trong danh sách yêu thích.',
-        icon: 'info',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
+const toggleFavoriteProduct = async () => {
+  if (!idKhachHang) {
+    Swal.fire({
+      title: 'Vui lòng đăng nhập để thêm sản phẩm yêu thích!',
+      icon: 'warning',
+      timer: 2000,
+      showConfirmButton: false,
+      timerProgressBar: true
+    })
+    router.push('/Login')
+    return
+  }
+ 
+  try {
+    console.log(isFavorited.value)
+    if (isFavorited.value == true) {
+      const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          maKh: idKhachHang,
+          maSp: id,
+          
+        })
+
       })
-    } else {
-      Swal.fire({
-        title: 'Đã thêm vào yêu thích!',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false,
-        timerProgressBar: true,
-      })
+      const data = await response.json()
+      if (response.ok) {
+        isFavorited.value = !isFavorited.value
+        Swal.fire({
+          title: 'Đã xóa khỏi danh sách yêu thích!',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      } else {
+        Swal.fire({
+          title: data.message || 'Đã xảy ra lỗi!',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      }
     }
+    else if (isFavorited.value == false) {
+      const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          maSp: id,
+          maKh: idKhachHang
+        })
+      })
 
-    isFavorited.value = true
+      const data = await response.json()
+      if (response.ok) {
+        isFavorited.value = !isFavorited.value
+        Swal.fire({
+          title:  'Đã thêm vào danh sách yêu thích!',
+
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      } else {
+        Swal.fire({
+          title: data.message || 'Đã xảy ra lỗi!',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false,
+          timerProgressBar: true
+        })
+      }
+    }
   } catch (error) {
     Swal.fire({
-      title: 'Lỗi khi thêm vào yêu thích!',
+      title: 'Lỗi khi xử lý yêu thích!',
       text: error.message,
       icon: 'error',
       timer: 2000,
       showConfirmButton: false,
-      timerProgressBar: true,
+      timerProgressBar: true
     })
   }
 }
+
 // Call Api ProductDetails
 const fetchAPI = async () => {
   const response = await fetch(`${getUrlAPI.value}/api/Shop/Product/${id}`, {
@@ -197,6 +265,7 @@ watch(showMainImage, (newIndex) => {
 onMounted(() => {
   fetchAPI()
   fetchRcmProduct()
+  checkFavoriteProduct()
   // Cuộn lên đầu trang
   window.scrollTo({
     top: 0,
@@ -444,14 +513,12 @@ watch(
                   <span class="icon_bag_alt"></span> Thêm giỏ hàng
                 </button>
                 <ul>
-                <li>
-                  <a href="#" @click.prevent="addFavoriteProduct">
-                    <span
-                      :class="[isFavorited ? 'icon_heart' : 'icon_heart_alt']"
-                      style="color: red; font-size: 20px; transition: 0.3s"
-                    ></span>
-                  </a>
-                </li>
+                  <li>
+                    <a href="#" @click="toggleFavoriteProduct()">
+                      <span :class="[isFavorited.value ? 'icon_heart' : 'icon_heart_alt']"
+                        style="color: red; font-size: 20px; transition: 0.3s"></span>
+                    </a>
+                  </li>
                   <li>
                     <a href="#"><span class="icon_adjust-horiz"></span></a>
                   </li>
