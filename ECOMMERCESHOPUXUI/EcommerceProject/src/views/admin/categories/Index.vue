@@ -263,6 +263,7 @@ import * as configsDt from '@/utils/configsDatatable.js'
 import ResponseAPI from '@/models/ResponseAPI'
 import { formatCurrency } from '@/constants/formatCurrency'
 import Overlay from '@/components/common/Overlay.vue'
+import pathReplaceImg from '@/utils/processPathImg'
 
 export default {
   name: 'CategoryIndex',
@@ -275,7 +276,6 @@ export default {
       optionsParentCategory: [],
       optionsChildCategory: [],
       isLoading: false,
-      isLoading: true,
       selectedMaDanhMucCha: [],
       selectedMaDanhMucCon: [],
       isEditParent: false,
@@ -584,7 +584,7 @@ export default {
                                 <div class="col-sm-12 col-md-6 col-lg-4 detail-item">
                                     <div class="row border m-1 p-4 shadow rounded bg-white">
                                         <div class="col-4 d-flex align-items-center">
-                                            <img src="${detail.imageUrl || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
+                                            <img src="${pathReplaceImg(undefined, 'HinhAnh/Products', detail.imageUrl)}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
                                         </div>
                                         <div class="col-8">
                                             <div class="text-primary flex flex-flow-column justify-content-between"><span class="col-auto">Màu: ${detail.mauSac || '-'}</span> | <span class="col-auto">Size: ${detail.kichThuoc || '-'}</span></div>
