@@ -21,11 +21,7 @@
         </select>
       </div>
       <div class="col-md-3 mb-2">
-        <input
-          v-model="searchText"
-          class="form-control"
-          placeholder="Tìm theo tên, nội dung..."
-        />
+        <input v-model="searchText" class="form-control" placeholder="Tìm theo tên, nội dung..." />
       </div>
     </div>
 
@@ -51,7 +47,18 @@
                 :src="pathReplaceImg(undefined, '', review.avatar)"
                 alt="avatar"
                 class="reviewer-avatar"
-                @click="openLightbox([pathReplaceImg(undefined, 'HinhAnh/Avatars', review.avatar)], 0)"
+                @click="
+                  openLightbox(
+                    [
+                      pathReplaceImg(
+                        undefined,
+                        `HinhAnh/${isProduct ? 'Products' : 'AnhCombo'}`,
+                        review.avatar,
+                      ),
+                    ],
+                    0,
+                  )
+                "
               />
               <div class="reviewer-info">
                 <strong class="reviewer-name">{{ review.tenKhachHang || 'Ẩn danh' }}</strong>
@@ -101,20 +108,33 @@
                   <strong v-if="review.maCombo">Combo:</strong>
                   {{ review.tenDoiTuong || 'N/A' }}
                 </span>
-                <span v-if="review.kichThuoc" class="product-variant">Size: {{ review.kichThuoc }}</span>
+                <span v-if="review.kichThuoc" class="product-variant"
+                  >Size: {{ review.kichThuoc }}</span
+                >
                 <span v-if="review.mauSac" class="product-variant">Màu: {{ review.mauSac }}</span>
-                <span v-if="review.donGia" class="product-price">Giá: {{ review.donGia.toLocaleString() }}₫</span>
+                <span v-if="review.donGia" class="product-price"
+                  >Giá: {{ review.donGia.toLocaleString() }}₫</span
+                >
               </div>
             </div>
           </li>
         </ul>
         <!-- Pagination -->
-        <nav v-if="totalPages > 1" aria-label="Page navigation" class="mt-4 d-flex justify-content-center">
+        <nav
+          v-if="totalPages > 1"
+          aria-label="Page navigation"
+          class="mt-4 d-flex justify-content-center"
+        >
           <ul class="pagination">
             <li class="page-item" :class="{ disabled: currentPage === 1 }">
               <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">&laquo;</a>
             </li>
-            <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
+            <li
+              v-for="page in totalPages"
+              :key="page"
+              class="page-item"
+              :class="{ active: currentPage === page }"
+            >
               <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
             </li>
             <li class="page-item" :class="{ disabled: currentPage === totalPages }">
@@ -147,15 +167,15 @@
 </template>
 
 <script>
-import { ref, watch, computed, onMounted } from 'vue';
-import ConfigsRequest from '@/models/ConfigsRequest';
-import * as axiosConfig from '@/utils/axiosClient';
-import pathReplaceImg from '@/utils/processPathImg';
-import { formatDate } from '@/constants/formatDatetime';
-import ResponseAPI from '@/models/ResponseAPI';
-import VueEasyLightbox from 'vue-easy-lightbox';
-import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue';
-import { debounce } from 'lodash';
+import { ref, watch, computed, onMounted } from 'vue'
+import ConfigsRequest from '@/models/ConfigsRequest'
+import * as axiosConfig from '@/utils/axiosClient'
+import pathReplaceImg from '@/utils/processPathImg'
+import { formatDate } from '@/constants/formatDatetime'
+import ResponseAPI from '@/models/ResponseAPI'
+import VueEasyLightbox from 'vue-easy-lightbox'
+import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
+import { debounce } from 'lodash'
 
 export default {
   name: 'ReviewProductCombo',
@@ -171,130 +191,140 @@ export default {
   },
   components: { VueEasyLightbox, EmptySuggestBox },
   setup(props) {
-    const reviews = ref([]);
-    const loading = ref(false);
-    const errorMessage = ref(null);
-    
-    const filterStar = ref('');
-    const filterHasImage = ref('');
-    const searchText = ref('');
-    const debouncedSearchText = ref('');
+    const reviews = ref([])
+    const loading = ref(false)
+    const errorMessage = ref(null)
 
-    const isLightboxOpen = ref(false);
-    const lightboxImages = ref([]);
-    const lightboxIndex = ref(0);
+    const filterStar = ref('')
+    const filterHasImage = ref('')
+    const searchText = ref('')
+    const debouncedSearchText = ref('')
 
-    const currentPage = ref(1);
-    const itemsPerPage = ref(5);
+    const isLightboxOpen = ref(false)
+    const lightboxImages = ref([])
+    const lightboxIndex = ref(0)
 
-    const isValidId = (id) => id !== null && id !== undefined && id !== 0 && !isNaN(id);
+    const currentPage = ref(1)
+    const itemsPerPage = ref(5)
+
+    const isValidId = (id) => id !== null && id !== undefined && id !== 0 && !isNaN(id)
 
     const fetchReviews = async () => {
-      if (!isValidId(props.objectId)) return;
-      loading.value = true;
-      reviews.value = [];
-      errorMessage.value = null;
+      if (!isValidId(props.objectId)) return
+      loading.value = true
+      reviews.value = []
+      errorMessage.value = null
       try {
         const url = props.isProduct
           ? `/review/products/${props.objectId}`
-          : `/review/combos/${props.objectId}`;
-        const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig());
+          : `/review/combos/${props.objectId}`
+        const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig())
 
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
-          errorMessage.value = res.data?.message || 'Không thể tải đánh giá.';
-          reviews.value = [];
-          return;
+          errorMessage.value = res.data?.message || 'Không thể tải đánh giá.'
+          reviews.value = []
+          return
         }
-        reviews.value = res?.data || [];
+        reviews.value = res?.data || []
       } catch (e) {
-        reviews.value = [];
-        errorMessage.value = 'Đã xảy ra lỗi khi tải danh sách đánh giá.';
-        console.error(e);
+        reviews.value = []
+        errorMessage.value = 'Đã xảy ra lỗi khi tải danh sách đánh giá.'
+        console.error(e)
       } finally {
-        loading.value = false;
+        loading.value = false
       }
-    };
+    }
 
-    watch(() => props.objectId, (newId) => {
-      if (isValidId(newId)) fetchReviews();
-      else reviews.value = [];
-    }, { immediate: true });
+    watch(
+      () => props.objectId,
+      (newId) => {
+        if (isValidId(newId)) fetchReviews()
+        else reviews.value = []
+      },
+      { immediate: true },
+    )
 
-    watch(() => props.isProduct, () => {
-        if (isValidId(props.objectId)) fetchReviews();
-        else reviews.value = [];
-    });
+    watch(
+      () => props.isProduct,
+      () => {
+        if (isValidId(props.objectId)) fetchReviews()
+        else reviews.value = []
+      },
+    )
 
-    watch(searchText, debounce((newValue) => {
-      debouncedSearchText.value = newValue;
-      currentPage.value = 1; // Reset page when search text changes
-    }, 300));
+    watch(
+      searchText,
+      debounce((newValue) => {
+        debouncedSearchText.value = newValue
+        currentPage.value = 1 // Reset page when search text changes
+      }, 300),
+    )
 
     const filteredReviews = computed(() => {
       return reviews.value.filter((r) => {
         // Filter by star rating
-        if (filterStar.value && r.soSao != filterStar.value) return false;
+        if (filterStar.value && r.soSao != filterStar.value) return false
 
         // Filter by presence of images
-        const hasImg = r.hinhAnhs && r.hinhAnhs.length > 0;
-        if (filterHasImage.value === '1' && !hasImg) return false;
-        if (filterHasImage.value === '0' && hasImg) return false;
+        const hasImg = r.hinhAnhs && r.hinhAnhs.length > 0
+        if (filterHasImage.value === '1' && !hasImg) return false
+        if (filterHasImage.value === '0' && hasImg) return false
 
         // Filter by search text
-        const text = debouncedSearchText.value.trim().toLowerCase();
+        const text = debouncedSearchText.value.trim().toLowerCase()
         if (text) {
           const inContent =
             (r.noiDung && r.noiDung.toLowerCase().includes(text)) ||
             (r.tenKhachHang && r.tenKhachHang.toLowerCase().includes(text)) ||
-            (r.shopPhanHoi && r.shopPhanHoi.toLowerCase().includes(text));
-          if (!inContent) return false;
+            (r.shopPhanHoi && r.shopPhanHoi.toLowerCase().includes(text))
+          if (!inContent) return false
         }
-        return true;
-      });
-    });
+        return true
+      })
+    })
 
     const totalPages = computed(() => {
-      return Math.ceil(filteredReviews.value.length / itemsPerPage.value);
-    });
+      return Math.ceil(filteredReviews.value.length / itemsPerPage.value)
+    })
 
     const paginatedReviews = computed(() => {
-      const start = (currentPage.value - 1) * itemsPerPage.value;
-      const end = start + itemsPerPage.value;
-      return filteredReviews.value.slice(start, end);
-    });
+      const start = (currentPage.value - 1) * itemsPerPage.value
+      const end = start + itemsPerPage.value
+      return filteredReviews.value.slice(start, end)
+    })
 
     const changePage = (page) => {
       if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page;
+        currentPage.value = page
       }
-    };
+    }
 
     const openLightbox = (imgs, idx = 0) => {
-      lightboxImages.value = imgs;
-      lightboxIndex.value = idx;
-      isLightboxOpen.value = true;
-    };
+      lightboxImages.value = imgs
+      lightboxIndex.value = idx
+      isLightboxOpen.value = true
+    }
 
     const closeLightbox = () => {
-      isLightboxOpen.value = false;
-    };
+      isLightboxOpen.value = false
+    }
 
     const getReviewImages = (item) => {
-      if (!item.hinhAnhs) return [];
-      return Array.isArray(item.hinhAnhs) ? item.hinhAnhs : item.hinhAnhs.split(',').filter(img => img);
-    };
+      if (!item.hinhAnhs) return []
+      return Array.isArray(item.hinhAnhs)
+        ? item.hinhAnhs
+        : item.hinhAnhs.split(',').filter((img) => img)
+    }
 
     const getReviewImagesFullPath = (item) => {
-      return getReviewImages(item).map((img) =>
-        pathReplaceImg(undefined, 'HinhAnh/Reviews', img)
-      );
-    };
+      return getReviewImages(item).map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img))
+    }
 
     onMounted(() => {
-        if (isValidId(props.objectId)) {
-            fetchReviews();
-        }
-    });
+      if (isValidId(props.objectId)) {
+        fetchReviews()
+      }
+    })
 
     return {
       reviews,
@@ -317,9 +347,9 @@ export default {
       getReviewImages,
       getReviewImagesFullPath,
       changePage,
-    };
+    }
   },
-};
+}
 </script>
 
 <style scoped>
@@ -333,7 +363,7 @@ export default {
   background-color: #fff;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .total-reviews-display {
@@ -344,7 +374,8 @@ export default {
   height: 100%;
 }
 
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   text-align: center;
   padding: 3rem 1rem;
   color: #6c757d;
@@ -364,7 +395,7 @@ export default {
 }
 
 .review-item:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .review-header {
@@ -492,7 +523,8 @@ export default {
   color: #d9534f;
 }
 
-.form-select, .form-control {
+.form-select,
+.form-control {
   font-size: 0.95rem;
 }
 
