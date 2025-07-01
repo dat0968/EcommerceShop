@@ -100,6 +100,7 @@ builder.Services.AddSwaggerGen(c =>
     };
 
     c.AddSecurityRequirement(securityRequirement);
+    #endregion
 });
 
 // Configure CORS for web and mobile
