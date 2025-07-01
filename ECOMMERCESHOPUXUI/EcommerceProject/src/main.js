@@ -18,3 +18,4 @@ app.mount('#app')
 
 await initApiBaseUrl()
 replaceBrokenImages()
+

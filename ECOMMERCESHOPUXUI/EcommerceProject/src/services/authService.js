@@ -10,131 +10,39 @@ const authService = {
     const token = Cookies.get('accessToken')
     if (!token) return true // Không có token, coi như đã hết hạn
 
+    const decoded = jwtDecode(token)
+    const currentTime = Date.now() / 1000
+
+    if (decoded.exp < currentTime) {
+      Swal.fire({
+        title: 'Phiên đăng nhập đã hết hạn',
+        text: 'Vui lòng đăng nhập lại để tiếp tục sử dụng dịch vụ của chúng tôi.',
+        icon: 'warning',
+        confirmButtonText: 'Đăng nhập lại',
+        allowOutsideClick: false,
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push('/Login')
+        }
+      })
+      return true
+    }
+
+    return false
+  },
+
+  isAuthenticated() {
+    const token = Cookies.get('accessToken')
+    if (!token) return false // No token, not authenticated
+
     try {
       const decoded = jwtDecode(token)
-      const currentTime = Date.now() / 1000 // Thời gian hiện tại tính bằng giây
-      return decoded.exp < currentTime // So sánh thời gian hết hạn với thời gian hiện tại
+      const currentTime = Date.now() / 1000
+      if (decoded.exp < currentTime) {
+        return false // Token expired
+      }
     } catch (error) {
-      console.error('Invalid JWT token:', error)
-      localStorage.removeItem('accessToken')
-      return true // Nếu token không hợp lệ, coi như đã hết hạn
-    }
-  },
-  getUserId() {
-    const token = Cookies.get('accessToken')
-    if (!token) return null
-
-    try {
-      return jwtDecode(token).sub
-    } catch (error) {
-      console.error('Invalid JWT token:', error)
-      localStorage.removeItem('accessToken')
-      return null
-    }
-  },
-  isAccess() {
-    return !!Cookies.get('accessToken')
-  },
-
-  getRole() {
-    const token = Cookies.get('accessToken')
-    if (!token) return null
-
-    try {
-      return jwtDecode(token).role
-    } catch (error) {
-      console.error('Invalid JWT token:', error)
-      localStorage.removeItem('accessToken')
-      return null
-    }
-  },
-
-  /**
-   * Chỉ kiểm tra xem role của người dùng có nằm trong danh sách roles được phép hay không.
-   * Không thực hiện chuyển hướng hoặc hiển thị lỗi.
-   *
-   * @param {string[]} allowedRoles Mảng các roles được phép.
-   * @returns {boolean} `true` nếu người dùng có một trong các role được phép, ngược lại `false`.
-   */
-  hasAnyRole(allowedRoles, navigateToError = false) {
-    const roleUser = this.getRole()
-    if (!roleUser) {
-      if (navigateToError) {
-        router.push({ path: '/Error/401' })
-        Swal.fire({
-          icon: 'warning',
-          title: 'Cảnh báo',
-          text: 'Bạn không có quyền thực hiện hành động này.',
-        })
-      }
-      return false // Không có role, không có quyền truy cập
-    }
-    return allowedRoles.includes(roleUser)
-  },
-
-  isUserHaveRole(
-    rolesRequest,
-    isCustomerHasPower = false,
-    navigateToLogin = false,
-    navigateToError = false,
-  ) {
-    const hasAccess = this.isAccess()
-    const roleUser = this.getRole()
-
-    if (!hasAccess || !roleUser) {
-      if (navigateToLogin) {
-        router.push({
-          path: '/login',
-          state: { from: router.currentRoute.fullPath },
-        })
-        Swal.fire({
-          icon: 'info',
-          title: 'Thông báo',
-          text: 'Bạn chưa đăng nhập.',
-        })
-        return false
-      }
-
-      if (navigateToError) {
-        router.push({ path: '/Error/401' })
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi',
-          text: 'Bạn không có quyền truy cập trang này.',
-        })
-        return false
-      }
-
-      return false
-    }
-
-    if (roleUser === 'Customer' && !isCustomerHasPower) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Cảnh báo',
-        text: 'Bạn không có quyền thực hiện hành động này.',
-      })
-      return false
-    }
-
-    const hasRequiredRole = rolesRequest.includes(roleUser)
-
-    if (!hasRequiredRole) {
-      if (navigateToError) {
-        router.push({ path: '/Error/403' })
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi',
-          text: 'Bạn không có quyền truy cập trang này.',
-        })
-        return false
-      }
-      Swal.fire({
-        icon: 'warning',
-        title: 'Cảnh báo',
-        text: 'Bạn không có quyền thực hiện hành động này.',
-      })
-      return false
+      return false // Invalid token
     }
 
     return true

@@ -93,7 +93,6 @@ builder.Services.AddSwaggerGen(c =>
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
-    #endregion
 
     var securityRequirement = new OpenApiSecurityRequirement
     {
@@ -102,14 +101,21 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityRequirement(securityRequirement);
 });
+
+// Configure CORS for web and mobile
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("MyPolicy", ops =>
+    options.AddPolicy("MyPolicy", policy =>
     {
-        ops.AllowAnyHeader();
-        ops.AllowAnyMethod();
-        ops.AllowAnyOrigin();
-        ops.SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        policy.AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowAnyOrigin()
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        //ops.WithOrigins("http://localhost:8080", "http://192.168.1.150:8080", "http://localhost:5173") // Thêm IP nội bộ
+        //   .AllowAnyHeader()
+        //   .AllowAnyMethod()
+        //   .AllowCredentials()
+        //   .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
 #region [Dependency Injection]
@@ -202,7 +208,7 @@ builder.Services.AddLogging(logging =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
