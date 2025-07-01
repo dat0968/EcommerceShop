@@ -646,6 +646,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var dataProduct = await GetSanphamsAsync();
                 var dataEmployee = await GetNhanviensAsync();
                 var dataCombo = await _context.Combos
+                    .Include(c => c.Chitietcombos)
+                        .ThenInclude(ctbo => ctbo.MaSpNavigation)
+                            .ThenInclude(sp => sp.Chitietsanphams)
                     .Include(c => c.Cthoadons)
                     .Include(c => c.DanhGias)
                     .Select(c => new
@@ -656,7 +659,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         c.IsActive,
                         SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
                         Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong)),
-                        StarCount = c.DanhGias.Any() ? (int)c.DanhGias.Average(dg => dg.SoSao) : 0
+                        StarCount = c.DanhGias.Any() ? (int)c.DanhGias.Average(dg => dg.SoSao) : 0,
+                        c.Chitietcombos
                     })
                     .AsNoTracking().ToListAsync();
                 var dataOrder = await _context.Hoadons
@@ -696,7 +700,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         ComboName = x.TenCombo ?? string.Empty,
                         SalesCount = x.SalesCount,
                         Revenue = x.Revenue,
-                        StarCount = x.StarCount
+                        StarCount = x.StarCount,
+                        DetailTopCombos = x.Chitietcombos.Select(ct => new DetailTopCombo(ct)).ToList()
                     }).ToList();
 
                 // Khởi tạo response
