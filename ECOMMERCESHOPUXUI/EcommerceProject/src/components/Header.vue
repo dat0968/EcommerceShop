@@ -95,27 +95,28 @@
             </nav>
           </div>
           <div class="col-lg-3">
-            <div class="header__right">
-              <div class="header__right__auth">
-                <template v-if="!isLoggedIn">
-                  <router-link to="/Login" class="text-primary">Đăng nhập</router-link>
-                  <router-link to="/Register" class="text-primary">Đăng ký</router-link>
-                </template>
-                <template v-else>
-                  <a href="#" @click.prevent="handleLogout" class="text-danger">Đăng xuất</a>
-                </template>
-              </div>
-              <ul class="header__right__widget">
+            <div class="header__right d-flex align-items-center justify-content-end gap-3">
+              <ul class="header__right__widget d-flex align-items-center gap-3 list-unstyled mb-0">
                 <li>
-                  <router-link to="/favoriteproduct">
-                    <span class="icon_heart_alt"></span>
-                    <div class="tip">2</div>
+                  <router-link to="/favoriteproduct" class="position-relative">
+                    <i class="fa fa-heart fs-5"></i>
+                    <span
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    >
+                      2
+                      <span class="visually-hidden">sản phẩm yêu thích</span>
+                    </span>
                   </router-link>
                 </li>
                 <li>
-                  <router-link to="/Cart">
-                    <span class="icon_bag_alt"></span>
-                    <div class="tip">2</div>
+                  <router-link to="/Cart" class="position-relative">
+                    <i class="fa fa-shopping-bag fs-5"></i>
+                    <span
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    >
+                      2
+                      <span class="visually-hidden">sản phẩm trong giỏ hàng</span>
+                    </span>
                   </router-link>
                 </li>
                 <li v-if="isLoggedIn">
@@ -125,6 +126,34 @@
                   <WheelRandomCode />
                 </li>
               </ul>
+              <div class="dropdown">
+                <button
+                  class="btn btn-light dropdown-toggle"
+                  type="button"
+                  id="userDropdown"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i class="fa fa-user"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                  <template v-if="!isLoggedIn">
+                    <li><router-link class="dropdown-item" to="/Login">Đăng nhập</router-link></li>
+                    <li><router-link class="dropdown-item" to="/Register">Đăng ký</router-link></li>
+                  </template>
+                  <template v-else>
+                    <li>
+                      <router-link class="dropdown-item" to="/Profile"
+                        >Thông tin cá nhân</router-link
+                      >
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                      <a class="dropdown-item" href="#" @click.prevent="handleLogout">Đăng xuất</a>
+                    </li>
+                  </template>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -135,7 +164,7 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import { ref, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
@@ -143,36 +172,50 @@ import { validateToken } from '@/utils/auth'
 import NavigationUserReview from './ui/navigationUserReview.vue'
 import WheelRandomCode from './specicals/WheelRandomCode.vue'
 
-const router = useRouter()
-const accessToken = ref(Cookies.get('accessToken'))
-const refreshToken = ref(Cookies.get('refreshToken'))
-const isLoggedIn = ref(false)
+export default {
+  name: 'AppHeader',
+  components: {
+    NavigationUserReview,
+    WheelRandomCode,
+  },
+  setup() {
+    const router = useRouter()
+    const accessToken = ref(Cookies.get('accessToken'))
+    const refreshToken = ref(Cookies.get('refreshToken'))
+    const isLoggedIn = ref(false)
 
-const checkLogin = async () => {
-  if (accessToken.value && refreshToken.value) {
-    const result = await validateToken(accessToken.value, refreshToken.value)
-    isLoggedIn.value = result.isValid
-    if (result.isValid) {
-      Cookies.set('accessToken', result.newAccessToken)
-    } else {
+    const checkLogin = async () => {
+      if (accessToken.value && refreshToken.value) {
+        const result = await validateToken(accessToken.value, refreshToken.value)
+        isLoggedIn.value = result.isValid
+        if (result.isValid) {
+          Cookies.set('accessToken', result.newAccessToken)
+        } else {
+          Cookies.remove('accessToken')
+          Cookies.remove('refreshToken')
+        }
+      } else {
+        isLoggedIn.value = false
+      }
+    }
+
+    const handleLogout = () => {
       Cookies.remove('accessToken')
       Cookies.remove('refreshToken')
+      isLoggedIn.value = false
+      router.push('/Login')
     }
-  } else {
-    isLoggedIn.value = false
-  }
-}
 
-const handleLogout = () => {
-  Cookies.remove('accessToken')
-  Cookies.remove('refreshToken')
-  isLoggedIn.value = false
-  router.push('/Login')
-}
+    onMounted(() => {
+      checkLogin()
+    })
 
-onMounted(() => {
-  checkLogin()
-})
+    return {
+      isLoggedIn,
+      handleLogout,
+    }
+  },
+}
 </script>
 
 <style>
