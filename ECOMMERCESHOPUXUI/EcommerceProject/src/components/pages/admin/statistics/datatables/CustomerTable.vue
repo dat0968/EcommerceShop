@@ -2,7 +2,7 @@
   <div v-if="customers.length" class="table-responsive">
     <table id="customerDatatable" class="table table-hover"></table>
   </div>
-  <p v-else>Không có khách hàng nào để hiển thị.</p>
+  <NoDataMessage v-else />
 </template>
 
 <script>
@@ -12,6 +12,7 @@ import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
 import pathReplaceImg from '@/utils/processPathImg'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 export default {
   name: 'CustomerTable',
@@ -57,41 +58,37 @@ export default {
       const customer = this.customers.find((x) => x.customerId == rowData.customerId)
 
       const detailsHtml = `
-    <div class="container">
-      <div class="row mb-3 gap-1 justify-content-between detail-list">
-        ${
-          customer.orderRecents && customer.orderRecents.length > 0
-            ? customer.orderRecents
-                .map(
-                  (order) => `
-                    <div class="col-sm-12 col-md-6 p-3 detail-item">
-                      <div class="row border p-1 rounded bg-light">
-                        <div class="col-4 d-flex align-items-center justify-content-center">
-                          <img src="${pathReplaceImg(undefined, 'HinhAnh/Avatar', order.avatar)}" class="img-fluid rounded" alt="Khách hàng">
-                        </div>
-                        <div class="col-8">
-                          <div class="text-primary flex flex-flow-column justify-content-between">
-                            <span class="col-auto">Mã hóa đơn: ${order.maHd}</span>
+        <div class="container-fluid p-3">
+          <h6 class="mb-3 text-primary">Chi tiết đơn hàng gần đây của ${customer.customerName}</h6>
+          <div class="row g-3">
+            ${
+              customer.orderRecents && customer.orderRecents.length > 0
+                ? customer.orderRecents
+                    .map(
+                      (order) => `
+                        <div class="col-sm-12 col-md-6 col-lg-4">
+                          <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body d-flex flex-column">
+                              <div class="d-flex align-items-center mb-3">
+                                <img src="${pathReplaceImg(undefined, 'HinhAnh/Avatar', order.avatar)}" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;" alt="Khách hàng">
+                                <div>
+                                  <h5 class="card-title mb-0">Mã hóa đơn: ${order.maHd}</h5>
+                                  <p class="card-subtitle text-muted">${order.hoTen}</p>
+                                </div>
+                              </div>
+                              <p class="mb-1"><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
+                              <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge ${order.isActive ? 'bg-success' : 'bg-danger'}">${order.tinhTrang}</span></p>
+                              <p class="mb-0"><strong>Địa chỉ nhận:</strong> <span title="${order.diaChiNhanHang}">${order.diaChiNhanHang}</span></p>
+                            </div>
                           </div>
-                          <p><strong>Tên khách hàng:</strong> ${order.hoTen}</p>
-                          <p><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
-                          <p><strong>Trạng thái:</strong> <span class="${order.isActive ? 'text-success' : 'text-danger'}">${order.tinhTrang}</span></p>
-                          <p>
-                            <strong>Địa chỉ nhận:</strong>
-                            <span title="${order.diaChiNhanHang}">
-                              ${order.diaChiNhanHang}
-                            </span>
-                          </p>
                         </div>
-                      </div>
-                    </div>
-                  `,
-                )
-                .join('')
-            : '<p>Không có đơn hàng nào để hiển thị.</p>'
-        }
-      </div>
-    </div>`
+                      `,
+                    )
+                    .join('')
+                : '<div class="col-12"><p class="text-center text-muted">Không có đơn hàng nào để hiển thị.</p></div>'
+            }
+          </div>
+        </div>`
       div.html(detailsHtml)
       return div
     },

@@ -1,9 +1,9 @@
 <template>
   <div v-if="isLoading" class="text-center my-4">
-    <span>Đang tải dữ liệu...</span>
+    <LoadingSpinner />
   </div>
   <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
-    <span>Không có dữ liệu để hiển thị.</span>
+    <NoDataMessage />
   </div>
   <div v-else class="row align-items-stretch">
     <div class="col-md-12 col-lg-8 col-xl-8 align-self-center">
@@ -41,17 +41,12 @@
         </div>
       </div>
     </div>
-
-    <div class="col-md-12 col-lg-4 col-xl-4">
-      <cardMap class="col-12 mb-3" />
-      <cardDiscordInvite class="col-12" />
-    </div>
   </div>
 </template>
 
 <script>
-import cardDiscordInvite from '@/components/ui/cardDiscordInvite.vue'
-import cardMap from '@/components/ui/cardMap.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 import ProductTable from '@/components/pages/admin/statistics/datatables/ProductTable.vue'
 import CustomerTable from '@/components/pages/admin/statistics/datatables/CustomerTable.vue'
@@ -65,8 +60,8 @@ export default {
     CustomerTable,
     EmployeeTable,
     ComboTable,
-    cardDiscordInvite,
-    cardMap,
+    LoadingSpinner,
+    NoDataMessage,
   },
   props: {
     data: {

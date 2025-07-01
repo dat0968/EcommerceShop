@@ -23,7 +23,7 @@
         >
           <canvas id="productChart" v-if="!isLoading"></canvas>
           <div v-show="isLoading" class="text-center my-4">
-            <span>Đang tải dữ liệu...</span>
+            <LoadingSpinner />
           </div>
         </div>
       </div>
@@ -35,7 +35,7 @@
           overlay-content="Không có dữ liệu để hiển thị biểu đồ."
         />
         <div v-if="isLoading" class="text-center my-4">
-          <span>Đang tải dữ liệu...</span>
+          <LoadingSpinner />
         </div>
         <div v-else>
           <canvas id="salesQuantityChartByDay" v-if="selectedTimePeriod === 'date'"></canvas>
@@ -63,11 +63,13 @@
 import { Chart, registerables } from 'chart.js'
 import { formatCurrency } from '@/constants/formatCurrency'
 import Overlay from '@/components/common/Overlay.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 Chart.register(...registerables)
 
 export default {
   name: 'ProductStatistic',
-  components: { Overlay },
+  components: { Overlay, LoadingSpinner, NoDataMessage },
   props: {
     data: {
       type: Object,
@@ -158,8 +160,32 @@ export default {
               labels: {
                 boxWidth: 10,
                 padding: 10,
+                font: {
+                  size: 14
+                }
               },
             },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed !== null) {
+                    label += context.parsed;
+                  }
+                  return label;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Tình trạng sản phẩm',
+              font: {
+                size: 16
+              }
+            }
           },
         },
       })
@@ -249,6 +275,10 @@ export default {
             y: {
               beginAtZero: true,
               position: 'left',
+              title: {
+                display: true,
+                text: 'Doanh thu'
+              }
             },
             y1: {
               beginAtZero: true,
@@ -256,8 +286,40 @@ export default {
               grid: {
                 drawOnChartArea: false,
               },
+              title: {
+                display: true,
+                text: 'Số lượng bán'
+              }
             },
           },
+          plugins: {
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y;
+                  }
+                  return label;
+                }
+              }
+            },
+            legend: {
+              display: true,
+            },
+            title: {
+              display: true,
+              text: 'Doanh thu và số lượng bán theo thời gian',
+              font: {
+                size: 16
+              }
+            }
+          }
         },
       })
     },

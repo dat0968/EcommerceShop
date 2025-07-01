@@ -7,10 +7,10 @@
       </div>
       <div class="card-body">
         <div v-if="isLoading" class="text-center my-4">
-          <span>Đang tải dữ liệu...</span>
+          <LoadingSpinner />
         </div>
         <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
-          <span>Không có dữ liệu để hiển thị.</span>
+          <NoDataMessage />
         </div>
         <div v-else class="row align-items-center g-3">
           <div class="col-md-6">
@@ -41,7 +41,7 @@
                 <span>Không thể tạo biểu đồ do thiếu hoặc lỗi dữ liệu.</span>
               </div>
               <div v-show="isLoading" class="text-center my-4">
-                <span>Đang tải dữ liệu...</span>
+                <LoadingSpinner />
               </div>
             </div>
           </div>
@@ -53,11 +53,17 @@
 
 <script>
 import { Chart, registerables } from 'chart.js'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 import { formatCurrency } from '@/constants/formatCurrency'
 Chart.register(...registerables)
 export default {
   name: 'EmployeeStatistic',
+  components: {
+    LoadingSpinner,
+    NoDataMessage,
+  },
   props: {
     data: {
       type: Object,

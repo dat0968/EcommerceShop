@@ -2,7 +2,7 @@
   <div v-if="combos.length" class="table-responsive">
     <table id="comboDatatable" class="table table-hover"></table>
   </div>
-  <p v-else>Không có combo nào để hiển thị.</p>
+  <NoDataMessage v-else />
 </template>
 
 <script>
@@ -11,9 +11,11 @@ import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 export default {
   name: 'ComboTable',
+  components: { NoDataMessage },
   props: {
     combos: {
       type: Array,
@@ -73,26 +75,32 @@ export default {
       const div = $('<div/>').addClass('loading').text('Loading...')
       const combo = this.combos.find((x) => x.comboId == rowData.comboId)
 
-      const orderDetailsHtml =
-        combo.orderRecents && combo.orderRecents.length > 0
-          ? combo.orderRecents
-              .map(
-                (order) => `
-                  <div class="row">
-                    <div class="col-6 col-md-12 order-item border rounded p-2 mb-2 bg-light position-relative">
-                      <p><strong>Mã hóa đơn:</strong> ${order.maHd}</p>
-                      <p><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
-                      <p><strong>Trạng thái:</strong> <span class="${order.isActive ? 'text-success' : 'text-danger'}">${order.tinhTrang}</span></p>
-                    
-                      <span class="tooltip-icon position-absolute top-0 end-0 m-1" data-toggle="tooltip" title="${order.diaChiNhanHang}">
-                        <i class="fas fa-info-circle"></i>
-                      </span>
-                    </div>
-                  </div>
-                `,
-              )
-              .join('')
-          : '<p>Không có chi tiết sản phẩm trong combo này để hiển thị.</p>'
+      const orderDetailsHtml = `
+        <div class="container-fluid p-3">
+          <h6 class="mb-3 text-primary">Chi tiết đơn hàng gần đây của Combo: ${combo.comboName}</h6>
+          <div class="row g-3">
+            ${
+              combo.orderRecents && combo.orderRecents.length > 0
+                ? combo.orderRecents
+                    .map(
+                      (order) => `
+                        <div class="col-sm-12 col-md-6 col-lg-4">
+                          <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body d-flex flex-column">
+                              <h5 class="card-title mb-2">Mã hóa đơn: ${order.maHd}</h5>
+                              <p class="mb-1"><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
+                              <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge ${order.isActive ? 'bg-success' : 'bg-danger'}">${order.tinhTrang}</span></p>
+                              <p class="mb-0"><strong>Địa chỉ nhận:</strong> <span title="${order.diaChiNhanHang}">${order.diaChiNhanHang}</span></p>
+                            </div>
+                          </div>
+                        </div>
+                      `,
+                    )
+                    .join('')
+                : '<div class="col-12"><p class="text-center text-muted">Không có chi tiết sản phẩm trong combo này để hiển thị.</p></div>'
+            }
+          </div>
+        </div>`
 
       div.html(orderDetailsHtml)
 

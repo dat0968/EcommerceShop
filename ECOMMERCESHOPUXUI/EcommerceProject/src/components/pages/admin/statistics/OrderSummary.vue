@@ -7,10 +7,10 @@
         </div>
         <div class="card-body">
           <div v-if="isLoading" class="text-center my-4">
-            <span>Đang tải dữ liệu...</span>
+            <LoadingSpinner />
           </div>
           <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
-            <span>Không có dữ liệu để hiển thị.</span>
+            <NoDataMessage />
           </div>
           <div v-else>
             <div class="text-center my-4">
@@ -109,6 +109,8 @@
 
 <script>
 import Overlay from '@/components/common/Overlay.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 import { Chart, registerables } from 'chart.js'
 import { formatCurrency } from '@/constants/formatCurrency'
@@ -116,7 +118,7 @@ Chart.register(...registerables)
 
 export default {
   name: 'OrderSummary',
-  components: { Overlay },
+  components: { Overlay, LoadingSpinner, NoDataMessage },
   props: {
     data: {
       type: Object,
@@ -291,10 +293,29 @@ export default {
             tooltip: {
               mode: 'index',
               intersect: false,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y;
+                  }
+                  return label;
+                }
+              }
             },
             legend: {
               display: true,
             },
+            title: {
+              display: true,
+              text: 'Doanh thu và số lượng đơn hàng',
+              font: {
+                size: 16
+              }
+            }
           },
         },
       })
@@ -368,7 +389,19 @@ export default {
             },
             legend: {
               position: 'right',
+              labels: {
+                font: {
+                  size: 14
+                }
+              }
             },
+            title: {
+              display: true,
+              text: 'Tỉ lệ trạng thái đơn hàng',
+              font: {
+                size: 16
+              }
+            }
           },
         },
       })

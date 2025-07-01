@@ -126,7 +126,7 @@ onMounted(() => {
 
           <!-- Start XP Navigationbar -->
           <div class="xp-navigationbar">
-            <ul class="xp-vertical-menu" style="color: black;">
+            <ul class="xp-vertical-menu" style="color: black">
               <li>
                 <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
                   <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
@@ -173,7 +173,7 @@ onMounted(() => {
                 </RouterLink>
               </li>
               <li class="nav-item">
-                <router-link to="/admin/chat" >
+                <router-link to="/admin/chat">
                   <i class="bi bi-chat-dots"></i> <span class="font-color">Liên hệ </span>
                 </router-link>
               </li>
@@ -323,7 +323,7 @@ onMounted(() => {
                         <a class="dropdown-item" href="#"
                           ><i class="icon-lock text-info mr-2"></i> Lock Screen</a
                         >
-                        <a class="dropdown-item" href="#"
+                        <a class="dropdown-item" href="#" @click="logout"
                           ><i class="icon-power text-danger mr-2"></i> Logout</a
                         >
                       </div>
@@ -348,7 +348,17 @@ onMounted(() => {
 </template>
 
 <script>
-export default {}
+import Cookies from 'js-cookie'
+
+export default {
+  methods: {
+    logout() {
+      Cookies.remove('accessToken')
+      Cookies.remove('refreshToken')
+      this.$router.push('/login')
+    },
+  },
+}
 </script>
 
 <style>
@@ -521,8 +531,7 @@ svg {
 .xp-vertical-menu li a.router-link-active,
 .xp-vertical-menu li a.router-link-exact-active {
   color: #ffffff;
-  background-image: linear-gradient(to right, #5E72EB,
-      #FF9190);
+  background-image: linear-gradient(to right, #5e72eb, #ff9190);
   border-left: 4px solid #fff;
 }
 

@@ -56,7 +56,6 @@ import CustomerStatisticsResponse from '@/models/dtos/statisticsDtos/customerSta
 import ProductStatisticsResponse from '@/models/dtos/statisticsDtos/productStatisticsResponse'
 import EmployeeStatisticsResponse from '@/models/dtos/statisticsDtos/employeeStatisticsResponse'
 import RevenueStatisticsResponse from '@/models/dtos/statisticsDtos/revenueStatisticsResponse'
-import ComboStatisticsResponse from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
 import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
 
 import OrderSummary from '@/components/pages/admin/statistics/OrderSummary.vue'
@@ -64,7 +63,6 @@ import ProductStatistic from '@/components/pages/admin/statistics/ProductStatist
 import CustomerStatistic from '@/components/pages/admin/statistics/CustomerStatistic.vue'
 import EmployeeStatistic from '@/components/pages/admin/statistics/EmployeeStatistic.vue'
 import RevenueStatistic from '@/components/pages/admin/statistics/RevenueStatistic.vue'
-// import ComboStatistic from '@/components/pages/admin/statistics/ComboStatistic.vue'
 import DatatableStatistic from '@/components/pages/admin/statistics/DatatableStatistic.vue'
 
 export default {
@@ -75,7 +73,6 @@ export default {
     CustomerStatistic,
     EmployeeStatistic,
     RevenueStatistic,
-    // ComboStatistic,
     DatatableStatistic,
   },
   props: {},
@@ -87,7 +84,6 @@ export default {
       employeeStatisticsData: {},
       revenueStatisticData: {},
       datatableStatisticsResponse: {},
-      comboStatisticsaryData: {}, // Đã thêm biến này để tránh lỗi runtime
       revenueIsLoading: true,
       productIsLoading: true,
       customerIsLoading: true,
@@ -116,7 +112,6 @@ export default {
           this.customerStatisticsData = await parsed.customerStatisticsData
           this.employeeStatisticsData = await parsed.employeeStatisticsData
           this.revenueStatisticData = await parsed.revenueStatisticData
-          this.comboStatisticsaryData = (await parsed.comboStatisticsaryData) || {} // Đảm bảo không lỗi khi lấy cache
           this.datatableStatisticsResponse = await parsed.datatableStatisticsResponse
           this.isLoading = false
           this.revenueIsLoading = false
@@ -168,12 +163,6 @@ export default {
       errorMessage += 'Doanh thu. '
       errorLogs.push(error)
     }
-    /* try {
-      await this.loadComboStatisticsData()
-    } catch (error) {
-      errorMessage += 'Combo. '
-      errorLogs.push(error)
-    } */
     try {
       await this.loadDatatableData()
     } catch (error) {
@@ -194,7 +183,6 @@ export default {
         customerStatisticsData: JSON.parse(JSON.stringify(this.customerStatisticsData)),
         employeeStatisticsData: JSON.parse(JSON.stringify(this.employeeStatisticsData)),
         revenueStatisticData: JSON.parse(JSON.stringify(this.revenueStatisticData)),
-        comboStatisticsaryData: JSON.parse(JSON.stringify(this.comboStatisticsaryData)), // Đã thêm vào cache
         datatableStatisticsResponse: JSON.parse(JSON.stringify(this.datatableStatisticsResponse)),
         expire: now + CACHE_EXPIRE,
       }),
@@ -252,14 +240,6 @@ export default {
       this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
       await this.$nextTick()
       this.revenueIsLoading = false
-    },
-    async loadComboStatisticsData() {
-      const response = await axiosConfig.getFromApi(
-        '/Statistics/GetComboStatistics',
-        ConfigsRequest.takeAuth(),
-      )
-      this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
-      await this.$nextTick()
     },
     async loadDatatableData() {
       this.datatableIsLoading = true
