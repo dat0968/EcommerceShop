@@ -4,39 +4,60 @@
     <!-- Breadcrumb trạng thái -->
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item active h5">Quản lý danh mục</li>
+        <li class="breadcrumb-item active h5"><strong>Quản lý đánh giá</strong></li>
       </ol>
+      <hr />
     </nav>
 
-    <div class="col-12">
-      <div class="row justify-content-between align-items-center mb-3">
-        <div class="col-md-3 mb-2">
-          <select class="form-select" v-model="filterByStar" @change="filterByRating">
-            <option value="null">Tất cả sao</option>
-            <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
-          </select>
-        </div>
-        <div class="col-md-3 mb-2">
-          <select class="form-select" v-model="filterHasImage" @change="filterByRating">
-            <option value="">Có/không ảnh</option>
-            <option value="1">Có ảnh</option>
-            <option value="0">Không ảnh</option>
-          </select>
-        </div>
-        <div class="col-md-3 mb-2">
-          <OffensiveWords />
-        </div>
-        <div class="col-md-3">
-          <button class="btn btn-primary" :disabled="isDisabled" @click="updateShopResponse">
-            Cập nhật phản hồi của shop
-          </button>
+    <div class="row">
+      <div class="col-md-3">
+        <div class="card shadow-sm mb-3">
+          <div class="card-header bg-light fw-bold"><i class="bi bi-funnel"></i> Bộ lọc</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="filterStar" class="form-label">Lọc theo số sao:</label>
+              <select id="filterStar" class="form-select" v-model="filterByStar" @change="filterByRating">
+                <option :value="null">Tất cả sao</option>
+                <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="filterImage" class="form-label">Lọc theo ảnh:</label>
+              <select id="filterImage" class="form-select" v-model="filterHasImage" @change="filterByRating">
+                <option value="">Tất cả</option>
+                <option value="1">Có ảnh</option>
+                <option value="0">Không ảnh</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <OffensiveWords />
+            </div>
+            <button class="btn btn-outline-secondary w-100" @click="resetFilters">
+              <i class="bi bi-x-circle"></i> Xóa lọc
+            </button>
+          </div>
         </div>
       </div>
-      <table
-        id="datatableReviews"
-        class="table table-bordered table-striped"
-        style="width: 100%"
-      ></table>
+      <div class="col-md-9">
+        <div class="card">
+          <div class="card-header text-center">
+            <h5>Danh sách đánh giá</h5>
+          </div>
+          <div class="card-body">
+            <button class="btn btn-primary mb-3" :disabled="isDisabled || isSubmittingShopResponse" @click="updateShopResponse">
+              <span v-if="isSubmittingShopResponse" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Cập nhật phản hồi của shop
+            </button>
+            <table
+              v-if="filteredListReview.length > 0"
+              id="datatableReviews"
+              class="table table-bordered table-striped"
+              style="width: 100%"
+            ></table>
+            <NoDataMessage v-else contentText="Không có đánh giá nào để hiển thị." />
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <VueEasyLight
@@ -83,6 +104,7 @@ export default {
       isLightboxOpen: false,
       lightboxImages: [],
       lightboxIndex: 0,
+      isSubmittingShopResponse: false,
     }
   },
   computed: {},
@@ -436,6 +458,11 @@ export default {
       return this.getReviewImages(item).map((img) =>
         this.pathReplaceImg(undefined, 'HinhAnh/Reviews', img),
       )
+    },
+    resetFilters() {
+      this.filterByStar = null;
+      this.filterHasImage = '';
+      this.filterByRating();
     },
   },
 }
