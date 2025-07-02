@@ -178,9 +178,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                         // Đã đánh giá
                         listReviewed.Add(ct.DanhGia.ToReviewResponseDTO(isProduct));
                     }
-                    // ! Khi đặt filter trạng thái đơn hàng thì mở cmt dưới thay else
-                    //  else if (ct.DanhGia != null && ct.DanhGia?.Cthoadon?.MaHdNavigation.NgayNhan != null && ct.DanhGia.Cthoadon.MaHdNavigation.NgayNhan >= sevenDaysAgo)
-                    else
+                    else if (ct.DanhGia != null && ct.DanhGia?.Cthoadon?.MaHdNavigation.NgayNhan != null && ct.DanhGia.Cthoadon.MaHdNavigation.NgayNhan >= sevenDaysAgo)
                     {
                         bool isProduct = ct.MaCtsp != null && ct.MaCtsp != 0;
                         // Chưa đánh giá, tạo ReviewResponseDTO với thông tin cơ bản
