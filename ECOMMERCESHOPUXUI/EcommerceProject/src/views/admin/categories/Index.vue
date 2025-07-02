@@ -128,10 +128,12 @@
           </div>
           <div class="card-body">
             <table
+              v-if="filteredCategories.length > 0"
               id="datatableCategories"
               class="table table-bordered table-striped"
               style="width: 100%"
             ></table>
+            <NoDataMessage v-else contentText="Không có sản phẩm nào trong danh mục đã chọn." />
           </div>
         </div>
       </div>
@@ -162,7 +164,8 @@
                   <option :value="false">Không hoạt động</option>
                 </select>
               </div>
-              <button type="submit" class="btn btn-primary w-100">
+              <button type="submit" class="btn btn-primary w-100" :disabled="isSubmittingParent">
+                <span v-if="isSubmittingParent" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 {{ isEditParent ? 'Cập nhật' : 'Thêm mới' }}
               </button>
               <button
@@ -184,10 +187,12 @@
           </div>
           <div class="card-body">
             <table
+              v-if="optionsParentCategory.length > 0"
               id="datatableParent"
               class="table table-bordered table-striped"
               style="width: 100%"
             ></table>
+            <NoDataMessage v-else contentText="Không có danh mục cha nào." />
           </div>
         </div>
       </div>
@@ -218,7 +223,8 @@
                   <option :value="false">Không hoạt động</option>
                 </select>
               </div>
-              <button type="submit" class="btn btn-primary w-100">
+              <button type="submit" class="btn btn-primary w-100" :disabled="isSubmittingChild">
+                <span v-if="isSubmittingChild" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 {{ isEditChild ? 'Cập nhật' : 'Thêm mới' }}
               </button>
               <button
@@ -240,10 +246,12 @@
           </div>
           <div class="card-body">
             <table
+              v-if="optionsChildCategory.length > 0"
               id="datatableChild"
               class="table table-bordered table-striped"
               style="width: 100%"
             ></table>
+            <NoDataMessage v-else contentText="Không có danh mục con nào." />
           </div>
         </div>
       </div>
@@ -264,11 +272,13 @@ import ResponseAPI from '@/models/ResponseAPI'
 import { formatCurrency } from '@/constants/formatCurrency'
 import Overlay from '@/components/common/Overlay.vue'
 import pathReplaceImg from '@/utils/processPathImg'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 export default {
   name: 'CategoryIndex',
   components: {
     Overlay,
+    NoDataMessage,
   },
   data() {
     return {
@@ -296,6 +306,8 @@ export default {
       datatableChild: null,
       focusMode: 'view',
       isEndpointActive: axiosConfig.isEndpointAvailable(), // Biến để kiểm tra kết nối API
+      isSubmittingParent: false,
+      isSubmittingChild: false,
     }
   },
   computed: {
@@ -405,40 +417,45 @@ export default {
       }
     },
     async onSubmitParent() {
-      if (this.isEditParent) {
-        const res = await axiosConfig.postToApi(
-          `/categories/parent/${this.formParent.maDanhMucCha}`,
-          {
-            tenDanhMucCha: this.formParent.tenDanhMucCha,
-            isActive: this.formParent.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
+      this.isSubmittingParent = true;
+      try {
+        if (this.isEditParent) {
+          const res = await axiosConfig.postToApi(
+            `/categories/parent/${this.formParent.maDanhMucCha}`,
+            {
+              tenDanhMucCha: this.formParent.tenDanhMucCha,
+              isActive: this.formParent.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsParentCategory = this.optionsParentCategory.map((x) =>
+            x.maDanhMucCha === this.formParent.maDanhMucCha ? res.data : x,
+          )
+          this.breadcrumbText = 'Cập nhật danh mục cha thành công'
+        } else {
+          const res = await axiosConfig.postToApi(
+            `/categories/parent/0`,
+            {
+              maDanhMucCha: 0,
+              tenDanhMucCha: this.formParent.tenDanhMucCha,
+              isActive: this.formParent.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsParentCategory = [...this.optionsParentCategory, res.data]
+          this.breadcrumbText = 'Thêm mới danh mục cha thành công'
         }
-        this.optionsParentCategory = this.optionsParentCategory.map((x) =>
-          x.maDanhMucCha === this.formParent.maDanhMucCha ? res.data : x,
-        )
-        this.breadcrumbText = 'Cập nhật danh mục cha thành công'
-      } else {
-        const res = await axiosConfig.postToApi(
-          `/categories/parent/0`,
-          {
-            maDanhMucCha: 0,
-            tenDanhMucCha: this.formParent.tenDanhMucCha,
-            isActive: this.formParent.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
-        }
-        this.optionsParentCategory = [...this.optionsParentCategory, res.data]
-        this.breadcrumbText = 'Thêm mới danh mục cha thành công'
+        // await this.loadOption()
+        this.resetFormParent()
+      } finally {
+        this.isSubmittingParent = false;
       }
-      // await this.loadOption()
-      this.resetFormParent()
     },
     resetFormParent() {
       this.isEditParent = false
@@ -487,44 +504,49 @@ export default {
       }
     },
     async onSubmitChild() {
-      if (this.isEditChild) {
-        // Cập nhật danh mục con
-        const res = await axiosConfig.postToApi(
-          `/categories/child/${this.formChild.maDanhMucCon}`,
-          {
-            tenDanhMucCon: this.formChild.tenDanhMucCon,
-            isActive: this.formChild.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
+      this.isSubmittingChild = true;
+      try {
+        if (this.isEditChild) {
+          // Cập nhật danh mục con
+          const res = await axiosConfig.postToApi(
+            `/categories/child/${this.formChild.maDanhMucCon}`,
+            {
+              tenDanhMucCon: this.formChild.tenDanhMucCon,
+              isActive: this.formChild.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsChildCategory = this.optionsChildCategory.map((x) =>
+            x.maDanhMucCon === this.formChild.maDanhMucCon ? res.data : x,
+          )
+          this.reloadDataTableChild()
+          this.breadcrumbText = 'Cập nhật danh mục con thành công'
+        } else {
+          // Thêm mới danh mục con
+          const res = await axiosConfig.postToApi(
+            `/categories/child/0`,
+            {
+              maDanhMucCon: 0,
+              tenDanhMucCon: this.formChild.tenDanhMucCon,
+              isActive: this.formChild.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsChildCategory = [...this.optionsChildCategory, res.data]
+          this.reloadDataTableChild()
+          this.breadcrumbText = 'Thêm mới danh mục con thành công'
         }
-        this.optionsChildCategory = this.optionsChildCategory.map((x) =>
-          x.maDanhMucCon === this.formChild.maDanhMucCon ? res.data : x,
-        )
-        this.reloadDataTableChild()
-        this.breadcrumbText = 'Cập nhật danh mục con thành công'
-      } else {
-        // Thêm mới danh mục con
-        const res = await axiosConfig.postToApi(
-          `/categories/child/0`,
-          {
-            maDanhMucCon: 0,
-            tenDanhMucCon: this.formChild.tenDanhMucCon,
-            isActive: this.formChild.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
-        }
-        this.optionsChildCategory = [...this.optionsChildCategory, res.data]
-        this.reloadDataTableChild()
-        this.breadcrumbText = 'Thêm mới danh mục con thành công'
+        // await this.loadOption()
+        this.resetFormChild()
+      } finally {
+        this.isSubmittingChild = false;
       }
-      // await this.loadOption()
-      this.resetFormChild()
     },
     resetFormChild() {
       this.isEditChild = false
