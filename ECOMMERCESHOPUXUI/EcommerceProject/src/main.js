@@ -16,6 +16,10 @@ app.use(pinia)
 app.use(router)
 app.mount('#app')
 
-await initApiBaseUrl()
-replaceBrokenImages()
+async function initializeApp() {
+  await initApiBaseUrl();
+  replaceBrokenImages();
+}
+
+initializeApp();
 

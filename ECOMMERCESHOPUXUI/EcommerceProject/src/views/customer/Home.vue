@@ -16,6 +16,9 @@ import insta3 from '@/assets/Customer/img/instagram/insta-3.jpg'
 import insta4 from '@/assets/Customer/img/instagram/insta-4.jpg'
 import insta5 from '@/assets/Customer/img/instagram/insta-5.jpg'
 import insta6 from '@/assets/Customer/img/instagram/insta-6.jpg'
+import trend1 from '@/assets/Customer/img/trend/f-1.jpg'
+import trend2 from '@/assets/Customer/img/trend/f-2.jpg'
+import trend3 from '@/assets/Customer/img/trend/f-3.jpg'
 import CompareProduct from '@/components/specicals/CompareProduct.vue'
 const favoriteStatus = ref({})
 const setBackgroundImages = () => {
@@ -520,7 +523,7 @@ onMounted(() => {
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/f-1.jpg" alt="" class="img-fluid" />
+                  <img :src="trend1" alt="" class="img-fluid" />
                 </div>
                 <div class="trend__item__text text-center mt-2">
                   <h6 class="mb-1">Bow wrap skirt</h6>
@@ -536,7 +539,7 @@ onMounted(() => {
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/f-2.jpg" alt="" class="img-fluid" />
+                  <img :src="trend2" alt="" class="img-fluid" />
                 </div>
                 <div class="trend__item__text text-center">
                   <h6 class="mb-1">Metallic earrings</h6>
@@ -552,7 +555,7 @@ onMounted(() => {
               </div>
               <div class="trend__item">
                 <div class="trend__item__pic">
-                  <img src="../../assets/img/trend/f-3.jpg" alt="" class="img-fluid" />
+                  <img :src="trend3" alt="" class="img-fluid" />
                 </div>
                 <div class="trend__item__text text-center">
                   <h6 class="mb-1">Flap cross-body bag</h6>

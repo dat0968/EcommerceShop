@@ -16,7 +16,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     {
         private readonly EcommerceShopContext _db;
         private static string pathImageReview = "wwwroot/HinhAnh/Reviews";
-        private static string filterStatusOrder = "Đã nhận hàng"; // Trạng thái để lọc việc get danh sách đánh giá
+        private static string filterStatusOrder = "Đã nhận"; // Trạng thái để lọc việc get danh sách đánh giá
 
         public ReviewRepository(EcommerceShopContext db) : base(db)
         {
@@ -157,7 +157,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 var cthoadons = await _db.Cthoadons
                     .Include(ct => ct.MaHdNavigation)
-                        .Where(ct => ct.MaHdNavigation.MaKh == userId)
+                        .Where(ct => ct.MaHdNavigation.MaKh == userId && ct.MaHdNavigation.TinhTrang == filterStatusOrder)
                     .Include(ct => ct.DanhGia)
                         .ThenInclude(dg => dg.KhachHang)
                     .Include(ct => ct.MaCtspNavigation)
@@ -214,6 +214,23 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             try
             {
                 ValidateReviewRequest(entity);
+
+                // Kiểm tra trạng thái đơn hàng
+                var orderDetail = await _db.Cthoadons
+                    .Include(ct => ct.MaHdNavigation)
+                    .FirstOrDefaultAsync(ct => ct.Id == entity.MaCtHd && ct.MaHdNavigation.MaKh == entity.MaKh);
+
+                if (orderDetail == null)
+                {
+                    response.SetErrorResponse("Chi tiết hóa đơn không tồn tại hoặc không thuộc về người dùng này.");
+                    return response;
+                }
+
+                if (orderDetail.MaHdNavigation.TinhTrang != filterStatusOrder)
+                {
+                    response.SetErrorResponse($"Bạn chỉ có thể đánh giá sản phẩm/combo sau khi đơn hàng đã '{filterStatusOrder}'. Trạng thái hiện tại là '{orderDetail.MaHdNavigation.TinhTrang}'.");
+                    return response;
+                }
 
                 // Kiểm tra xem đánh giá đã tồn tại chưa
                 DanhGia? existingReview = new();

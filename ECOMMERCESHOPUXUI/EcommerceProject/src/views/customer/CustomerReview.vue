@@ -409,7 +409,12 @@ export default {
           ConfigsRequest.takeAuth(),
         )
 
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+        if (!res.success) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: res.message,
+          })
           return
         }
 
