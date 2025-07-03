@@ -564,14 +564,43 @@ import VueEasyLight from 'vue-easy-lightbox'
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import Swal from 'sweetalert2'
 
+/**
+ * Converts a dataURL to a Blob object.
+ * @param {string} dataurl - The data URL to convert.
+ * @returns {Blob|null} - The resulting Blob, or null if input is invalid.
+ */
 function dataURLtoBlob(dataurl) {
+  if (!dataurl || typeof dataurl !== 'string') {
+    console.error('dataURLtoBlob: Invalid dataurl input', dataurl)
+    return null
+  }
+  // Check if it's not a data URL, but a regular URL or something else
+  if (!dataurl.startsWith('data:')) {
+    console.error('dataURLtoBlob: Input is not a data URL', dataurl)
+    return null
+  }
   const arr = dataurl.split(',')
-  const mime = arr[0].match(/:(.*?);/)[1]
-  const bstr = atob(arr[1])
-  let n = bstr.length
+  if (arr.length < 2) {
+    console.error('dataURLtoBlob: Malformed dataurl, missing comma', dataurl)
+    return null
+  }
+  const mimeMatch = arr[0].match(/:(.*?);/)
+  if (!mimeMatch || !mimeMatch[1]) {
+    console.error('dataURLtoBlob: Could not extract mime type', arr[0])
+    return null
+  }
+  const mime = mimeMatch[1]
+  let bstr
+  try {
+    bstr = atob(arr[1])
+  } catch (e) {
+    console.error('dataURLtoBlob: Failed to decode base64', e, arr[1])
+    return null
+  }
+  const n = bstr.length
   const u8arr = new Uint8Array(n)
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n)
+  for (let i = 0; i < n; i++) {
+    u8arr[i] = bstr.charCodeAt(i)
   }
   return new Blob([u8arr], { type: mime })
 }
@@ -1142,7 +1171,7 @@ export default {
     async analyzeImageWithGemini(imageDataUrl) {
       try {
         const API_KEY = this.apiKeys.geminiApiKey
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${API_KEY}`
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`
 
         const base64Image = imageDataUrl.split(',')[1]
 
