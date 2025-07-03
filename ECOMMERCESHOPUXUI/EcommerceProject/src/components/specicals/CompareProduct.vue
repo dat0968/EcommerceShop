@@ -11,6 +11,9 @@
             {{ showSidebarModal ? '>' : '=' }}
           </button>
           <h2 class="text-center col-10">So sánh sản phẩm</h2>
+          <button class="btn col-1" @click="showApiSettingsModal" title="Cài đặt API Keys">
+            <i class="bi bi-gear"></i>
+          </button>
           <button class="close-btn col-1" @click="showModal = false">×</button>
         </div>
         <div class="modal-body overflow-auto">
@@ -88,7 +91,14 @@
             </div>
           </div>
           <!-- Vùng so sánh chính -->
-          <div class="compare-main">
+          <div class="compare-main position-relative">
+            <!-- Lớp phủ loading -->
+            <div v-if="isLoadingAI" class="loading-overlay">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <span class="mt-2">AI đang xử lý, vui lòng chờ...</span>
+            </div>
             <div class="row align-items-stretch" style="min-height: 400px">
               <div
                 v-for="(group, groupIdx) in compareGroups"
@@ -388,22 +398,126 @@
         </div>
         <div v-if="showModelSelection" class="model-selection-overlay">
           <div class="model-selection-modal">
-            <h3>Chọn mẫu người mẫu</h3>
-            <div class="model-list">
+            <h4 class="mb-5">Chọn hoặc tải lên ảnh người mẫu</h4>
+            <!-- Lựa chọn mẫu có sẵn -->
+            <div class="model-list mb-4">
+              <!-- Mẫu 1 -->
               <div
-                v-for="(model, index) in models"
-                :key="index"
                 class="model-item"
-                :class="{ selected: selectedTryOnModel === model }"
-                @click="selectedTryOnModel = model"
+                :class="{ selected: selectedTryOnModel === models[0] }"
+                @click="selectPredefinedModel(models[0])"
               >
-                <img :src="model.url" :alt="model.name" class="model-thumbnail" />
-                <span>{{ model.name }}</span>
+                <img :src="models[0].url" :alt="models[0].name" class="model-thumbnail" />
+                <span>{{ models[0].name }}</span>
+              </div>
+
+              <!-- Ảnh người dùng tải lên -->
+              <div v-if="userModelPreviewUrl" class="model-item user-model-preview selected">
+                <img :src="userModelPreviewUrl" alt="Mẫu của bạn" class="model-thumbnail" />
+                <span>Mẫu của bạn</span>
+              </div>
+
+              <!-- Mẫu 2 -->
+              <div
+                class="model-item"
+                :class="{ selected: selectedTryOnModel === models[1] }"
+                @click="selectPredefinedModel(models[1])"
+              >
+                <img :src="models[1].url" :alt="models[1].name" class="model-thumbnail" />
+                <span>{{ models[1].name }}</span>
               </div>
             </div>
-            <div class="model-selection-actions">
+
+            <!-- Lựa chọn tải ảnh lên -->
+            <div class="model-upload-area">
+              <input
+                type="file"
+                @change="handleModelUpload"
+                accept="image/*"
+                id="modelUploadInput"
+                style="display: none"
+              />
+              <label for="modelUploadInput" class="btn btn-info m-1"
+                >Tải ảnh của bạn (dưới 5MB)</label
+              >
+            </div>
+            <hr />
+            <div class="model-selection-actions d-flex flex-row justify-content-between">
               <button class="btn btn-secondary" @click="cancelModelSelection">Hủy</button>
-              <button class="btn btn-primary" @click="confirmModelSelection">Xác nhận</button>
+              <button
+                class="btn btn-primary"
+                @click="confirmModelSelection"
+                :disabled="!userModelFile && !selectedTryOnModel"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+        <div v-if="showApiSettings" class="api-settings-overlay">
+          <div class="api-settings-modal">
+            <h3>Cài đặt API Key</h3>
+            <div class="form-group">
+              <label for="cloudinaryApiKey">Cloudinary API Key</label>
+              <input
+                type="text"
+                id="cloudinaryApiKey"
+                v-model="apiKeys.cloudinaryApiKey"
+                class="form-control"
+                placeholder="Nhập Cloudinary API Key"
+              />
+            </div>
+            <div class="form-group">
+              <label for="cloudinaryApiSecret">Cloudinary API Secret</label>
+              <input
+                type="text"
+                id="cloudinaryApiSecret"
+                v-model="apiKeys.cloudinaryApiSecret"
+                class="form-control"
+                placeholder="Nhập Cloudinary API Secret"
+              />
+            </div>
+            <div class="form-group">
+              <label for="cloudinaryCloudName">Cloudinary Cloud Name</label>
+              <input
+                type="text"
+                id="cloudinaryCloudName"
+                v-model="apiKeys.cloudinaryCloudName"
+                class="form-control"
+                placeholder="Nhập Cloudinary Cloud Name"
+              />
+            </div>
+            <div class="form-group">
+              <label for="cloudinaryUploadPreset">Cloudinary Upload Preset</label>
+              <input
+                type="text"
+                id="cloudinaryUploadPreset"
+                v-model="apiKeys.cloudinaryUploadPreset"
+                class="form-control"
+                placeholder="Nhập tên Upload Preset không dấu"
+              />
+            </div>
+            <div class="form-group">
+              <label for="stabilityApiKey" class="d-flex align-items-center">
+                Stability AI API Key
+                <i
+                  class="bi bi-info-circle ms-2"
+                  style="cursor: pointer"
+                  @click="showApiKeyHelp"
+                  title="Làm thế nào để lấy API Key?"
+                ></i>
+              </label>
+              <input
+                type="text"
+                id="stabilityApiKey"
+                v-model="apiKeys.stabilityApiKey"
+                class="form-control"
+                placeholder="Nhập Stability AI API Key"
+              />
+            </div>
+            <div class="api-settings-actions">
+              <button class="btn btn-secondary" @click="cancelApiSettings">Hủy</button>
+              <button class="btn btn-primary" @click="saveApiSettings">Lưu</button>
             </div>
           </div>
         </div>
@@ -424,15 +538,25 @@ import VueEasyLight from 'vue-easy-lightbox'
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 
 function dataURLtoBlob(dataurl) {
-  var arr = dataurl.split(','),
-    mime = arr[0].match(/:(.*?);/)[1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n)
+  const arr = dataurl.split(',')
+  const mime = arr[0].match(/:(.*?);/)[1]
+  const bstr = atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
   while (n--) {
     u8arr[n] = bstr.charCodeAt(n)
   }
   return new Blob([u8arr], { type: mime })
+}
+
+// Helper to convert a loaded image object to a data URL
+function imageToDataURL(img) {
+  const canvas = document.createElement('canvas')
+  canvas.width = img.naturalWidth
+  canvas.height = img.naturalHeight
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(img, 0, 0)
+  return canvas.toDataURL('image/jpeg')
 }
 
 export default {
@@ -444,6 +568,15 @@ export default {
       showSidebarModal: true,
       infoTabs: ['Mô tả', 'Đánh giá', 'Thông tin'],
       selectedProducts: [],
+      showApiSettings: false,
+      isLoadingAI: false, // Trạng thái loading cho AI
+      apiKeys: {
+        cloudinaryApiKey: localStorage.getItem('cloudinaryApiKey') || '',
+        cloudinaryApiSecret: localStorage.getItem('cloudinaryApiSecret') || '',
+        cloudinaryCloudName: localStorage.getItem('cloudinaryCloudName') || '',
+        cloudinaryUploadPreset: localStorage.getItem('cloudinaryUploadPreset') || 'unsigned_upload',
+        stabilityApiKey: localStorage.getItem('stabilityApiKey') || '',
+      },
       compareGroups: [
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
@@ -455,22 +588,22 @@ export default {
       lightboxIndex: 0,
       tryOnResults: {},
       showModelSelection: false,
-      selectedTryOnModel: null,
       currentTryOnGroupIdx: null,
+      // Restore predefined models and selection state
+      selectedTryOnModel: null,
       models: [
         {
-          name: 'Nữ đứng',
+          name: 'Nam đứng',
           url: 'https://images.pexels.com/photos/532220/pexels-photo-532220.jpeg?w=400',
-          gender: 'female',
-          pose: 'standing',
         },
         {
-          name: 'Nam ngồi',
-          url: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?w=400',
-          gender: 'male',
-          pose: 'sitting',
+          name: 'Nữ đứng',
+          url: 'https://images.pexels.com/photos/29565763/pexels-photo-29565763.jpeg',
         },
       ],
+      // User-uploaded model state
+      userModelFile: null,
+      userModelPreviewUrl: '',
     }
   },
   mounted() {
@@ -485,6 +618,48 @@ export default {
     formatCurrency,
     loadSelectedProducts() {
       this.selectedProducts = CompareStorageHelper.getCompareList()
+    },
+    showApiKeyHelp() {
+      alert(
+        'Cách lấy Stability AI API Key:\n\n' +
+          '1. Đăng ký hoặc đăng nhập vào tài khoản DreamStudio tại https://dreamstudio.com/\n' +
+          '2. Nhấp vào biểu tượng tài khoản của bạn ở góc trên bên phải.\n' +
+          '3. Chọn "API Keys" từ menu.\n' +
+          '4. Sao chép (copy) API Key của bạn và dán vào đây.',
+      )
+    },
+    selectPredefinedModel(model) {
+      this.selectedTryOnModel = model
+      // Clear user upload selection
+      this.userModelFile = null
+      this.userModelPreviewUrl = ''
+      document.getElementById('modelUploadInput').value = '' // Reset file input
+    },
+    handleModelUpload(event) {
+      const file = event.target.files[0]
+      if (!file) return
+
+      // Validation: Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        alert('Lỗi: Vui lòng chỉ chọn file hình ảnh.')
+        return
+      }
+
+      // Validation: Check file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+      if (file.size > maxSize) {
+        alert('Lỗi: Kích thước file không được vượt quá 5MB.')
+        return
+      }
+
+      this.userModelFile = file
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        this.userModelPreviewUrl = e.target.result
+      }
+      reader.readAsDataURL(file)
+      // Clear predefined model selection
+      this.selectedTryOnModel = null
     },
     openLightboxGroupProduct(groupIdx, prodIdx, comboIdx, isComboChild) {
       // Lấy danh sách ảnh của group
@@ -527,12 +702,26 @@ export default {
     },
     addToCompare(item, groupIdx = 0) {
       if (this.compareGroups[groupIdx].products.length < 10) {
+        // Check for category conflict before adding
+        if (this.checkCategoryConflict(item, groupIdx)) {
+          alert(
+            `Không thể thêm "${item.name || item.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
+          )
+          return
+        }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
       }
       this.loadSelectedProducts()
     },
     addComboToCompare(combo, groupIdx = 0) {
       if (this.compareGroups[groupIdx].products.length < 10) {
+        // Check for category conflict before adding combo
+        if (this.checkCategoryConflict(combo, groupIdx)) {
+          alert(
+            `Không thể thêm "${combo.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
+          )
+          return
+        }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(combo))
       }
       this.loadSelectedProducts()
@@ -591,7 +780,13 @@ export default {
         item = this.dragItem
       }
       if (!item) return
-      // Cho phép thêm bất kỳ sản phẩm hoặc combo vào group
+      // Check for category conflict before adding
+      if (this.checkCategoryConflict(item, groupIdx)) {
+        alert(
+          `Không thể thêm "${item.name || item.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
+        )
+        return
+      }
       this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
       this.dragItem = null
       this.loadSelectedProducts()
@@ -602,26 +797,55 @@ export default {
       const groupIdx = window.confirm('Thêm vào nhóm so sánh 2? (OK: nhóm 2, Cancel: nhóm 1)')
         ? 1
         : 0
-      this.addToCompare(item, groupIdx)
+      if (item.type === 'combo') {
+        this.addComboToCompare(item, groupIdx)
+      } else {
+        this.addToCompare(item, groupIdx)
+      }
     },
     closeLightbox() {
       this.isLightboxOpen = false
     },
     async tryOnModel(groupIdx) {
+      if (
+        !this.apiKeys.cloudinaryApiKey ||
+        !this.apiKeys.cloudinaryApiSecret ||
+        !this.apiKeys.cloudinaryCloudName ||
+        !this.apiKeys.stabilityApiKey
+      ) {
+        if (confirm('API Keys chưa được cài đặt. Bạn có muốn cài đặt ngay bây giờ không?')) {
+          this.showApiSettings = true
+        }
+        return
+      }
       this.showModelSelection = true
       this.currentTryOnGroupIdx = groupIdx
     },
+    cancelApiSettings() {
+      this.showApiSettings = false
+    },
+    saveApiSettings() {
+      localStorage.setItem('cloudinaryApiKey', this.apiKeys.cloudinaryApiKey)
+      localStorage.setItem('cloudinaryApiSecret', this.apiKeys.cloudinaryApiSecret)
+      localStorage.setItem('cloudinaryCloudName', this.apiKeys.cloudinaryCloudName)
+      localStorage.setItem('cloudinaryUploadPreset', this.apiKeys.cloudinaryUploadPreset)
+      localStorage.setItem('stabilityApiKey', this.apiKeys.stabilityApiKey)
+      this.showApiSettings = false
+      alert('API Keys đã được lưu.')
+    },
     async confirmModelSelection() {
-      if (!this.selectedTryOnModel) {
-        alert('Vui lòng chọn một mẫu người mẫu.')
+      if (!this.selectedTryOnModel && !this.userModelFile) {
+        alert('Vui lòng chọn một mẫu có sẵn hoặc tải lên ảnh của bạn.')
         return
       }
 
+      this.isLoadingAI = true // Bắt đầu loading
       const groupIdx = this.currentTryOnGroupIdx
-      const selectedModel = this.selectedTryOnModel
+      const modelInfo = this.selectedTryOnModel
+        ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
+        : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl }
 
       try {
-        // 2. Ghép ảnh sản phẩm lên người mẫu (canvas)
         const group = this.compareGroups[groupIdx]
         if (!group || !group.products || group.products.length === 0) {
           alert('Nhóm này chưa có sản phẩm để thử đồ.')
@@ -636,78 +860,143 @@ export default {
             try {
               const prodImg = await this.loadImage(imgUrl)
               productImages.push(prodImg)
-            } catch (e) {
-              console.error('Error loading product image:', imgUrl, e)
+            } catch (error) {
+              console.error('Error loading product image:', imgUrl, error)
               alert('Không thể tải ảnh sản phẩm: ' + (item.name || ''))
-              return // Stop if any product image fails to load
+              return
             }
           }
         }
 
-        // Simulate AI change clothes
-        const tryOnImageBase64 = await this.simulateChangeClothesAI(
-          selectedModel.url,
-          productImages,
-        )
+        // Use the selected or uploaded model image for the try-on process
+        const tryOnImageResultUrl = await this.simulateChangeClothesAI(modelInfo.url, productImages)
 
-        // 4. Gửi lên AI lấy điểm thẩm mỹ
-        let score = 0
-        try {
-          score = await this.getAestheticScore(tryOnImageBase64)
-        } catch (e) {
-          alert('Lỗi khi gửi ảnh lên AI chấm điểm.')
-          score = 0
-        }
-        // 5. Lưu kết quả
+        let score = await this.getAestheticScore()
+
         this.tryOnResults[groupIdx] = {
-          model: selectedModel,
-          image: tryOnImageBase64,
+          model: modelInfo,
+          image: tryOnImageResultUrl,
           score,
           products: group.products,
           time: new Date().toISOString(),
         }
         this.tryOnResults = { ...this.tryOnResults }
-      } catch (err) {
-        alert('Đã xảy ra lỗi không xác định khi thử đồ trên người mẫu.')
+      } catch (error) {
+        console.error('Error during try-on process:', error)
+        // The alert is already shown in simulateChangeClothesAI
       } finally {
-        this.showModelSelection = false
-        this.selectedTryOnModel = null
-        this.currentTryOnGroupIdx = null
+        this.isLoadingAI = false // Kết thúc loading
+        this.cancelModelSelection() // Reset state
       }
-    },
-    async simulateChangeClothesAI(modelUrl, productImages) {
-      // This function simulates a call to a "change clothes" AI API.
-      // In a real scenario, you would send modelUrl and productImages
-      // to an external AI service and receive a processed image.
-
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      canvas.width = 400
-      canvas.height = 600
-
-      // Load model image
-      let modelImg
-      try {
-        modelImg = await this.loadImage(modelUrl)
-      } catch (e) {
-        console.error('Error loading model image for simulation:', modelUrl, e)
-        throw new Error('Failed to load model image for AI simulation.')
-      }
-      ctx.drawImage(modelImg, 0, 0, 400, 600)
-
-      // Overlay product images (simple demo, real AI would do complex processing)
-      let y = 200
-      for (const prodImg of productImages) {
-        ctx.drawImage(prodImg, 100, y, 200, 120) // demo position
-        y += 120
-      }
-
-      return canvas.toDataURL('image/jpeg')
     },
     cancelModelSelection() {
       this.showModelSelection = false
-      this.selectedTryOnModel = null
       this.currentTryOnGroupIdx = null
+      this.userModelFile = null
+      this.userModelPreviewUrl = ''
+      this.selectedTryOnModel = null
+    },
+    async simulateChangeClothesAI(modelUrlOrDataUrl, productImages) {
+      // This function now directly uses Stability AI, which is more efficient.
+      try {
+        // Step 1: Convert all images to data URLs
+        const modelDataUrl = modelUrlOrDataUrl.startsWith('data:')
+          ? modelUrlOrDataUrl
+          : imageToDataURL(await this.loadImage(modelUrlOrDataUrl))
+
+        const productDataUrls = []
+        for (const prodImg of productImages) {
+          productDataUrls.push(imageToDataURL(prodImg))
+        }
+
+        // Step 2: Send to Stability AI for processing
+        const processedImageUrl = await this.processWithStabilityAI(modelDataUrl, productDataUrls)
+        return processedImageUrl
+      } catch (error) {
+        console.error('Error during AI processing:', error)
+        alert(
+          'Đã xảy ra lỗi khi xử lý ảnh với AI: ' +
+            error.message +
+            '. Vui lòng kiểm tra console để biết thêm chi tiết.',
+        )
+        throw error
+      }
+    },
+    async uploadToCloudinary(urlOrDataUrl, tag) {
+      // Upload image to Cloudinary using direct API call
+      try {
+        if (!urlOrDataUrl) {
+          throw new Error('Invalid image data provided for upload.')
+        }
+
+        const formData = new FormData()
+        // If it's a data URL, convert to blob. If it's a regular URL, Cloudinary can fetch it directly.
+        if (urlOrDataUrl.startsWith('data:')) {
+          const blob = dataURLtoBlob(urlOrDataUrl)
+          formData.append('file', blob, `${tag}_${Date.now()}.jpg`)
+        } else {
+          formData.append('file', urlOrDataUrl)
+        }
+
+        formData.append('upload_preset', this.apiKeys.cloudinaryUploadPreset) // Use the configured preset
+        formData.append('cloud_name', this.apiKeys.cloudinaryCloudName)
+        formData.append('tags', tag)
+
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${this.apiKeys.cloudinaryCloudName}/image/upload`,
+          {
+            method: 'POST',
+            body: formData,
+          },
+        )
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('Cloudinary upload error:', errorText)
+          throw new Error(`Cloudinary upload failed: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        return data.secure_url
+      } catch (error) {
+        console.error('Error uploading to Cloudinary:', error)
+        throw new Error('Failed to upload image to Cloudinary: ' + error.message)
+      }
+    },
+    async processWithStabilityAI(modelDataUrl, productDataUrls) {
+      // Process images with Stability AI API
+      try {
+        const formData = new FormData()
+        formData.append('init_image', dataURLtoBlob(modelDataUrl))
+        productDataUrls.forEach((url, index) => {
+          formData.append(`product_image_${index}`, dataURLtoBlob(url))
+        })
+        formData.append('prompt', 'A fashion model wearing the provided clothes.')
+        formData.append('output_format', 'jpeg')
+
+        const response = await fetch('https://api.stability.ai/v2beta/stable-image/generate/sd3', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.apiKeys.stabilityApiKey}`,
+            Accept: 'image/*',
+          },
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('Error from Stability AI API:', errorData)
+          throw new Error(
+            `Stability AI API request failed: ${errorData.message || response.statusText}`,
+          )
+        }
+
+        const imageBlob = await response.blob()
+        return URL.createObjectURL(imageBlob)
+      } catch (error) {
+        console.error('Error processing with Stability AI API:', error)
+        throw new Error('Failed to process image with Stability AI API.')
+      }
     },
     loadImage(url) {
       return new Promise((resolve, reject) => {
@@ -722,30 +1011,51 @@ export default {
       })
     },
 
-    async getAestheticScore(dataUrl) {
-      // This is a placeholder for a real AI API call.
-      // In a real application, you would send 'dataUrl' (base64 image)
-      // and a prompt to a multimodal AI (e.g., Google Gemini API, OpenAI GPT-4o).
-      // You would need to handle authentication (API Key) and the specific API request format.
-
-      // Example prompt you might send to a multimodal AI:
-      // "Review this image for its aesthetic quality and provide a score out of 10.
-      //  For example: 'The aesthetic score for this image is 7.5/10.'"
-
-      // --- SIMULATED AI RESPONSE (REPLACE WITH ACTUAL API CALL) ---
-      const simulatedAiResponse =
-        'The aesthetic score for this image is 7.8/10. The composition is good, but lighting could be improved.'
-      // --- END SIMULATED AI RESPONSE ---
-
-      // Regex to extract the score (e.g., "7.8" from "7.8/10")
-      const scoreMatch = simulatedAiResponse.match(/(\d+\.?\d*)\/10/)
-      if (scoreMatch && scoreMatch[1]) {
-        return parseFloat(scoreMatch[1])
-      } else {
-        console.warn('Could not parse aesthetic score from AI response:', simulatedAiResponse)
-        return 0 // Default score if parsing fails
+    async getAestheticScore() {
+      // This function sends the processed image to an AI API for aesthetic scoring.
+      // For now, it simulates the response. In a real application, integrate with an AI API.
+      try {
+        // Placeholder for actual API call
+        const simulatedAiResponse =
+          'The aesthetic score for this image is 7.8/10. The composition is good, but lighting could be improved.'
+        const scoreMatch = simulatedAiResponse.match(/(\d+\.?\d*)\/10/)
+        if (scoreMatch && scoreMatch[1]) {
+          return parseFloat(scoreMatch[1])
+        } else {
+          console.warn('Could not parse aesthetic score from AI response:', simulatedAiResponse)
+          return 0 // Default score if parsing fails
+        }
+      } catch (error) {
+        console.error('Error getting aesthetic score:', error)
+        return 0
       }
     },
+    checkCategoryConflict(item, groupIdx) {
+      const group = this.compareGroups[groupIdx]
+      if (group.products.length === 0) return false
+
+      // Get categories in the group
+      const groupCategories = group.products
+        .map((p) => {
+          if (p.type === 'combo' && p.products && p.products.length > 0) {
+            return p.products.map((prod) => prod.category || 'unknown')
+          }
+          return p.category || 'unknown'
+        })
+        .flat()
+
+      // Get category of the item to add
+      let itemCategories = []
+      if (item.type === 'combo' && item.products && item.products.length > 0) {
+        itemCategories = item.products.map((prod) => prod.category || 'unknown')
+      } else {
+        itemCategories = [item.category || 'unknown']
+      }
+
+      // Check if any category of the item matches any category in the group
+      return itemCategories.some((cat) => groupCategories.includes(cat) && cat !== 'unknown')
+    },
+
     downloadTryOnResult(groupIdx) {
       const result = this.tryOnResults[groupIdx]
       if (!result) return
@@ -1095,6 +1405,13 @@ export default {
   box-shadow: 0 0 10px rgba(25, 118, 210, 0.5);
 }
 
+.user-model-preview {
+  transform: scale(1.15);
+  border-width: 3px;
+  border-color: #1976d2;
+  box-shadow: 0 4px 15px rgba(25, 118, 210, 0.4);
+}
+
 .model-thumbnail {
   width: 100px;
   height: 150px;
@@ -1123,6 +1440,79 @@ export default {
 }
 
 .model-selection-actions .btn-secondary {
+  background-color: #ccc;
+  color: #333;
+  border: none;
+}
+
+.api-settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1003;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.api-settings-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.api-settings-modal h3 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.api-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.api-settings-actions .btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.api-settings-actions .btn-primary {
+  background-color: #1976d2;
+  color: #fff;
+  border: none;
+}
+
+.api-settings-actions .btn-secondary {
   background-color: #ccc;
   color: #333;
   border: none;
