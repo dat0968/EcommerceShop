@@ -16,6 +16,9 @@ import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 export default {
   name: 'CustomerTable',
+  components: {
+    NoDataMessage,
+  },
   props: {
     customers: {
       type: Array,
@@ -36,7 +39,7 @@ export default {
       }))
 
       // Khởi tạo DataTable
-      $('#customerDatatable').DataTable({
+      const table = $('#customerDatatable').DataTable({
         data: dataSet,
         destroy: true,
         columns: [
@@ -50,6 +53,7 @@ export default {
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
         initComplete: () => {
           configsDt.attachDetailsControl(`#customerDatatable`, this.formatDetails.bind(this))
+          configsDt.attachSearchDebounce('#customerDatatable', table)
         },
       })
     },

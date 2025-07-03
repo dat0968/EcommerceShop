@@ -35,7 +35,7 @@ export default {
       }))
 
       // Khởi tạo DataTable
-      $('#comboDatatable').DataTable({
+      const table = $('#comboDatatable').DataTable({
         data: dataSet,
         destroy: true,
         columns: [
@@ -67,6 +67,7 @@ export default {
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
         initComplete: () => {
           configsDt.attachDetailsControl(`#comboDatatable`, this.formatDetails.bind(this))
+          configsDt.attachSearchDebounce('#comboDatatable', table)
         },
       })
     },

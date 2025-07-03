@@ -165,7 +165,12 @@
                 </select>
               </div>
               <button type="submit" class="btn btn-primary w-100" :disabled="isSubmittingParent">
-                <span v-if="isSubmittingParent" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span
+                  v-if="isSubmittingParent"
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
                 {{ isEditParent ? 'Cập nhật' : 'Thêm mới' }}
               </button>
               <button
@@ -224,7 +229,12 @@
                 </select>
               </div>
               <button type="submit" class="btn btn-primary w-100" :disabled="isSubmittingChild">
-                <span v-if="isSubmittingChild" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span
+                  v-if="isSubmittingChild"
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
                 {{ isEditChild ? 'Cập nhật' : 'Thêm mới' }}
               </button>
               <button
@@ -417,7 +427,7 @@ export default {
       }
     },
     async onSubmitParent() {
-      this.isSubmittingParent = true;
+      this.isSubmittingParent = true
       try {
         if (this.isEditParent) {
           const res = await axiosConfig.postToApi(
@@ -454,7 +464,7 @@ export default {
         // await this.loadOption()
         this.resetFormParent()
       } finally {
-        this.isSubmittingParent = false;
+        this.isSubmittingParent = false
       }
     },
     resetFormParent() {
@@ -504,7 +514,7 @@ export default {
       }
     },
     async onSubmitChild() {
-      this.isSubmittingChild = true;
+      this.isSubmittingChild = true
       try {
         if (this.isEditChild) {
           // Cập nhật danh mục con
@@ -545,7 +555,7 @@ export default {
         // await this.loadOption()
         this.resetFormChild()
       } finally {
-        this.isSubmittingChild = false;
+        this.isSubmittingChild = false
       }
     },
     resetFormChild() {
@@ -583,6 +593,7 @@ export default {
           language: configsDt.defaultLanguageDatatable,
           initComplete: () => {
             configsDt.attachDetailsControl(`#datatableCategories`, this.formatDetails.bind(this))
+            configsDt.attachSearchDebounce('#datatableCategories', this.datatable)
           },
         })
       })
@@ -670,6 +681,9 @@ export default {
           ],
           destroy: true,
           language: configsDt.defaultLanguageDatatable,
+          initComplete: () => {
+            configsDt.attachSearchDebounce('#datatableParent', this.datatableParent)
+          },
         })
 
         $('#datatableParent tbody')
@@ -728,6 +742,9 @@ export default {
           ],
           destroy: true,
           language: configsDt.defaultLanguageDatatable,
+          initComplete: () => {
+            configsDt.attachSearchDebounce('#datatableChild', this.datatableChild)
+          },
         })
 
         $('#datatableChild tbody')

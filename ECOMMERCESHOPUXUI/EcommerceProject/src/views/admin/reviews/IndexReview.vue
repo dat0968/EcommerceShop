@@ -16,14 +16,24 @@
           <div class="card-body">
             <div class="mb-3">
               <label for="filterStar" class="form-label">Lọc theo số sao:</label>
-              <select id="filterStar" class="form-select" v-model="filterByStar" @change="filterByRating">
+              <select
+                id="filterStar"
+                class="form-select"
+                v-model="filterByStar"
+                @change="filterByRating"
+              >
                 <option :value="null">Tất cả sao</option>
                 <option v-for="n in 5" :key="n" :value="n">{{ n }} sao</option>
               </select>
             </div>
             <div class="mb-3">
               <label for="filterImage" class="form-label">Lọc theo ảnh:</label>
-              <select id="filterImage" class="form-select" v-model="filterHasImage" @change="filterByRating">
+              <select
+                id="filterImage"
+                class="form-select"
+                v-model="filterHasImage"
+                @change="filterByRating"
+              >
                 <option value="">Tất cả</option>
                 <option value="1">Có ảnh</option>
                 <option value="0">Không ảnh</option>
@@ -44,8 +54,17 @@
             <h5>Danh sách đánh giá</h5>
           </div>
           <div class="card-body">
-            <button class="btn btn-primary mb-3" :disabled="isDisabled || isSubmittingShopResponse" @click="updateShopResponse">
-              <span v-if="isSubmittingShopResponse" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <button
+              class="btn btn-primary mb-3"
+              :disabled="isDisabled || isSubmittingShopResponse"
+              @click="updateShopResponse"
+            >
+              <span
+                v-if="isSubmittingShopResponse"
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
               Cập nhật phản hồi của shop
             </button>
             <table
@@ -235,6 +254,7 @@ export default {
           language: configsDt.defaultLanguageDatatable,
           initComplete: () => {
             configsDt.attachDetailsControl(`#datatableReviews`, this.formatDetails.bind(this))
+            configsDt.attachSearchDebounce('#datatableReviews', this.datatable)
 
             $(document)
               .off('change', '#selectAllReviews')
@@ -460,9 +480,9 @@ export default {
       )
     },
     resetFilters() {
-      this.filterByStar = null;
-      this.filterHasImage = '';
-      this.filterByRating();
+      this.filterByStar = null
+      this.filterHasImage = ''
+      this.filterByRating()
     },
   },
 }

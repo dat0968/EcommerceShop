@@ -39,7 +39,7 @@ export default {
         detailTopProducts: product.detailTopProducts,
       }))
 
-      $('#productDatatable').DataTable({
+      const table = $('#productDatatable').DataTable({
         data: dataSet,
         destroy: true,
         columns: [
@@ -75,6 +75,7 @@ export default {
         language: configsDt.defaultLanguageDatatable,
         initComplete: () => {
           configsDt.attachDetailsControl(`#productDatatable`, this.formatDetails.bind(this))
+          configsDt.attachSearchDebounce('#productDatatable', table)
         },
       })
     },

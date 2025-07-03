@@ -53,3 +53,25 @@ export const defaultTdToShowDetail = {
   width: '15px',
 }
 //#endregion
+
+//#region Optimize Search
+
+/**
+ * Attaches a debounce mechanism to the default search input of a DataTable.
+ * @param {string} tableSelector - The selector for the DataTable.
+ * @param {object} table - The DataTable instance.
+ */
+export function attachSearchDebounce(tableSelector, table) {
+  let searchTimeout
+  $(`${tableSelector}_filter input`)
+    .off('keyup')
+    .on('keyup', function () {
+      clearTimeout(searchTimeout)
+      const searchTerm = this.value
+      searchTimeout = setTimeout(() => {
+        table.search(searchTerm).draw()
+      }, 300) // Đợi 300ms trước khi thực hiện tìm kiếm
+    })
+}
+
+//#endregion
