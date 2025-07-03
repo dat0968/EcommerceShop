@@ -270,6 +270,14 @@
                             >{{ tryOnResults[groupIdx].score }}/10</span
                           >
                         </div>
+                        <div class="mt-2">
+                          <b>Phong cách:</b>
+                          <span>{{ tryOnResults[groupIdx].style }}</span>
+                        </div>
+                        <div class="mt-2">
+                          <b>Giới tính phù hợp:</b>
+                          <span>{{ tryOnResults[groupIdx].gender_suitability }}</span>
+                        </div>
                         <button class="btn btn-success mt-2" @click="downloadTryOnResult(groupIdx)">
                           Tải về kết quả thử đồ
                         </button>
@@ -503,7 +511,7 @@
                 <i
                   class="bi bi-info-circle ms-2"
                   style="cursor: pointer"
-                  @click="showApiKeyHelp"
+                  @click="showApiKeyHelp('stability')"
                   title="Làm thế nào để lấy API Key?"
                 ></i>
               </label>
@@ -513,6 +521,24 @@
                 v-model="apiKeys.stabilityApiKey"
                 class="form-control"
                 placeholder="Nhập Stability AI API Key"
+              />
+            </div>
+            <div class="form-group">
+              <label for="geminiApiKey" class="d-flex align-items-center">
+                Gemini API Key
+                <i
+                  class="bi bi-info-circle ms-2"
+                  style="cursor: pointer"
+                  @click="showApiKeyHelp('gemini')"
+                  title="Làm thế nào để lấy API Key?"
+                ></i>
+              </label>
+              <input
+                type="text"
+                id="geminiApiKey"
+                v-model="apiKeys.geminiApiKey"
+                class="form-control"
+                placeholder="Nhập Gemini API Key"
               />
             </div>
             <div class="api-settings-actions">
@@ -536,6 +562,7 @@
 import { formatCurrency } from '@/constants/formatCurrency'
 import VueEasyLight from 'vue-easy-lightbox'
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
+import Swal from 'sweetalert2'
 
 function dataURLtoBlob(dataurl) {
   const arr = dataurl.split(',')
@@ -576,6 +603,7 @@ export default {
         cloudinaryCloudName: localStorage.getItem('cloudinaryCloudName') || '',
         cloudinaryUploadPreset: localStorage.getItem('cloudinaryUploadPreset') || 'unsigned_upload',
         stabilityApiKey: localStorage.getItem('stabilityApiKey') || '',
+        geminiApiKey: localStorage.getItem('geminiApiKey') || '',
       },
       compareGroups: [
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
@@ -619,14 +647,24 @@ export default {
     loadSelectedProducts() {
       this.selectedProducts = CompareStorageHelper.getCompareList()
     },
-    showApiKeyHelp() {
-      alert(
-        'Cách lấy Stability AI API Key:\n\n' +
-          '1. Đăng ký hoặc đăng nhập vào tài khoản DreamStudio tại https://dreamstudio.com/\n' +
-          '2. Nhấp vào biểu tượng tài khoản của bạn ở góc trên bên phải.\n' +
-          '3. Chọn "API Keys" từ menu.\n' +
-          '4. Sao chép (copy) API Key của bạn và dán vào đây.',
-      )
+    showApiKeyHelp(keyType) {
+      if (keyType === 'stability') {
+        alert(
+          'Cách lấy Stability AI API Key:\n\n' +
+            '1. Đăng ký hoặc đăng nhập vào tài khoản DreamStudio tại https://dreamstudio.com/\n' +
+            '2. Nhấp vào biểu tượng tài khoản của bạn ở góc trên bên phải.\n' +
+            '3. Chọn "API Keys" từ menu.\n' +
+            '4. Sao chép (copy) API Key của bạn và dán vào đây.',
+        )
+      } else if (keyType === 'gemini') {
+        alert(
+          'Cách lấy Gemini API Key:\n\n' +
+            '1. Truy cập Google AI Studio tại https://aistudio.google.com/\n' +
+            '2. Đăng nhập bằng tài khoản Google của bạn.\n' +
+            '3. Tạo một API Key mới hoặc sử dụng một API Key hiện có.\n' +
+            '4. Sao chép (copy) API Key của bạn và dán vào đây.',
+        )
+      }
     },
     selectPredefinedModel(model) {
       this.selectedTryOnModel = model
@@ -641,14 +679,22 @@ export default {
 
       // Validation: Check if it's an image
       if (!file.type.startsWith('image/')) {
-        alert('Lỗi: Vui lòng chỉ chọn file hình ảnh.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: 'Vui lòng chỉ chọn file hình ảnh.',
+        })
         return
       }
 
       // Validation: Check file size (5MB limit)
       const maxSize = 5 * 1024 * 1024 // 5MB in bytes
       if (file.size > maxSize) {
-        alert('Lỗi: Kích thước file không được vượt quá 5MB.')
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: 'Kích thước file không được vượt quá 5MB.',
+        })
         return
       }
 
@@ -704,9 +750,11 @@ export default {
       if (this.compareGroups[groupIdx].products.length < 10) {
         // Check for category conflict before adding
         if (this.checkCategoryConflict(item, groupIdx)) {
-          alert(
-            `Không thể thêm "${item.name || item.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
-          )
+          Swal.fire({
+            icon: 'warning',
+            title: 'Không thể thêm sản phẩm',
+            text: `Không thể thêm "${item.name || item.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
+          })
           return
         }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
@@ -717,9 +765,11 @@ export default {
       if (this.compareGroups[groupIdx].products.length < 10) {
         // Check for category conflict before adding combo
         if (this.checkCategoryConflict(combo, groupIdx)) {
-          alert(
-            `Không thể thêm "${combo.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
-          )
+          Swal.fire({
+            icon: 'warning',
+            title: 'Không thể thêm combo',
+            text: `Không thể thêm "${combo.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
+          })
           return
         }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(combo))
@@ -782,9 +832,11 @@ export default {
       if (!item) return
       // Check for category conflict before adding
       if (this.checkCategoryConflict(item, groupIdx)) {
-        alert(
-          `Không thể thêm "${item.name || item.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
-        )
+        Swal.fire({
+          icon: 'warning',
+          title: 'Không thể thêm sản phẩm',
+          text: `Không thể thêm "${item.name || item.comboName}" vì nhóm này đã có sản phẩm cùng loại. Vui lòng chọn nhóm khác hoặc xóa sản phẩm cùng loại.`,
+        })
         return
       }
       this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
@@ -794,14 +846,21 @@ export default {
     // onDropToNewGroup: không còn logic tạo group mới
     onDoubleClickSidebar(item) {
       // Khi double click, hỏi người dùng muốn thêm vào group nào (0 hoặc 1)
-      const groupIdx = window.confirm('Thêm vào nhóm so sánh 2? (OK: nhóm 2, Cancel: nhóm 1)')
-        ? 1
-        : 0
-      if (item.type === 'combo') {
-        this.addComboToCompare(item, groupIdx)
-      } else {
-        this.addToCompare(item, groupIdx)
-      }
+      Swal.fire({
+        title: 'Thêm vào nhóm so sánh',
+        text: 'Bạn muốn thêm sản phẩm này vào nhóm so sánh nào?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Nhóm 2',
+        cancelButtonText: 'Nhóm 1',
+      }).then((result) => {
+        const groupIdx = result.isConfirmed ? 1 : 0
+        if (item.type === 'combo') {
+          this.addComboToCompare(item, groupIdx)
+        } else {
+          this.addToCompare(item, groupIdx)
+        }
+      })
     },
     closeLightbox() {
       this.isLightboxOpen = false
@@ -811,11 +870,21 @@ export default {
         !this.apiKeys.cloudinaryApiKey ||
         !this.apiKeys.cloudinaryApiSecret ||
         !this.apiKeys.cloudinaryCloudName ||
-        !this.apiKeys.stabilityApiKey
+        !this.apiKeys.stabilityApiKey ||
+        !this.apiKeys.geminiApiKey
       ) {
-        if (confirm('API Keys chưa được cài đặt. Bạn có muốn cài đặt ngay bây giờ không?')) {
-          this.showApiSettings = true
-        }
+        Swal.fire({
+          icon: 'warning',
+          title: 'Thiếu API Keys',
+          text: 'API Keys chưa được cài đặt đầy đủ. Bạn có muốn cài đặt ngay bây giờ không?',
+          showCancelButton: true,
+          confirmButtonText: 'Cài đặt ngay',
+          cancelButtonText: 'Để sau',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.showApiSettings = true
+          }
+        })
         return
       }
       this.showModelSelection = true
@@ -830,12 +899,23 @@ export default {
       localStorage.setItem('cloudinaryCloudName', this.apiKeys.cloudinaryCloudName)
       localStorage.setItem('cloudinaryUploadPreset', this.apiKeys.cloudinaryUploadPreset)
       localStorage.setItem('stabilityApiKey', this.apiKeys.stabilityApiKey)
+      localStorage.setItem('geminiApiKey', this.apiKeys.geminiApiKey)
       this.showApiSettings = false
-      alert('API Keys đã được lưu.')
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công',
+        text: 'API Keys đã được lưu.',
+        timer: 1500,
+        showConfirmButton: false,
+      })
     },
     async confirmModelSelection() {
       if (!this.selectedTryOnModel && !this.userModelFile) {
-        alert('Vui lòng chọn một mẫu có sẵn hoặc tải lên ảnh của bạn.')
+        Swal.fire({
+          icon: 'warning',
+          title: 'Chưa chọn mẫu',
+          text: 'Vui lòng chọn một mẫu có sẵn hoặc tải lên ảnh của bạn.',
+        })
         return
       }
 
@@ -848,7 +928,11 @@ export default {
       try {
         const group = this.compareGroups[groupIdx]
         if (!group || !group.products || group.products.length === 0) {
-          alert('Nhóm này chưa có sản phẩm để thử đồ.')
+          Swal.fire({
+            icon: 'warning',
+            title: 'Không có sản phẩm',
+            text: 'Nhóm này chưa có sản phẩm để thử đồ.',
+          })
           return
         }
 
@@ -862,21 +946,36 @@ export default {
               productImages.push(prodImg)
             } catch (error) {
               console.error('Error loading product image:', imgUrl, error)
-              alert('Không thể tải ảnh sản phẩm: ' + (item.name || ''))
+              Swal.fire({
+                icon: 'error',
+                title: 'Lỗi tải ảnh',
+                text:
+                  'Không thể tải ảnh sản phẩm: ' +
+                  (item.name || '') +
+                  '. Vui lòng kiểm tra URL và cài đặt CORS.',
+              })
               return
             }
           }
         }
 
         // Use the selected or uploaded model image for the try-on process
-        const tryOnImageResultUrl = await this.simulateChangeClothesAI(modelInfo.url, productImages)
+        const tryOnImageResultUrl = await this.processWithStabilityAI(modelInfo.url, productImages)
 
-        let score = await this.getAestheticScore()
+        // Combine the try-on image with the original product images for Gemini analysis
+        const combinedImageForGemini = await this.combineImagesOnCanvas([
+          await this.loadImage(tryOnImageResultUrl),
+          ...productImages,
+        ])
+
+        const geminiRatings = await this.analyzeImageWithGemini(combinedImageForGemini)
 
         this.tryOnResults[groupIdx] = {
           model: modelInfo,
           image: tryOnImageResultUrl,
-          score,
+          score: geminiRatings.aesthetic_score,
+          style: geminiRatings.style,
+          gender_suitability: geminiRatings.gender_suitability,
           products: group.products,
           time: new Date().toISOString(),
         }
@@ -914,11 +1013,14 @@ export default {
         return processedImageUrl
       } catch (error) {
         console.error('Error during AI processing:', error)
-        alert(
-          'Đã xảy ra lỗi khi xử lý ảnh với AI: ' +
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi xử lý AI',
+          text:
+            'Đã xảy ra lỗi khi xử lý ảnh với AI: ' +
             error.message +
             '. Vui lòng kiểm tra console để biết thêm chi tiết.',
-        )
+        })
         throw error
       }
     },
@@ -1011,23 +1113,89 @@ export default {
       })
     },
 
-    async getAestheticScore() {
-      // This function sends the processed image to an AI API for aesthetic scoring.
-      // For now, it simulates the response. In a real application, integrate with an AI API.
+    async combineImagesOnCanvas(images) {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+
+      let totalWidth = 0
+      let maxHeight = 0
+
+      // Calculate total width and max height
+      for (const img of images) {
+        totalWidth += img.naturalWidth
+        if (img.naturalHeight > maxHeight) {
+          maxHeight = img.naturalHeight
+        }
+      }
+
+      canvas.width = totalWidth
+      canvas.height = maxHeight
+
+      let currentX = 0
+      for (const img of images) {
+        ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
+        currentX += img.naturalWidth
+      }
+
+      return canvas.toDataURL('image/jpeg')
+    },
+    async analyzeImageWithGemini(imageDataUrl) {
       try {
-        // Placeholder for actual API call
-        const simulatedAiResponse =
-          'The aesthetic score for this image is 7.8/10. The composition is good, but lighting could be improved.'
-        const scoreMatch = simulatedAiResponse.match(/(\d+\.?\d*)\/10/)
-        if (scoreMatch && scoreMatch[1]) {
-          return parseFloat(scoreMatch[1])
-        } else {
-          console.warn('Could not parse aesthetic score from AI response:', simulatedAiResponse)
-          return 0 // Default score if parsing fails
+        const API_KEY = this.apiKeys.geminiApiKey
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent?key=${API_KEY}`
+
+        const base64Image = imageDataUrl.split(',')[1]
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: 'Analyze the aesthetic, style, and gender suitability of the clothing in this image. Provide a score out of 10 for aesthetic, and describe the style and gender suitability. Format the response as a JSON object with keys: aesthetic_score (float), style (string), gender_suitability (string).',
+                  },
+                  { inline_data: { mime_type: 'image/jpeg', data: base64Image } },
+                ],
+              },
+            ],
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          console.error('Error from Gemini API:', errorData)
+          throw new Error(
+            `Gemini API request failed: ${errorData.error.message || response.statusText}`,
+          )
+        }
+
+        const data = await response.json()
+        const textResponse = data.candidates[0].content.parts[0].text
+
+        // Attempt to parse the JSON string from the text response
+        try {
+          const parsedResponse = JSON.parse(textResponse)
+          return parsedResponse
+        } catch (jsonError) {
+          console.error('Error parsing Gemini JSON response:', textResponse, jsonError)
+          // Fallback if JSON parsing fails, try to extract information heuristically
+          const aestheticMatch = textResponse.match(/aesthetic_score":\s*([\d.]+)/i)
+          const styleMatch = textResponse.match(/style":\s*"([^"]+)"/i)
+          const genderMatch = textResponse.match(/gender_suitability":\s*"([^"]+)"/i)
+
+          return {
+            aesthetic_score: aestheticMatch ? parseFloat(aestheticMatch[1]) : 0,
+            style: styleMatch ? styleMatch[1] : 'N/A',
+            gender_suitability: genderMatch ? genderMatch[1] : 'N/A',
+          }
         }
       } catch (error) {
-        console.error('Error getting aesthetic score:', error)
-        return 0
+        console.error('Error analyzing image with Gemini API:', error)
+        throw new Error('Failed to analyze image with Gemini API.')
       }
     },
     checkCategoryConflict(item, groupIdx) {
