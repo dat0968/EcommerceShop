@@ -340,6 +340,17 @@ export default {
       const files = Array.from(event.target.files)
       if (!files.length) return
 
+      const nonImageFiles = files.filter((file) => !file.type.startsWith('image/'))
+      if (nonImageFiles.length > 0) {
+        Swal.fire(
+          'Loại tệp không hợp lệ',
+          `Các tệp sau không phải là hình ảnh: ${nonImageFiles.map((f) => f.name).join(', ')}`,
+          'error',
+        )
+        event.target.value = ''
+        return
+      }
+
       const totalImages = (item._selectedFiles?.length || 0) + files.length
       if (totalImages > this.maxImages) {
         Swal.fire(

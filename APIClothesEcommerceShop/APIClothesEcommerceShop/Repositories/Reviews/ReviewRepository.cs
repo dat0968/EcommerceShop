@@ -261,8 +261,16 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 // Lưu hình ảnh
                 if (entity.HinhAnhs != null && entity.HinhAnhs.Length > 0)
                 {
-                    string[] listNameImgs = await SaveImagesReview(entity.HinhAnhs);
-                    reviewTransform.CombineNameImg(listNameImgs);
+                    try
+                    {
+                        string[] listNameImgs = await SaveImagesReview(entity.HinhAnhs);
+                        reviewTransform.CombineNameImg(listNameImgs);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        response.SetErrorResponse(ex.Message);
+                        return response;
+                    }
                 }
                 await _db.DanhGias.AddAsync(reviewTransform);
                 await _db.SaveChangesAsync();
@@ -548,12 +556,16 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     Directory.CreateDirectory(folderPath);
                 }
-
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
                 List<string> savedFileNames = new List<string>();
                 foreach (var file in fileForms)
                 {
+                    var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+                    if (string.IsNullOrEmpty(ext) || !allowedExtensions.Contains(ext))
+                    {
+                        throw new ArgumentException($"Chỉ cho phép tải lên các tệp hình ảnh hợp lệ (jpg, jpeg, png, gif, bmp).");
+                    }
                     // Tạo tên file duy nhất
-                    var ext = Path.GetExtension(file.FileName);
                     var uniqueFileName = $"{Path.GetFileNameWithoutExtension(file.FileName.Replace(' ', '_'))}_{Guid.NewGuid()}{ext}";
                     var filePath = Path.Combine(folderPath, uniqueFileName);
 
@@ -567,7 +579,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             catch (Exception)
             {
-                return Array.Empty<string>();
+                throw;
             }
         }
         private bool DeleteSaveImages(string[]? savedFiles)
