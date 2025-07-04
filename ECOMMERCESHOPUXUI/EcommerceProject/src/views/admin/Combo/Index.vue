@@ -6,7 +6,8 @@ import DetailCombo from '../Combo/Details.vue'
 import Swal from 'sweetalert2'
 import { GetApiUrl } from '../../../../src/constants/api.js'
 import Cookies from 'js-cookie'
-
+import { useRouter } from 'vue-router'
+const router = useRouter()
 let getApiUrl = GetApiUrl()
 const listCombo = ref([])
 const filteredCombos = ref([]) // Danh sách combo đã lọc và sắp xếp
@@ -33,7 +34,18 @@ function formatDate(dateString) {
     year: 'numeric'
   });
 }
-
+const checkToken = () => {
+  if (!accesstoken || accesstoken === '' || accesstoken === null) {
+    Swal.fire({
+      title: 'Bạn chưa đăng nhập!',
+      text: 'Vui lòng đăng nhập để tiếp tục.',
+      icon: 'warning',
+      confirmButtonText: 'Đăng nhập ngay'
+    }).then(() => {
+      router.push('/LoginStaff')
+    })
+  }
+}
 async function fetchCombo() {
   try {
     let url = `${getUrlAPI.value}/api/Combos?page=${CurrentPage.value}&search=${encodeURIComponent(valueSearch.value)}`;
@@ -77,7 +89,6 @@ async function fetchCombo() {
     });
   }
 }
-
 async function fetchProducts() {
   try {
     const response = await fetch(
@@ -92,20 +103,20 @@ async function fetchProducts() {
     );
 
     if (!response.ok) {
-      throw new Error(`Lỗi khi lấy dữ liệu sản phẩm: ${response.status} - ${response.statusText}`);
+      //throw new Error(`Lỗi khi lấy dữ liệu sản phẩm: ${response.status} - ${response.statusText}`);
     }
 
     const result = await response.json();
     ListProduct.value = result.data || [];
     console.log('Danh sách sản phẩm:', ListProduct.value);
   } catch (error) {
-    console.error('Lỗi fetchProducts:', error);
-    Swal.fire({
-      title: 'Lỗi',
-      text: `Không thể tải danh sách sản phẩm: ${error.message}`,
-      icon: 'error',
-      confirmButtonText: 'OK'
-    });
+    // console.error('Lỗi fetchProducts:', error);
+    // Swal.fire({
+    //   title: 'Lỗi',
+    //   text: `Không thể tải danh sách sản phẩm: ${error.message}`,
+    //   icon: 'error',
+    //   confirmButtonText: 'OK'
+    // });
   }
 }
 
@@ -175,7 +186,7 @@ async function removeCombo(id) {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const response = await fetch(`${getUrlAPI.value}/api/Combos/${id}/Cancel`, {
-          method: 'PUT',
+method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accesstoken}`,
@@ -207,13 +218,14 @@ async function removeCombo(id) {
 onMounted(() => {
   fetchCombo();
   fetchProducts();
+  checkToken();
 });
 </script>
 
 <template>
   <div class="container mt-4">
-    <div style="margin-top: 90px" class="mb-4 text-center">
-      <h1 class="fw-bold text-uppercase text-dark">Quản lý Combo</h1>
+    <div style="margin-top: 110px" class="mb-4 text-center">
+      <h1 class="fw-bold text-uppercase text-dark" style="font-size: 3rem;">Quản lý Combo</h1>
     </div>
     <!-- Thanh tìm kiếm, bộ lọc và sắp xếp -->
     <div class="row g-3 mb-3 align-items-center">
@@ -280,7 +292,7 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="combo in filteredCombos" :key="combo.maCombo">
+<tr v-for="combo in filteredCombos" :key="combo.maCombo">
             <td class="text-center">{{ combo.maCombo }}</td>
             <td class="text-center">{{ combo.tenCombo }}</td>
             <td class="text-center">
@@ -355,7 +367,7 @@ onMounted(() => {
           >
             <a class="page-link" @click="ChangePage(page)"> {{ page }} </a>
           </li>
-          <li class="page-item" :class="{ disabled: CurrentPage === TotalPages }">
+<li class="page-item" :class="{ disabled: CurrentPage === TotalPages }">
             <a class="page-link" @click="ChangePage(CurrentPage + 1)">»</a>
           </li>
         </ul>

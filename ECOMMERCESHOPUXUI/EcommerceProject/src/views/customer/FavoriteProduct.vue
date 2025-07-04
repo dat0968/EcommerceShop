@@ -73,19 +73,15 @@ export default {
                 if (!idKhachHangRef.value) {
                     throw new Error('ID khách hàng không hợp lệ.');
                 }
-                const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
-                    method: 'DELETE',
-                    headers: {
-                    'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                    maKh: idKhachHangRef.value,
-                    maSp: idSp,
-                    
-                    })
-
-                })
-                
+                const response = await fetch(
+                    `https://localhost:7217/api/Favorite/DeleteFavoriteProducts?idKhachHang=${idKhachHangRef.value}&idSp=${idSp}`,
+                    {
+                        method: 'DELETE',
+                    }
+                );
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
                 message.value = data.message;
                 success.value = true;

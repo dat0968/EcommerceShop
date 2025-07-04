@@ -386,7 +386,7 @@ console.log("sdhsajh")
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title">Sửa thông tin combo</h5>
-          <button @click="cancelEdit()" type="button" style="background: none; border: 0px">
+          <button @click="cancelEdit()" type="button" style="background: none; border: 0px; margin-left: 660px;">
             X
           </button>
         </div>
@@ -656,7 +656,7 @@ console.log("sdhsajh")
   border: 1px solid #ddd;
 }
 .modal-xl {
-  max-width: 90%;
+  max-width: 60%;
 }
 .btn-danger {
   font-size: 12px;

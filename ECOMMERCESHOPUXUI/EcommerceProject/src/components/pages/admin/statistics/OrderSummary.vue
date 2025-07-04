@@ -200,11 +200,11 @@ export default {
       // Kiểm tra dữ liệu trạng thái đơn hàng
       let statusData = []
       if (this.selectedTimePeriod === 'date') {
-        statusData = this.data.orderStatusStatistics['date'] ?? []
+        statusData = this.data?.orderStatusStatistics['date'] ?? []
       } else if (this.selectedTimePeriod === 'month') {
-        statusData = this.data.orderStatusStatistics['month'] ?? []
+        statusData = this.data?.orderStatusStatistics['month'] ?? []
       } else {
-        statusData = this.data.orderStatusStatistics['year'] ?? []
+        statusData = this.data?.orderStatusStatistics['year'] ?? []
       }
       this.hasOrderStatusChartData =
         statusData && statusData.length > 0 && statusData.some((item) => item.count > 0)

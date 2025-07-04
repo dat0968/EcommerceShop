@@ -313,14 +313,14 @@ const exportOrder = async (order) => {
 </script>
 
 <template>
-  <div style="margin-top: 100px" class="container-fluid">
+  <div style="margin-top: 100px; width:1170px" class="container-fluid">
     <!-- Header -->
     <div class="mb-4">
-      <h2 class="text-center mb-4">Quản lý đơn hàng</h2>
+      <h2 class="text-center mb-4" style="font-size: 3rem">QUẢN LÝ ĐƠN HÀNG</h2>
       <div class="row justify-content-center">
         <div class="col-md-8">
           <div class="d-flex gap-2 justify-content-center">
-            <div class="input-group" style="width: 300px">
+            <div class="input-group" style="width: 700px">
               <input
                 @input="filterOrders()"
                 v-model="searchQuery"
@@ -353,27 +353,27 @@ const exportOrder = async (order) => {
       <div class="fw-semibold text-primary mt-2">Đang tải dữ liệu...</div>
     </div>
     <!-- Table -->
-    <div v-else class="table-responsive">
-      <table class="table table-hover">
+    <div v-else class="table-responsive" style="border: solid 0.5px; border-radius:10px">
+      <table class="table table-hover table-bordered">
         <thead class="table-light">
           <tr>
-            <th>Mã đơn hàng</th>
-            <th>Người đặt</th>
-            <th>Ngày đặt</th>
-            <th>Tổng tiền</th>
-            <th>Trạng thái</th>
+            <th style="border-right: 1px solid #dee2e6;">Mã đơn hàng</th>
+            <th style="border-right: 1px solid #dee2e6;">Người đặt</th>
+            <th style="border-right: 1px solid #dee2e6;">Ngày đặt</th>
+            <th style="border-right: 1px solid #dee2e6;">Tổng tiền</th>
+            <th style="border-right: 1px solid #dee2e6;">Trạng thái</th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="order in listOrders" :key="order.maHd">
-            <td>{{ order.maHd }}</td>
-            <td>{{ order.tenKh }}</td>
-            <td>{{ formatDate(order.ngayTao) }}</td>
-            <td>
+            <td style="border-right: 1px solid #dee2e6;">{{ order.maHd }}</td>
+            <td style="border-right: 1px solid #dee2e6;">{{ order.tenKh }}</td>
+            <td style="border-right: 1px solid #dee2e6;">{{ formatDate(order.ngayTao) }}</td>
+            <td style="border-right: 1px solid #dee2e6;">
               {{ formatCurrency(order.tienGoc + order.phiVanChuyen - (order.giamGiaCoupon || 0)) }}
             </td>
-            <td>
+            <td style="border-right: 1px solid #dee2e6;">
               <select
                 :disabled="
                   idUser != order.maNv &&
@@ -412,7 +412,14 @@ const exportOrder = async (order) => {
                 data-bs-toggle="modal"
                 :data-bs-target="`#orderDetailModal_${order.maHd}`"
               >
-                <i class="fas fa-eye"></i>
+               Chi tiết
+              </button>
+              <button
+                @click="exportOrder(order)"
+                class="btn btn-sm  me-1"
+                style="background-color:#2EB938; color: white"
+              >
+              Tải xuống
               </button>
               <button
                 @click="exportOrder(order)"
@@ -428,7 +435,7 @@ const exportOrder = async (order) => {
     </div>
 
     <!-- Pagination -->
-    <nav aria-label="Page navigation" class="mt-4">
+    <nav aria-label="Page navigation" class="mt-4" style="margin-bottom: 30px;">
       <ul class="pagination justify-content-center">
         <li @click="ChangePage(1)" class="page-item disabled">
           <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Trước</a>
@@ -494,5 +501,13 @@ const exportOrder = async (order) => {
 }
 .modal.show {
   display: block;
+}
+.table th,
+.table td {
+  border-right: 1px solid #dee2e6;
+}
+.table th:last-child,
+.table td:last-child {
+  border-right: none;
 }
 </style>

@@ -1,9 +1,9 @@
 <template>
   <form @submit.prevent="submitForm" class="customer-form">
     <!-- Form header -->
-    <div class="form-header">
+    <div class="form-header" style=" background-color: #4C7CF3; color:white">
       <div class="form-accent-border"></div>
-      <h1>{{ isEdit ? 'Cập Nhật Khách Hàng' : 'Thêm Mới Khách Hàng' }}</h1>
+      <h1 >{{ isEdit ? 'Cập Nhật Khách Hàng' : 'Thêm Mới Khách Hàng' }}</h1>
     </div>
 
     <!-- Column layout -->
@@ -642,7 +642,7 @@ export default {
   /* Giảm kích thước font */
   color: white;
   margin: 0;
-  text-align: center;
+  /* text-align: center; */
 }
 
 .form-accent-border {

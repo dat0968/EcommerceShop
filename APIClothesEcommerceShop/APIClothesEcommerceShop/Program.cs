@@ -35,12 +35,12 @@ using APIClothesEcommerceShop.Services.EmailService;
 using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Repositories.DetailCombo;
 using APIClothesEcommerceShop.Repositories.Address;
-using QuestPDF.Infrastructure;
+//using QuestPDF.Infrastructure;
 using APIClothesEcommerceShop.Repositories.FavoriteProduct;
 using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Controllers;
 var builder = WebApplication.CreateBuilder(args);
-QuestPDF.Settings.License = LicenseType.Community;
+//QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -58,7 +58,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_Dot"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_PH"));
 });
 
 // Add services to the container.
@@ -89,7 +89,7 @@ builder.Services.AddSwaggerGen(c =>
 
     c.AddSecurityDefinition("Bearer", securitySchema);
 
-    #region Format thêm comment lên môi action
+    #region Format thÃªm comment lÃªn mÃ´i action
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
@@ -119,8 +119,8 @@ builder.Services.AddCors(options =>
         //   .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
-#region [Dependency Injection]
-// Cấu hình DI cho các repository và service
+
+// Dependency Injection
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
@@ -144,9 +144,6 @@ builder.Services.AddScoped<ICart_DetailComboRepository, Cart_DetailComboReposito
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 builder.Services.AddScoped<IMaCouponRepository, MaCouponRepository>();
-#endregion
-
-#region [Dependency Injection cho các repository]
 builder.Services.AddScoped<IComboRepository, ComboRepository>();
 builder.Services.AddScoped<IStatisticRepository, StatisticRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -157,20 +154,18 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
-#endregion
 
-#region [Dependency Injection cho các service]
-// Tin nhắn 
+// Email Service
 builder.Services.AddScoped<GoogleSenderService>();
 var emailSettings = builder.Configuration.GetSection("GoogleEmailSetting");
 builder.Services.Configure<GoogleEmailSetting>(emailSettings);
 
 // Redis
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration["Redis:Configuration"];
-    options.InstanceName = builder.Configuration["Redis:InstanceName"];
-});
+//builder.Services.AddStackExchangeRedisCache(options =>
+//{
+//    options.Configuration = builder.Configuration["Redis:Configuration"];
+//    options.InstanceName = builder.Configuration["Redis:InstanceName"];
+//});
 
 
 // JWT Authentication

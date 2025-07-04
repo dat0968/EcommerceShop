@@ -171,7 +171,7 @@ onMounted(() => {
   border: 1px solid #ddd;
 }
 .modal-xl {
-  max-width: 90%;
+  max-width: 60%;
 }
 .btn-danger {
   font-size: 12px;

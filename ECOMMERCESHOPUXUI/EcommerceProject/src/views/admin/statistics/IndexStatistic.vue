@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-top: 100px" class="xp-contentbar">
+  <div style="margin-top: 0px; "  class="xp-contentbar">
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
         <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>

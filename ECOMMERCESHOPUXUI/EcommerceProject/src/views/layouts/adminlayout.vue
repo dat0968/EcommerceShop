@@ -1,28 +1,34 @@
 <script setup>
 import '../../assets/admin/images/favicon.ico'
 import '../../assets/admin/plugins/chartist-js/chartist.min.css'
-// import 'chartist/dist/chartist.css'
-//import '../../assets/admin/plugins/datepicker/datepicker.min.css'
 import 'bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css'
-//import '../../assets/admin/css/bootstrap.min.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '../../assets/admin/css/icons.css'
 import '../../assets/admin/css/style.css'
-// import '../../assets/admin/js/jquery.min.js'
 import 'jquery'
 import '@popperjs/core'
-//import '../../assets/admin/js/bootstrap.min.js'
 import 'bootstrap'
 import '../../assets/Admin/js/detect.js'
 import '../../assets/Admin/js/jquery.slimscroll.js'
 import '../../assets/Admin/js/sidebar-menu.js'
 import '../../assets/Admin/js/init/to-do-list-init.js'
-//import '../../assets/admin/plugins/datepicker/datepicker.min.js'
 import 'bootstrap-datepicker'
-//import '../../assets/admin/plugins/datepicker/i18n/datepicker.en.js'
 import 'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'
 import '../../assets/Admin/js/main.js'
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import Cookies from 'js-cookie'
+
+const router = useRouter()
+const isLoggedIn = ref(false)
+
+// Hàm logout
+const handleLogout = () => {
+  Cookies.remove('accessToken')
+  Cookies.remove('refreshToken')
+  isLoggedIn.value = false
+  router.push('/LoginStaff')
+}
 
 onMounted(() => {
   // Khởi tạo dropdown menu
@@ -53,7 +59,7 @@ onMounted(() => {
         <!-- Start XP Sidebar -->
         <div class="xp-sidebar">
           <!-- Start XP Logobar -->
-          <div class="xp-logobar text-center">
+          <div class="xp-logobar text-center" style="margin-bottom: -15px;">
             <svg
               viewBox="0 0 700 250"
               role="img"
@@ -111,55 +117,42 @@ onMounted(() => {
               />
 
               <!-- Angel text with soft cursive font -->
-              <text
-                x="50%"
-                y="60%"
-                dominant-baseline="middle"
-                text-anchor="middle"
-                class="angel-text"
-              >
-                Angel
-              </text>
+              <RouterLink to="/Admin" style="text-decoration: none;">
+                <text
+                  x="50%"
+                  y="60%"
+                  dominant-baseline="middle"
+                  text-anchor="middle"
+                  class="angel-text"
+                >
+                  Angel
+                </text>
+              </RouterLink>
             </svg>
           </div>
           <!-- End XP Logobar -->
 
           <!-- Start XP Navigationbar -->
           <div class="xp-navigationbar">
-            <ul class="xp-vertical-menu" style="color: black">
+            <ul class="xp-vertical-menu" style="color: black;">
               <li>
                 <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
                   <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
                 </RouterLink>
               </li>
               <li>
-                <RouterLink to="/Admin/Product">
-                  <i class="icon-bag"></i><span class="font-color">Quản lý sản phẩm</span>
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/Admin/Order">
-                  <i class="icon-notebook"></i><span class="font-color">Quản lý đơn hàng</span>
-                </RouterLink>
-              </li>
-              <li>
                 <RouterLink to="/Admin/Category">
-                  <i class="icon-list"></i><span class="font-color">Quản lý danh mục</span>
+                  <i class="icon-list"></i><span class="font-color">Danh mục</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/Admin/Product">
+                  <i class="icon-bag"></i><span class="font-color">Sản phẩm</span>
                 </RouterLink>
               </li>
               <li>
                 <RouterLink to="/admin/combo">
-                  <i class="icon-basket"></i><span class="font-color">Quản lý combo</span>
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/admin/customer">
-                  <i class="icon-people"></i><span class="font-color">Khách hàng</span>
-                </RouterLink>
-              </li>
-              <li>
-                <RouterLink to="/admin/staff">
-                  <i class="icon-people"></i><span class="font-color">Nhân Viên</span>
+                  <i class="icon-basket"></i><span class="font-color">Combo</span>
                 </RouterLink>
               </li>
               <li>
@@ -167,6 +160,24 @@ onMounted(() => {
                   <i class="icon-people"></i><span class="font-color">Coupon</span>
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink to="/Admin/Order">
+                  <i class="icon-notebook"></i><span class="font-color">Đơn hàng</span>
+                </RouterLink>
+              </li>
+            
+        
+              <li>
+                <RouterLink to="/admin/customer">
+                  <i class="icon-people"></i><span class="font-color">Khách hàng</span>
+                </RouterLink>
+              </li>
+              <li>
+                <RouterLink to="/admin/staff">
+                  <i class="icon-people"></i><span class="font-color">Nhân viên</span>
+                </RouterLink>
+              </li>
+             
               <li>
                 <RouterLink to="/Admin/Review">
                   <i class="icon-star"></i><span class="font-color">Đánh giá</span>
@@ -188,14 +199,14 @@ onMounted(() => {
       <!-- Start XP Rightbar -->
       <div class="xp-rightbar">
         <!-- Start XP Topbar -->
-        <div class="xp-topbar" style="background-color: rgb(169, 162, 221)">
+        <div class="xp-topbar">
           <!-- Start XP Row -->
           <div class="row">
             <!-- Start XP Col -->
             <div class="col-2 col-md-1 col-lg-1 order-2 order-md-1 align-self-center">
               <div class="xp-menubar">
                 <a class="xp-menu-hamburger" href="javascript:void();">
-                  <i class="icon-menu font-20 text-white"></i>
+                  <i class="icon-menu font-20 text-black"></i>
                 </a>
               </div>
             </div>
@@ -301,7 +312,8 @@ onMounted(() => {
                         ><img
                           src="../../assets/admin/images/topbar/user.jpg"
                           alt="user-profile"
-                          class="rounded-circle img-fluid" /><span class="xp-user-live"></span
+                          class="rounded-circle img-fluid"
+                        /><span class="xp-user-live"></span
                       ></a>
 
                       <div
@@ -309,22 +321,22 @@ onMounted(() => {
                         aria-labelledby="xp-userprofile"
                       >
                         <a class="dropdown-item py-3 text-white text-center font-16" href="#"
-                          >Welcome, John Doe</a
+                          >Xin chào bạn</a
                         >
                         <a class="dropdown-item" href="#"
-                          ><i class="icon-user text-primary mr-2"></i> Profile</a
+                          ><i class="icon-user text-primary mr-2"></i> Thông tin</a
                         >
-                        <a class="dropdown-item" href="#"
+                        <!-- <a class="dropdown-item" href="#"
                           ><i class="icon-wallet text-success mr-2"></i> Billing</a
-                        >
+                        > -->
                         <a class="dropdown-item" href="#"
-                          ><i class="icon-settings text-warning mr-2"></i> Setting</a
+                          ><i class="icon-settings text-warning mr-2"></i> Cài đặt</a
                         >
-                        <a class="dropdown-item" href="#"
+                        <!-- <a class="dropdown-item" href="#"
                           ><i class="icon-lock text-info mr-2"></i> Lock Screen</a
-                        >
-                        <a class="dropdown-item" href="#" @click="logout"
-                          ><i class="icon-power text-danger mr-2"></i> Logout</a
+                        > -->
+                        <a class="dropdown-item" href="#" @click.prevent="handleLogout"
+                          ><i class="icon-power text-danger mr-2"></i> Đăng xuất</a
                         >
                       </div>
                     </div>
@@ -508,8 +520,6 @@ svg {
   }
 }
 
-/* Thay thế CSS hiện tại với đoạn này */
-
 /* Định dạng menu không được chọn */
 .xp-vertical-menu li a {
   color: #8a98ac;
@@ -531,7 +541,8 @@ svg {
 .xp-vertical-menu li a.router-link-active,
 .xp-vertical-menu li a.router-link-exact-active {
   color: #ffffff;
-  background-image: linear-gradient(to right, #5e72eb, #ff9190);
+  background-image: linear-gradient(to right, #5E72EB,
+      #a1c0fc);
   border-left: 4px solid #fff;
 }
 
