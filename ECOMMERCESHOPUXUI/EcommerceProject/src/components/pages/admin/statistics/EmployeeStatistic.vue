@@ -3,7 +3,7 @@
     <!-- Khung dữ liệu tóm tắt và biểu đồ -->
     <div class="card m-b-30">
       <div class="card-header bg-white">
-        <h5 class="card-title text-black mb-0">Tổng quan lương nhân viên (Raw)</h5>
+        <h5 class="card-title text-black mb-0">Doanh thu mang lại (Raw)</h5>
       </div>
       <div class="card-body">
         <div v-if="isLoading" class="text-center my-4">
@@ -18,13 +18,13 @@
             <div class="xp-chart-label">
               <ul class="list-inline text-center">
                 <li class="list-inline-item mx-3">
-                  <p class="text-black">Lương trung bình</p>
+                  <p class="text-black">Doanh thu trung bình</p>
                   <h4 class="text-primary-gradient mb-3">
                     <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.averageSalary) }}
                   </h4>
                 </li>
                 <li class="list-inline-item mx-3">
-                  <p class="text-black">Tổng lương</p>
+                  <p class="text-black">Tổng Doanh thu</p>
                   <h4 class="text-success-gradient mb-3">
                     <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.totalSalary) }}
                   </h4>

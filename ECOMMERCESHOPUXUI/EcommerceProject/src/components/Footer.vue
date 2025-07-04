@@ -60,22 +60,24 @@
                   opacity="0.5"
                 />
 
-                <text
-                  x="50%"
-                  y="60%"
-                  dominant-baseline="middle"
-                  text-anchor="middle"
-                  class="angel-text"
-                >
-                  Angel
-                </text>
+                <RouterLink to="/" style="text-decoration: none;">
+  <text
+    x="50%"
+    y="60%"
+    dominant-baseline="middle"
+    text-anchor="middle"
+    class="angel-text"
+  >
+    Angel
+  </text>
+</RouterLink>
               </svg>
               <div class="footer__payment">
-                <a href="#"><img src="../../assets/img/payment/payment-1.png" alt="" /></a>
+                <!-- <a href="#"><img src="../../assets/img/payment/payment-1.png" alt="" /></a>
                 <a href="#"><img src="../../assets/img/payment/payment-2.png" alt="" /></a>
                 <a href="#"><img src="../../assets/img/payment/payment-3.png" alt="" /></a>
                 <a href="#"><img src="../../assets/img/payment/payment-4.png" alt="" /></a>
-                <a href="#"><img src="../../assets/img/payment/payment-5.png" alt="" /></a>
+                <a href="#"><img src="../../assets/img/payment/payment-5.png" alt="" /></a> -->
               </div>
             </div>
           </div>

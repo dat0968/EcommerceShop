@@ -4,7 +4,7 @@
             <div class="spinner"></div>
         </div>
 
-        <div class="form-header">
+        <div class="form-header" style="background-color: #4C7CF3;">
             <h2>{{ isEditing ? 'Cập Nhật Thông Tin Nhân Viên' : 'Thêm Nhân Viên Mới' }}</h2>
         </div>
 
@@ -19,7 +19,7 @@
                             <img :src="imagePreview || 'https://via.placeholder.com/150'" alt="Hình đại diện"
                                 class="image-preview" @error="handleImageError" />
                             <div class="image-upload-controls">
-                                <label for="hinh-upload" class="upload-btn">
+                                <label for="hinh-upload" class="upload-btn" style="color: white;">
                                     <i class="fas fa-upload"></i> Chọn ảnh
                                 </label>
                                 <input type="file" id="hinh-upload" accept="image/*" @change="onImageChange"
@@ -32,6 +32,7 @@
                             <span class="error-message" v-if="errors.hinh">{{ errors.hinh }}</span>
                         </div>
                     </div>
+                    
                     <!-- Họ tên -->
                     <div class="form-group">
                         <label for="hoTen">Họ tên:</label>
@@ -288,33 +289,33 @@ export default {
                 });
                 const staffData = response.data;
 
-                // Lưu dữ liệu gốc đã được trim để so sánh chính xác
+                // Lưu dữ liệu gốc mà không trim để giữ khoảng cách
                 originalStaffData.value = {
                     ...staffData,
-                    hoTen: (staffData.hoTen || '').trim(),
-                    cccd: (staffData.cccd || '').trim(),
-                    diaChi: (staffData.diaChi || '').trim(),
-                    sdt: (staffData.sdt || '').trim(),
-                    email: (staffData.email || '').trim(),
-                    matKhau: (staffData.matKhau || '').trim(),
-                    tenTaiKhoan: (staffData.tenTaiKhoan || '')
+                    hoTen: staffData.hoTen || '',
+                    cccd: staffData.cccd || '',
+                    diaChi: staffData.diaChi || '',
+                    sdt: staffData.sdt || '',
+                    email: staffData.email || '',
+                    matKhau: staffData.matKhau || '',
+                    tenTaiKhoan: staffData.tenTaiKhoan || ''
                 };
 
                 formData.value = {
                     maNV: staffData.maNV,
-                    hoTen: (staffData.hoTen || '').trim(),
+                    hoTen: staffData.hoTen || '',
                     gioiTinh: staffData.gioiTinh || 'Nam',
                     ngaySinh: staffData.ngaySinh ? new Date(staffData.ngaySinh).toISOString().split('T')[0] : '',
-                    cccd: (staffData.cccd || '').trim(),
-                    diaChi: (staffData.diaChi || '').trim(),
-                    sdt: (staffData.sdt || '').trim(),
-                    email: (staffData.email || '').trim(),
+                    cccd: staffData.cccd || '',
+                    diaChi: staffData.diaChi || '',
+                    sdt: staffData.sdt || '',
+                    email: staffData.email || '',
                     maChucVu: staffData.maChucVu || '',
                     ngayVaoLam: staffData.ngayVaoLam ? new Date(staffData.ngayVaoLam).toISOString().split('T')[0] : '',
                     tinhTrang: staffData.tinhTrang || 'Đang hoạt động',
-                    matKhau: (staffData.matKhau || '').trim(),
+                    matKhau: staffData.matKhau || '',
                     hinh: staffData.hinh || null,
-                    tenTaiKhoan: (staffData.tenTaiKhoan || '')
+                    tenTaiKhoan: staffData.tenTaiKhoan || ''
                 };
 
                 if (staffData.hinh) {
@@ -498,7 +499,7 @@ export default {
         };
 
         const validateHoTen = () => {
-            formData.value.hoTen = (formData.value.hoTen || '').trim();
+            // Không trim để giữ khoảng cách trong họ tên
             if (!formData.value.hoTen) {
                 errors.value.hoTen = 'Họ tên không được để trống';
             } else {
@@ -619,7 +620,7 @@ export default {
         };
 
         const validateDiaChi = () => {
-            formData.value.diaChi = (formData.value.diaChi || '').trim();
+            // Không trim để giữ khoảng cách trong địa chỉ
             if (!formData.value.diaChi) {
                 errors.value.diaChi = 'Địa chỉ không được để trống';
             } else {
@@ -790,14 +791,10 @@ export default {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     margin: 1.5rem auto;
     max-width: 1000px;
-    /* Giảm max-width để phù hợp hơn với các màn hình nhỏ */
     max-height: 90vh;
-    /* Giới hạn chiều cao tối đa để tránh tràn khung hình */
     overflow-y: auto;
-    /* Thêm cuộn dọc nếu nội dung vượt quá */
     position: relative;
     padding: 0;
-    /* Chuyển padding vào các phần tử con */
 }
 
 /* Thanh cuộn tùy chỉnh */
@@ -811,12 +808,12 @@ export default {
 }
 
 .staff-form-container::-webkit-scrollbar-thumb {
-    background: #3b82f6;
+    background: #f1f1f1;
     border-radius: 4px;
 }
 
 .staff-form-container::-webkit-scrollbar-thumb:hover {
-    background: #2563eb;
+    background: #f1f1f1;
 }
 
 .form-header {
@@ -825,7 +822,6 @@ export default {
     padding: 1rem 1.5rem;
     box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
     position: sticky;
-    /* Đảm bảo header cố định khi cuộn */
     top: 0;
     z-index: 10;
 }
@@ -833,19 +829,17 @@ export default {
 .form-header h2 {
     margin: 0;
     font-size: 1.5rem;
-    /* Giảm kích thước font cho header */
     font-weight: 700;
+    color: white;
 }
 
 .staff-form {
     padding: 1.5rem;
-    /* Giảm padding để tiết kiệm không gian */
 }
 
 .form-columns {
     display: flex;
     gap: 1.5rem;
-    /* Giảm gap để phù hợp với khung nhỏ hơn */
     margin-bottom: 1.5rem;
 }
 
@@ -855,7 +849,6 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    /* Giảm khoảng cách giữa các form-group */
 }
 
 .form-group {
@@ -868,7 +861,6 @@ export default {
     font-weight: 600;
     color: #374151;
     font-size: 0.85rem;
-    /* Giảm kích thước font của label */
 }
 
 .form-group input[type="text"],
@@ -876,12 +868,9 @@ export default {
 .form-group input[type="date"],
 .form-group select {
     padding: 0.6rem 0.8rem;
-    /* Giảm padding để input nhỏ gọn hơn */
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
-    /* Giảm border-radius cho giao diện mềm mại */
     font-size: 0.9rem;
-    /* Giảm kích thước font */
     transition: all 0.2s ease;
 }
 
@@ -895,14 +884,12 @@ export default {
 .error-message {
     color: #ef4444;
     font-size: 0.75rem;
-    /* Giảm kích thước font của thông báo lỗi */
     margin-top: 0.2rem;
 }
 
 .radio-group {
     display: flex;
     gap: 1.5rem;
-    /* Giảm gap giữa các radio button */
 }
 
 .radio-label {
@@ -928,12 +915,10 @@ export default {
 
 .image-preview {
     width: 120px;
-    /* Giảm kích thước ảnh để phù hợp với khung nhỏ */
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #3b82f6;
-    /* Giảm độ dày border */
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -946,7 +931,6 @@ export default {
     background-color: #3b82f6;
     color: white;
     padding: 0.4rem 0.8rem;
-    /* Giảm padding cho button */
     border-radius: 0.375rem;
     cursor: pointer;
     font-weight: 500;
@@ -994,7 +978,6 @@ export default {
     color: #4b5563;
     border: 1px solid #d1d5db;
     padding: 0.6rem 1.2rem;
-    /* Giảm padding */
     border-radius: 0.375rem;
     font-weight: 600;
     font-size: 0.9rem;
@@ -1042,7 +1025,6 @@ export default {
 
 .spinner {
     width: 40px;
-    /* Giảm kích thước spinner */
     height: 40px;
     border: 4px solid #f3f3f3;
     border-top: 4px solid #3b82f6;
@@ -1051,13 +1033,8 @@ export default {
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .password-group {
@@ -1133,7 +1110,6 @@ export default {
 @media (max-width: 768px) {
     .staff-form-container {
         max-height: 85vh;
-        /* Giảm chiều cao tối đa trên mobile */
     }
 
     .image-preview {

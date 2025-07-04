@@ -664,6 +664,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         .ThenInclude(h => h.MaCtspNavigation)
                             .ThenInclude(h => h.MaSpNavigation)
                     .Include(h => h.Cthoadons)
+                        .ThenInclude(h => h.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.Hinhanhs)
+                    .Include(h => h.Cthoadons)
                         .ThenInclude(ct => ct.DanhGia)
                     .Include(h => h.MaKhNavigation)
                     .Include(h => h.MaCodeNavigation)
@@ -745,6 +748,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             {
                 data = await _context.Sanphams
                                 .Include(x => x.Chitietsanphams)
+                                    //.ThenInclude(ctsp => ctsp.Hinhanhs)
                                 .Include(x => x.Chitietdanhmucs)
                                     .ThenInclude(ctdm => ctdm.MaDanhMucChaNavigation)
                                 .Include(x => x.Chitietdanhmucs)

@@ -1,19 +1,12 @@
 <!-- StaffManagement với imports tương đối -->
 <template>
-    <div class="staff-management" style="margin-top: 70px;">
+    <div class="staff-management" style="margin-top: 70px; ">
 
         <div class="action-buttons">
-            <button class="btn add-button" @click="showAddModal = true">
+            <button class="btn add-button" @click="showAddModal = true" style="background-color: #4C7CF3;">
                 <i class="fas fa-plus"></i> Thêm Nhân Viên
             </button>
-            <div class="export-buttons">
-                <button class="btn export-button" @click="exportToServer('pdf')">
-                    <i class="fas fa-file-pdf"></i> Xuất PDF
-                </button>
-                <button class="btn export-button" @click="exportToServer('excel')">
-                    <i class="fas fa-file-excel"></i> Xuất Excel
-                </button>
-            </div>
+      
         </div>
 
         <StaffTable ref="staffTable" @edit-staff="openEditModal" @refresh-data="refreshData" />
@@ -115,7 +108,7 @@ export default {
 
 <style scoped>
 .staff-management {
-    background: url('@/assets/images/html_table.jpg') center / cover;
+    /* background: url('@/assets/images/html_table.jpg') center / cover; */
     padding: 1rem 2rem;
     max-width: 2000px;
     margin: 0 auto;

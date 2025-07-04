@@ -1,17 +1,18 @@
 <template>
-  <div style="margin-top: 90px" class="xp-contentbar position-relative">
+  <div style="margin-top: 60px" class="xp-contentbar position-relative">
     <Overlay
       :is-visible="isDisabled"
       overlayContent="Hiện không thể kết nối tới API để quản lý."
       isCoverPage="true"
     />
-    <!-- Breadcrumb trạng thái -->
-    <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item active h5"><strong>Quản lý danh mục</strong></li>
-      </ol>
-      <hr />
-    </nav>
+    <nav aria-label="breadcrumb" class="mb-3" style="display: flex; justify-content: center; padding: 10px 0; background-color: transparent;">
+    <ol class="breadcrumb" style="display: flex; justify-content: center; margin: 0;">
+      <li class="breadcrumb-item active" style="display: flex; align-items: center;">
+        <h1 style="text-align: center; margin: 0; font-size: 3rem; font-weight: 700; color: #333;">QUẢN LÝ DANH MỤC</h1>
+      </li>
+    </ol>
+    <hr />
+  </nav>
     <!-- Chọn chế độ -->
     <div class="mb-3 d-flex align-items-center gap-3">
       <label class="me-2 fw-bold">Chế độ:</label>
@@ -263,6 +264,7 @@ import * as configsDt from '@/utils/configsDatatable.js'
 import ResponseAPI from '@/models/ResponseAPI'
 import { formatCurrency } from '@/constants/formatCurrency'
 import Overlay from '@/components/common/Overlay.vue'
+import pathReplaceImg from '@/utils/processPathImg'
 
 export default {
   name: 'CategoryIndex',
@@ -372,7 +374,17 @@ export default {
       this.breadcrumbText = 'Cập nhật danh mục cha'
     },
     async onDeleteParent(item) {
-      if (confirm('Bạn có chắc chắn muốn xóa danh mục cha này?')) {
+      Swal.fire({
+        title: 'Xác nhận xóa',
+        text: 'Bạn có chắc chắn muốn xóa danh mục cha này?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+      }).then(async(result) => {
+        if (result.isConfirmed) {
         const response = await axiosConfig.deleteFromApi(
           `/categories/parent/${item.maDanhMucCha}`,
           ConfigsRequest.takeAuth(),
@@ -388,6 +400,7 @@ export default {
         // await this.loadOption()
         this.resetFormParent()
       }
+    })
     },
     async onSubmitParent() {
       if (this.isEditParent) {
@@ -419,7 +432,7 @@ export default {
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
           return
         }
-        this.optionsParentCategory.push(res.data)
+        this.optionsParentCategory = [...this.optionsParentCategory, res.data]
         this.breadcrumbText = 'Thêm mới danh mục cha thành công'
       }
       // await this.loadOption()
@@ -443,22 +456,33 @@ export default {
       this.breadcrumbText = 'Cập nhật danh mục con'
     },
     async onDeleteChild(item) {
-      if (confirm('Bạn có chắc chắn muốn xóa danh mục con này?')) {
-        const response = await axiosConfig.deleteFromApi(
-          `/categories/child/${item.maDanhMucCon}`,
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(response, true)) {
-          return
+      Swal.fire({
+        title: 'Xác nhận xóa',
+        text: 'Bạn có chắc chắn muốn xóa danh mục con này?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xóa',
+        cancelButtonText: 'Hủy'
+      }).then(async(result) => {
+        if (result.isConfirmed) {
+          const response = await axiosConfig.deleteFromApi(
+            `/categories/child/${item.maDanhMucCon}`,
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(response, true)) {
+            return
+          }
+          this.optionsChildCategory = this.optionsChildCategory.filter(
+            (x) => x.maDanhMucCon !== item.maDanhMucCon,
+          )
+          this.reloadDataTableChild()
+          this.breadcrumbText = 'Đã xóa danh mục con'
+          // await this.loadOption()
+          this.resetFormChild()    
         }
-        this.optionsChildCategory = this.optionsChildCategory.filter(
-          (x) => x.maDanhMucCon !== item.maDanhMucCon,
-        )
-        this.reloadDataTableChild()
-        this.breadcrumbText = 'Đã xóa danh mục con'
-        // await this.loadOption()
-        this.resetFormChild()
-      }
+      })
     },
     async onSubmitChild() {
       if (this.isEditChild) {
@@ -493,7 +517,7 @@ export default {
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
           return
         }
-        this.optionsChildCategory.push(res.data)
+        this.optionsChildCategory = [...this.optionsChildCategory,res.data]
         this.reloadDataTableChild()
         this.breadcrumbText = 'Thêm mới danh mục con thành công'
       }
@@ -558,7 +582,7 @@ export default {
                                 <div class="col-sm-12 col-md-6 col-lg-4 detail-item">
                                     <div class="row border m-1 p-4 shadow rounded bg-white">
                                         <div class="col-4 d-flex align-items-center">
-                                            <img src="${detail.imageUrl || '/images/default.png'}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
+                                            <img src="${pathReplaceImg(undefined, 'HinhAnh/Products', detail.imageUrl)}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
                                         </div>
                                         <div class="col-8">
                                             <div class="text-primary flex flex-flow-column justify-content-between"><span class="col-auto">Màu: ${detail.mauSac || '-'}</span> | <span class="col-auto">Size: ${detail.kichThuoc || '-'}</span></div>
@@ -601,6 +625,7 @@ export default {
             { data: 'tenDanhMucCha', title: 'Tên danh mục cha', className: 'text-center' },
             {
               data: 'isActive',
+              className: 'text-center',
               title: 'Trạng thái',
               render: function (data) {
                 return data
@@ -659,6 +684,7 @@ export default {
             { data: 'tenDanhMucCon', title: 'Tên danh mục con', className: 'text-center' },
             {
               data: 'isActive',
+              className: 'text-center',
               title: 'Trạng thái',
               render: function (data) {
                 return data

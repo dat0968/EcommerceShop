@@ -74,6 +74,7 @@
                       >
                     </span>
                   </div>
+                  {{ item._editNoiDung }}
                   <div class="col-md-6">
                     <label class="fw-bold">Nội dung đánh giá:</label>
                     <input

@@ -1,6 +1,40 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import Swal from 'sweetalert2';
+// Hàm kiểm tra và cập nhật trạng thái coupon hết hạn
+const checkAndUpdateExpiredCoupons = async (couponsList) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Đặt thời gian về 00:00:00 để so sánh ngày
+
+  for (const coupon of couponsList) {
+    const endDate = new Date(coupon.ngayKetThuc);
+    if (coupon.trangThai === true && endDate < today && !isCouponUsedUp(coupon)) {
+      // Coupon còn hiệu lực nhưng đã hết hạn
+      try {
+        const response = await fetch(`${baseUrl}/Update`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...coupon,
+            trangThai: 'expired', // Chuyển trạng thái sang Hết hiệu lực
+            ngayBatDau: coupon.ngayBatDau ? new Date(coupon.ngayBatDau).toISOString() : null,
+            ngayKetThuc: coupon.ngayKetThuc ? new Date(coupon.ngayKetThuc).toISOString() : null,
+            donHangToiThieu: coupon.donHangToiThieu || null,
+            soTienGiam: coupon.soTienGiam || null,
+            phanTramGiam: coupon.phanTramGiam || null
+          })
+        });
+
+        const data = response.ok ? await response.json() : { success: false, message: `HTTP ${response.status}: ${await response.text()}` };
+        if (!data.success) {
+          console.error(`Không thể cập nhật trạng thái coupon ${coupon.maCode}: ${data.message}`);
+        }
+      } catch (error) {
+        console.error(`Lỗi khi cập nhật trạng thái coupon ${coupon.maCode}: ${error.message}`);
+      }
+    }
+  }
+};
 
 const getApiUrl = 'https://localhost:7217';
 const coupons = ref([]);
@@ -84,7 +118,7 @@ const fetchCoupons = async () => {
   try {
     const params = new URLSearchParams({
       keywords: searchQuery.value,
-      status: filterStatus.value === 'all' ? '' : filterStatus.value === 'active' ? 'Còn hiệu lực' : 'Đã hủy',
+      status: filterStatus.value === 'all' ? '' : filterStatus.value === 'active' ? 'Còn hiệu lực' : filterStatus.value === 'activess' ? 'Hết hiệu lực' : 'Đã hủy',
       sort: sortOrder.value,
       page: currentPage.value,
       pageSize: itemsPerPage.value
@@ -100,6 +134,10 @@ const fetchCoupons = async () => {
         ngayBatDau: coupon.ngayBatDau ? new Date(coupon.ngayBatDau).toISOString().split('T')[0] : '',
         ngayKetThuc: coupon.ngayKetThuc ? new Date(coupon.ngayKetThuc).toISOString().split('T')[0] : ''
       }));
+
+      // Kiểm tra và cập nhật trạng thái coupon hết hạn
+      await checkAndUpdateExpiredCoupons(coupons.value);
+
       totalItems.value = data.totalItems;
       totalPages.value = data.totalPages;
     } else {
@@ -110,6 +148,7 @@ const fetchCoupons = async () => {
     console.error('Fetch error:', error);
   }
 };
+
 
 // Format date
 const formatDate = (dateString) => {
@@ -125,10 +164,17 @@ const isCouponUsedUp = (coupon) => {
 
 // Get coupon status text
 const getCouponStatus = (coupon) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const endDate = new Date(coupon.ngayKetThuc);
+
   if (isCouponUsedUp(coupon)) {
     return { text: 'Đã hết', color: 'red' };
   }
-  if (coupon.trangThai) {
+  if (coupon.trangThai === 'expired' || (coupon.trangThai === true && endDate < today)) {
+    return { text: 'Hết hiệu lực', color: 'orange' };
+  }
+  if (coupon.trangThai === true) {
     return { text: 'Còn hiệu lực', color: 'green' };
   }
   return { text: 'Đã hủy', color: 'gray' };
@@ -309,46 +355,43 @@ onMounted(() => {
   <div>
     <br>
     <br>
-    <div class="container mt-4">
-      <h1>Quản lý mã Coupon</h1>
-
+    <div class="container mt-4" style="padding-top:50px;text-align: center">
+      <h1>QUẢN LÝ COUPON</h1>
+      <br> <br>
       <!-- Bộ lọc -->
-      <div class="row mb-3">
-        <div class="col-md-4">
-          <label for="search" class="form-label">Tìm kiếm</label>
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="form-control"
-            placeholder="Tìm kiếm mã, số tiền, phần trăm..."
-            @input="fetchCoupons"
-          >
-        </div>
-        <div class="col-md-3">
-          <label for="statusFilter" class="form-label">Trạng thái</label>
-          <select v-model="filterStatus" class="form-control" @change="fetchCoupons">
-            <option value="all">Tất cả trạng thái</option>
-            <option value="active">Còn hiệu lực</option>
-            <option value="inactive">Đã hủy</option>
-          </select>
-        </div>
-        <div class="col-md-1">
-          <label for="itemsPerPage" class="form-label">Số trang</label>
-          <select v-model="itemsPerPage" class="form-control" @change="fetchCoupons">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label class="form-label invisible">Ẩn label</label>
-          <button class="btn btn-primary w-100" @click="openAddModal">Thêm mới</button>
-        </div>
-      </div>
+      <div class="row mb-3" style="background-color: #fff; padding: 20px; border-radius: 20px;">
+  <div class="col-md-4">
+    <input
+      v-model="searchQuery"
+      type="text"
+      class="form-control"
+      placeholder="Tìm kiếm mã, số tiền, phần trăm..."
+      @input="fetchCoupons"
+      style="font-weight: 700; color: #000;"
+    />
+  </div>
+  <div class="col-md-3">
+    <select v-model="filterStatus" class="form-control" @change="fetchCoupons" style="font-weight: 700; color: #000;">
+      <option value="all">Tất cả trạng thái</option>
+      <option value="active">Còn hiệu lực</option>
+      <option value="inactive">Đã hủy</option>
+    </select>
+  </div>
+  <div class="col-md-1">
+    <select v-model="itemsPerPage" class="form-control" @change="fetchCoupons" style="font-weight: 700; color: #000;">
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+    </select>
+  </div>
+  <div class="col-md-3">
+    <button class="btn btn-primary w-100" @click="openAddModal" style="font-weight: 700; color: #fff;">Thêm mới</button>
+  </div>
+</div>
 
       <!-- Bảng coupons -->
-      <table class="table table-striped">
+      <table class="table table-striped" >
         <thead>
           <tr>
             <th>Mã Coupon</th>
@@ -366,7 +409,7 @@ onMounted(() => {
             <th>Ngày kết thúc</th>
             <th>Đơn tối thiểu</th>
             <th>Số lượng</th>
-            <th>Số lượng đã dùng</th>
+            <th>Đã dùng</th>
             <th>Trạng thái</th>
             <th>Hành động</th>
           </tr>
@@ -385,7 +428,7 @@ onMounted(() => {
               {{ getCouponStatus(coupon).text }}
             </td>
             <td>
-              <div v-if="!isCouponUsedUp(coupon) && coupon.trangThai">
+              <div v-if="!isCouponUsedUp(coupon) && coupon.trangThai !== 'expired' && coupon.trangThai !== false">
                 <button
                   class="btn btn-warning btn-sm me-2"
                   @click="openEditModal(coupon)"
@@ -400,6 +443,7 @@ onMounted(() => {
                 </button>
               </div>
             </td>
+
           </tr>
         </tbody>
       </table>
@@ -434,8 +478,8 @@ onMounted(() => {
       <div class="modal" :class="{ 'd-block': showAddModal }" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Thêm Coupon</h5>
+            <div class="modal-header"style="background-color:#4C7CF3">
+              <h5 class="modal-title" >Thêm Coupon</h5>
               <button type="button" class="btn-close" @click="closeAddModal"></button>
             </div>
             <div class="modal-body">

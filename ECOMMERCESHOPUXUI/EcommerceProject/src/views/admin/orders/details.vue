@@ -35,8 +35,7 @@ const order = ref({
   chitietcombohoadons: props.Order.chitietcombohoadons ? [...props.Order.chitietcombohoadons] : [],
   cthoadons: props.Order.cthoadons ? [...props.Order.cthoadons] : [],
 })
-console.log(order.value)
-// Watch để cập nhật dữ liệu khi props thay đổi
+
 watch(
   () => props.Order,
   (newOrder) => {
@@ -84,7 +83,6 @@ onMounted(() => {
   }
 })
 
-// Format số tiền
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -92,10 +90,29 @@ const formatCurrency = (amount) => {
   }).format(amount || 0)
 }
 
-// Format ngày tháng
 const formatDate = (dateString) => {
   if (!dateString) return 'Chưa có'
   return new Date(dateString).toLocaleString('vi-VN')
+}
+
+const statusSteps = [
+  { label: 'Chờ xác nhận', key: 'Chờ xác nhận', color: 'bg-warning' },
+  { label: 'Đã xác nhận', key: 'Đã xác nhận', color: 'bg-success' },
+  { label: 'Đã giao cho đơn vị vận chuyển', key: 'Đã giao cho đơn vị vận chuyển', color: 'bg-info' },
+  { label: 'Đã nhận', key: 'Đã nhận', color: 'bg-primary' },
+  { label: 'Đã thanh toán', key: 'Đã thanh toán', color: 'bg-dark' },
+  { label: 'Đã hủy', key: 'Đã hủy', color: 'bg-danger' },
+  { label: 'Hoàn trả/Hoàn tiền', key: 'Hoàn trả/Hoàn tiền', color: 'bg-secondary' },
+]
+
+const getStatusIndex = (status) => {
+  return statusSteps.findIndex(step => step.key.toLowerCase() === status.toLowerCase())
+}
+
+const isStatusActive = (step) => {
+  const currentIndex = getStatusIndex(order.value.tinhTrang)
+  const stepIndex = statusSteps.findIndex(s => s.key === step.key)
+  return stepIndex <= currentIndex
 }
 </script>
 
@@ -106,8 +123,9 @@ const formatDate = (dateString) => {
     tabindex="-1"
     aria-labelledby="orderDetailModalLabel"
     aria-hidden="true"
+ 
   >
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl"  >
       <div class="modal-content fs-5">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title fw-bold">Chi tiết đơn hàng #{{ order.maHd }}</h5>
@@ -120,52 +138,94 @@ const formatDate = (dateString) => {
           ></button>
         </div>
         <div class="modal-body">
-          <!-- Thông tin khách hàng -->
-          <div class="row mb-4">
-            <div class="col-md-6 border-end">
-              <h6 class="fw-bold mb-2 text-primary">Thông tin khách hàng</h6>
-              <p class="mb-1"><strong>Mã khách hàng:</strong> {{ order.maKh }}</p>
-              <p class="mb-1">
-                <strong>Họ tên người đặt:</strong> {{ order.maKh }} - {{ order.tenKh }}
-              </p>
-              <p class="mb-1"><strong>Họ tên người nhận:</strong> {{ order.hoTen }}</p>
-              <p class="mb-1"><strong>Số điện thoại:</strong> {{ order.sdt }}</p>
-            </div>
-            <div class="col-md-6 ps-md-4">
-              <h6 class="fw-bold mb-2 text-primary">Thông tin đơn hàng</h6>
-              <p class="mb-1"><strong>Địa chỉ giao hàng:</strong> {{ order.diaChiNhanHang }}</p>
-              <p class="mb-1"><strong>Hình thức thanh toán:</strong> {{ order.hinhThucTt }}</p>
-              <p class="mb-1"><strong>Tình trạng:</strong> {{ order.tinhTrang }}</p>
-              <p class="mb-1"><strong>Mô tả:</strong> {{ order.moTa || 'Không có' }}</p>
-              <p class="mb-1"><strong>Lý do hủy:</strong> {{ order.lyDoHuy || 'Không có' }}</p>
+          <!-- Trạng thái đơn hàng -->
+          <div class="status-timeline mb-4">
+            <h6 class="fw-bold mb-3 text-primary">Trạng thái đơn hàng</h6>
+            <div class="d-flex justify-content-between position-relative">
+              <div
+                v-for="(step, index) in statusSteps"
+                :key="step.key"
+                class="text-center flex-fill"
+              >
+                <div
+                  :class="[
+                    'status-circle',
+                    isStatusActive(step) ? step.color : 'bg-light',
+                    isStatusActive(step) ? 'text-white' : 'text-muted'
+                  ]"
+                >
+                  {{ index + 1 }}
+                </div>
+                <div
+                  :class="['mt-2', isStatusActive(step) ? 'fw-bold' : 'text-muted']"
+                >
+                  {{ step.label }}
+                </div>
+              </div>
+              <div class="status-line"></div>
             </div>
           </div>
 
-          <!-- Thông tin nhân viên và thời gian -->
-          <div class="row mb-4">
-            <div class="col-md-6 border-end">
-              <h6 class="fw-bold mb-2 text-primary">Thông tin nhân viên</h6>
-              <p class="mb-1"><strong>Mã nhân viên:</strong> {{ order.maNv || 'Chưa có' }}</p>
-              <p class="mb-1"><strong>Tên nhân viên:</strong> {{ order.tenNv }}</p>
-            </div>
-            <div class="col-md-6 ps-md-4">
-              <h6 class="fw-bold mb-2 text-primary">Thời gian</h6>
-              <p class="mb-1"><strong>Ngày tạo:</strong> {{ formatDate(order.ngayTao) }}</p>
-              <p class="mb-1">
-                <strong>Ngày bắt đầu giao:</strong> {{ formatDate(order.batDauGiao) }}
-              </p>
-              <p class="mb-1"><strong>Ngày nhận:</strong> {{ formatDate(order.ngayNhan) }}</p>
-              <p class="mb-1">
-                <strong>Ngày thanh toán:</strong> {{ formatDate(order.ngayThanhToan) }}
-              </p>
+          <!-- Thông tin đơn hàng -->
+          <div class="row mb-4"style="font-size:1rem">
+            <div class="col-12">
+              <h6 class="fw-bold mb-3 text-primary">Thông tin đơn hàng</h6>
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <tbody>
+                    <tr>
+                      <td class="fw-medium">Mã khách hàng</td>
+                      <td>{{ order.maKh }}</td>
+                      <td class="fw-medium">Họ tên người đặt</td>
+                      <td>{{ order.tenKh }}</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Họ tên người nhận</td>
+                      <td>{{ order.hoTen }}</td>
+                      <td class="fw-medium">Số điện thoại</td>
+                      <td>{{ order.sdt }}</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Địa chỉ giao hàng</td>
+                      <td>{{ order.diaChiNhanHang }}</td>
+                      <td class="fw-medium">Hình thức thanh toán</td>
+                      <td>{{ order.hinhThucTt }}</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Mô tả</td>
+                      <td>{{ order.moTa || 'Không có' }}</td>
+                      <td class="fw-medium">Lý do hủy</td>
+                      <td>{{ order.lyDoHuy || 'Không có' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Mã nhân viên</td>
+                      <td>{{ order.maNv || 'Chưa có' }}</td>
+                      <td class="fw-medium">Tên nhân viên</td>
+                      <td>{{ order.tenNv || 'Chưa có' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Ngày tạo</td>
+                      <td>{{ formatDate(order.ngayTao) }}</td>
+                      <td class="fw-medium">Ngày bắt đầu giao</td>
+                      <td>{{ formatDate(order.batDauGiao) }}</td>
+                    </tr>
+                    <tr>
+                      <td class="fw-medium">Ngày nhận</td>
+                      <td>{{ formatDate(order.ngayNhan) }}</td>
+                      <td class="fw-medium">Ngày thanh toán</td>
+                      <td>{{ formatDate(order.ngayThanhToan) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
           <!-- Danh sách sản phẩm -->
-          <div class="product-list mb-4" v-if="order.cthoadons.some((i) => !i.maCombo)">
+          <div class="product-list mb-4" v-if="order.cthoadons.some((i) => !i.maCombo)"style="font-size:1rem">
             <h6 class="fw-bold mb-3 text-success">Sản phẩm trong đơn hàng</h6>
             <div class="table-responsive">
-              <table class="table table-sm align-middle">
+              <table class="table table-sm align-middle table-bordered">
                 <thead class="table-light">
                   <tr>
                     <th>STT</th>
@@ -186,15 +246,7 @@ const formatDate = (dateString) => {
                       <div class="font-semibold text-gray-800">
                         {{ item.tenSanPham || 'Không có tên' }}
                       </div>
-                      <div
-                        style="
-                          color: #6b7280;
-                          font-size: 0.875rem;
-                          font-style: italic;
-                          margin-left: 4px;
-                        "
-                        class="text-sm text-gray-500 italic"
-                      >
+                      <div class="text-sm text-gray-500 italic">
                         {{ item.bienThe }}
                       </div>
                     </td>
@@ -211,10 +263,10 @@ const formatDate = (dateString) => {
           </div>
 
           <!-- Danh sách combo -->
-          <div class="combo-list mb-4" v-if="order.cthoadons.some((i) => i.maCombo)">
+          <div class="combo-list mb-4" v-if="order.cthoadons.some((i) => i.maCombo)"style="font-size:1rem">
             <h6 class="fw-bold mb-3 text-success">Combo trong đơn hàng</h6>
             <div class="table-responsive">
-              <table class="table table-sm align-middle">
+              <table class="table table-sm align-middle table-bordered">
                 <thead class="table-light">
                   <tr>
                     <th>STT</th>
@@ -235,9 +287,9 @@ const formatDate = (dateString) => {
                     <td>{{ comboItem.soLuong }}</td>
                     <td>
                       {{ formatCurrency(comboItem.gia) }}
-                      <span style="text-decoration-line: line-through; color: red">{{
-                        formatCurrency(comboItem.giaGoc)
-                      }}</span>
+                      <span class="text-danger text-decoration-line-through">
+                        {{ formatCurrency(comboItem.giaGoc) }}
+                      </span>
                     </td>
                     <td>{{ formatCurrency(comboItem.gia * comboItem.soLuong) }}</td>
                     <td>
@@ -252,8 +304,7 @@ const formatDate = (dateString) => {
                           <div>
                             <strong>Tên SP:</strong> {{ detail.tenSanPham }}
                             <span v-if="detail.mauSac || detail.kichThuoc">
-                              ({{ detail.kichThuoc }} {{ '- ' + detail.mauSac }})</span
-                            >
+                              ({{ detail.kichThuoc }} {{ '- ' + detail.mauSac }})</span>
                             - <strong>Số lượng:</strong> {{ detail.soLuong }}
                           </div>
                         </li>
@@ -266,9 +317,9 @@ const formatDate = (dateString) => {
           </div>
 
           <!-- Tổng tiền -->
-          <div class="row justify-content-end mt-4">
+          <div class="row justify-content-end mt-4"style="font-size:1.2rem">
             <div class="col-md-4">
-              <table class="table">
+              <table class="table table-bordered">
                 <tr>
                   <td class="fw-medium">Tạm tính:</td>
                   <td class="text-end">{{ formatCurrency(order.tienGoc) }}</td>
@@ -282,7 +333,7 @@ const formatDate = (dateString) => {
                   <td class="text-end text-danger">-{{ formatCurrency(order.giamGiaCoupon) }}</td>
                 </tr>
                 <tr class="fw-bold text-primary">
-                  <td>Tổng cộng:</td>
+                  <td style="color: red;">Tổng cộng:</td>
                   <td class="text-end">{{ formatCurrency(order.tienGoc + order.phiVanChuyen - order.giamGiaCoupon) }}</td>
                 </tr>
               </table>
@@ -300,12 +351,36 @@ const formatDate = (dateString) => {
 }
 
 .modal-content {
-  font-size: 1.1rem; /* Tăng kích thước chữ toàn bộ modal */
+  font-size:0.5rem;
 }
 
 .table td,
 .table th {
   vertical-align: middle;
 }
-</style>
 
+.status-timeline {
+  position: relative;
+}
+
+.status-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-weight: bold;
+}
+
+.status-line {
+  position: absolute;
+  top: 15px;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background: linear-gradient(to right, #007bff 50%, #e9ecef 50%);
+  z-index: -1;
+}
+</style>

@@ -18,7 +18,7 @@ import {
 } from '../../firebase/rtdb-config';
 
 import { GetApiUrl } from '../../constants/api.js';
-import { fetchWithAuth } from '../../services/AuthService.js';
+import { fetchWithAuth } from '@/services/authService';
 import ConnectionStatus from '../../components/ConnectionStatus.vue';
 
 // States
