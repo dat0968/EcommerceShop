@@ -6,6 +6,7 @@ using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.Comments;
 using APIClothesEcommerceShop.Repositories.Reviews;
 using APIClothesEcommerceShop.Repositories.WheelCoupon;
+using APIClothesEcommerceShop.Services;
 
 namespace APIClothesEcommerceShop.Repositories.UnitOfWork
 {

@@ -58,7 +58,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_PH"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_Dot"));
 });
 
 // Add services to the container.
@@ -168,7 +168,7 @@ builder.Services.Configure<GoogleEmailSetting>(emailSettings);
 //});
 
 
-// JWT Authentication
+#region JWT Authentication
 var SecretKey = builder.Configuration["JWT:SecretKey"];
 var SecretKeyBytes = Encoding.UTF8.GetBytes(SecretKey);
 builder.Services.AddAuthentication(options =>

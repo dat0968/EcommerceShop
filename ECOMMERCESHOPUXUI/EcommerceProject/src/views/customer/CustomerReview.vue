@@ -269,7 +269,7 @@ export default {
       isLightboxOpen: false,
       lightboxImages: [],
       lightboxIndex: 0,
-      offensiveWordsList: [],
+      
     }
   },
   created() {
@@ -277,23 +277,7 @@ export default {
     this.reloadReviews()
   },
   methods: {
-    loadOffensiveWords() {
-      // Normalize offensive words list for efficient checking
-      this.offensiveWordsList = offensiveWords.map((word) =>
-        word
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, ''),
-      )
-    },
-    isProfanity(text) {
-      if (!this.offensiveWordsList.length) return false
-      const normalizedText = text
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-      return this.offensiveWordsList.some((word) => normalizedText.includes(word))
-    },
+    
     async reloadReviews() {
       this.isLoading = true
       try {
@@ -393,14 +377,7 @@ export default {
         Swal.fire('Chưa nhập nội dung', 'Vui lòng chia sẻ cảm nhận của bạn.', 'warning')
         return
       }
-      if (this.isProfanity(item._editNoiDung)) {
-        Swal.fire(
-          'Nội dung không phù hợp',
-          'Vui lòng không sử dụng từ ngữ thô tục, phản cảm trong đánh giá của bạn.',
-          'error',
-        )
-        return
-      }
+      
 
       item._isSubmitting = true
       try {

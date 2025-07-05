@@ -7,7 +7,9 @@ using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.Reviews;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Repository;
+using APIClothesEcommerceShop.Services;
 using APIClothesEcommerceShop.Utils;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIClothesEcommerceShop.Repositories.Reviews
@@ -15,6 +17,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     public class ReviewRepository : Repository<DanhGia>, IReviewRepository
     {
         private readonly EcommerceShopContext _db;
+        private readonly IGeminiAIService _ai;
         private static string pathImageReview = "wwwroot/HinhAnh/Reviews";
         private static string filterStatusOrder = "Đã nhận"; // Trạng thái để lọc việc get danh sách đánh giá
 
@@ -213,6 +216,14 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 ValidateReviewRequest(entity);
 
+                // Internal AI review analysis placeholder
+                var aiAnalysisResult = await _ai.AnalyzeReviewContent(entity.NoiDung);
+                if (!aiAnalysisResult.Success)
+                {
+                    response.SetErrorResponse(aiAnalysisResult.Message);
+                    return response;
+                }
+
                 // Kiểm tra trạng thái đơn hàng
                 var orderDetail = await _db.Cthoadons
                     .Include(ct => ct.MaHdNavigation)
@@ -298,8 +309,12 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 ValidateReviewRequest(entity);
 
-
-                // Kiểm tra xem đánh giá đã tồn tại chưa
+                var aiAnalysisResult = await _ai.AnalyzeReviewContent(entity.NoiDung);
+                if (!aiAnalysisResult.Success)
+                {
+                    response.SetErrorResponse(aiAnalysisResult.Message);
+                    return response;
+                }
                 DanhGia? existingReview = new();
                 if (isProduct)
                 {
@@ -385,6 +400,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             if (string.IsNullOrWhiteSpace(entity.NoiDung)) throw new ArgumentException("Nội dung đánh giá không được để trống");
             if (entity.SoSao < 1 || entity.SoSao > 5) throw new ArgumentOutOfRangeException(nameof(entity.SoSao), "Số sao phải nằm trong khoảng từ 1 đến 5");
         }
+
+
         #endregion
         #endregion
         // #endregion
