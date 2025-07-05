@@ -121,8 +121,7 @@ export default {
   components: { Overlay, LoadingSpinner, NoDataMessage },
   props: {
     data: {
-      type: Object,
-      required: true,
+      default: () => ({}),
     },
     isLoading: {
       type: Boolean,

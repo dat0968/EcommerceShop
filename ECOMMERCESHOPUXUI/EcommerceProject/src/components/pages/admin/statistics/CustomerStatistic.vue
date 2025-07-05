@@ -65,8 +65,7 @@ export default {
   },
   props: {
     data: {
-      type: Object, // Để linh hoạt hơn, dùng Object thay vì CustomerStatisticsResponse
-      required: true,
+      default: () => ({}),
     },
     isLoading: {
       type: Boolean,

@@ -51,12 +51,7 @@ import * as axiosConfig from '@/utils/axiosClient'
 
 import Swal from 'sweetalert2'
 
-import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
-import CustomerStatisticsResponse from '@/models/dtos/statisticsDtos/customerStatisticsResponse'
-import ProductStatisticsResponse from '@/models/dtos/statisticsDtos/productStatisticsResponse'
-import EmployeeStatisticsResponse from '@/models/dtos/statisticsDtos/employeeStatisticsResponse'
-import RevenueStatisticsResponse from '@/models/dtos/statisticsDtos/revenueStatisticsResponse'
-import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
+
 
 import OrderSummary from '@/components/pages/admin/statistics/OrderSummary.vue'
 import ProductStatistic from '@/components/pages/admin/statistics/ProductStatistic.vue'
@@ -197,7 +192,7 @@ export default {
         '/Statistics/GetOrderSummary',
         ConfigsRequest.takeAuth(),
       )
-      this.orderSummaryData = OrderSummaryResponse.fromApiResponse(response.data)
+      this.orderSummaryData = response.data
       await this.$nextTick()
       this.orderSummaryIsLoading = false
     },
@@ -207,7 +202,7 @@ export default {
         '/Statistics/GetProductStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.productStatisticData = ProductStatisticsResponse.fromApiResponse(response.data)
+      this.productStatisticData = response.data
       await this.$nextTick()
       this.productIsLoading = false
     },
@@ -217,7 +212,7 @@ export default {
         '/Statistics/GetCustomerStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.customerStatisticsData = CustomerStatisticsResponse.fromApiResponse(response.data)
+      this.customerStatisticsData = response.data
       await this.$nextTick()
       this.customerIsLoading = false
     },
@@ -227,7 +222,7 @@ export default {
         '/Statistics/GetEmployeeStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.employeeStatisticsData = EmployeeStatisticsResponse.fromApiResponse(response.data)
+      this.employeeStatisticsData = response.data
       await this.$nextTick()
       this.employeeIsLoading = false
     },
@@ -237,7 +232,7 @@ export default {
         '/Statistics/GetRevenueStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
+      this.revenueStatisticData = response.data
       await this.$nextTick()
       this.revenueIsLoading = false
     },
@@ -247,9 +242,7 @@ export default {
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(
-        await response.data,
-      )
+      this.datatableStatisticsResponse = await response.data,
       await this.$nextTick()
       this.datatableIsLoading = false
     },
