@@ -13,5 +13,8 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public int TotalInactiveCustomers { get; set; } // Tổng số khách hàng không hoạt động
         public decimal AveragePurchaseAmount { get; set; } // Số tiền mua hàng trung bình của khách hàng
         public decimal TotalPurchaseAmount { get; set; } // Tổng số tiền mua hàng của tất cả khách hàng
+        public int TotalOrders { get; set; } // Tổng số đơn hàng của tất cả khách hàng
+        public decimal AverageOrdersPerCustomer { get; set; } // Số đơn hàng trung bình trên mỗi khách hàng
+        public Dictionary<string, int> CustomerActivityByTime { get; set; } = new Dictionary<string, int>(); // Hoạt động khách hàng theo thời gian (ví dụ: số khách hàng mới theo tháng)
     }
 }

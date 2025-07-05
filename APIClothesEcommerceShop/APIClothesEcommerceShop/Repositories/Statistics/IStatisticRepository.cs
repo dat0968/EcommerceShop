@@ -17,5 +17,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         Task<ResponseAPI<OrderSummaryResponse>> GetOrderSummaryByOrder();
         Task<ResponseAPI<ComboStatisticsResponse>> GetComboStatisticsAsync();
         Task<ResponseAPI<DatatableStatisticsResponse>> GetDatatableStatisticsAsync();
+        Task<ResponseAPI<CouponStatisticsResponse>> GetCouponStatisticsAsync();
+        Task<ResponseAPI<CategoryStatisticsResponse>> GetCategoryStatisticsAsync();
+        Task<ResponseAPI<InventoryAnalysisResponse>> GetInventoryAnalysisAsync();
+        Task<ResponseAPI<ReviewAnalysisResponse>> GetReviewAnalysisAsync();
     }
 }

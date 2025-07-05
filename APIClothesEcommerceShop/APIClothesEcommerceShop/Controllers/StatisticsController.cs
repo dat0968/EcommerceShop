@@ -140,5 +140,73 @@ namespace APIClothesEcommerceShop.Controllers
             var result = await _statisticRepository.GetDatatableStatisticsAsync();
             return Ok(result);
         }
+
+        /// <summary>
+        ///     Nhận số liệu thống kê mã giảm giá
+        /// </summary>
+        /// <returns>
+        ///     Trả về thống kê mã giảm giá
+        /// </returns>
+        [ProducesResponseType(typeof(ResponseAPI<CouponStatisticsResponse>), 200)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetCouponStatistics()
+        {
+            var result = await _statisticRepository.GetCouponStatisticsAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        ///     Nhận số liệu thống kê danh mục
+        /// </summary>
+        /// <returns>
+        ///     Trả về thống kê danh mục
+        /// </returns>
+        [ProducesResponseType(typeof(ResponseAPI<CategoryStatisticsResponse>), 200)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetCategoryStatistics()
+        {
+            var result = await _statisticRepository.GetCategoryStatisticsAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        ///     Nhận phân tích tồn kho
+        /// </summary>
+        /// <returns>
+        ///     Trả về phân tích tồn kho
+        /// </returns>
+        [ProducesResponseType(typeof(ResponseAPI<InventoryAnalysisResponse>), 200)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetInventoryAnalysis()
+        {
+            var result = await _statisticRepository.GetInventoryAnalysisAsync();
+            return Ok(result);
+        }
+
+        /// <summary>
+        ///     Nhận phân tích đánh giá
+        /// </summary>
+        /// <returns>
+        ///     Trả về phân tích đánh giá
+        /// </returns>
+        [ProducesResponseType(typeof(ResponseAPI<ReviewAnalysisResponse>), 200)]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(typeof(object), 400)]
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> GetReviewAnalysis()
+        {
+            var result = await _statisticRepository.GetReviewAnalysisAsync();
+            return Ok(result);
+        }
     }
 }
