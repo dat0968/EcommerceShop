@@ -1,5 +1,5 @@
 <template>
-  <div style="margin-top: 0px; "  class="xp-contentbar">
+  <div style="margin-top: 0px" class="xp-contentbar">
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
         <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
@@ -41,6 +41,14 @@
     <DatatableStatistic
       :data="datatableStatisticsResponse"
       :is-loading="datatableIsLoading"
+      :coupon-data="couponStatisticData"
+      :coupon-loading="couponIsLoading"
+      :category-data="categoryStatisticData"
+      :category-loading="categoryIsLoading"
+      :inventory-data="inventoryAnalysisData"
+      :inventory-loading="inventoryIsLoading"
+      :review-data="reviewAnalysisData"
+      :review-loading="reviewIsLoading"
     ></DatatableStatistic>
   </div>
 </template>
@@ -50,8 +58,6 @@ import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 
 import Swal from 'sweetalert2'
-
-
 
 import OrderSummary from '@/components/pages/admin/statistics/OrderSummary.vue'
 import ProductStatistic from '@/components/pages/admin/statistics/ProductStatistic.vue'
@@ -79,12 +85,20 @@ export default {
       employeeStatisticsData: {},
       revenueStatisticData: {},
       datatableStatisticsResponse: {},
+      couponStatisticData: {},
+      categoryStatisticData: {},
+      inventoryAnalysisData: {},
+      reviewAnalysisData: {},
       revenueIsLoading: true,
       productIsLoading: true,
       customerIsLoading: true,
       employeeIsLoading: true,
       orderSummaryIsLoading: true,
       datatableIsLoading: true,
+      couponIsLoading: true,
+      categoryIsLoading: true,
+      inventoryIsLoading: true,
+      reviewIsLoading: true,
     }
   },
   computed: {},
@@ -164,6 +178,30 @@ export default {
       errorMessage += 'Datatable. '
       errorLogs.push(error)
     }
+    try {
+      await this.loadCouponStatisticsData()
+    } catch (error) {
+      errorMessage += 'Mã giảm giá. '
+      errorLogs.push(error)
+    }
+    try {
+      await this.loadCategoryStatisticsData()
+    } catch (error) {
+      errorMessage += 'Danh mục. '
+      errorLogs.push(error)
+    }
+    try {
+      await this.loadInventoryAnalysisData()
+    } catch (error) {
+      errorMessage += 'Tồn kho. '
+      errorLogs.push(error)
+    }
+    try {
+      await this.loadReviewAnalysisData()
+    } catch (error) {
+      errorMessage += 'Đánh giá. '
+      errorLogs.push(error)
+    }
 
     if (errorMessage !== '') {
       Swal.fire('Hiện không thể load các dữ liệu dưới', errorMessage, 'error')
@@ -179,6 +217,10 @@ export default {
         employeeStatisticsData: JSON.parse(JSON.stringify(this.employeeStatisticsData)),
         revenueStatisticData: JSON.parse(JSON.stringify(this.revenueStatisticData)),
         datatableStatisticsResponse: JSON.parse(JSON.stringify(this.datatableStatisticsResponse)),
+        couponStatisticData: JSON.parse(JSON.stringify(this.couponStatisticData)),
+        categoryStatisticData: JSON.parse(JSON.stringify(this.categoryStatisticData)),
+        inventoryAnalysisData: JSON.parse(JSON.stringify(this.inventoryAnalysisData)),
+        reviewAnalysisData: JSON.parse(JSON.stringify(this.reviewAnalysisData)),
         expire: now + CACHE_EXPIRE,
       }),
     )
@@ -242,9 +284,48 @@ export default {
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.datatableStatisticsResponse = await response.data,
-      await this.$nextTick()
+      ;(this.datatableStatisticsResponse = await response.data), await this.$nextTick()
       this.datatableIsLoading = false
+    },
+    async loadCouponStatisticsData() {
+      this.couponIsLoading = true
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetCouponStatistics',
+        ConfigsRequest.takeAuth(),
+      )
+      this.couponStatisticData = response.data
+      await this.$nextTick()
+      this.couponIsLoading = false
+    },
+    async loadCategoryStatisticsData() {
+      this.categoryIsLoading = true
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetCategoryStatistics',
+        ConfigsRequest.takeAuth(),
+      )
+      this.categoryStatisticData = response.data
+      await this.$nextTick()
+      this.categoryIsLoading = false
+    },
+    async loadInventoryAnalysisData() {
+      this.inventoryIsLoading = true
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetInventoryAnalysis',
+        ConfigsRequest.takeAuth(),
+      )
+      this.inventoryAnalysisData = response.data
+      await this.$nextTick()
+      this.inventoryIsLoading = false
+    },
+    async loadReviewAnalysisData() {
+      this.reviewIsLoading = true
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetReviewAnalysis',
+        ConfigsRequest.takeAuth(),
+      )
+      this.reviewAnalysisData = response.data
+      await this.$nextTick()
+      this.reviewIsLoading = false
     },
   },
 }

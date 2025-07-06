@@ -29,7 +29,8 @@ export default {
     this.initDataTable()
   },
   methods: {
-    initDataTable() {
+    async initDataTable() {
+      await this.$nextTick()
       const dataSet = this.employees.map((employee) => ({
         employeeId: employee.employeeId,
         employeeName: employee.employeeName,
@@ -53,9 +54,9 @@ export default {
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
         initComplete: () => {
           configsDt.attachDetailsControl(`#employeeDatatable`, this.formatDetails.bind(this))
-          configsDt.attachSearchDebounce('#employeeDatatable', table)
         },
       })
+      configsDt.attachSearchDebounce('#employeeDatatable', table)
     },
     formatDetails(rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')
@@ -80,7 +81,7 @@ export default {
                                   <p class="card-subtitle text-muted">${order.hoTen}</p>
                                 </div>
                               </div>
-                              <p class="mb-1"><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
+                              <p class="mb-1"><strong>Ngày tạo:</strong> ${order.ngayTao ? new Date(order.ngayTao).toLocaleDateString() : '-'}</p>
                               <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge ${order.isActive ? 'bg-success' : 'bg-danger'}">${order.tinhTrang}</span></p>
                               <p class="mb-0"><strong>Địa chỉ nhận:</strong> <span title="${order.diaChiNhanHang}">${order.diaChiNhanHang}</span></p>
                             </div>
@@ -99,13 +100,6 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.table th,
-.table td {
-  vertical-align: middle;
-}
-</style>
 
 <style scoped>
 .table th,

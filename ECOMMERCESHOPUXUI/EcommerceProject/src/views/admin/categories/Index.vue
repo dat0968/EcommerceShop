@@ -5,14 +5,20 @@
       overlayContent="Hiện không thể kết nối tới API để quản lý."
       isCoverPage="true"
     />
-    <nav aria-label="breadcrumb" class="mb-3" style="display: flex; justify-content: center; padding: 10px 0; background-color: transparent;">
-    <ol class="breadcrumb" style="display: flex; justify-content: center; margin: 0;">
-      <li class="breadcrumb-item active" style="display: flex; align-items: center;">
-        <h1 style="text-align: center; margin: 0; font-size: 3rem; font-weight: 700; color: #333;">QUẢN LÝ DANH MỤC</h1>
-      </li>
-    </ol>
-    <hr />
-  </nav>
+    <nav
+      aria-label="breadcrumb"
+      class="mb-3"
+      style="display: flex; justify-content: center; padding: 10px 0; background-color: transparent"
+    >
+      <ol class="breadcrumb" style="display: flex; justify-content: center; margin: 0">
+        <li class="breadcrumb-item active" style="display: flex; align-items: center">
+          <h1 style="text-align: center; margin: 0; font-size: 3rem; font-weight: 700; color: #333">
+            QUẢN LÝ DANH MỤC
+          </h1>
+        </li>
+      </ol>
+      <hr />
+    </nav>
     <!-- Chọn chế độ -->
     <div class="mb-3 d-flex align-items-center gap-3">
       <label class="me-2 fw-bold">Chế độ:</label>
@@ -426,7 +432,6 @@ export default {
         // await this.loadOption()
         this.resetFormParent()
       }
-    })
     },
     async onSubmitParent() {
       this.isSubmittingParent = true

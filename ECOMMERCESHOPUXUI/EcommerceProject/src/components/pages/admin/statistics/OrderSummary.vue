@@ -165,15 +165,15 @@ export default {
       var statusDataByTime
       switch (this.selectedTimePeriod) {
         case 'date': {
-          statusDataByTime = this.data.revenueByTimes?.date ?? []
+          statusDataByTime = this.data.revenueByTime?.date ?? []
           break
         }
         case 'month': {
-          statusDataByTime = this.data.revenueByTimes.month ?? []
+          statusDataByTime = this.data.revenueByTime?.month ?? []
           break
         }
         case 'year': {
-          statusDataByTime = this.data.revenueByTimes.year ?? []
+          statusDataByTime = this.data.revenueByTime?.year ?? []
           break
         }
       }
@@ -185,11 +185,11 @@ export default {
       // Kiểm tra dữ liệu doanh thu
       let revenueData = []
       if (this.selectedTimePeriod === 'date') {
-        revenueData = this.data?.revenueByTimes['date'] ?? []
+        revenueData = this.data?.revenueByTime?.['date'] ?? []
       } else if (this.selectedTimePeriod === 'month') {
-        revenueData = this.data?.revenueByTimes['month'] ?? []
+        revenueData = this.data?.revenueByTime?.['month'] ?? []
       } else {
-        revenueData = this.data?.revenueByTimes['year'] ?? []
+        revenueData = this.data?.revenueByTime?.['year'] ?? []
       }
       this.hasRevenueChartData =
         revenueData &&
@@ -199,11 +199,11 @@ export default {
       // Kiểm tra dữ liệu trạng thái đơn hàng
       let statusData = []
       if (this.selectedTimePeriod === 'date') {
-        statusData = this.data?.orderStatusStatistics['date'] ?? []
+        statusData = this.data?.orderStatusStatistics?.['date'] ?? []
       } else if (this.selectedTimePeriod === 'month') {
-        statusData = this.data?.orderStatusStatistics['month'] ?? []
+        statusData = this.data?.orderStatusStatistics?.['month'] ?? []
       } else {
-        statusData = this.data?.orderStatusStatistics['year'] ?? []
+        statusData = this.data?.orderStatusStatistics?.['year'] ?? []
       }
       this.hasOrderStatusChartData =
         statusData && statusData.length > 0 && statusData.some((item) => item.count > 0)
@@ -229,19 +229,21 @@ export default {
         this.revenueChartByTime.destroy()
       }
 
-      let revenueData, countData, labels
-      if (this.selectedTimePeriod === 'date') {
-        revenueData = this.data.revenueByTimes['date'].map((item) => item.revenue)
-        countData = this.data.revenueByTimes['date'].map((item) => item.count)
-        labels = this.data.revenueByTimes['date'].map((item) => item.date.split('T')[0])
-      } else if (this.selectedTimePeriod === 'month') {
-        revenueData = this.data.revenueByTimes['month'].map((item) => item.revenue)
-        countData = this.data.revenueByTimes['month'].map((item) => item.count)
-        labels = this.data.revenueByTimes['month'].map((item) => `${item.month}/${item.year}`)
-      } else {
-        revenueData = this.data.revenueByTimes['year'].map((item) => item.revenue)
-        countData = this.data.revenueByTimes['year'].map((item) => item.count)
-        labels = this.data.revenueByTimes['year'].map((item) => item.year)
+      let revenueData = [],
+        countData = [],
+        labels = []
+      if (this.selectedTimePeriod === 'date' && this.data?.revenueByTime?.['date']) {
+        revenueData = this.data.revenueByTime['date'].map((item) => item.revenue)
+        countData = this.data.revenueByTime['date'].map((item) => item.count)
+        labels = this.data.revenueByTime['date'].map((item) => item.date.split('T')[0])
+      } else if (this.selectedTimePeriod === 'month' && this.data?.revenueByTime?.['month']) {
+        revenueData = this.data.revenueByTime['month'].map((item) => item.revenue)
+        countData = this.data.revenueByTime['month'].map((item) => item.count)
+        labels = this.data.revenueByTime['month'].map((item) => `${item.month}/${item.year}`)
+      } else if (this.selectedTimePeriod === 'year' && this.data?.revenueByTime?.['year']) {
+        revenueData = this.data.revenueByTime['year'].map((item) => item.revenue)
+        countData = this.data.revenueByTime['year'].map((item) => item.count)
+        labels = this.data.revenueByTime['year'].map((item) => item.year)
       }
 
       this.revenueChartByTime = new Chart(context, {
@@ -293,17 +295,17 @@ export default {
               mode: 'index',
               intersect: false,
               callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
+                label: function (context) {
+                  let label = context.dataset.label || ''
                   if (label) {
-                    label += ': ';
+                    label += ': '
                   }
                   if (context.parsed.y !== null) {
-                    label += context.parsed.y;
+                    label += context.parsed.y
                   }
-                  return label;
-                }
-              }
+                  return label
+                },
+              },
             },
             legend: {
               display: true,
@@ -312,9 +314,9 @@ export default {
               display: true,
               text: 'Doanh thu và số lượng đơn hàng',
               font: {
-                size: 16
-              }
-            }
+                size: 16,
+              },
+            },
           },
         },
       })
@@ -390,17 +392,17 @@ export default {
               position: 'right',
               labels: {
                 font: {
-                  size: 14
-                }
-              }
+                  size: 14,
+                },
+              },
             },
             title: {
               display: true,
               text: 'Tỉ lệ trạng thái đơn hàng',
               font: {
-                size: 16
-              }
-            }
+                size: 16,
+              },
+            },
           },
         },
       })

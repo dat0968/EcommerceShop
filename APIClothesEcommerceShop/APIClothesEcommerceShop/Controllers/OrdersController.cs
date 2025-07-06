@@ -73,16 +73,5 @@ namespace APIClothesEcommerceShop.Controllers
 
             return File(pdfBytes, "application/pdf", $"HoaDon_{maHd}.pdf");
         }
-        [HttpGet("xuat-pdf/{maHd}")]
-        public async Task<IActionResult> XuatHoaDonPdf(int maHd)
-        {
-            var order = await orderRepository.GetbyId(maHd);
-            if (order == null) return NotFound();
-
-            var document = new HoaDonDocument(order);
-            var pdfBytes = document.GeneratePdf();
-
-            return File(pdfBytes, "application/pdf", $"HoaDon_{maHd}.pdf");
-        }
     }
 }

@@ -26,7 +26,8 @@ export default {
     this.initDataTable()
   },
   methods: {
-    initDataTable() {
+    async initDataTable() {
+      await this.$nextTick()
       const dataSet = this.combos.map((combo) => ({
         comboId: combo.comboId,
         comboName: combo.comboName,
@@ -67,9 +68,9 @@ export default {
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
         initComplete: () => {
           configsDt.attachDetailsControl(`#comboDatatable`, this.formatDetails.bind(this))
-          configsDt.attachSearchDebounce('#comboDatatable', table)
         },
       })
+      configsDt.attachSearchDebounce('#comboDatatable', table)
     },
     // ! Not certainly about this method. Damn
     formatDetails(rowData) {
@@ -89,7 +90,7 @@ export default {
                           <div class="card h-100 shadow-sm border-0">
                             <div class="card-body d-flex flex-column">
                               <h5 class="card-title mb-2">Mã hóa đơn: ${order.maHd}</h5>
-                              <p class="mb-1"><strong>Ngày tạo:</strong> ${new Date(order.ngayTao).toLocaleDateString()}</p>
+                              <p class="mb-1"><strong>Ngày tạo:</strong> ${order.ngayTao ? new Date(order.ngayTao).toLocaleDateString() : '-'}</p>
                               <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge ${order.isActive ? 'bg-success' : 'bg-danger'}">${order.tinhTrang}</span></p>
                               <p class="mb-0"><strong>Địa chỉ nhận:</strong> <span title="${order.diaChiNhanHang}">${order.diaChiNhanHang}</span></p>
                             </div>

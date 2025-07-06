@@ -17,7 +17,6 @@ import insta4 from '@/assets/Customer/img/instagram/insta-4.jpg'
 import insta5 from '@/assets/Customer/img/instagram/insta-5.jpg'
 import insta6 from '@/assets/Customer/img/instagram/insta-6.jpg'
 
-import { ref } from 'vue'
 const setBackgroundImages = () => {
   const elements = document.querySelectorAll('[data-setbg]')
   elements.forEach((element) => {
@@ -260,8 +259,10 @@ onMounted(() => {
       <div class="container-fluid">
         <div class="row">
           <div class="col-lg-6 p-0">
-            <div class="categories__item categories__large__item set-bg"
-              data-setbg="../../assets/img/categories/category-1.jpg">
+            <div
+              class="categories__item categories__large__item set-bg"
+              data-setbg="../../assets/img/categories/category-1.jpg"
+            >
               <div class="categories__text">
                 <h1>Thời trang nữ</h1>
                 <p>Khám phá phong cách thời trang dành riêng cho phái đẹp.</p>
@@ -272,38 +273,58 @@ onMounted(() => {
           <div class="col-lg-6">
             <div class="row">
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
-                <div class="categories__item set-bg" data-setbg="../../assets/img/categories/category-2.jpg">
+                <div
+                  class="categories__item set-bg"
+                  data-setbg="../../assets/img/categories/category-2.jpg"
+                >
                   <div class="categories__text">
                     <h4>Thời trang nam</h4>
                     <p>Đậm chất nam tính, phong cách lịch lãm</p>
-                    <router-link style="text-decoration-line: none" to="/Shop">Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
-                <div class="categories__item set-bg" data-setbg="../../assets/img/categories/category-3.jpg">
+                <div
+                  class="categories__item set-bg"
+                  data-setbg="../../assets/img/categories/category-3.jpg"
+                >
                   <div class="categories__text">
                     <h4>Thời trang trẻ em</h4>
                     <p>Phong cách năng động, dễ thương cho bé yêu</p>
-                    <router-link style="text-decoration-line: none" to="/Shop">Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
-              <div class="col-lg-6 col-md-6 col-sm-6 p-0" style="height: 327px;">
-                <div class="categories__item set-bg" data-setbg="../../assets/img/categories/category-4.jpg">
+              <div class="col-lg-6 col-md-6 col-sm-6 p-0" style="height: 327px">
+                <div
+                  class="categories__item set-bg"
+                  data-setbg="../../assets/img/categories/category-4.jpg"
+                >
                   <div class="categories__text">
                     <h4>Giày dép</h4>
                     <p>Bước đi phong cách, vững vàng mỗi ngày</p>
-                    <router-link style="text-decoration-line: none" to="/Shop">Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
-                <div class="categories__item set-bg" data-setbg="../../assets/img/categories/category-5.jpg">
+                <div
+                  class="categories__item set-bg"
+                  data-setbg="../../assets/img/categories/category-5.jpg"
+                >
                   <div class="categories__text">
                     <h4>Phụ kiện</h4>
                     <p>Hoàn thiện phong cách với hàng trăm phụ kiện hot</p>
-                    <router-link style="text-decoration-line: none" to="/Shop">Mua ngay</router-link>
+                    <router-link style="text-decoration-line: none" to="/Shop"
+                      >Mua ngay</router-link
+                    >
                   </div>
                 </div>
               </div>
@@ -319,27 +340,38 @@ onMounted(() => {
       <div class="container">
         <div class="row" style="text-align: center">
           <div class="col-lg-4 col-md-4">
-            <div style="
+            <div
+              style="
                 border-bottom: 2px solid #e7ab3c;
                 display: inline-block;
                 padding-bottom: 5px;
                 margin-bottom: 50px;
-              ">
+              "
+            >
               <h4>Sản phẩm mới nhất</h4>
             </div>
           </div>
         </div>
         <div class="row property__gallery">
-          <div class="col-lg-3 col-md-4 col-sm-6 mix" v-for="item in ListNewProducts" :key="item.maSp">
+          <div
+            class="col-lg-3 col-md-4 col-sm-6 mix"
+            v-for="item in ListNewProducts"
+            :key="item.maSp"
+          >
             <div class="product__item">
               <div class="product__item__pic">
-                <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh
-                  }`" alt="Buttons tweed blazer" />
+                <img
+                  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                    item.productDetails[0].images[0].tenHinhAnh
+                  }`"
+                  alt="Buttons tweed blazer"
+                />
                 <!-- <div class="label new">New</div> -->
                 <ul class="product__hover">
                   <li>
-                    <a href="@/assets/Customer/img/product/product-1.jpg" class="image-popup"><span
-                        class="arrow_expand"></span></a>
+                    <a href="@/assets/Customer/img/product/product-1.jpg" class="image-popup"
+                      ><span class="arrow_expand"></span
+                    ></a>
                   </li>
                   <li>
                     <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
@@ -379,47 +411,78 @@ onMounted(() => {
     <!-- Product Section End -->
 
     <!-- Banner Section Begin -->
-    <section class="banner set-bg" style="position: relative;">
-      <img src="../../assets/Customer/img/banner/banner-1.jpg" style="width: 100%; height:auto;">
-      <div class="container"
-        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white;">
+    <section class="banner set-bg" style="position: relative">
+      <img src="../../assets/Customer/img/banner/banner-1.jpg" style="width: 100%; height: auto" />
+      <div
+        class="container"
+        style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+          color: white;
+        "
+      >
         <div class="row">
           <div class="col-12">
             <div class="banner__slider owl-carousel">
-              <div class="banner__item" style="margin-bottom:300px ;">
+              <div class="banner__item" style="margin-bottom: 300px">
                 <div class="banner__text">
                   <span>Bộ Sưu Tập</span>
-                  <div class="col-xl-3 col-lg-2" style="width: 300px; margin-left: 430px; padding-bottom: 20px">
-                    <svg viewBox="0 0 700 250" role="img"
-                      aria-label="Angel soft curvy logo with wings and animated gradient">
+                  <div
+                    class="col-xl-3 col-lg-2"
+                    style="width: 300px; margin-left: 430px; padding-bottom: 20px"
+                  >
+                    <svg
+                      viewBox="0 0 700 250"
+                      role="img"
+                      aria-label="Angel soft curvy logo with wings and animated gradient"
+                    >
                       <defs>
                         <linearGradient id="start" x1="0%" y1="0%" x2="0%" y2="100%">
                           <stop offset="20%" stop-color="#EC4E79">
-                            <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;"
-                              dur="6s" repeatCount="indefinite" />
+                            <animate
+                              attributeName="stop-color"
+                              values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;"
+                              dur="6s"
+                              repeatCount="indefinite"
+                            />
                           </stop>
                           <stop offset="40%" stop-color="#ABA2B7">
-                            <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;"
-                              dur="6s" repeatCount="indefinite" />
+                            <animate
+                              attributeName="stop-color"
+                              values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;"
+                              dur="6s"
+                              repeatCount="indefinite"
+                            />
                           </stop>
                           <stop offset="55%" stop-color="#5CCAE7">
-                            <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;"
-                              dur="6s" repeatCount="indefinite" />
+                            <animate
+                              attributeName="stop-color"
+                              values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;"
+                              dur="6s"
+                              repeatCount="indefinite"
+                            />
                           </stop>
                         </linearGradient>
                       </defs>
 
-                
-
                       <!-- Angel text with soft cursive font -->
-                      <RouterLink to="/" style="text-decoration: none;">
-                        <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
+                      <RouterLink to="/" style="text-decoration: none">
+                        <text
+                          x="50%"
+                          y="60%"
+                          dominant-baseline="middle"
+                          text-anchor="middle"
+                          class="angel-text"
+                        >
                           Angel Fashion
                         </text>
                       </RouterLink>
                     </svg>
                   </div>
-                  <a href="/Shop" style="color: black; text-decoration: none;">Mua ngay</a>
+                  <a href="/Shop" style="color: black; text-decoration: none">Mua ngay</a>
                 </div>
               </div>
               <!-- <div class="banner__item">
@@ -444,7 +507,7 @@ onMounted(() => {
     <!-- Banner Section End -->
 
     <!-- Trend Section Begin -->
-    <section class="trend spad" style="margin-top: -100px;">
+    <section class="trend spad" style="margin-top: -100px">
       <div class="container">
         <div class="row">
           <div class="col-lg-4 col-md-4 col-sm-6">
@@ -454,12 +517,20 @@ onMounted(() => {
               </div>
               <div class="trend__item" v-for="item in ListBestHotProducts" :key="item.maSp">
                 <div class="trend__item__pic">
-                  <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh
-                    }`" alt="" class="img-fluid" />
+                  <img
+                    :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                      item.productDetails[0].images[0].tenHinhAnh
+                    }`"
+                    alt=""
+                    class="img-fluid"
+                  />
                 </div>
                 <div class="trend__item__text text-center mt-2">
                   <h6>
-                    <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none; color: black">
+                    <router-link
+                      :to="`/product/${item.maSp}`"
+                      style="text-decoration-line: none; color: black"
+                    >
                       {{ item.tenSanPham }}
                       <div class="product__price text-danger fw-semibold fs-7">
                         {{ item.khoangGia }}
@@ -478,12 +549,20 @@ onMounted(() => {
 
               <div class="trend__item mb-3" v-for="item in ListBestSellerProducts" :key="item.maSp">
                 <div class="trend__item__pic">
-                  <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh
-                    }`" alt="" class="img-fluid" />
+                  <img
+                    :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                      item.productDetails[0].images[0].tenHinhAnh
+                    }`"
+                    alt=""
+                    class="img-fluid"
+                  />
                 </div>
                 <div class="trend__item__text text-center mt-2">
                   <h6>
-                    <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none; color: black">
+                    <router-link
+                      :to="`/product/${item.maSp}`"
+                      style="text-decoration-line: none; color: black"
+                    >
                       {{ item.tenSanPham }}
                       <div class="product__price text-danger fw-semibold fs-7">
                         {{ item.khoangGia }}

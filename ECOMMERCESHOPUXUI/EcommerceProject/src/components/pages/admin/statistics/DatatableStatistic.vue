@@ -41,6 +41,35 @@
         </div>
       </div>
     </div>
+    <div class="col-md-12 col-lg-4 col-xl-4 align-self-center">
+      <div class="card bg-white m-b-30">
+        <div class="card-header px-3 bg-white d-flex justify-content-between align-items-center">
+          <h5 class="card-title text-black mb-0 col-6">Thống kê bổ sung</h5>
+          <div class="mb-3 col-auto">
+            <select id="statsSelect" class="form-select" v-model="selectedStats">
+              <option :disabled="couponData == null" value="coupons">Mã giảm giá</option>
+              <option :disabled="categoryData == null" value="categories">Danh mục</option>
+              <option :disabled="inventoryData == null" value="inventory">Tồn kho</option>
+              <option :disabled="reviewData == null" value="reviews">Đánh giá</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" style="overflow-y: auto">
+          <div v-if="selectedStats === 'coupons'">
+            <CouponStatistic :data="couponData" :is-loading="couponLoading" />
+          </div>
+          <div v-if="selectedStats === 'categories'">
+            <CategoryStatistic :data="categoryData" :is-loading="categoryLoading" />
+          </div>
+          <div v-if="selectedStats === 'inventory'">
+            <InventoryAnalysis :data="inventoryData" :is-loading="inventoryLoading" />
+          </div>
+          <div v-if="selectedStats === 'reviews'">
+            <ReviewAnalysis :data="reviewData" :is-loading="reviewLoading" />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -52,6 +81,10 @@ import ProductTable from '@/components/pages/admin/statistics/datatables/Product
 import CustomerTable from '@/components/pages/admin/statistics/datatables/CustomerTable.vue'
 import EmployeeTable from '@/components/pages/admin/statistics/datatables/EmployeeTable.vue'
 import ComboTable from '@/components/pages/admin/statistics/datatables/ComboTable.vue'
+import CouponStatistic from '@/components/pages/admin/statistics/CouponStatistic.vue'
+import CategoryStatistic from '@/components/pages/admin/statistics/CategoryStatistic.vue'
+import InventoryAnalysis from '@/components/pages/admin/statistics/InventoryAnalysis.vue'
+import ReviewAnalysis from '@/components/pages/admin/statistics/ReviewAnalysis.vue'
 
 export default {
   name: 'DatatableStatistic',
@@ -60,6 +93,10 @@ export default {
     CustomerTable,
     EmployeeTable,
     ComboTable,
+    CouponStatistic,
+    CategoryStatistic,
+    InventoryAnalysis,
+    ReviewAnalysis,
     LoadingSpinner,
     NoDataMessage,
   },
@@ -71,10 +108,39 @@ export default {
       type: Boolean,
       default: true,
     },
+    couponData: {
+      default: () => ({}),
+    },
+    couponLoading: {
+      type: Boolean,
+      default: true,
+    },
+    categoryData: {
+      default: () => ({}),
+    },
+    categoryLoading: {
+      type: Boolean,
+      default: true,
+    },
+    inventoryData: {
+      default: () => ({}),
+    },
+    inventoryLoading: {
+      type: Boolean,
+      default: true,
+    },
+    reviewData: {
+      default: () => ({}),
+    },
+    reviewLoading: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
       selectedTable: 'products', // Giá trị mặc định là sản phẩm
+      selectedStats: 'coupons', // Giá trị mặc định cho thống kê bổ sung
     }
   },
   computed: {

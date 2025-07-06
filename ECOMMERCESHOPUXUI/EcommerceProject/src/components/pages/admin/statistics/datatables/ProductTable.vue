@@ -29,7 +29,8 @@ export default {
     this.initDataTable()
   },
   methods: {
-    initDataTable() {
+    async initDataTable() {
+      await this.$nextTick()
       const dataSet = this.products.map((product) => ({
         productId: product.productId,
         productName: product.productName,
@@ -75,9 +76,9 @@ export default {
         language: configsDt.defaultLanguageDatatable,
         initComplete: () => {
           configsDt.attachDetailsControl(`#productDatatable`, this.formatDetails.bind(this))
-          configsDt.attachSearchDebounce('#productDatatable', table)
         },
       })
+      configsDt.attachSearchDebounce('#productDatatable', table)
     },
     formatDetails(rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')

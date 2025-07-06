@@ -13,6 +13,16 @@
             <NoDataMessage />
           </div>
           <div v-else>
+            <div class="row mt-4">
+              <div class="col-md-12">
+                <h6 class="text-center mb-3">Tổng quan doanh thu</h6>
+                <canvas id="summaryRevenueChart"></canvas>
+                <p v-if="!hasSummaryData" class="text-center text-muted mt-2">
+                  Không có dữ liệu tổng quan doanh thu.
+                </p>
+              </div>
+            </div>
+            <hr />
             <div class="xp-chart-label">
               <ul class="list-inline text-center">
                 <li class="list-inline-item mx-3">
@@ -47,24 +57,6 @@
                 </li>
               </ul>
             </div>
-            <hr />
-            <div class="row mt-4">
-              <div class="col-md-4">
-                <h6 class="text-center mb-3">Doanh thu theo ngày</h6>
-                <canvas id="dailyRevenueChart"></canvas>
-                <p v-if="!hasDailyRevenueData" class="text-center text-muted mt-2">Không có dữ liệu doanh thu theo ngày.</p>
-              </div>
-              <div class="col-md-4">
-                <h6 class="text-center mb-3">Doanh thu theo tháng</h6>
-                <canvas id="monthlyRevenueChart"></canvas>
-                <p v-if="!hasMonthlyRevenueData" class="text-center text-muted mt-2">Không có dữ liệu doanh thu theo tháng.</p>
-              </div>
-              <div class="col-md-4">
-                <h6 class="text-center mb-3">Doanh thu theo năm</h6>
-                <canvas id="yearlyRevenueChart"></canvas>
-                <p v-if="!hasYearlyRevenueData" class="text-center text-muted mt-2">Không có dữ liệu doanh thu theo năm.</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -96,12 +88,7 @@ export default {
   },
   data() {
     return {
-      dailyRevenueChart: null,
-      monthlyRevenueChart: null,
-      yearlyRevenueChart: null,
-      hasDailyRevenueData: false,
-      hasMonthlyRevenueData: false,
-      hasYearlyRevenueData: false,
+      hasSummaryData: false,
     }
   },
   computed: {
@@ -146,91 +133,145 @@ export default {
     formatCurrency,
     renderCharts() {
       // Destroy existing charts to prevent memory leaks
-      if (this.dailyRevenueChart) this.dailyRevenueChart.destroy()
-      if (this.monthlyRevenueChart) this.monthlyRevenueChart.destroy()
-      if (this.yearlyRevenueChart) this.yearlyRevenueChart.destroy()
+      if (this.summaryRevenueChart) this.summaryRevenueChart.destroy()
+      if (this.customerChart) this.customerChart.destroy()
+      if (this.productChart) this.productChart.destroy()
+      if (this.orderChart) this.orderChart.destroy()
 
-      // --- Daily Revenue Chart ---
-      // NOTE: Assumes data.dailyRevenue is an array of { date: string, revenue: number }
-      const dailyData = this.data.dailyRevenue || []
-      this.hasDailyRevenueData = dailyData.length > 0
-      if (this.hasDailyRevenueData) {
-        const dailyLabels = dailyData.map(item => item.date)
-        const dailyRevenues = dailyData.map(item => item.revenue)
-        this.dailyRevenueChart = new Chart(document.getElementById('dailyRevenueChart'), {
-          type: 'line',
-          data: {
-            labels: dailyLabels,
-            datasets: [{
-              label: 'Doanh thu ngày',
-              data: dailyRevenues,
-              borderColor: 'rgba(75, 192, 192, 1)',
-              backgroundColor: 'rgba(75, 192, 192, 0.2)',
-              fill: true,
-              tension: 0.1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { display: false } }
-          }
-        })
-      }
-
-      // --- Monthly Revenue Chart ---
-      // NOTE: Assumes data.monthlyRevenue is an array of { month: string, revenue: number }
-      const monthlyData = this.data.monthlyRevenue || []
-      this.hasMonthlyRevenueData = monthlyData.length > 0
-      if (this.hasMonthlyRevenueData) {
-        const monthlyLabels = monthlyData.map(item => item.month)
-        const monthlyRevenues = monthlyData.map(item => item.revenue)
-        this.monthlyRevenueChart = new Chart(document.getElementById('monthlyRevenueChart'), {
+      // --- Summary Revenue Chart ---
+      // NOTE: Uses summary statistics for total, average daily, monthly, highest, and lowest revenue
+      const summaryData = [
+        { label: 'Tổng doanh thu', value: this.data.totalRevenue || 0 },
+        { label: 'TB ngày', value: this.data.averageDailyRevenue || 0 },
+        { label: 'TB tháng', value: this.data.averageMonthlyRevenue || 0 },
+        { label: 'Cao nhất', value: this.data.highestRevenue || 0 },
+        { label: 'Thấp nhất', value: this.data.lowestRevenue || 0 },
+      ]
+      this.hasSummaryData = summaryData.length > 0
+      if (this.hasSummaryData) {
+        const summaryLabels = summaryData.map((item) => item.label)
+        const summaryValues = summaryData.map((item) => item.value)
+        this.summaryRevenueChart = new Chart(document.getElementById('summaryRevenueChart'), {
           type: 'bar',
           data: {
-            labels: monthlyLabels,
-            datasets: [{
-              label: 'Doanh thu tháng',
-              data: monthlyRevenues,
-              backgroundColor: 'rgba(153, 102, 255, 0.6)',
-            }]
+            labels: summaryLabels,
+            datasets: [
+              {
+                label: 'Tổng quan doanh thu',
+                data: summaryValues,
+                backgroundColor: [
+                  'rgba(54, 162, 235, 0.6)',
+                  'rgba(75, 192, 192, 0.6)',
+                  'rgba(153, 102, 255, 0.6)',
+                  'rgba(255, 205, 86, 0.6)',
+                  'rgba(255, 99, 132, 0.6)',
+                ],
+              },
+            ],
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { display: false } }
-          }
+            scales: { y: { beginAtZero: true } },
+          },
         })
       }
 
-      // --- Yearly Revenue Chart ---
-      // NOTE: Assumes data.yearlyRevenue is an array of { year: string, revenue: number }
-      const yearlyData = this.data.yearlyRevenue || []
-      this.hasYearlyRevenueData = yearlyData.length > 0
-      if (this.hasYearlyRevenueData) {
-        const yearlyLabels = yearlyData.map(item => item.year)
-        const yearlyRevenues = yearlyData.map(item => item.revenue)
-        this.yearlyRevenueChart = new Chart(document.getElementById('yearlyRevenueChart'), {
-          type: 'bar',
+      // --- Customer Chart ---
+      // NOTE: Assumes data.topCustomers is an array of { name: string, totalSpent: number }
+      const customerData = this.data.topCustomers || []
+      this.hasCustomerData = customerData.length > 0
+      if (this.hasCustomerData) {
+        const customerLabels = customerData.slice(0, 5).map((item) => item.name)
+        const customerValues = customerData.slice(0, 5).map((item) => item.totalSpent)
+        this.customerChart = new Chart(document.getElementById('customerChart'), {
+          type: 'doughnut',
           data: {
-            labels: yearlyLabels,
-            datasets: [{
-              label: 'Doanh thu năm',
-              data: yearlyRevenues,
-              backgroundColor: 'rgba(255, 159, 64, 0.6)',
-            }]
+            labels: customerLabels,
+            datasets: [
+              {
+                label: 'Chi tiêu khách hàng',
+                data: customerValues,
+                backgroundColor: [
+                  'rgba(255, 99, 132, 0.6)',
+                  'rgba(54, 162, 235, 0.6)',
+                  'rgba(255, 206, 86, 0.6)',
+                  'rgba(75, 192, 192, 0.6)',
+                  'rgba(153, 102, 255, 0.6)',
+                ],
+              },
+            ],
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { display: false } }
-          }
+          },
         })
       }
-    }
+
+      // --- Product Chart ---
+      // NOTE: Assumes data.topProducts is an array of { name: string, totalSold: number }
+      const productData = this.data.topProducts || []
+      this.hasProductData = productData.length > 0
+      if (this.hasProductData) {
+        const productLabels = productData.slice(0, 5).map((item) => item.name)
+        const productValues = productData.slice(0, 5).map((item) => item.totalSold)
+        this.productChart = new Chart(document.getElementById('productChart'), {
+          type: 'pie',
+          data: {
+            labels: productLabels,
+            datasets: [
+              {
+                label: 'Sản phẩm bán chạy',
+                data: productValues,
+                backgroundColor: [
+                  'rgba(255, 99, 132, 0.6)',
+                  'rgba(54, 162, 235, 0.6)',
+                  'rgba(255, 206, 86, 0.6)',
+                  'rgba(75, 192, 192, 0.6)',
+                  'rgba(153, 102, 255, 0.6)',
+                ],
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+          },
+        })
+      }
+
+      // --- Order Chart ---
+      // NOTE: Assumes data.orderStatusCount is an array of { status: string, count: number }
+      const orderData = this.data.orderStatusCount || []
+      this.hasOrderData = orderData.length > 0
+      if (this.hasOrderData) {
+        const orderLabels = orderData.map((item) => item.status)
+        const orderValues = orderData.map((item) => item.count)
+        this.orderChart = new Chart(document.getElementById('orderChart'), {
+          type: 'bar',
+          data: {
+            labels: orderLabels,
+            datasets: [
+              {
+                label: 'Đơn hàng theo trạng thái',
+                data: orderValues,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } },
+          },
+        })
+      }
+    },
   },
 }
 </script>
