@@ -23,7 +23,7 @@ import {
 } from 'firebase/storage';
 import { storage } from '../../../firebase/rtdb-config.js';
 
-import { fetchWithAuth } from '../../../services/AuthService.js';
+import { fetchWithAuth } from '@/services/authService.js';
 import ConnectionStatus from '../../../components/ConnectionStatus.vue';
 
 // ==================== STATES ====================
@@ -1847,7 +1847,7 @@ if (import.meta.env.DEV) {
     </div>
 
     <!-- Lịch sử đơn hàng -->
-    <div class="order-history p-3" style="width: 300px; border-left: 1px solid var(--secondary);">
+    <!-- <div class="order-history p-3" style="width: 300px; border-left: 1px solid var(--secondary);">
       <h6>Lịch sử đơn hàng</h6>
       <div v-if="orderHistories[currentChat.customerId]?.length">
         <div v-for="order in orderHistories[currentChat.customerId]" :key="order.orderId" class="mb-3">
@@ -1859,7 +1859,7 @@ if (import.meta.env.DEV) {
         </div>
       </div>
       <p v-else class="text-muted">Chưa có đơn hàng</p>
-    </div>
+    </div> -->
   </div>
 
   <div v-if="currentChat && !currentChat.isReadOnly" class="chat-input">

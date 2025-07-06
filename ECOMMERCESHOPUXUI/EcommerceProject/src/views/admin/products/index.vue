@@ -189,7 +189,7 @@ async function ExportExcel() {
   <div class="container mt-4">
     <!-- Tiêu đề chính -->
     <div style="margin-top: 90px" class="mb-4 text-center">
-      <h1 class="fw-bold text-uppercase text-dark">Quản lý sản phẩm</h1>
+      <h1 class="fw-bold text-uppercase text-dark" style="font-size: 3rem;">Quản lý sản phẩm</h1>
     </div>
     <!-- Bộ lọc và tìm kiếm -->
     <div class="row g-3 mb-3">
@@ -223,7 +223,7 @@ async function ExportExcel() {
         </select>
       </div>
       <div class="col-md-3">
-        <button type="button" class="btn btn-danger" @click="ExportExcel()">Xuất Excel</button>
+        <button type="button" class="btn " @click="ExportExcel()" style="background-color:#4C7CF3; color: white">Xuất Excel</button>
       </div>
     </div>
     <!-- Tiêu đề phụ và nút thêm -->
@@ -251,8 +251,8 @@ async function ExportExcel() {
       <div class="fw-semibold text-primary mt-2">Đang tải dữ liệu...</div>
     </div>
     <!-- Bảng sản phẩm -->
-    <div v-else class="table-responsive">
-      <table class="table table-bordered table-hover" style="text-align: center">
+    <div v-else class="table-responsive" style="border-radius:10px; border: solid 0.5px" >
+      <table class="table table-bordered table-hover" style="text-align: center; ">
         <thead class="table-light">
           <tr>
             <th>Mã sản phẩm</th>

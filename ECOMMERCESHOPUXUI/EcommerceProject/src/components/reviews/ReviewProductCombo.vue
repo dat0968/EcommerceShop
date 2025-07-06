@@ -108,7 +108,7 @@
             <div class="mb-2 p-2 bg-light d-flex align-items-center">
               <div v-if="review.tenHinhAnh" class="me-3">
                 <img
-                  :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
+                  :src="pathReplaceImg(undefined, 'HinhAnh/Products', review.tenHinhAnh)"
                   alt="Ảnh sản phẩm"
                   class="img-fluid border border-light rounded"
                   style="width: 7em; height: 5em; object-fit: cover"

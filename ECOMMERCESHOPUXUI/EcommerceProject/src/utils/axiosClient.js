@@ -13,9 +13,6 @@ const API_PATHS = [
 const axiosClient = axios.create({
   baseURL: 'https://localhost:7217/api', // Thay bằng base URL của API bạn
   timeout: 500000, // Giới hạn timeout (ms)
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 // #region [Hàm kiểm tra endpoint khả dụng]

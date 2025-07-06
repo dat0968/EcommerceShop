@@ -1,10 +1,9 @@
-
 <script setup>
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import Swal from 'sweetalert2';
 import { GetApiUrl } from '../../../../src/constants/api.js';
 import * as bootstrap from 'bootstrap';
-
+import Cookies from 'js-cookie';
 let getApiUrl = GetApiUrl();
 
 const combo = ref({
@@ -35,7 +34,7 @@ const pageSelected = ref(1);
 const productList = ref([]);
 const productMap = ref({});
 const search = ref('');
-
+const token = Cookies.get('accessToken');
 // Kích hoạt/ẩn modal
 watch(showProductModal, (newValue) => {
   console.log('showProductModal thay đổi:', newValue);
@@ -99,13 +98,14 @@ function close() {
 // Lấy danh sách sản phẩm
 async function fetchProducts(page) {
   try {
-    console.log('Đang lấy sản phẩm cho trang:', page);
+console.log('Đang lấy sản phẩm cho trang:', page);
     const response = await fetch(
       `${getApiUrl}/api/Products?search=${encodeURIComponent(search.value)}&page=${page}`,
       {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
       }
     );
@@ -201,7 +201,7 @@ watch(
 
 // Reset soTienGiam khi nhập phanTramGiam
 function resetSoTienGiam() {
-  combo.value.soTienGiam = 0;
+combo.value.soTienGiam = 0;
 }
 
 // Reset phanTramGiam khi nhập soTienGiam
@@ -298,8 +298,7 @@ const addCombo = async () => {
     if (!response.ok) {
       throw new Error('Không thể thêm combo');
     }
-
-    const result = await response.json();
+const result = await response.json();
     if (result.success) {
       Swal.fire('Đã thêm combo mới thành công', '', 'success');
       setTimeout(() => {
@@ -320,8 +319,8 @@ const addCombo = async () => {
   <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Thêm combo</h5>
+        <div class="modal-header" style="background-color: #4C7CF3;">
+          <h5 class="modal-title" id="exampleModalLabel" style="color: white;">Thêm combo</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body data-createCombo">
@@ -368,7 +367,7 @@ const addCombo = async () => {
             <div>
               <label class="form-label">Chi tiết combo</label>
               <div v-for="(detail, index) in combo.chitietcombos" :key="index" class="card mb-3">
-                <div class="card-body">
+<div class="card-body">
                   <div class="row">
                     <div class="col-md-6">
                       <label class="form-label">Sản phẩm</label>
@@ -393,7 +392,7 @@ const addCombo = async () => {
                   </div>
                 </div>
               </div>
-              <button type="button" @click="addDetailCombo()" class="btn btn-secondary">
+              <button type="button" @click="addDetailCombo()" class="btn btn-secondary" style="background-color: #4C7CF3; margin-bottom: 10px;">
                 Thêm chi tiết combo
               </button>
             </div>
@@ -422,8 +421,8 @@ const addCombo = async () => {
             </div>
           </form>
         </div>
-        <div class="modal-footer">
-          <button type="button" @click="addCombo()" class="btn btn-primary">Xác nhận</button>
+        <div class="modal-footer" >
+          <button type="button" @click="addCombo()" class="btn btn-primary" style="width: 170px;">Xác nhận</button>
         </div>
       </div>
     </div>
@@ -432,7 +431,7 @@ const addCombo = async () => {
   <!-- Modal Chọn Sản Phẩm -->
   <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-      <div class="modal-content">
+<div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="productModalLabel">Chọn sản phẩm</h5>
           <button type="button" class="btn-close" @click="showProductModal = false; close()" aria-label="Close"></button>
@@ -505,13 +504,12 @@ const addCombo = async () => {
 .card {
   border: 1px solid #ddd;
 }
-
 .modal-xl {
-  max-width: 90%;
+  max-width: 60%;
 }
 .modal-body input.form-control {
   pointer-events: auto;
   user-select: auto;
-  z-index: 1000;
+  z-index: 50;
 }
 </style>

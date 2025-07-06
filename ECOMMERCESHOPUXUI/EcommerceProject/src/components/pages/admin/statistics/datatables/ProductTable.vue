@@ -53,11 +53,11 @@ export default {
               <span>
                 ${Array.from(
                   { length: totalReviewStar },
-                  () => `<span style="color: #ffc107">★</span>`,
+                  () => `<span style="color: #FFD700">★</span>`,
                 ).join('')}
                 ${Array.from(
                   { length: 5 - totalReviewStar },
-                  () => `<span style="color: #e4e5e9">★</span>`,
+                  () => `<span style="color: #FFD700">★</span>`,
                 ).join('')}
               </span>
               `
@@ -79,16 +79,16 @@ export default {
 
       const detailsHtml = `
         <div class="container">
-            <div class="row mb-3 gap-1 justify-content-between detail-list">
+            <div class="row mb-3 justify-content-between detail-list">
                 ${
                   detailProduct.detailTopProducts && detailProduct.detailTopProducts.length > 0
                     ? detailProduct.detailTopProducts
                         .map(
                           (detail) => `
-                                <div class="col-sm-12 col-md-6 p-3 detail-item">
+                                <div class="col-md-6 col-sm-12 p-3 detail-item">
                                     <div class="row border p-1 rounded bg-light">
                                         <div class="col-4 d-flex align-items-center">
-                                            <img src="${pathReplaceImg(undefined, 'HinhAnh/Avatar', detail.hinhAnh)}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
+                                            <img src="${pathReplaceImg(undefined, 'HinhAnh/Products', detail.hinhAnh)}" class="img-fluid rounded" alt="Hình ảnh sản phẩm">
                                         </div>
                                         <div class="col-8">
                                             <div class="text-primary flex flex-flow-column justify-content-between"><span class="col-auto">Màu: ${detail.mauSac || '-'}</span> | <span class="col-auto">Size: ${detail.kichThuoc || '-'}</span></div>

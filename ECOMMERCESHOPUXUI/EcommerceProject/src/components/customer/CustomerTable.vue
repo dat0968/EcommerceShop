@@ -1,8 +1,8 @@
 <template>
-  <main class="table" id="customers_table" @click.self="cancelDeleteMultiple">
-    <section class="table__header">
+
+    <section class="table__header" style="margin-bottom: -30px; border-radius: 20px;">
       <h1>Danh Sách Khách Hàng</h1>
-      <div class="input-group" style="height: 40px">
+      <div class="input-group" style="height: 40px; background-color:#D5D1DE" >
         <input type="search" placeholder="Tìm kiếm..." v-model="searchQuery" @input="searchTable" />
       </div>
       <div class="export__file">
@@ -76,14 +76,14 @@
                 >↑</span
               >
             </th>
-            <th @click="sortTable('email')">
+            <!-- <th @click="sortTable('email')">
               Email
               <span
                 class="icon-arrow"
                 :class="{ active: sortColumn === 'email', asc: !sortAsc && sortColumn === 'email' }"
                 >↑</span
               >
-            </th>
+            </th> -->
             <th @click="sortTable('tinhTrang')">
               Tình Trạng
               <span
@@ -115,16 +115,16 @@
               }}</span>
             </td>
             <td>{{ customer.gioiTinh }}</td>
-          
+              <td>{{ customer.ngaySinh ? formatDate(customer.ngaySinh) : '' }}</td>
             <td>{{ customer.sdt }}</td>
-            <td>{{ customer.email }}</td>
+            <!-- <td>{{ customer.email }}</td> -->
             <td>
               <p :class="['status', getStatusClass(customer.tinhTrang)]">
                 {{ customer.tinhTrang }}
               </p>
             </td>
             <td>
-              <button @click="editCustomer(customer.maKH)" class="btn-edit">Sửa</button>
+              <button @click="editCustomer(customer.maKH)" class="btn-edit" style="background-color: #F9BF38;">Sửa</button>
               <button @click="deleteCustomer(customer.maKH)" class="btn-delete">Xóa</button>
             </td>
           </tr>
@@ -197,7 +197,7 @@
         <header
           class="modal-header"
           id="modal-title"
-          style="font-family: Arial, Helvetica, sans-serif; color: black"
+          style="font-family: Arial, Helvetica, sans-serif; color: white; background-color: #4C7CF3;"
         >
           Thông Tin Khách Hàng
         </header>
@@ -294,7 +294,7 @@
         </div>
       </div>
     </div>
-  </main>
+
 </template>
 
 <script>
@@ -981,14 +981,15 @@ export default {
 
 <style scoped>
 .table__body {
-  width: 95%;
+  width: 97%;
   max-height: calc(75% - 1.6rem);
-  background-color: #fffb;
+  background-color: #ffffffeb;
   margin: 0.8rem auto;
   border-radius: 0.6rem;
   overflow-x: auto;
   overflow-y: auto;
   flex: 1;
+  opacity: 1;
 }
 
 .table__body::-webkit-scrollbar {
@@ -1395,7 +1396,7 @@ main.table {
   width: 100%;
   height: 90vh;
   /* background: url('@/assets/images/html_table.jpg') center / cover; */
-  background-color: #fff5;
+  background-color: rgba(255, 255, 255, 0.644);
   backdrop-filter: blur(7px);
   box-shadow: 0 0.4rem 0.8rem #0005;
   border-radius: 0.8rem;
@@ -1444,7 +1445,7 @@ main.table {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #fff4;
+  background-color: #fff9;
 }
 
 .table__header .input-group {

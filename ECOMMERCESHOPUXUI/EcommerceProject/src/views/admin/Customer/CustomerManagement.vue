@@ -1,21 +1,14 @@
 <!-- CustomerManagement với imports tương đối -->
 <template>
   <div class="customer-management" style="margin-top: 70px">
+  
     <div class="action-buttons">
-      <button class="btn add-button" @click="showAddModal = true">
+      <button class="btn add-button" @click="showAddModal = true" style="background-color:#346BF1">
         <i class="fas fa-plus"></i> Thêm Khách Hàng
       </button>
 
-      <div class="export-buttons">
-        <button class="btn export-button" @click="exportToServer('pdf')">
-          <i class="fas fa-file-pdf"></i> Xuất PDF
-        </button>
-        <button class="btn export-button" @click="exportToServer('excel')">
-          <i class="fas fa-file-excel"></i> Xuất Excel
-        </button>
-      </div>
-    </div>
 
+    </div>
     <CustomerTable ref="customerTable" @edit-customer="openEditModal" @refresh-data="refreshData" />
 
     <!-- Modal thêm khách hàng -->
@@ -129,7 +122,7 @@ export default {
 
 <style scoped>
 .customer-management {
-  background: url('@/assets/images/html_table.jpg') center / cover;
+  /* background: url('@/assets/Customer/img/categories/category-1.jpg') center / cover; */
 
   padding: 1rem 2rem;
   max-width: 2000px;

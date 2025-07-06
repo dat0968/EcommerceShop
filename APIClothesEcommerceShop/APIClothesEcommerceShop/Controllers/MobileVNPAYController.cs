@@ -20,20 +20,20 @@ namespace APIClothesEcommerceShop.Controllers
         private readonly IConfiguration _configuration;
         private readonly CheckoutService checkoutService;
         private readonly IOrderRepository orderRepository;
-        private readonly ILogger<MobileVNPAYController> _logger; // Thêm logger
+        private readonly ILogger<MobileVNPAYController> _logger;
 
         public MobileVNPAYController(
             IVnpay vnpay,
             IConfiguration configuration,
             CheckoutService checkoutService,
             IOrderRepository orderRepository,
-            ILogger<MobileVNPAYController> logger) // Thêm logger vào constructor
+            ILogger<MobileVNPAYController> logger)
         {
             _vnpay = vnpay;
             _configuration = configuration;
             this.checkoutService = checkoutService;
             this.orderRepository = orderRepository;
-            _logger = logger; // Khởi tạo logger
+            _logger = logger;
 
             // Debug configuration values
             var tmnCode = _configuration["Vnpay:TmnCode"];
@@ -82,7 +82,7 @@ namespace APIClothesEcommerceShop.Controllers
                 _logger.LogInformation("📱 Mobile VNPay CreatePaymentUrl called");
                 _logger.LogInformation($"📱 Request from: {Request.Headers["User-Agent"]}");
 
-                // Tạo order như bình thường
+                // Create order as usual
                 newOrder = await checkoutService.Checkout(model);
                 if (newOrder == null)
                 {
@@ -91,15 +91,15 @@ namespace APIClothesEcommerceShop.Controllers
 
                 _logger.LogInformation($"📱 Order created: {newOrder.MaHd}");
 
-                // Lấy IP address
+                // Get IP address
                 var ipAddress = NetworkHelper.GetIpAddress(HttpContext);
 
-                // Tính tổng tiền
+                // Calculate total amount
                 var totalAmount = (double)(model.TienGoc + model.PhiVanChuyen - (model.GiamGia ?? 0));
 
                 _logger.LogInformation($"📱 Payment amount: {totalAmount} VND");
 
-                // Tạo payment request với mobile-specific settings
+                // Create payment request with mobile-specific settings
                 var request = new PaymentRequest
                 {
                     PaymentId = newOrder.MaHd,
@@ -114,12 +114,12 @@ namespace APIClothesEcommerceShop.Controllers
 
                 _logger.LogInformation($"📱 Payment request: {System.Text.Json.JsonSerializer.Serialize(request)}");
 
-                // Tạo payment URL
+                // Create payment URL
                 var paymentUrl = _vnpay.GetPaymentUrl(request);
 
                 _logger.LogInformation($"📱 Mobile VNPay URL created: {paymentUrl}");
 
-                // Return với response object để mobile dễ parse
+                // Return with response object for easy mobile parsing
                 var response = new
                 {
                     paymentUrl = paymentUrl,
@@ -136,7 +136,7 @@ namespace APIClothesEcommerceShop.Controllers
                 _logger.LogError($"❌ Mobile VNPay CreatePaymentUrl Error: {ex.Message}");
                 _logger.LogError($"❌ Stack trace: {ex.StackTrace}");
 
-                // Cleanup order nếu có lỗi
+                // Cleanup order if error occurs
                 if (newOrder != null && newOrder.MaHd > 0)
                 {
                     await orderRepository.CancelOrders(newOrder.MaHd, "Đã hủy", "Mobile VNPay payment creation failed");
@@ -154,7 +154,7 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet("MobileCallback")]
         public async Task<ActionResult> MobileCallback()
         {
-            _logger.LogInformation("📱 Mobile VNPay Callback received via ngrok");
+            _logger.LogInformation("📱 Mobile VNPay Callback received");
             _logger.LogInformation($"📱 Full URL: {Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}");
 
             // Log all query parameters for debugging
@@ -167,14 +167,7 @@ namespace APIClothesEcommerceShop.Controllers
             if (!Request.QueryString.HasValue || Request.Query.Count == 0)
             {
                 _logger.LogWarning("❌ No query parameters found in mobile callback");
-
-                var mobileFrontendUrl = _configuration["App:MobileFrontendUrl"] ?? "capacitor://localhost";
-                var errorUrl = $"{mobileFrontendUrl}/payment-result?" +
-                              $"status=error&" +
-                              $"error=no_payment_data&" +
-                              $"message={Uri.EscapeDataString("Không có thông tin thanh toán từ VNPay")}";
-
-                return Redirect(errorUrl);
+                return await RedirectToMobileApp("error", null, "no_payment_data", "Không có thông tin thanh toán từ VNPay");
             }
 
             try
@@ -220,12 +213,7 @@ namespace APIClothesEcommerceShop.Controllers
                 if (!int.TryParse(orderIdParam, out int orderId))
                 {
                     _logger.LogError($"❌ Invalid order ID: {orderIdParam}");
-                    var mobileFrontendUrl = _configuration["App:MobileFrontendUrl"] ?? "capacitor://localhost";
-                    var errorUrl = $"{mobileFrontendUrl}/payment-result?" +
-                                  $"status=error&" +
-                                  $"error=invalid_order_id&" +
-                                  $"message={Uri.EscapeDataString("Mã đơn hàng không hợp lệ")}";
-                    return Redirect(errorUrl);
+                    return await RedirectToMobileApp("error", null, "invalid_order_id", "Mã đơn hàng không hợp lệ");
                 }
 
                 _logger.LogInformation($"📱 Processing payment: OrderId={orderId}, ResponseCode={responseCode}, TransactionStatus={transactionStatus}");
@@ -251,8 +239,6 @@ namespace APIClothesEcommerceShop.Controllers
                     _logger.LogInformation($"📱 Manual processing: OrderId={orderId}, Success={paymentResult.IsSuccess}");
                 }
 
-                var mobileFrontendUrl2 = _configuration["App:MobileFrontendUrl"] ?? "capacitor://localhost";
-
                 // Check if payment was successful
                 bool isPaymentSuccess = (paymentResult?.IsSuccess == true) || (responseCode == "00" && transactionStatus == "00");
 
@@ -263,12 +249,7 @@ namespace APIClothesEcommerceShop.Controllers
                     if (order == null)
                     {
                         _logger.LogError($"❌ Order {orderId} not found in database");
-                        var notFoundUrl = $"{mobileFrontendUrl2}/payment-result?" +
-                                        $"status=error&" +
-                                        $"error=order_not_found&" +
-                                        $"orderId={orderId}&" +
-                                        $"message={Uri.EscapeDataString("Không tìm thấy đơn hàng trong hệ thống")}";
-                        return Redirect(notFoundUrl);
+                        return await RedirectToMobileApp("error", orderId, "order_not_found", "Không tìm thấy đơn hàng trong hệ thống");
                     }
 
                     // Update order status to confirmed
@@ -276,46 +257,38 @@ namespace APIClothesEcommerceShop.Controllers
                         orderId,
                         "Chờ xác nhận",
                         null,
-                        "VNPAY_MOBILE_NGROK",
+                        "VNPAY_MOBILE",
                         transactionNo
                     );
 
                     _logger.LogInformation($"✅ Order {orderId} updated to 'Chờ xác nhận' with transaction: {transactionNo}");
 
                     // Success redirect to mobile app
-                    var successUrl = $"{mobileFrontendUrl2}/payment-result?" +
-                                   $"status=success&" +
-                                   $"vnp_ResponseCode={responseCode}&" +
-                                   $"vnp_TransactionStatus={transactionStatus}&" +
-                                   $"orderId={orderId}&" +
-                                   $"amount={amount}&" +
-                                   $"transactionNo={transactionNo}&" +
-                                   $"payDate={payDate}&" +
-                                   $"message={Uri.EscapeDataString("Thanh toán thành công!")}";
-
-                    _logger.LogInformation($"📱 Redirecting to mobile app success: {successUrl}");
-                    return Redirect(successUrl);
+                    return await RedirectToMobileApp("success", orderId, null, "Thanh toán thành công!", new
+                    {
+                        vnp_ResponseCode = responseCode,
+                        vnp_TransactionStatus = transactionStatus,
+                        amount = amount,
+                        transactionNo = transactionNo,
+                        payDate = payDate
+                    });
                 }
                 else
                 {
                     // Payment failed - cancel order
-                    await orderRepository.CancelOrders(orderId, "Đã hủy", $"VNPay payment failed via ngrok - Code: {responseCode}");
+                    await orderRepository.CancelOrders(orderId, "Đã hủy", $"VNPay payment failed - Code: {responseCode}");
                     _logger.LogWarning($"❌ Order {orderId} cancelled due to payment failure - Code: {responseCode}");
 
                     // Get error message
                     string errorMessage = GetVNPayErrorMessage(responseCode);
 
                     // Failed redirect to mobile app
-                    var failedUrl = $"{mobileFrontendUrl2}/payment-result?" +
-                                  $"status=failed&" +
-                                  $"vnp_ResponseCode={responseCode}&" +
-                                  $"vnp_TransactionStatus={transactionStatus}&" +
-                                  $"orderId={orderId}&" +
-                                  $"error={Uri.EscapeDataString(errorMessage)}&" +
-                                  $"message={Uri.EscapeDataString("Thanh toán không thành công")}";
-
-                    _logger.LogInformation($"📱 Redirecting to mobile app failed: {failedUrl}");
-                    return Redirect(failedUrl);
+                    return await RedirectToMobileApp("failed", orderId, errorMessage, "Thanh toán không thành công", new
+                    {
+                        vnp_ResponseCode = responseCode,
+                        vnp_TransactionStatus = transactionStatus,
+                        error = errorMessage
+                    });
                 }
             }
             catch (Exception ex)
@@ -323,13 +296,197 @@ namespace APIClothesEcommerceShop.Controllers
                 _logger.LogError($"❌ Mobile VNPay Callback Error: {ex.Message}");
                 _logger.LogError($"❌ Stack trace: {ex.StackTrace}");
 
-                var mobileFrontendUrl = _configuration["App:MobileFrontendUrl"] ?? "capacitor://localhost";
-                var errorUrl = $"{mobileFrontendUrl}/payment-result?" +
-                             $"status=error&" +
-                             $"error=processing_exception&" +
-                             $"message={Uri.EscapeDataString("Lỗi xử lý thanh toán trên server")}";
+                return await RedirectToMobileApp("error", null, "processing_exception", "Lỗi xử lý thanh toán trên server");
+            }
+        }
 
-                return Redirect(errorUrl);
+        // NEW: Enhanced mobile app redirect method
+        private async Task<ActionResult> RedirectToMobileApp(string status, int? orderId = null, string error = null, string message = null, object additionalData = null)
+        {
+            try
+            {
+                // Get mobile frontend URL from configuration
+                var mobileFrontendUrl = _configuration["App:MobileFrontendUrl"] ?? "capacitor://localhost";
+
+                // Build query parameters
+                var queryParams = new List<string>
+                {
+                    $"status={Uri.EscapeDataString(status)}"
+                };
+
+                if (orderId.HasValue)
+                    queryParams.Add($"orderId={orderId.Value}");
+
+                if (!string.IsNullOrEmpty(error))
+                    queryParams.Add($"error={Uri.EscapeDataString(error)}");
+
+                if (!string.IsNullOrEmpty(message))
+                    queryParams.Add($"message={Uri.EscapeDataString(message)}");
+
+                // Add additional data if provided
+                if (additionalData != null)
+                {
+                    var properties = additionalData.GetType().GetProperties();
+                    foreach (var prop in properties)
+                    {
+                        var value = prop.GetValue(additionalData)?.ToString();
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            queryParams.Add($"{prop.Name}={Uri.EscapeDataString(value)}");
+                        }
+                    }
+                }
+
+                // Add timestamp
+                queryParams.Add($"timestamp={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
+
+                var redirectUrl = $"{mobileFrontendUrl}/payment-result?{string.Join("&", queryParams)}";
+
+                _logger.LogInformation($"📱 Redirecting to mobile app: {redirectUrl}");
+
+                // For mobile apps, we need to handle deep linking properly
+                var userAgent = Request.Headers["User-Agent"].ToString().ToLower();
+
+                if (userAgent.Contains("mobile") || userAgent.Contains("android") || userAgent.Contains("iphone"))
+                {
+                    // Mobile device detected - use JavaScript redirect for better compatibility
+                    var htmlContent = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Đang chuyển hướng...</title>
+    <style>
+        body {{ 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }}
+        .container {{
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }}
+        .spinner {{
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }}
+        @keyframes spin {{
+            0% {{ transform: rotate(0deg); }}
+            100% {{ transform: rotate(360deg); }}
+        }}
+        .status {{
+            font-size: 24px;
+            margin: 20px 0;
+        }}
+        .message {{
+            font-size: 16px;
+            opacity: 0.9;
+            margin: 10px 0;
+        }}
+        .manual-link {{
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }}
+        .manual-link:hover {{
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='status'>
+            {(status == "success" ? "✅ Thanh toán thành công!" : status == "failed" ? "❌ Thanh toán thất bại" : "⚠️ Có lỗi xảy ra")}
+        </div>
+        <div class='spinner'></div>
+        <div class='message'>Đang chuyển về ứng dụng...</div>
+        {(orderId.HasValue ? $"<div class='message'>Mã đơn hàng: #{orderId.Value}</div>" : "")}
+        <a href='{redirectUrl}' class='manual-link' id='manualLink'>
+            Nhấn vào đây nếu không tự động chuyển
+        </a>
+    </div>
+
+    <script>
+        // Multiple redirect strategies for maximum compatibility
+        console.log('🔄 Starting mobile app redirect...');
+        console.log('🎯 Target URL:', '{redirectUrl}');
+        
+        // Strategy 1: Immediate redirect
+        setTimeout(function() {{
+            console.log('📱 Attempting immediate redirect...');
+            window.location.replace('{redirectUrl}');
+        }}, 1000);
+        
+        // Strategy 2: Backup redirect
+        setTimeout(function() {{
+            console.log('🔄 Backup redirect attempt...');
+            window.location.href = '{redirectUrl}';
+        }}, 3000);
+        
+        // Strategy 3: Force redirect if still on page
+        setTimeout(function() {{
+            console.log('🚨 Force redirect - still on redirect page');
+            document.getElementById('manualLink').click();
+        }}, 5000);
+        
+        // Handle visibility change (when user comes back to tab)
+        document.addEventListener('visibilitychange', function() {{
+            if (!document.hidden) {{
+                console.log('👁️ Page became visible, attempting redirect...');
+                window.location.replace('{redirectUrl}');
+            }}
+        }});
+        
+        // Handle page focus
+        window.addEventListener('focus', function() {{
+            console.log('🎯 Window focused, attempting redirect...');
+            setTimeout(function() {{
+                window.location.replace('{redirectUrl}');
+            }}, 500);
+        }});
+    </script>
+</body>
+</html>";
+
+                    return Content(htmlContent, "text/html");
+                }
+                else
+                {
+                    // Desktop or unknown - direct redirect
+                    return Redirect(redirectUrl);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"❌ Error in RedirectToMobileApp: {ex.Message}");
+
+                // Fallback simple redirect
+                var fallbackUrl = $"capacitor://localhost/payment-result?status={status}&orderId={orderId}&message={Uri.EscapeDataString(message ?? "Redirect error")}";
+                return Redirect(fallbackUrl);
             }
         }
 
@@ -374,7 +531,7 @@ namespace APIClothesEcommerceShop.Controllers
             };
         }
 
-        // Health check endpoint cho mobile - với debug info
+        // Health check endpoint for mobile - with debug info
         [HttpGet("Health")]
         public ActionResult CheckHealth()
         {
@@ -394,7 +551,7 @@ namespace APIClothesEcommerceShop.Controllers
                         mobileReturnUrlExists = !string.IsNullOrEmpty(_configuration["Vnpay:MobileReturnUrl"]),
                         mobileFrontendUrlExists = !string.IsNullOrEmpty(_configuration["App:MobileFrontendUrl"])
                     },
-                    vnpayInitialized = true // Nếu đến được đây thì VNPay đã init thành công
+                    vnpayInitialized = true // If we reach here, VNPay is initialized successfully
                 };
 
                 _logger.LogInformation($"📱 Health check OK: {System.Text.Json.JsonSerializer.Serialize(healthResponse)}");
@@ -412,7 +569,7 @@ namespace APIClothesEcommerceShop.Controllers
             }
         }
 
-        // Debug endpoint để kiểm tra configuration
+        // Debug endpoint to check configuration
         [HttpGet("Debug/Config")]
         public ActionResult GetDebugConfig()
         {
@@ -445,7 +602,6 @@ namespace APIClothesEcommerceShop.Controllers
 
             return Ok(debugInfo);
         }
-        // Thêm method này vào MobileVNPAYController.cs
 
         [HttpGet("CheckOrderStatus/{orderId}")]
         public async Task<ActionResult> CheckOrderStatus(int orderId)

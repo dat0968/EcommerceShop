@@ -1,21 +1,21 @@
 <template>
-  <main class="table" id="staff_table" @click.self="cancelDeleteMultiple">
-    <section class="table__header">
+
+    <section class="table__header" style="background-color: #F9FBFD;margin-bottom: -30px; border-radius: 20px;">
       <h1>Danh Sách Nhân Viên</h1>
-      <div class="input-group" style="height: 40px">
+      <div class="input-group" style="height: 40px; background-color: #D5D1DE;">
         <input type="search" placeholder="Tìm kiếm..." v-model="searchQuery" @input="searchTable" />
       </div>
       <div class="export__file">
         <label for="export-file" class="export__file-btn" title="Xuất File"></label>
         <input type="checkbox" id="export-file" v-model="showExportOptions" />
-        <div class="export__file-options" v-if="showExportOptions">
+        <!-- <div class="export__file-options" v-if="showExportOptions">
           <label @click="exportToServer('pdf')" id="toPDF">
             <i class="fas fa-file-pdf"></i> PDF
           </label>
           <label @click="exportToServer('excel')" id="toEXCEL">
             <i class="fas fa-file-excel"></i> EXCEL
           </label>
-        </div>
+        </div> -->
       </div>
       <div class="action-buttons">
         <button class="btn delete-multiple-button" @click="toggleDeleteMultiple">
@@ -47,7 +47,7 @@
                 >↑</span
               >
             </th>
-            <th @click="sortTable('gioiTinh')">
+            <!-- <th @click="sortTable('gioiTinh')">
               Giới Tính
               <span
                 class="icon-arrow"
@@ -57,8 +57,8 @@
                 }"
                 >↑</span
               >
-            </th>
-            <th @click="sortTable('ngaySinh')">
+            </th> -->
+            <!-- <th @click="sortTable('ngaySinh')">
               Ngày Sinh
               <span
                 class="icon-arrow"
@@ -68,7 +68,7 @@
                 }"
                 >↑</span
               >
-            </th>
+            </th> -->
             <th @click="sortTable('chucVu')">
               Chức Vụ
               <span
@@ -126,8 +126,8 @@
                 staffMember.hoTen
               }}</span>
             </td>
-            <td>{{ staffMember.gioiTinh }}</td>
-            <td>{{ staffMember.ngaySinh ? formatDate(staffMember.ngaySinh) : '' }}</td>
+            <!-- <td>{{ staffMember.gioiTinh }}</td> -->
+            <!-- <td>{{ staffMember.ngaySinh ? formatDate(staffMember.ngaySinh) : '' }}</td> -->
             <td>{{ staffMember.tenChucVu }}</td>
             <td>{{ staffMember.sdt }}</td>
             <td>{{ staffMember.email }}</td>
@@ -137,7 +137,7 @@
               </p>
             </td>
             <td>
-              <button @click="editStaff(staffMember.maNV)" class="btn-edit">Sửa</button>
+              <button @click="editStaff(staffMember.maNV)" class="btn-edit" style="background-color: #F9BF38;">Sửa</button>
               <button @click="deleteStaff(staffMember.maNV)" class="btn-delete">Xóa</button>
             </td>
           </tr>
@@ -313,7 +313,6 @@
         </div>
       </div>
     </div>
-  </main>
 </template>
 
 <script>
@@ -996,7 +995,7 @@ export default {
 
 <style scoped>
 .table__body {
-  width: 95%;
+  width: 97%;
   max-height: calc(75% - 1.6rem);
   background-color: #fffb;
   margin: 0.8rem auto;

@@ -26,7 +26,7 @@
         <div class="col-md-3 mb-2">
           <OffensiveWords />
         </div>
-        <div class="col-md-3">
+        <div class="col-md-3" style="margin-bottom: 20px;">
           <button class="btn btn-primary" :disabled="isDisabled" @click="updateShopResponse">
             Cập nhật phản hồi của shop
           </button>

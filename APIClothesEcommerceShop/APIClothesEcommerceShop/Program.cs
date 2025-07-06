@@ -35,12 +35,12 @@ using APIClothesEcommerceShop.Services.EmailService;
 using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Repositories.DetailCombo;
 using APIClothesEcommerceShop.Repositories.Address;
-using QuestPDF.Infrastructure;
+//using QuestPDF.Infrastructure;
 using APIClothesEcommerceShop.Repositories.FavoriteProduct;
 using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Controllers;
 var builder = WebApplication.CreateBuilder(args);
-QuestPDF.Settings.License = LicenseType.Community;
+//QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -160,11 +160,11 @@ var emailSettings = builder.Configuration.GetSection("GoogleEmailSetting");
 builder.Services.Configure<GoogleEmailSetting>(emailSettings);
 
 // Redis
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration["Redis:Configuration"];
-    options.InstanceName = builder.Configuration["Redis:InstanceName"];
-});
+//builder.Services.AddStackExchangeRedisCache(options =>
+//{
+//    options.Configuration = builder.Configuration["Redis:Configuration"];
+//    options.InstanceName = builder.Configuration["Redis:InstanceName"];
+//});
 
 
 // JWT Authentication

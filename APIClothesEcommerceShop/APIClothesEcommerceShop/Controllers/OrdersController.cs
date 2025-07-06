@@ -18,6 +18,7 @@ namespace APIClothesEcommerceShop.Controllers
         {
             this.orderRepository = orderRepository;
         }
+
         [HttpGet]
         public async Task<IActionResult> Index(string? search, string? filter, int page = 1)
         {
@@ -26,6 +27,8 @@ namespace APIClothesEcommerceShop.Controllers
                 var pagesize = 10;
                 page = page < 1 ? 1 : page;
                 var orders = await orderRepository.GetAll(search, filter);
+                // Sắp xếp theo maHd giảm dần để mã hóa đơn cao nhất lên đầu
+                orders = orders.OrderByDescending(o => o.MaHd).ToList();
                 var PagedOrders = orders.Skip((page - 1) * pagesize).Take(pagesize);
                 var ToTalPage = Math.Ceiling((decimal)orders.Count() / pagesize);
                 return Ok(new
@@ -39,10 +42,10 @@ namespace APIClothesEcommerceShop.Controllers
             {
                 throw new Exception("Error", ex);
             }
-            
         }
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update([FromRoute]int id, UpdateOrderDTO model)
+        public async Task<IActionResult> Update([FromRoute] int id, UpdateOrderDTO model)
         {
             try
             {
@@ -57,8 +60,8 @@ namespace APIClothesEcommerceShop.Controllers
             {
                 throw new Exception("Error", ex);
             }
-
         }
+
         [HttpGet("xuat-pdf/{maHd}")]
         public async Task<IActionResult> XuatHoaDonPdf(int maHd)
         {
