@@ -15,7 +15,7 @@ namespace APIClothesEcommerceShop.Repositories.FavoriteProduct
             _context = context;
         }
         public async Task<FavoriteProductDTO> AddFavoriteProduct(FavoriteProductDTO fvProduct)
-        {
+        {// Task<bool?>  (int userId, int productId, bool isDelete)
             try
             {
                 // Kiểm tra xem bản ghi đã tồn tại chưa
@@ -62,12 +62,13 @@ namespace APIClothesEcommerceShop.Repositories.FavoriteProduct
             }
             return false;
         }
-        public async Task DeleteFavoriteProduct(int idKhachHang, int idSanPham)
+
+        public async Task DeleteFavoriteProduct(FavoriteProductDTO fv)
         {
             try
             {
                 var favorite = await _context.Sanphamyeuthiches
-                                            .FirstOrDefaultAsync(d => d.MaKh == idKhachHang && d.MaSp == idSanPham);
+                                            .FirstOrDefaultAsync(d => d.MaKh == fv.MaKh && d.MaSp == fv.MaSp);
 
                 if (favorite == null)
                 {

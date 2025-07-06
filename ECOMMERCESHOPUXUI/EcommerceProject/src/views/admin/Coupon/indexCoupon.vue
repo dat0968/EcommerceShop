@@ -478,7 +478,7 @@ onMounted(() => {
       <div class="modal" :class="{ 'd-block': showAddModal }" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
-            <div class="modal-header"style="background-color:#4C7CF3">
+            <div class="modal-header" style="background-color:#4C7CF3">
               <h5 class="modal-title" >Thêm Coupon</h5>
               <button type="button" class="btn-close" @click="closeAddModal"></button>
             </div>

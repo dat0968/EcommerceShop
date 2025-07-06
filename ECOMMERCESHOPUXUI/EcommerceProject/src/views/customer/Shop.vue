@@ -50,7 +50,8 @@ const fetchAPIProducts = async () => {
 
     const result = await response.json()
     products.value = result.data
-    toTalPages.value = result.toTalPages
+    toTalPages.value = result.totalPages
+    console.log(result)
   } catch (error) {
     console.error('Lỗi fetchAPIProducts:', error)
   } finally {

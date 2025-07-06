@@ -64,11 +64,11 @@ namespace APIClothesEcommerceShop.Controllers
             });
         }
         [HttpDelete("DeleteFavoriteProducts")]
-        public async Task<IActionResult> DeleteFavoriteProducts(int idKhachHang, int idSp)
+        public async Task<IActionResult> DeleteFavoriteProducts(FavoriteProductDTO fv)
         {
             try
             {
-                await _favoriteProduct.DeleteFavoriteProduct(idKhachHang, idSp);
+                await _favoriteProduct.DeleteFavoriteProduct(fv);
                 return Ok(new
                 {
                     Message = "Xóa sản phẩm yêu thích thành công"
