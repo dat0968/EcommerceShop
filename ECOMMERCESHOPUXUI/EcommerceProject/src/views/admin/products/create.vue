@@ -156,7 +156,7 @@ async function submitProduct() {
       for (const file of mainImages.value) {
         const formData = new FormData()
         formData.append('file', file)
-        const responseImage = await fetch(getUrlAPI.value + '/UploadImages', {
+        const responseImage = await fetch(getUrlAPI.value + '/api/UploadImages', {
           method: 'POST',
           body: formData,
         })
@@ -215,7 +215,7 @@ async function submitProduct() {
       for (const file of multiImages.value) {
         const formData = new FormData()
         formData.append('file', file)
-        const responseImage = await fetch(getUrlAPI.value + '/UploadImages', {
+        const responseImage = await fetch(getUrlAPI.value + '/api/UploadImages', {
           method: 'POST',
           body: formData,
         })
