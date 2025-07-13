@@ -33,7 +33,13 @@
             </div>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-md-9">
+            <!-- Khung biểu đồ -->
+            <div class="chart-container">
+              <canvas id="revenueChart" v-show="!isLoading"></canvas>
+            </div>
+          </div>
+          <div class="col-md-3">
             <!-- Khung biểu đồ -->
             <div class="chart-container">
               <canvas id="employeeChart" v-show="!isLoading"></canvas>
@@ -76,18 +82,25 @@ export default {
   data() {
     return {
       employeeChart: null,
+      revenueChart: null,
       chartError: false,
     }
   },
   watch: {
     isLoading(newVal) {
       if (!newVal) {
-        this.$nextTick(() => this.renderEmployeeChart())
+        this.$nextTick(() => {
+          this.renderEmployeeChart()
+          this.renderRevenueChart()
+        })
       }
     },
     data: {
       handler() {
-        this.$nextTick(() => this.renderEmployeeChart())
+        this.$nextTick(() => {
+          this.renderEmployeeChart()
+          this.renderRevenueChart()
+        })
       },
       deep: true,
     },
@@ -95,10 +108,56 @@ export default {
   mounted() {
     if (!this.isLoading) {
       this.renderEmployeeChart()
+      this.renderRevenueChart()
     }
   },
   methods: {
     formatCurrency,
+    renderRevenueChart() {
+      try {
+        const ctx = document.getElementById('revenueChart')
+        if (!ctx || !this.data || !this.data.revenueByTime) {
+          return
+        }
+        const context = ctx.getContext('2d')
+        if (this.revenueChart) {
+          this.revenueChart.destroy()
+        }
+
+        const dailyData = this.data.revenueByTime.daily || []
+
+        this.revenueChart = new Chart(context, {
+          type: 'bar',
+          data: {
+            labels: dailyData.map(d => d.label),
+            datasets: [
+              {
+                label: 'Doanh thu hàng ngày',
+                data: dailyData.map(d => d.revenue),
+                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+              },
+            },
+          },
+        })
+      } catch (e) {
+        console.error(e)
+      }
+    },
     renderEmployeeChart() {
       this.chartError = false
       try {

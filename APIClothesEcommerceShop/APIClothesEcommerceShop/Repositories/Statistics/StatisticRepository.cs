@@ -518,13 +518,15 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             try
             {
                 var employeeStats = await _context.Nhanviens
+                    .Include(e => e.Hoadons)
                     .GroupBy(e => 1)
                     .Select(g => new
                     {
                         TotalEmployees = g.Count(),
                         TotalActiveEmployees = g.Count(e => e.IsActive ?? false),
                         TotalSalary = g.Sum(e => e.MaChucVuNavigation.Luong),
-                        AverageSalary = g.Average(e => e.MaChucVuNavigation.Luong)
+                        AverageSalary = g.Average(e => e.MaChucVuNavigation.Luong),
+                        Hoadons = g.SelectMany(e => e.Hoadons)
                     })
                     .FirstOrDefaultAsync();
 
@@ -534,13 +536,49 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     return response;
                 }
 
+                var revenueByTime = new Dictionary<string, List<RevenueByTimeStatistic>>();
+                var now = DateTime.Now;
+
+                // Revenue by day (last 7 days)
+                var last7Days = Enumerable.Range(0, 7).Select(i => now.AddDays(-i).Date);
+                var dailyRevenue = employeeStats.Hoadons
+                    .Where(h => last7Days.Contains(h.NgayTao.Date))
+                    .GroupBy(h => h.NgayTao.Date)
+                    .Select(g => new RevenueByTimeStatistic { Label = g.Key.ToString("yyyy-MM-dd"), Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["daily"] = dailyRevenue;
+
+                // Revenue by week (last 4 weeks)
+                var weeklyRevenue = employeeStats.Hoadons
+                    .AsEnumerable()
+                    .GroupBy(h => System.Globalization.ISOWeek.GetWeekOfYear(h.NgayTao))
+                    .Select(g => new RevenueByTimeStatistic { Label = "Week " + g.Key, Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["weekly"] = weeklyRevenue;
+
+                // Revenue by month (last 12 months)
+                var monthlyRevenue = employeeStats.Hoadons
+                    .Where(h => h.NgayTao.Year == now.Year)
+                    .GroupBy(h => h.NgayTao.Month)
+                    .Select(g => new RevenueByTimeStatistic { Label = "Month " + g.Key, Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["monthly"] = monthlyRevenue;
+
+                // Revenue by year
+                var yearlyRevenue = employeeStats.Hoadons
+                    .GroupBy(h => h.NgayTao.Year)
+                    .Select(g => new RevenueByTimeStatistic { Label = g.Key.ToString(), Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["yearly"] = yearlyRevenue;
+
                 response.Data = new EmployeeStatisticsResponse
                 {
                     TotalEmployees = employeeStats.TotalEmployees,
                     TotalActiveEmployees = employeeStats.TotalActiveEmployees,
                     TotalInactiveEmployees = employeeStats.TotalEmployees - employeeStats.TotalActiveEmployees,
                     AverageSalary = employeeStats.AverageSalary,
-                    TotalSalary = employeeStats.TotalSalary
+                    TotalSalary = employeeStats.TotalSalary,
+                    RevenueByTime = revenueByTime
                 };
 
                 response.SetSuccessResponse();
