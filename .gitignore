@@ -17,6 +17,8 @@ APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/images/chat
 APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot/media/chat
 *node_modules
 *package-lock.json
+*bin
+*obj
 
 
 
