@@ -221,7 +221,8 @@ export default {
         this.renderOrderStatusChart('orderStatusChartByYear')
       }
     },
-    renderRevenueChart(chartId) {
+    async renderRevenueChart(chartId) {
+      await this.$nextTick()
       const ctx = document.getElementById(chartId)
 
       const context = ctx.getContext('2d')
@@ -321,7 +322,8 @@ export default {
         },
       })
     },
-    renderOrderStatusChart(chartId) {
+    async renderOrderStatusChart(chartId) {
+      await this.$nextTick()
       const ctx = document.getElementById(chartId)
 
       const context = ctx.getContext('2d')
