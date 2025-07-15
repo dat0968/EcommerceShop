@@ -21,7 +21,7 @@
           v-show="showProductStatusChart"
           style="position: absolute; top: 60px; right: 0"
         >
-          <canvas id="productChart" v-if="!isLoading"></canvas>
+          <canvas ref="productChart" v-if="!isLoading"></canvas>
           <div v-show="isLoading" class="text-center my-4">
             <LoadingSpinner />
           </div>
@@ -38,9 +38,9 @@
           <LoadingSpinner />
         </div>
         <div v-else>
-          <canvas id="salesQuantityChartByDay" v-if="selectedTimePeriod === 'date'"></canvas>
-          <canvas id="salesQuantityChartByMonth" v-if="selectedTimePeriod === 'month'"></canvas>
-          <canvas id="salesQuantityChartByYear" v-if="selectedTimePeriod === 'year'"></canvas>
+          <canvas ref="salesQuantityChartByDay" v-show="selectedTimePeriod === 'date'"></canvas>
+          <canvas ref="salesQuantityChartByMonth" v-show="selectedTimePeriod === 'month'"></canvas>
+          <canvas ref="salesQuantityChartByYear" v-show="selectedTimePeriod === 'year'"></canvas>
         </div>
       </div>
     </div>
@@ -82,7 +82,9 @@ export default {
   data() {
     return {
       productChart: null,
-      salesQuantityChart: null,
+      salesQuantityChartByDay: null,
+      salesQuantityChartByMonth: null,
+      salesQuantityChartByYear: null,
       selectedTimePeriod: 'date',
       showProductStatusChart: false,
       hasSalesChartData: true,
@@ -101,8 +103,7 @@ export default {
     isLoading(newVal) {
       if (!newVal) {
         this.$nextTick(() => {
-          this.renderProductChart()
-          this.updateSalesChart()
+          this.renderAllCharts()
         })
       }
     },
@@ -110,8 +111,7 @@ export default {
       handler() {
         if (!this.isLoading) {
           this.$nextTick(() => {
-            this.renderProductChart()
-            this.updateSalesChart()
+            this.renderAllCharts()
           })
         }
       },
@@ -120,22 +120,34 @@ export default {
   },
   mounted() {
     if (!this.isLoading) {
-      this.renderProductChart()
-      this.updateSalesChart()
+      this.renderAllCharts()
     }
+  },
+  beforeUnmount() {
+    this.destroyCharts()
   },
   methods: {
     formatCurrency,
     toggleProductStatusChart() {
       this.showProductStatusChart = !this.showProductStatusChart
     },
+    destroyCharts() {
+      if (this.productChart) this.productChart.destroy()
+      if (this.salesQuantityChartByDay) this.salesQuantityChartByDay.destroy()
+      if (this.salesQuantityChartByMonth) this.salesQuantityChartByMonth.destroy()
+      if (this.salesQuantityChartByYear) this.salesQuantityChartByYear.destroy()
+    },
+    renderAllCharts() {
+      this.destroyCharts()
+      this.renderProductChart()
+      this.renderSalesChart('date')
+      this.renderSalesChart('month')
+      this.renderSalesChart('year')
+    },
     renderProductChart() {
-      const canvas = document.getElementById('productChart')
+      const canvas = this.$refs.productChart
       if (!canvas) return
       const ctx = canvas.getContext('2d')
-      if (this.productChart) {
-        this.productChart.destroy()
-      }
       this.productChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -160,89 +172,75 @@ export default {
                 boxWidth: 10,
                 padding: 10,
                 font: {
-                  size: 14
-                }
+                  size: 14,
+                },
               },
             },
             tooltip: {
               callbacks: {
-                label: function(context) {
-                  let label = context.label || '';
+                label: function (context) {
+                  let label = context.label || ''
                   if (label) {
-                    label += ': ';
+                    label += ': '
                   }
                   if (context.parsed !== null) {
-                    label += context.parsed;
+                    label += context.parsed
                   }
-                  return label;
-                }
-              }
+                  return label
+                },
+              },
             },
             title: {
               display: true,
               text: 'Tình trạng sản phẩm',
               font: {
-                size: 16
-              }
-            }
+                size: 16,
+              },
+            },
           },
         },
       })
     },
-    updateSalesChart() {
-      let canvasId = ''
-      if (this.selectedTimePeriod === 'date') {
-        canvasId = 'salesQuantityChartByDay'
-      } else if (this.selectedTimePeriod === 'month') {
-        canvasId = 'salesQuantityChartByMonth'
-      } else if (this.selectedTimePeriod === 'year') {
-        canvasId = 'salesQuantityChartByYear'
-      }
-
-      const canvas = document.getElementById(canvasId)
+    renderSalesChart(period) {
+      const refName = `salesQuantityChartBy${period.charAt(0).toUpperCase() + period.slice(1)}`
+      const canvas = this.$refs[refName]
       if (!canvas) return
       const ctx = canvas.getContext('2d')
-      if (this.salesQuantityChart) {
-        this.salesQuantityChart.destroy()
-      }
 
       let salesData = []
       let labels = []
       let revenueData = []
       let quantityData = []
 
-      // Lấy dữ liệu theo khoảng thời gian đã chọn
-      if (this.selectedTimePeriod === 'date') {
+      if (period === 'date') {
         salesData = this.data.salesByTimes?.date || []
         labels = salesData.map((item) => item.date.split('T')[0])
         revenueData = salesData.map((item) => item.revenue)
         quantityData = salesData.map((item) => item.count)
-      } else if (this.selectedTimePeriod === 'month') {
+      } else if (period === 'month') {
         salesData = this.data.salesByTimes?.month || []
         labels = salesData.map((item) => `${item.month}/${item.year}`)
         revenueData = salesData.map((item) => item.revenue)
         quantityData = salesData.map((item) => item.count)
-      } else if (this.selectedTimePeriod === 'year') {
+      } else if (period === 'year') {
         salesData = this.data.salesByTimes?.year || []
         labels = salesData.map((item) => item.year)
         revenueData = salesData.map((item) => item.revenue)
         quantityData = salesData.map((item) => item.count)
       }
 
-      // Kiểm tra dữ liệu để hiển thị overlay
       this.hasSalesChartData =
         salesData &&
         salesData.length > 0 &&
         (revenueData.some((v) => v > 0) || quantityData.some((v) => v > 0))
 
-      // Nếu không có dữ liệu, tạo biểu đồ trắng với khung hình
       if (!this.hasSalesChartData) {
         labels = ['']
         revenueData = [0]
         quantityData = [0]
       }
 
-      this.salesQuantityChart = new Chart(ctx, {
+      this[refName] = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: labels,
@@ -276,8 +274,8 @@ export default {
               position: 'left',
               title: {
                 display: true,
-                text: 'Doanh thu'
-              }
+                text: 'Doanh thu',
+              },
             },
             y1: {
               beginAtZero: true,
@@ -287,8 +285,8 @@ export default {
               },
               title: {
                 display: true,
-                text: 'Số lượng bán'
-              }
+                text: 'Số lượng bán',
+              },
             },
           },
           plugins: {
@@ -296,17 +294,17 @@ export default {
               mode: 'index',
               intersect: false,
               callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
+                label: function (context) {
+                  let label = context.dataset.label || ''
                   if (label) {
-                    label += ': ';
+                    label += ': '
                   }
                   if (context.parsed.y !== null) {
-                    label += context.parsed.y;
+                    label += context.parsed.y
                   }
-                  return label;
-                }
-              }
+                  return label
+                },
+              },
             },
             legend: {
               display: true,
@@ -315,12 +313,16 @@ export default {
               display: true,
               text: 'Doanh thu và số lượng bán theo thời gian',
               font: {
-                size: 16
-              }
-            }
-          }
+                size: 16,
+              },
+            },
+          },
         },
       })
+    },
+    updateSalesChart() {
+      // This method is now just a proxy to select the visible chart
+      // The actual rendering is done in renderAllCharts
     },
   },
 }
