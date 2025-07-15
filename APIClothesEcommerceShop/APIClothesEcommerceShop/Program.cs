@@ -58,7 +58,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_PH"));
 });
 
 // Add services to the container.

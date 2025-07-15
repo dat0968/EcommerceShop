@@ -430,13 +430,15 @@ onMounted(() => {
             <td>
               <div v-if="!isCouponUsedUp(coupon) && coupon.trangThai !== 'expired' && coupon.trangThai !== false">
                 <button
-                  class="btn btn-warning btn-sm me-2"
+                  class="btn btn-warning btn-sm mb-2 "
+                  style="width: 60px;"
                   @click="openEditModal(coupon)"
                 >
                   Sửa
                 </button>
                 <button
                   class="btn btn-danger btn-sm"
+                      style="width: 60px;"
                   @click="deleteCoupon(coupon.maCode)"
                 >
                   Hủy

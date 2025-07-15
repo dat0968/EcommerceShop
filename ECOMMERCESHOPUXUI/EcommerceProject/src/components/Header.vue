@@ -60,9 +60,9 @@
             </nav>
           </div>
           <div class="col-lg-3">
-            <div class="header__right">
+            <div class="header__right" style="margin-top: 10px;">
               <div class="header__right__auth">
-                <template v-if="!isLoggedIn">
+                <template v-if="!isLoggedIn" >
                   <router-link to="/Login" class="text-primary">Đăng nhập</router-link>
                   <router-link to="/Register" class="text-primary">Đăng ký</router-link>
                 </template>
@@ -71,18 +71,21 @@
                 </template>
               </div>
               <ul class="header__right__widget">
-                <li>
-                  <router-link to='/favoriteproduct'><span class="icon_heart_alt"></span>
+                <li >
+                  <router-link style="text-decoration: none;" to='/favoriteproduct'><span class="icon_heart_alt" ></span>
                     <div class="tip">2</div>
                   </router-link>
                 </li>
                 <li>
-                  <router-link to='/Cart'><span class="icon_bag_alt"></span>
+                  <router-link style="text-decoration: none;" to='/Cart'><span class="fa fa-shopping-basket"></span>
                     <div class="tip">2</div>
                   </router-link>
                 </li>
                 <li>
-                  <RouterLink to='Profile'><i class="icon-people"></i></RouterLink>
+                  <RouterLink style="text-decoration: none;" to='/order'><i class="icon_bag_alt"></i></RouterLink>
+                </li>
+                <li>
+                  <RouterLink style="text-decoration: none;" to='Profile'><i class="icon-people"></i></RouterLink>
                 </li>
               </ul>
             </div>

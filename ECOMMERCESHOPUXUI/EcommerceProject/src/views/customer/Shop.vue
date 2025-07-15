@@ -144,14 +144,12 @@ onMounted(() => {
 <template>
   <div>
     <!-- Breadcrumb Begin -->
-    <div class="breadcrumb-option">
+    <div class="breadcrumb-option" style="margin-left: -200px;">
       <div class="container">
         <div class="row">
           <div class="col-lg-12">
             <div class="breadcrumb__links">
-              <RouterLink style="text-decoration-line: none" to="/"
-                ><i class="fa fa-home"></i> Trang chủ</RouterLink
-              >
+              <RouterLink style="text-decoration-line: none" to="/"><i class="fa fa-home"></i> Trang chủ</RouterLink>
               <span>Sản phẩm</span>
             </div>
           </div>
@@ -161,52 +159,41 @@ onMounted(() => {
     <!-- Breadcrumb End -->
 
     <!-- Shop Section Begin -->
-    <section class="shop spad">
-      <div class="container">
+    <section class="shop spad" style="margin-top: -50px;">
+      <div class="" style="margin-left: 80px; margin-right: 80px;">
         <!-- Search Bar Section -->
-        <div class="row" >
-          <div class="col-lg-12">
-            <div class="search-section">
-              <div class="search-container">
-                <div class="search-box">
-                  <div class="search-input-wrapper">
-                    <input
-                      v-model="searchInput"
-                      @input="handleSearchInput"
-                      @keyup.enter="handleSearch"
-                      type="text"
-                      class="search-input"
-                      placeholder="Tìm kiếm sản phẩm..."
-                    />
-                    <button
-                      v-if="searchInput"
-                      @click="clearSearch"
-                      class="clear-search-btn"
-                      type="button"
-                    >
-                      <i class="fa fa-times"></i>
-                    </button>
-                  </div>
-                  <!-- <button @click="handleSearch" class="search-btn" type="button">
+        <div class="row">
+              <div class="col-lg-12" style="margin-left: 60px;">
+                <div class="">
+                  <div class="search-container">
+                    <div class="search-box">
+                      <div class="search-input-wrapper">
+                        <input v-model="searchInput" @input="handleSearchInput" @keyup.enter="handleSearch" type="text"
+                          class="search-input" placeholder="Tìm kiếm sản phẩm..."  style="width: 1030px;" />
+                        <button v-if="searchInput" @click="clearSearch" class="clear-search-btn" type="button">
+                          <i class="fa fa-times"></i>
+                        </button>
+                      </div>
+                      <!-- <button @click="handleSearch" class="search-btn" type="button">
                     <i class="fa fa-search"></i>
                     <span>Tìm kiếm</span>
                   </button> -->
-                </div>
-                
-                <!-- Search Results Info -->
-                <div v-if="search" class="search-info">
-                  <span class="search-term">
-                    <i class="fa fa-search"></i>
-                    Kết quả tìm kiếm cho: "<strong>{{ search }}</strong>"
-                  </span>
-                  <span class="results-count">
-                    {{ products.length }} sản phẩm được tìm thấy
-                  </span>
-                </div>
-              </div>
+                    </div>
 
-              <!-- Sorting and Filter Bar -->
-              <!-- <div class="filter-bar">
+                    <!-- Search Results Info -->
+                    <div v-if="search" class="search-info" style="margin-bottom: 20px;">
+                      <span class="search-term">
+                        <i class="fa fa-search"></i>
+                        Kết quả tìm kiếm cho: "<strong>{{ search }}</strong>"
+                      </span>
+                      <span class="results-count">
+                        {{ products.length }} sản phẩm được tìm thấy
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Sorting and Filter Bar -->
+                  <!-- <div class="filter-bar">
                 <div class="filter-left">
                   <div class="sort-dropdown">
                     <select v-model="sortByPrice" @change="handleSortChange" class="sort-select">
@@ -228,57 +215,43 @@ onMounted(() => {
                   </div>
                 </div>
               </div> -->
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
         <div class="row">
           <div class="col-lg-3 col-md-3">
             <div class="shop__sidebar">
               <div class="sidebar__categories">
-                <div
-                  style="
+                <div style="
                     border-bottom: 2px solid #e7ab3c;
                     display: inline-block;
                     padding-bottom: 5px;
                     margin-bottom: 20px;
                     text-align: center;
-                  "
-                >
+                  ">
                   <h4 style="display: inline-block; margin: 0; font-weight: 600">Loại sản phẩm</h4>
                 </div>
                 <div class="categories__accordion">
                   <div class="accordion" id="accordionExample">
                     <div class="card-heading" style="margin-bottom: 10px;">
-                        <a href="/shop">Tất cả</a>
-                      </div>
-                    <div
-                      class="card"
-                      v-for="category in listCategories"
-                      :key="category.maDanhMucCha"
-                    >
+                      <a href="/shop">Tất cả</a>
+                    </div>
+                    <div class="card" v-for="category in listCategories" :key="category.maDanhMucCha">
                       <div class="card-heading" @click="toggleCategory(category.maDanhMucCha)">
                         <a href="javascript:void(0)">{{ category.tenDanhMucCha }}</a>
                       </div>
-                   
-                      <div
-                        :id="category.maDanhMucCha"
-                        class="collapse"
-                        :class="{ show: activeCategory === category.maDanhMucCha }"
-                      >
+
+                      <div :id="category.maDanhMucCha" class="collapse"
+                        :class="{ show: activeCategory === category.maDanhMucCha }">
                         <div class="card-body">
-                          <ul
-                            v-for="smallcategory in category.chitietdanhmucs"
-                            :key="smallcategory.maDanhMucCon"
-                          >
-                            <li
-                              @click="
-                                selectedCategory(smallcategory.maDanhMucCon, category.maDanhMucCha)
-                              "
-                            >
+                          <ul v-for="smallcategory in category.chitietdanhmucs" :key="smallcategory.maDanhMucCon">
+                            <li @click="
+                              selectedCategory(smallcategory.maDanhMucCon, category.maDanhMucCha)
+                              ">
                               <a href="#">{{ smallcategory.tenDanhMucCon }}</a>
                             </li>
-                            
+
                           </ul>
                         </div>
                       </div>
@@ -287,24 +260,19 @@ onMounted(() => {
                 </div>
               </div>
               <div class="sidebar__filter">
-                <div
-                  style="
+                <div style="
                     border-bottom: 2px solid #e7ab3c;
                     display: inline-block;
                     padding-bottom: 5px;
                     margin-bottom: 20px;
                     text-align: center;
-                  "
-                >
+                  ">
                   <h4 style="display: inline-block; margin: 0; font-weight: 600">Khoảng giá</h4>
                 </div>
                 <div class="price-buttons">
-                  <button
-                    v-for="range in priceRanges"
-                    :key="range.id"
+                  <button v-for="range in priceRanges" :key="range.id"
                     :class="['price-btn', { active: selectedPriceRange === range.id }]"
-                    @click="selectPriceRange(range.id, range.label)"
-                  >
+                    @click="selectPriceRange(range.id, range.label)">
                     {{ range.label }}
                   </button>
                 </div>
@@ -312,6 +280,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="col-lg-9 col-md-9">
+           
             <!-- Loading State -->
             <div v-if="isSearching" class="loading-container">
               <div class="loading-spinner">
@@ -321,24 +290,16 @@ onMounted(() => {
             </div>
 
             <div v-else class="row">
-              <div
-                class="col-lg-3 col-md-4 col-sm-6 mix"
-                v-for="product in products"
-                :key="product.id"
-              >
+              <div class="col-lg-3 col-md-4 col-sm-6 mix" v-for="product in products" :key="product.id">
                 <div class="product__item">
                   <div class="product__item__pic">
-                    <img
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${product.image}`"
-                      alt="Hình ảnh sản phẩm"
-                      v-if="product.image != undefined"
-                    />
+                    <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${product.image}`"
+                      alt="Hình ảnh sản phẩm" v-if="product.image != undefined" />
                     <span v-else class="text-muted"> Không có ảnh </span>
                     <ul class="product__hover">
                       <li>
-                        <a href="@/assets/Customer/img/product/product-2.jpg" class="image-popup"
-                          ><span class="arrow_expand"></span
-                        ></a>
+                        <a href="@/assets/Customer/img/product/product-2.jpg" class="image-popup"><span
+                            class="arrow_expand"></span></a>
                       </li>
                       <li>
                         <a href="#"><span class="icon_heart_alt"></span></a>
@@ -352,8 +313,7 @@ onMounted(() => {
                     <h6>
                       <RouterLink
                         :to="product.type.toLowerCase() === 'product' ? `/product/${product.id}` : `/combo/${product.id}`"
-                        style="text-decoration-line: none"
-                      >
+                        style="text-decoration-line: none">
                         {{ product.name }}
                         <div class="product__price text-muted fw-semibold fs-7 text-danger">
                           {{
@@ -361,8 +321,8 @@ onMounted(() => {
                               ? product.priceRange
                               : product.discountPercentage != undefined &&
                                 product.discountPercentage > 0
-                              ? 'Giảm ' + product.discountPercentage + '%'
-                              : 'Giảm ' + product.discountAmount + 'VNĐ'
+                                ? 'Giảm ' + product.discountPercentage + '%'
+                                : 'Giảm ' + product.discountAmount + 'VNĐ'
                           }}
                         </div>
                       </RouterLink>
@@ -390,13 +350,8 @@ onMounted(() => {
                   <a @click="ChangePage(1)" href="#" :class="{ disabled: pageSelected === 1 }">
                     <i class="fa fa-angle-left"></i>
                   </a>
-                  <a 
-                    @click="ChangePage(page)" 
-                    v-for="page in toTalPages" 
-                    :key="page" 
-                    href="#"
-                    :class="{ active: pageSelected === page }"
-                  >
+                  <a @click="ChangePage(page)" v-for="page in toTalPages" :key="page" href="#"
+                    :class="{ active: pageSelected === page }">
                     {{ page }}
                   </a>
                   <a @click="ChangePage(toTalPages)" href="#" :class="{ disabled: pageSelected === toTalPages }">
@@ -879,33 +834,34 @@ onMounted(() => {
     padding: 20px;
     margin-bottom: 30px;
   }
-  
+
   .search-box {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .search-btn {
     width: 100%;
     justify-content: center;
   }
-  
+
   .search-info {
     flex-direction: column;
     gap: 8px;
     text-align: center;
   }
-  
+
   .filter-bar {
     flex-direction: column;
     gap: 16px;
     align-items: stretch;
   }
-  
-  .filter-left, .filter-right {
+
+  .filter-left,
+  .filter-right {
     justify-content: center;
   }
-  
+
   .sort-select {
     min-width: auto;
     width: 100%;
@@ -917,16 +873,16 @@ onMounted(() => {
     padding: 14px 16px;
     font-size: 14px;
   }
-  
+
   .search-btn {
     padding: 14px 20px;
     font-size: 14px;
   }
-  
+
   .search-btn span {
     display: none;
   }
-  
+
   .view-options {
     display: none;
   }
@@ -934,7 +890,7 @@ onMounted(() => {
 
 /* Existing styles continue... */
 .categories__accordion .card-heading a:after,
-.categories__accordion .card-heading > a.active[aria-expanded='false']:after {
+.categories__accordion .card-heading>a.active[aria-expanded='false']:after {
   content: '\f107';
   font-size: 14px;
   font-family: 'FontAwesome';
@@ -955,7 +911,7 @@ onMounted(() => {
 }
 
 .categories__accordion .card-heading a[aria-expanded='true']:after,
-.categories__accordion .card-heading > a.active:after {
+.categories__accordion .card-heading>a.active:after {
   content: '\f106';
   font-size: 14px;
   font-family: 'FontAwesome';

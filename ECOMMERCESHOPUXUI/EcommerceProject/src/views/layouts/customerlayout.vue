@@ -24,7 +24,7 @@ import '../../assets/Customer/js/main.js'
 // import 'owl.carousel/dist/assets/owl.carousel.min.css'
 </script>
 <template>
-  <div>
+  <div style="background-color:#F5F3EA ;">
     <HeaderComponent />
     <router-view :key="$route.fullPath" />
     <FooterComponent />
