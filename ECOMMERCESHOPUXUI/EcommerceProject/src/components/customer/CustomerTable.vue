@@ -1,82 +1,81 @@
 <template>
-
-    <section class="table__header" style="margin-bottom: -30px; border-radius: 20px;">
-      <h1>Danh Sách Khách Hàng</h1>
-      <div class="input-group" style="height: 40px; background-color:#D5D1DE" >
-        <input type="search" placeholder="Tìm kiếm..." v-model="searchQuery" @input="searchTable" />
+  <section class="table__header" style="margin-bottom: -30px; border-radius: 20px">
+    <h1>Danh Sách Khách Hàng</h1>
+    <div class="input-group" style="height: 40px; background-color: #d5d1de">
+      <input type="search" placeholder="Tìm kiếm..." v-model="searchQuery" @input="searchTable" />
+    </div>
+    <div class="export__file">
+      <label for="export-file" class="export__file-btn" title="Xuất File"></label>
+      <input type="checkbox" id="export-file" v-model="showExportOptions" />
+      <div class="export__file-options" v-if="showExportOptions">
+        <label @click="exportToServer('pdf')" id="toPDF">
+          <i class="fas fa-file-pdf"></i> PDF
+        </label>
+        <label @click="exportToServer('excel')" id="toEXCEL">
+          <i class="fas fa-file-excel"></i> EXCEL
+        </label>
       </div>
-      <div class="export__file">
-        <label for="export-file" class="export__file-btn" title="Xuất File"></label>
-        <input type="checkbox" id="export-file" v-model="showExportOptions" />
-        <div class="export__file-options" v-if="showExportOptions">
-          <label @click="exportToServer('pdf')" id="toPDF">
-            <i class="fas fa-file-pdf"></i> PDF
-          </label>
-          <label @click="exportToServer('excel')" id="toEXCEL">
-            <i class="fas fa-file-excel"></i> EXCEL
-          </label>
-        </div>
-      </div>
-      <div class="action-buttons">
-        <button class="btn delete-multiple-button" @click="toggleDeleteMultiple">
-          <i class="fas fa-trash-alt"></i>
-          {{
-            isDeleteMultipleMode
-              ? `Xác nhận xóa (${customers.filter((c) => c.isSelected).length})`
-              : 'Xóa nhiều'
-          }}
-        </button>
-        <button v-if="isDeleteMultipleMode" class="btn cancel-button" @click="cancelDeleteMultiple">
-          <i class="fas fa-times"></i> Hủy
-        </button>
-      </div>
-    </section>
-    <section class="table__body" style="margin-top: 50px">
-      <table>
-        <thead>
-          <tr>
-            <th v-if="isDeleteMultipleMode" style="width: 5%">
-              <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
-            </th>
-            <th @click="sortTable('hoTen')">
-              Họ Tên
-              <span
-                class="icon-arrow"
-                :class="{ active: sortColumn === 'hoTen', asc: !sortAsc && sortColumn === 'hoTen' }"
-                >↑</span
-              >
-            </th>
-            <th @click="sortTable('gioiTinh')">
-              Giới Tính
-              <span
-                class="icon-arrow"
-                :class="{
-                  active: sortColumn === 'gioiTinh',
-                  asc: !sortAsc && sortColumn === 'gioiTinh',
-                }"
-                >↑</span
-              >
-            </th>
-            <th @click="sortTable('ngaySinh')">
-              Ngày Sinh
-              <span
-                class="icon-arrow"
-                :class="{
-                  active: sortColumn === 'ngaySinh',
-                  asc: !sortAsc && sortColumn === 'ngaySinh',
-                }"
-                >↑</span
-              >
-            </th>
-            <th @click="sortTable('sdt')">
-              SĐT
-              <span
-                class="icon-arrow"
-                :class="{ active: sortColumn === 'sdt', asc: !sortAsc && sortColumn === 'sdt' }"
-                >↑</span
-              >
-            </th>
-            <!-- <th @click="sortTable('email')">
+    </div>
+    <div class="action-buttons">
+      <button class="btn delete-multiple-button" @click="toggleDeleteMultiple">
+        <i class="fas fa-trash-alt"></i>
+        {{
+          isDeleteMultipleMode
+            ? `Xác nhận xóa (${customers.filter((c) => c.isSelected).length})`
+            : 'Xóa nhiều'
+        }}
+      </button>
+      <button v-if="isDeleteMultipleMode" class="btn cancel-button" @click="cancelDeleteMultiple">
+        <i class="fas fa-times"></i> Hủy
+      </button>
+    </div>
+  </section>
+  <section class="table__body" style="margin-top: 50px">
+    <table>
+      <thead>
+        <tr>
+          <th v-if="isDeleteMultipleMode" style="width: 5%">
+            <input type="checkbox" v-model="selectAll" @change="toggleSelectAll" />
+          </th>
+          <th @click="sortTable('hoTen')">
+            Họ Tên
+            <span
+              class="icon-arrow"
+              :class="{ active: sortColumn === 'hoTen', asc: !sortAsc && sortColumn === 'hoTen' }"
+              >↑</span
+            >
+          </th>
+          <th @click="sortTable('gioiTinh')">
+            Giới Tính
+            <span
+              class="icon-arrow"
+              :class="{
+                active: sortColumn === 'gioiTinh',
+                asc: !sortAsc && sortColumn === 'gioiTinh',
+              }"
+              >↑</span
+            >
+          </th>
+          <th @click="sortTable('ngaySinh')">
+            Ngày Sinh
+            <span
+              class="icon-arrow"
+              :class="{
+                active: sortColumn === 'ngaySinh',
+                asc: !sortAsc && sortColumn === 'ngaySinh',
+              }"
+              >↑</span
+            >
+          </th>
+          <th @click="sortTable('sdt')">
+            SĐT
+            <span
+              class="icon-arrow"
+              :class="{ active: sortColumn === 'sdt', asc: !sortAsc && sortColumn === 'sdt' }"
+              >↑</span
+            >
+          </th>
+          <!-- <th @click="sortTable('email')">
               Email
               <span
                 class="icon-arrow"
@@ -84,217 +83,222 @@
                 >↑</span
               >
             </th> -->
-            <th @click="sortTable('tinhTrang')">
-              Tình Trạng
-              <span
-                class="icon-arrow"
-                :class="{
-                  active: sortColumn === 'tinhTrang',
-                  asc: !sortAsc && sortColumn === 'tinhTrang',
-                }"
-                >↑</span
-              >
-            </th>
-            <th>Thao Tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="customer in displayedCustomers"
-            :key="customer.maKH"
-            :class="{ hide: customer.isHidden }"
-            :style="{ '--delay': customer.delay, backgroundColor: customer.backgroundColor }"
-          >
-            <td v-if="isDeleteMultipleMode" style="width: 5%">
-              <input type="checkbox" v-model="customer.isSelected" @change="updateSelectAll" />
-            </td>
-            <td>
-              <img :src="getImageUrl(customer.hinh)" alt="" />
-              <span class="customer-name" @click="showCustomerDetail(customer)">{{
-                customer.hoTen
-              }}</span>
-            </td>
-            <td>{{ customer.gioiTinh }}</td>
-              <td>{{ customer.ngaySinh ? formatDate(customer.ngaySinh) : '' }}</td>
-            <td>{{ customer.sdt }}</td>
-            <!-- <td>{{ customer.email }}</td> -->
-            <td>
-              <p :class="['status', getStatusClass(customer.tinhTrang)]">
-                {{ customer.tinhTrang }}
-              </p>
-            </td>
-            <td>
-              <button @click="editCustomer(customer.maKH)" class="btn-edit" style="background-color: #F9BF38;">Sửa</button>
-              <button @click="deleteCustomer(customer.maKH)" class="btn-delete">Xóa</button>
-            </td>
-          </tr>
-          <tr v-if="displayedCustomers.length === 0">
-            <td :colspan="isDeleteMultipleMode ? 8 : 7" class="no-data">
-              Không có dữ liệu khách hàng
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
+          <th @click="sortTable('tinhTrang')">
+            Tình Trạng
+            <span
+              class="icon-arrow"
+              :class="{
+                active: sortColumn === 'tinhTrang',
+                asc: !sortAsc && sortColumn === 'tinhTrang',
+              }"
+              >↑</span
+            >
+          </th>
+          <th>Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="customer in displayedCustomers"
+          :key="customer.maKH"
+          :class="{ hide: customer.isHidden }"
+          :style="{ '--delay': customer.delay, backgroundColor: customer.backgroundColor }"
+        >
+          <td v-if="isDeleteMultipleMode" style="width: 5%">
+            <input type="checkbox" v-model="customer.isSelected" @change="updateSelectAll" />
+          </td>
+          <td>
+            <img :src="getImageUrl(customer.hinh)" alt="" />
+            <span class="customer-name" @click="showCustomerDetail(customer)">{{
+              customer.hoTen
+            }}</span>
+          </td>
+          <td>{{ customer.gioiTinh }}</td>
+          <td>{{ customer.ngaySinh ? formatDate(customer.ngaySinh) : '' }}</td>
+          <td>{{ customer.sdt }}</td>
+          <!-- <td>{{ customer.email }}</td> -->
+          <td>
+            <p :class="['status', getStatusClass(customer.tinhTrang)]">
+              {{ customer.tinhTrang }}
+            </p>
+          </td>
+          <td>
+            <button
+              @click="editCustomer(customer.maKH)"
+              class="btn-edit"
+              style="background-color: #f9bf38"
+            >
+              Sửa
+            </button>
+            <button @click="deleteCustomer(customer.maKH)" class="btn-delete">Xóa</button>
+          </td>
+        </tr>
+        <tr v-if="displayedCustomers.length === 0">
+          <td :colspan="isDeleteMultipleMode ? 8 : 7" class="no-data">
+            Không có dữ liệu khách hàng
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
-    <!-- Phân trang -->
-    <div class="pagination-container">
-      <div class="pagination-info">
-        <!-- Thông tin phân trang -->
-      </div>
-      <div class="pagination">
-        <button
-          @click="changePage(1)"
-          :disabled="currentPage === 1"
-          class="pagination-button"
-          title="Trang đầu"
-        >
-          «
-        </button>
-        <button
-          @click="changePage(currentPage - 1)"
-          :disabled="currentPage === 1"
-          class="pagination-button"
-          title="Trang trước"
-        >
-          ‹
-        </button>
-        <button
-          v-for="page in displayedPages"
-          :key="page"
-          @click="changePage(page)"
-          :class="['pagination-button', page === currentPage ? 'active' : '']"
-        >
-          {{ page }}
-        </button>
-        <button
-          @click="changePage(currentPage + 1)"
-          :disabled="currentPage === totalPages"
-          class="pagination-button"
-          title="Trang sau"
-        >
-          ›
-        </button>
-        <button
-          @click="changePage(totalPages)"
-          :disabled="currentPage === totalPages"
-          class="pagination-button"
-          title="Trang cuối"
-        >
-          »
-        </button>
-      </div>
+  <!-- Phân trang -->
+  <div class="pagination-container">
+    <div class="pagination-info">
+      <!-- Thông tin phân trang -->
     </div>
+    <div class="pagination">
+      <button
+        @click="changePage(1)"
+        :disabled="currentPage === 1"
+        class="pagination-button"
+        title="Trang đầu"
+      >
+        «
+      </button>
+      <button
+        @click="changePage(currentPage - 1)"
+        :disabled="currentPage === 1"
+        class="pagination-button"
+        title="Trang trước"
+      >
+        ‹
+      </button>
+      <button
+        v-for="page in displayedPages"
+        :key="page"
+        @click="changePage(page)"
+        :class="['pagination-button', page === currentPage ? 'active' : '']"
+      >
+        {{ page }}
+      </button>
+      <button
+        @click="changePage(currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        class="pagination-button"
+        title="Trang sau"
+      >
+        ›
+      </button>
+      <button
+        @click="changePage(totalPages)"
+        :disabled="currentPage === totalPages"
+        class="pagination-button"
+        title="Trang cuối"
+      >
+        »
+      </button>
+    </div>
+  </div>
 
-    <!-- Loading indicator -->
-    <div class="loading-overlay" v-if="loading">
-      <div class="loading-spinner"></div>
-    </div>
-    <div class="modal" v-if="showDetailModal" @click.self="closeDetailModal">
-      <!-- Modal chi tiết -->
-      <div class="modal-container" style="height: 900px; width: 900px">
-        <div class="modal-accent-border"></div>
-        <header
-          class="modal-header"
-          id="modal-title"
-          style="font-family: Arial, Helvetica, sans-serif; color: white; background-color: #4C7CF3;"
-        >
-          Thông Tin Khách Hàng
-        </header>
-        <div class="form-columns">
-          <!-- Left column -->
-          <div class="left-column">
-            <!-- Hình đại diện -->
-            <div class="flex flex-col items-center sm:items-start">
-              <label class="section-title w-full" for="avatar" style="margin-right: 10px"
-                >Hình đại diện</label
-              >
-              <img
-                :src="getImageUrl(selectedCustomer.hinh)"
-                alt="Hình đại diện"
-                class="image-preview mt-6"
-                loading="lazy"
-                width="150"
-                height="190"
-                aria-hidden="true"
-              />
-            </div>
-            <!-- Giới tính -->
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="gender">Giới tính</label>
-              <div class="info-value">{{ selectedCustomer.gioiTinh }}</div>
-            </div>
-            <!-- Số điện thoại -->
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="phone">Số điện thoại</label>
-              <div class="info-value">{{ selectedCustomer.sdt }}</div>
-            </div>
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="phone">Ngày Tạo</label>
-              <div class="info-value">{{ formatDate(selectedCustomer.ngayTao) }}</div>
-            </div>
+  <!-- Loading indicator -->
+  <div class="loading-overlay" v-if="loading">
+    <div class="loading-spinner"></div>
+  </div>
+  <div class="modal" v-if="showDetailModal" @click.self="closeDetailModal">
+    <!-- Modal chi tiết -->
+    <div class="modal-container" style="height: 900px; width: 900px">
+      <div class="modal-accent-border"></div>
+      <header
+        class="modal-header"
+        id="modal-title"
+        style="font-family: Arial, Helvetica, sans-serif; color: white; background-color: #4c7cf3"
+      >
+        Thông Tin Khách Hàng
+      </header>
+      <div class="form-columns">
+        <!-- Left column -->
+        <div class="left-column">
+          <!-- Hình đại diện -->
+          <div class="flex flex-col items-center sm:items-start">
+            <label class="section-title w-full" for="avatar" style="margin-right: 10px"
+              >Hình đại diện</label
+            >
+            <img
+              :src="getImageUrl(selectedCustomer.hinh)"
+              alt="Hình đại diện"
+              class="image-preview mt-6"
+              loading="lazy"
+              width="150"
+              height="190"
+              aria-hidden="true"
+            />
           </div>
-          <!-- Right column -->
-          <div class="right-column">
-            <!-- Họ tên -->
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="fullname">Họ tên</label>
-              <div class="info-value">{{ selectedCustomer.hoTen }}</div>
-            </div>
-            <!-- Ngày sinh -->
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="dob">Ngày sinh</label>
-              <div class="info-value">{{ formatDate(selectedCustomer.ngaySinh) }}</div>
-            </div>
-            <!-- CCCD -->
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="cccd">CCCD</label>
-              <div class="info-value">{{ selectedCustomer.cccd }}</div>
-            </div>
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="address">Địa chỉ</label>
-              <div class="info-value">{{ selectedCustomer.diaChi }}</div>
-            </div>
-            <!-- Email -->
-            <div class="flex flex-col justify-start">
-              <label class="section-title" for="email">Email</label>
-              <div class="info-value">{{ selectedCustomer.email }}</div>
-            </div>
-            <!-- Tình trạng -->
-            <div class="flex flex-col justify-start mt-auto">
-              <label class="section-title" for="status">Tình trạng</label>
-              <div class="info-value">
-                <span :class="['status-tag', getStatusClass(selectedCustomer.tinhTrang)]">
-                  {{ selectedCustomer.tinhTrang }}
-                </span>
-              </div>
+          <!-- Giới tính -->
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="gender">Giới tính</label>
+            <div class="info-value">{{ selectedCustomer.gioiTinh }}</div>
+          </div>
+          <!-- Số điện thoại -->
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="phone">Số điện thoại</label>
+            <div class="info-value">{{ selectedCustomer.sdt }}</div>
+          </div>
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="phone">Ngày Tạo</label>
+            <div class="info-value">{{ formatDate(selectedCustomer.ngayTao) }}</div>
+          </div>
+        </div>
+        <!-- Right column -->
+        <div class="right-column">
+          <!-- Họ tên -->
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="fullname">Họ tên</label>
+            <div class="info-value">{{ selectedCustomer.hoTen }}</div>
+          </div>
+          <!-- Ngày sinh -->
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="dob">Ngày sinh</label>
+            <div class="info-value">{{ formatDate(selectedCustomer.ngaySinh) }}</div>
+          </div>
+          <!-- CCCD -->
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="cccd">CCCD</label>
+            <div class="info-value">{{ selectedCustomer.cccd }}</div>
+          </div>
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="address">Địa chỉ</label>
+            <div class="info-value">{{ selectedCustomer.diaChi }}</div>
+          </div>
+          <!-- Email -->
+          <div class="flex flex-col justify-start">
+            <label class="section-title" for="email">Email</label>
+            <div class="info-value">{{ selectedCustomer.email }}</div>
+          </div>
+          <!-- Tình trạng -->
+          <div class="flex flex-col justify-start mt-auto">
+            <label class="section-title" for="status">Tình trạng</label>
+            <div class="info-value">
+              <span :class="['status-tag', getStatusClass(selectedCustomer.tinhTrang)]">
+                {{ selectedCustomer.tinhTrang }}
+              </span>
             </div>
           </div>
         </div>
-        <!-- Buttons -->
-        <div class="buttons">
-          <button
-            type="button"
-            class="btn-cancel"
-            @click="closeDetailModal"
-            aria-label="Đóng"
-            tabindex="0"
-          >
-            Đóng
-          </button>
-          <button
-            type="button"
-            class="btn-submit"
-            @click="editCustomer(selectedCustomer.maKH)"
-            aria-label="Sửa"
-            tabindex="0"
-          >
-            Sửa
-          </button>
-        </div>
+      </div>
+      <!-- Buttons -->
+      <div class="buttons">
+        <button
+          type="button"
+          class="btn-cancel"
+          @click="closeDetailModal"
+          aria-label="Đóng"
+          tabindex="0"
+        >
+          Đóng
+        </button>
+        <button
+          type="button"
+          class="btn-submit"
+          @click="editCustomer(selectedCustomer.maKH)"
+          aria-label="Sửa"
+          tabindex="0"
+        >
+          Sửa
+        </button>
       </div>
     </div>
-
+  </div>
 </template>
 
 <script>

@@ -86,9 +86,18 @@ namespace APIClothesEcommerceShop.Repositories.ProductDetails
                 {
                     db.Entry(TrackedProduct.Entity).State = EntityState.Detached;
                 }
-                db.Chitietsanphams.Update(model);
+
+                var existingEntity = await db.Chitietsanphams.FindAsync(model.MaCtsp);
+                existingEntity.MaCtsp = model.MaCtsp;
+                existingEntity.MaSp = model.MaSp;
+                existingEntity.KichThuoc = model.KichThuoc;
+                existingEntity.MauSac = model.MauSac;
+                existingEntity.SoLuongTon = model.SoLuongTon;
+                existingEntity.DonGia = model.DonGia;
+                existingEntity.IsActive = true;
+                db.Chitietsanphams.Update(existingEntity);
                 await db.SaveChangesAsync();
-                return model;
+                return existingEntity;
             }catch(Exception ex)
             {
                 throw new Exception("Error", ex);

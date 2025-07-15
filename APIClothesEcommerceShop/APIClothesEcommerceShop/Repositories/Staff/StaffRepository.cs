@@ -2,6 +2,7 @@
 using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.Staff;
 using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.HashPassword;
 using APIClothesEcommerceShop.Repositories.Staff;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +16,13 @@ namespace APIClothesEcommerceShop.Repositories.Staff
     {
         private readonly EcommerceShopContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IPasswordHasher passwordHasher;
 
-        public StaffRepository(EcommerceShopContext context, IWebHostEnvironment webHostEnvironment)
+        public StaffRepository(EcommerceShopContext context, IWebHostEnvironment webHostEnvironment, IPasswordHasher passwordHasher)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            this.passwordHasher = passwordHasher;
         }
 
         public async Task<List<StaffDto>> GetAllStaffAsync(int pageSize, int pageNumber, string hoTen, string gioiTinh, string tinhTrang)
@@ -206,7 +209,8 @@ namespace APIClothesEcommerceShop.Repositories.Staff
                 return new ValidationResult(false, "Mật khẩu phải có ít nhất 6 ký tự");
 
             // Hash mật khẩu
-            string hashedPassword = HashPassword(staffDto.MatKhau);
+            //string hashedPassword = HashPassword(staffDto.MatKhau);
+            string hashedPassword = passwordHasher.HashPassword(staffDto.MatKhau);
             staffDto.MatKhau = hashedPassword;
 
             // Lưu hình ảnh và chỉ lưu đường dẫn tương đối
@@ -398,8 +402,23 @@ namespace APIClothesEcommerceShop.Repositories.Staff
             existingStaff.Email = string.IsNullOrEmpty(staffDto.Email) ? existingStaff.Email : staffDto.Email;
             if (staffDto.NgayVaoLam != DateTime.MinValue)
                 existingStaff.NgayVaoLam = DateOnly.FromDateTime(staffDto.NgayVaoLam);
-            if (!string.IsNullOrEmpty(staffDto.MatKhau))
-                existingStaff.MatKhau = HashPassword(staffDto.MatKhau);
+
+            
+
+
+            if (!string.IsNullOrEmpty(staffDto.MatKhau) && staffDto.MatKhau.Trim() != existingStaff.MatKhau.Trim())
+            {
+                existingStaff.MatKhau = passwordHasher.HashPassword(staffDto.MatKhau);
+                //existingStaff.MatKhau = HashPassword(staffDto.MatKhau);
+                //var checkPassword = passwordHasher.VerifyPassword(staffDto.MatKhau, existingStaff.MatKhau);
+                //if (checkPassword)
+                //{
+
+                //}
+            }
+
+
+
             existingStaff.TinhTrang = string.IsNullOrEmpty(staffDto.TinhTrang) ? existingStaff.TinhTrang : staffDto.TinhTrang;
             if (staffDto.MaChucVu > 0)
                 existingStaff.MaChucVu = staffDto.MaChucVu;
@@ -457,14 +476,14 @@ namespace APIClothesEcommerceShop.Repositories.Staff
             return new ValidationResult(true, "Xóa nhân viên thành công");
         }
 
-        private string HashPassword(string password)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(hashedBytes);
-            }
-        }
+        //private string HashPassword(string password)
+        //{
+        //    using (var sha256 = SHA256.Create())
+        //    {
+        //        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        //        return Convert.ToBase64String(hashedBytes);
+        //    }
+        //}
 
         public async Task<List<StaffExportDto>> GetStaffForExportAsync()
         {

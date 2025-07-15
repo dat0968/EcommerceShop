@@ -20,14 +20,21 @@ const pageSelected = ref(1)
 const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const isOpenModal = ref(false)
+const isOpenModalDetails = ref(false)
 const reasonCancel = ref('')
 const idUser = ref('')
 const roleUser = ref('')
 const pendingOrder = ref(null)
 const pendingStatus = ref('')
 const readToken = ref({})
+const selectedOrder = ref({})
+
 const openModal = () => {
   isOpenModal.value = !isOpenModal.value
+}
+const openDetailsModal = (order) => {
+  isOpenModalDetails.value = !isOpenModalDetails.value
+  selectedOrder.value = order
 }
 statusOrders.value = [
   'Đang xử lý VNPAY',
@@ -44,7 +51,7 @@ const fetchOrders = async () => {
   try {
     const validatetoken = await validateToken(accessToken.value, refreshToken.value)
     if (validatetoken.isValid == false) {
-      router.push('/Login')
+      router.push('/LoginStaff')
       return
     } else {
       accessToken.value = validatetoken.newAccessToken
@@ -64,6 +71,10 @@ const fetchOrders = async () => {
       totalPages.value = response.data.toTalPage
     }
   } catch (error) {
+    if (error.response && error.response.status >= 400 && error.response.status <= 403) {
+      router.push('/LoginStaff')
+      return
+    }
     console.error('Lỗi khi tải dữ liệu:', error)
   } finally {
     loading.value = false
@@ -94,7 +105,7 @@ const handleStatusChange = async (order, oldStatus, newStatus) => {
   try {
     const validatetoken = await validateToken(accessToken.value, refreshToken.value)
     if (validatetoken.isValid == false) {
-      router.push('/Login')
+      router.push('/LoginStaff')
       return
     } else {
       accessToken.value = validatetoken.newAccessToken
@@ -128,7 +139,7 @@ const handleStatusChange = async (order, oldStatus, newStatus) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + accessToken.value
+          Authorization: 'Bearer ' + accessToken.value,
         },
         body: JSON.stringify({
           status: newStatus,
@@ -138,7 +149,12 @@ const handleStatusChange = async (order, oldStatus, newStatus) => {
         }),
       })
       if (!response.ok) {
-        throw new Error('Failed to updateStatusOrder')
+        if (response.status >= 400 && response.status <= 403) {
+          router.push('/LoginStaff')
+          return
+        } else {
+          throw new Error('Failed to updateStatusOrder')
+        }
       }
       const result = await response.json()
       if (result.success) {
@@ -160,7 +176,7 @@ const handleStatusChange = async (order, oldStatus, newStatus) => {
 const confirmCancel = async () => {
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
   if (validatetoken.isValid == false) {
-    router.push('/Login')
+    router.push('/LoginStaff')
     return
   } else {
     accessToken.value = validatetoken.newAccessToken
@@ -180,17 +196,21 @@ const confirmCancel = async () => {
         paymentMethod: pendingOrder.value.hinhThucTt,
         reasonCancel: reasonCancel.value,
       }
-      console.log(content)
       const response = await fetch(`${getUrlAPI.value}/api/Orders/${pendingOrder.value.maHd}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + accessToken.value
+          Authorization: 'Bearer ' + accessToken.value,
         },
         body: JSON.stringify(content),
       })
       if (!response.ok) {
-        throw new Error('Failed to updateStatusOrder')
+        if (response.status >= 400 && response.status <= 403) {
+          router.push('/LoginStaff')
+          return
+        } else {
+          throw new Error('Failed to updateStatusOrder')
+        }
       }
       const result = await response.json()
       if (result.success) {
@@ -223,14 +243,14 @@ function ChangePage(page) {
 onMounted(async () => {
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
   if (validatetoken.isValid == false) {
-    router.push('/Login')
+    router.push('/LoginStaff')
     return
   } else {
     accessToken.value = validatetoken.newAccessToken
     readToken.value = decodeToken(accessToken.value)
     idUser.value = readToken.value.IdUser
     roleUser.value = readToken.value.Role
-    fetchOrders()
+    await fetchOrders()
   }
 })
 
@@ -293,27 +313,28 @@ const filteredStatusOptions = computed(() => {
 const exportOrder = async (order) => {
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
   if (validatetoken.isValid == false) {
-    router.push('/Login')
+    router.push('/LoginStaff')
     return
   }
   accessToken.value = validatetoken.newAccessToken
-  axios.get(getUrlAPI.value + `/api/Orders/xuat-pdf/${order.maHd}`, {
-  headers: { Authorization: `Bearer ${accessToken.value}` },
-  responseType: 'blob'
-}).then((res) => {
-  const blob = new Blob([res.data], { type: 'application/pdf' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `HoaDon_${order.maHd}.pdf`
-  link.click()
-})
-
+  axios
+    .get(getUrlAPI.value + `/api/Orders/xuat-pdf/${order.maHd}`, {
+      headers: { Authorization: `Bearer ${accessToken.value}` },
+      responseType: 'blob',
+    })
+    .then((res) => {
+      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `HoaDon_${order.maHd}.pdf`
+      link.click()
+    })
 }
 </script>
 
 <template>
-  <div style="margin-top: 100px; width:1170px" class="container-fluid">
+  <div style="margin-top: 100px; width: 1170px" class="container-fluid">
     <!-- Header -->
     <div class="mb-4">
       <h2 class="text-center mb-4" style="font-size: 3rem">QUẢN LÝ ĐƠN HÀNG</h2>
@@ -353,27 +374,27 @@ const exportOrder = async (order) => {
       <div class="fw-semibold text-primary mt-2">Đang tải dữ liệu...</div>
     </div>
     <!-- Table -->
-    <div v-else class="table-responsive" style="border: solid 0.5px; border-radius:10px">
+    <div v-else class="table-responsive" style="border: solid 0.5px; border-radius: 10px">
       <table class="table table-hover table-bordered">
         <thead class="table-light">
           <tr>
-            <th style="border-right: 1px solid #dee2e6;">Mã đơn hàng</th>
-            <th style="border-right: 1px solid #dee2e6;">Người đặt</th>
-            <th style="border-right: 1px solid #dee2e6;">Ngày đặt</th>
-            <th style="border-right: 1px solid #dee2e6;">Tổng tiền</th>
-            <th style="border-right: 1px solid #dee2e6;">Trạng thái</th>
+            <th style="border-right: 1px solid #dee2e6">Mã đơn hàng</th>
+            <th style="border-right: 1px solid #dee2e6">Người đặt</th>
+            <th style="border-right: 1px solid #dee2e6">Ngày đặt</th>
+            <th style="border-right: 1px solid #dee2e6">Tổng tiền</th>
+            <th style="border-right: 1px solid #dee2e6">Trạng thái</th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="order in listOrders" :key="order.maHd">
-            <td style="border-right: 1px solid #dee2e6;">{{ order.maHd }}</td>
-            <td style="border-right: 1px solid #dee2e6;">{{ order.tenKh }}</td>
-            <td style="border-right: 1px solid #dee2e6;">{{ formatDate(order.ngayTao) }}</td>
-            <td style="border-right: 1px solid #dee2e6;">
+            <td style="border-right: 1px solid #dee2e6">{{ order.maHd }}</td>
+            <td style="border-right: 1px solid #dee2e6">{{ order.tenKh }}</td>
+            <td style="border-right: 1px solid #dee2e6">{{ formatDate(order.ngayTao) }}</td>
+            <td style="border-right: 1px solid #dee2e6">
               {{ formatCurrency(order.tienGoc + order.phiVanChuyen - (order.giamGiaCoupon || 0)) }}
             </td>
-            <td style="border-right: 1px solid #dee2e6;">
+            <td style="border-right: 1px solid #dee2e6">
               <select
                 :disabled="
                   idUser != order.maNv &&
@@ -407,35 +428,33 @@ const exportOrder = async (order) => {
             </td>
             <td>
               <button
+                type="button"
                 class="btn btn-sm btn-info me-1"
                 title="Xem chi tiết"
-                data-bs-toggle="modal"
-                :data-bs-target="`#orderDetailModal_${order.maHd}`"
+                @click="openDetailsModal(order)"
               >
-               Chi tiết
+                Chi tiết
               </button>
               <button
                 @click="exportOrder(order)"
-                class="btn btn-sm  me-1"
-                style="background-color:#2EB938; color: white"
+                class="btn btn-sm me-1"
+                style="background-color: #2eb938; color: white"
               >
-              Tải xuống
+                Tải xuống
               </button>
-              <button
-                @click="exportOrder(order)"
-                class="btn btn-sm btn-danger me-1"
-              >
-                <i class="fas fa-file-download"></i>
-              </button>
-              <detailsOrderModal :Order="order" @close="fetchOrders" />
             </td>
           </tr>
+          <detailsOrderModal
+            :Order="selectedOrder"
+            @close="isOpenModalDetails = $event"
+            :isOpenModalDetails="isOpenModalDetails"
+          />
         </tbody>
       </table>
     </div>
 
     <!-- Pagination -->
-    <nav aria-label="Page navigation" class="mt-4" style="margin-bottom: 30px;">
+    <nav aria-label="Page navigation" class="mt-4" style="margin-bottom: 30px">
       <ul class="pagination justify-content-center">
         <li @click="ChangePage(1)" class="page-item disabled">
           <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Trước</a>

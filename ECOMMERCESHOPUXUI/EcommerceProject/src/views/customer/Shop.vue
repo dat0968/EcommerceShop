@@ -3,11 +3,11 @@ import { ref, onMounted, nextTick, watch } from 'vue'
 import $ from 'jquery'
 import 'jquery-ui-dist/jquery-ui'
 import { RouterLink } from 'vue-router'
-
+import { GetApiUrl } from '@/constants/api'
 const activeCategory = ref('collapseOne')
 const selectedPriceRange = ref(null)
 const listCategories = ref([])
-const getUrlAPI = ref('https://localhost:7217/api')
+const getUrlAPI = ref(GetApiUrl())
 const products = ref([])
 const search = ref('')
 const searchInput = ref('') // New search input for the search bar
@@ -20,7 +20,7 @@ const filterPrice = ref('')
 const isSearching = ref(false) // Loading state for search
 
 const fetchBigCategories = async () => {
-  const fetchAPI = await fetch(`${getUrlAPI.value}/Categories/GetCategoriesforShop`, {
+  const fetchAPI = await fetch(`${getUrlAPI.value}/api/Categories/GetCategoriesforShop`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -37,7 +37,7 @@ const fetchAPIProducts = async () => {
   try {
     isSearching.value = true
     const response = await fetch(
-      `${getUrlAPI.value}/Shop?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&Category&sortByPrice=${sortByPrice.value}&filterPrice=${filterPrice.value}&page=${pageSelected.value}`,
+      `${getUrlAPI.value}/api/Shop?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&Category&sortByPrice=${sortByPrice.value}&filterPrice=${filterPrice.value}&page=${pageSelected.value}`,
       {
         method: 'GET',
         headers: {
@@ -135,9 +135,9 @@ const handleSortChange = (event) => {
   fetchAPIProducts()
 }
 
-onMounted(() => {
-  fetchBigCategories()
-  fetchAPIProducts()
+onMounted(async () => {
+  await fetchBigCategories()
+  await fetchAPIProducts()
 })
 </script>
 

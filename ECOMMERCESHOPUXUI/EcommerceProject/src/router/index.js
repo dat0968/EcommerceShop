@@ -129,13 +129,13 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   let accessToken = Cookies.get('accessToken')
   let refreshToken = Cookies.get('refreshToken')
-  const customerOnlyPages = ['/', '/cart', '/checkout', '/order']
+  const customerOnlyPages = ['/', '/cart', '/checkout', '/order', '/shop', '/customer', '/review', '/contactus', '/favoriteproduct', '/profile']
   const validatetoken = await validateToken(accessToken, refreshToken)
   if (validatetoken.isValid == true) {
     accessToken = validatetoken.newAccessToken
     let readToken = decodeToken(accessToken)
     let role = readToken.Role
-    if (role.toLowerCase() != 'customer' && customerOnlyPages.includes(to.path)) {
+    if (role.toLowerCase() != 'customer' && customerOnlyPages.includes(to.path.toLowerCase())) {
       if (to.path == '/') {
         return next('/Admin/Product')
       }

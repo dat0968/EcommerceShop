@@ -8,7 +8,7 @@ import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import { read } from 'xlsx'
 const cartStore = useCartStore()
-const selectedItems = ref([]) 
+const selectedItems = ref([])
 const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const readToken = ref({})
@@ -142,7 +142,6 @@ if (selectedItems.value.length <= 0) {
   })
   router.push('/cart')
 }
-console.log(selectedItems.value)
 const tongTien = computed(() => {
   return selectedItems.value.reduce((total, item) => {
     return total + item.donGia * item.soLuong
@@ -245,19 +244,14 @@ const applyCoupon = async () => {
         },
       }
     )
-    if (response.status == 401) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Phiên của bạn đã hết hoặc bạn chưa đăng nhập, vui lòng đăng nhập lại!',
-        timer: 2000,
-        showConfirmButton: false,
-      })
-      router.push('/Login')
-      return
-    }
     if (!response.ok) {
-      const errorMessage = response.message
-      throw new Error(errorMessage)
+      if (response.status >= 400 && response.status <= 403) {
+        router.push('/Login')
+        return
+      } else {
+        const errorMessage = response.message
+        throw new Error(errorMessage)
+      }
     }
     const result = await response.json()
     if (result.success) {
@@ -305,7 +299,7 @@ async function HandlePayment() {
   if (!userInfo.value.soDienThoai.trim()) {
     errors.value.soDienThoai = 'Vui lòng nhập số điện thoại'
     isValid = false
-  } else if (!phoneRegex.test(userInfo.value.soDienThoai)) {
+  } else if (!phoneRegex.test(userInfo.value.soDienThoai.trim())) {
     errors.value.soDienThoai = 'Số điện thoại không hợp lệ'
     isValid = false
   }
@@ -422,7 +416,12 @@ async function HandlePayment() {
           body: JSON.stringify(content),
         })
         if (!response.ok) {
-          throw new Error('HandlePayment Failed')
+          if (response.status >= 400 && response.status <= 403) {
+            router.push('/Login')
+            return
+          } else {
+            throw new Error('HandlePayment Failed')
+          }
         }
         const result = await response.json()
         if (result.success) {
@@ -434,6 +433,7 @@ async function HandlePayment() {
             timerProgressBar: true,
           })
           cartStore.clearCart()
+          router.push('/order')
         } else {
           Swal.fire('Thất bại', result.message || 'Không thể đặt hàng', 'error')
         }
@@ -447,8 +447,7 @@ async function HandlePayment() {
         })
         const responseVNPAY = await CreatePaymentUrl.text()
         if (!CreatePaymentUrl.ok) {
-          throw new Error(responseVNPAY);
-          
+          throw new Error(responseVNPAY)
         }
         window.location.href = responseVNPAY
       }

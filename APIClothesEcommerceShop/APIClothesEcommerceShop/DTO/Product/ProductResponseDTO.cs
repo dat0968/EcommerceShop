@@ -13,6 +13,7 @@ namespace APIClothesEcommerceShop.DTO.Product
         public DateTime NgayTao { get; set; }
         public int LuotXem { get; set; }
         public int SoLuong { get; set; }
+        public string? AnhDaiDien { get; set; }
         public virtual ICollection<CategoryDetailsResponseDTO> CategoryDetails { get; set; } = new List<CategoryDetailsResponseDTO>();
         public virtual ICollection<ProductDetailResponseDTO> ProductDetails { get; set; } = new List<ProductDetailResponseDTO>();
     }

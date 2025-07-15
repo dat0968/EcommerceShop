@@ -30,21 +30,21 @@ const isLoading = ref(true)
 
 function ReadToken(token) {
   if (token) {
-    const decoded = jwtDecode(token);
+    const decoded = jwtDecode(token)
     return {
       IdUser: decoded.sub,
       Phone: decoded.PhoneNumber,
       Name: decoded.FullName,
       Role: decoded.role,
-      Exp: decoded.exp
-    };
+      Exp: decoded.exp,
+    }
   }
-  return null;
+  return null
 }
 
-const token = Cookies.get('accessToken');
-const decodedToken = ReadToken(token);
-const idKhachHang = decodedToken ? decodedToken.IdUser : null;
+const token = Cookies.get('accessToken')
+const decodedToken = ReadToken(token)
+const idKhachHang = decodedToken ? decodedToken.IdUser : null
 const isFavorited = ref(false)
 const checkFavoriteProduct = async () => {
   if (!idKhachHang) return
@@ -65,12 +65,12 @@ const addFavoriteProduct = async () => {
     const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         maSp: id,
-        maKh: idKhachHang
-      })
+        maKh: idKhachHang,
+      }),
     })
     const data = await response.json()
     isFavorited.value = data.isFavorited
@@ -86,26 +86,24 @@ const toggleFavoriteProduct = async () => {
       icon: 'warning',
       timer: 2000,
       showConfirmButton: false,
-      timerProgressBar: true
+      timerProgressBar: true,
     })
     router.push('/Login')
     return
   }
- 
+
   try {
     console.log(isFavorited.value)
     if (isFavorited.value == true) {
       const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           maKh: idKhachHang,
           maSp: id,
-          
-        })
-
+        }),
       })
       const data = await response.json()
       if (response.ok) {
@@ -115,7 +113,7 @@ const toggleFavoriteProduct = async () => {
           icon: 'success',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       } else {
         Swal.fire({
@@ -123,32 +121,31 @@ const toggleFavoriteProduct = async () => {
           icon: 'error',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       }
-    }
-    else if (isFavorited.value == false) {
+    } else if (isFavorited.value == false) {
       const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           maSp: id,
-          maKh: idKhachHang
-        })
+          maKh: idKhachHang,
+        }),
       })
 
       const data = await response.json()
       if (response.ok) {
         isFavorited.value = !isFavorited.value
         Swal.fire({
-          title:  'Đã thêm vào danh sách yêu thích!',
+          title: 'Đã thêm vào danh sách yêu thích!',
 
           icon: 'success',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       } else {
         Swal.fire({
@@ -156,7 +153,7 @@ const toggleFavoriteProduct = async () => {
           icon: 'error',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       }
     }
@@ -167,7 +164,7 @@ const toggleFavoriteProduct = async () => {
       icon: 'error',
       timer: 2000,
       showConfirmButton: false,
-      timerProgressBar: true
+      timerProgressBar: true,
     })
   }
 }
@@ -198,7 +195,7 @@ const fetchAPI = async () => {
         .replace(/\*\*([^*]+)\*\*/g, '<br><strong>$1</strong><br>')
         .replace(/\n/g, '<br>')
     }
-    
+
     colors.value = [
       ...new Set(
         product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== '')
@@ -317,10 +314,10 @@ watch(showMainImage, (newIndex) => {
   currentImage.value = newIndex
 })
 
-onMounted(() => {
-  fetchAPI()
-  fetchRcmProduct()
-  checkFavoriteProduct()
+onMounted(async () => {
+  await fetchAPI()
+  await fetchRcmProduct()
+  await checkFavoriteProduct()
   // Cuộn lên đầu trang
   window.scrollTo({
     top: 0,
@@ -427,14 +424,19 @@ const addToCart = async () => {
       })
       const result = await response.json()
       if (!response.ok || !result.success) {
-        Swal.fire({
-          title: result.error || 'Đã xảy ra lỗi',
-          icon: 'error',
-          timer: 2000,
-          showConfirmButton: false,
-          timerProgressBar: true,
-        })
-        return
+        if (response.status >= 400 && response.status <= 403) {
+          router.push('/Login')
+          return
+        } else {
+          Swal.fire({
+            title: result.error || 'Đã xảy ra lỗi',
+            icon: 'error',
+            timer: 2000,
+            showConfirmButton: false,
+            timerProgressBar: true,
+          })
+          return
+        }
       }
 
       if (result.success) {
@@ -465,7 +467,7 @@ const formatPrice = (price) => {
   }
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
-    currency: 'VND'
+    currency: 'VND',
   }).format(price)
 }
 
@@ -504,45 +506,76 @@ watch(
         <div class="row">
           <div class="col-lg-6">
             <div class="product__details__pic">
-              <div style="position: relative; margin-bottom: 20px" class="product__details__slider__content">
+              <div
+                style="position: relative; margin-bottom: 20px"
+                class="product__details__slider__content"
+              >
                 <div class="product__details__pic__slider owl-carousel">
                   <div v-for="(image, index) in allImages" :key="index">
-                    <img v-if="index + 1 == currentImage" :data-hash="`product-${index}`" class="product__big__img"
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`" alt="" />
+                    <img
+                      v-if="index + 1 == currentImage"
+                      :data-hash="`product-${index}`"
+                      class="product__big__img"
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
+                      alt=""
+                    />
                   </div>
                 </div>
               </div>
               <!-- Thumbnail ảnh nhỏ nằm dưới ảnh lớn -->
-              <div class="product__details__thumbnails d-flex justify-content-center col-lg-6"
-                style="max-width: 100%; display: flex; justify-content: center; margin: 20px">
+              <div
+                class="product__details__thumbnails d-flex justify-content-center col-lg-6"
+                style="max-width: 100%; display: flex; justify-content: center; margin: 20px"
+              >
                 <div class="carousel slide w-100">
                   <div class="carousel-inner">
-                    <div v-for="(imageGroup, index) in slideChunks" :key="index"
-                      :class="['carousel-item', { active: currentSlider === index + 1 }]">
+                    <div
+                      v-for="(imageGroup, index) in slideChunks"
+                      :key="index"
+                      :class="['carousel-item', { active: currentSlider === index + 1 }]"
+                    >
                       <div class="d-flex gap-2 justify-content-center" style="width: 100%">
-                        <img v-for="(image, imageindex) in imageGroup" :key="imageindex" :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh
-                          }`" class="img-fluid" :style="{ width: `${100 / imageGroup.length}%`, height: '100px' }"
-                          alt="" @click.prevent="changeImage(index * chunkSize + imageindex + 1)" />
+                        <img
+                          v-for="(image, imageindex) in imageGroup"
+                          :key="imageindex"
+                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                            image.tenHinhAnh
+                          }`"
+                          class="img-fluid"
+                          :style="{ width: `${100 / imageGroup.length}%`, height: '100px' }"
+                          alt=""
+                          @click.prevent="changeImage(index * chunkSize + imageindex + 1)"
+                        />
                       </div>
                     </div>
                   </div>
 
-                  <button @click="prevImage" class="carousel-control-prev" type="button" style="
+                  <button
+                    @click="prevImage"
+                    class="carousel-control-prev"
+                    type="button"
+                    style="
                       width: 40px;
                       height: 40px;
                       top: 50%;
                       transform: translateY(-50%);
                       background-color: gray;
-                    ">
+                    "
+                  >
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                   </button>
-                  <button @click="nextImage" class="carousel-control-next" type="button" style="
+                  <button
+                    @click="nextImage"
+                    class="carousel-control-next"
+                    type="button"
+                    style="
                       width: 40px;
                       height: 40px;
                       top: 50%;
                       transform: translateY(-50%);
                       background-color: gray;
-                    ">
+                    "
+                  >
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                   </button>
                 </div>
@@ -571,8 +604,10 @@ watch(
                 <ul>
                   <li>
                     <a href="#" @click="toggleFavoriteProduct()">
-                      <span :class="[isFavorited.value ? 'icon_heart' : 'icon_heart_alt']"
-                        style="color: red; font-size: 20px; transition: 0.3s"></span>
+                      <span
+                        :class="[isFavorited.value ? 'icon_heart' : 'icon_heart_alt']"
+                        style="color: red; font-size: 20px; transition: 0.3s"
+                      ></span>
                     </a>
                   </li>
                   <li>
@@ -585,9 +620,13 @@ watch(
                   <li style="display: flex; align-items: center" v-if="colors.length > 0">
                     <span style="min-width: 120px">Màu:</span>
                     <div class="color__checkbox" style="display: flex; gap: 8px">
-                      <button v-for="(color, index) in colors" :key="index"
-                        :class="['btn', 'btn-light', { active: selectedColor === color }]" @click="selectColor(color)"
-                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500">
+                      <button
+                        v-for="(color, index) in colors"
+                        :key="index"
+                        :class="['btn', 'btn-light', { active: selectedColor === color }]"
+                        @click="selectColor(color)"
+                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
+                      >
                         {{ color }}
                       </button>
                     </div>
@@ -595,9 +634,13 @@ watch(
                   <li style="display: flex; align-items: center" v-if="sizes.length > 0">
                     <span style="min-width: 120px">Kích thước:</span>
                     <div class="size__checkbox" style="display: flex; gap: 8px">
-                      <button v-for="(size, index) in sizes" :key="index"
-                        :class="['btn', 'btn-light', { active: selectedSize === size }]" @click="selectSize(size)"
-                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500">
+                      <button
+                        v-for="(size, index) in sizes"
+                        :key="index"
+                        :class="['btn', 'btn-light', { active: selectedSize === size }]"
+                        @click="selectSize(size)"
+                        style="background-color: #e0e0e0; border: 1px solid #ccc; font-weight: 500"
+                      >
                         {{ size }}
                       </button>
                     </div>
@@ -645,7 +688,7 @@ watch(
                   class="tab-pane custom-tab-pane"
                   :class="[
                     activeTab == 'desc' ? 'active' : '',
-                    { 'short-content': isShortDescription }
+                    { 'short-content': isShortDescription },
                   ]"
                   id="tabs-1"
                   role="tabpanel"
@@ -672,7 +715,11 @@ watch(
         </div>
 
         <!-- Recommendation Section with Smart Spacing -->
-        <div v-if="isLogin" class="recommendation-section" :class="{ 'close-spacing': isShortDescription }">
+        <div
+          v-if="isLogin"
+          class="recommendation-section"
+          :class="{ 'close-spacing': isShortDescription }"
+        >
           <!-- Section Header -->
           <div class="section-header">
             <div class="header-content">
@@ -704,9 +751,9 @@ watch(
           <!-- Products Grid -->
           <div v-else-if="recommendationProduct.length > 0" class="products-container">
             <div class="products-grid">
-              <div 
-                v-for="(item, index) in recommendationProduct" 
-                :key="item.maSp" 
+              <div
+                v-for="(item, index) in recommendationProduct"
+                :key="item.maSp"
                 class="product-card"
                 :style="{ 'animation-delay': `${index * 0.1}s` }"
               >
@@ -722,22 +769,28 @@ watch(
                     />
                     <div class="image-overlay">
                       <div class="overlay-content">
-                        <button 
+                        <button
                           class="action-btn favorite-btn"
                           @click="addToFavorites(item.maSp)"
                           title="Thêm vào yêu thích"
                         >
                           <svg viewBox="0 0 24 24" width="18" height="18">
-                            <path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            <path
+                              fill="currentColor"
+                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+                            />
                           </svg>
                         </button>
-                        <button 
+                        <button
                           class="action-btn cart-btn"
                           @click="addToCartRecommendation(item.maSp)"
                           title="Thêm vào giỏ hàng"
                         >
                           <svg viewBox="0 0 24 24" width="18" height="18">
-                            <path fill="currentColor" d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 15a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v12z"/>
+                            <path
+                              fill="currentColor"
+                              d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 15a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v12z"
+                            />
                           </svg>
                         </button>
                       </div>
@@ -752,13 +805,16 @@ watch(
                       {{ item.tenSanPham }}
                     </router-link>
                   </h3>
-                  
+
                   <!-- Rating -->
                   <div class="product-rating">
                     <div class="stars">
-                      <span v-for="n in 5" :key="n" class="star" :class="{ 'filled': n <= 4 }">
+                      <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= 4 }">
                         <svg viewBox="0 0 24 24" width="14" height="14">
-                          <path fill="currentColor" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                          <path
+                            fill="currentColor"
+                            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
+                          />
                         </svg>
                       </span>
                     </div>
@@ -965,7 +1021,11 @@ watch(
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {
@@ -1001,7 +1061,8 @@ watch(
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
   }
   50% {
@@ -1415,33 +1476,33 @@ watch(
     padding: 30px 0;
     border-radius: 16px 16px 0 0;
   }
-  
+
   .recommendation-section.close-spacing {
     margin-top: 15px !important;
     padding-top: 20px !important;
   }
-  
+
   .section-title {
     font-size: 1.75rem;
   }
-  
+
   .products-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
   }
-  
+
   .product-image {
     height: 180px;
   }
-  
+
   .product-info {
     padding: 14px;
   }
-  
+
   .product-title {
     font-size: 0.9rem;
   }
-  
+
   .current-price {
     font-size: 1rem;
   }
@@ -1469,25 +1530,25 @@ watch(
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .section-title {
     font-size: 1.5rem;
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .title-icon {
     font-size: 1.25rem;
   }
-  
+
   .product-image {
     height: 160px;
   }
-  
+
   .overlay-content {
     gap: 8px;
   }
-  
+
   .action-btn {
     width: 36px;
     height: 36px;
@@ -1504,12 +1565,28 @@ watch(
 }
 
 /* Animation delays for staggered effect */
-.product-card:nth-child(1) { animation-delay: 0.1s; }
-.product-card:nth-child(2) { animation-delay: 0.2s; }
-.product-card:nth-child(3) { animation-delay: 0.3s; }
-.product-card:nth-child(4) { animation-delay: 0.4s; }
-.product-card:nth-child(5) { animation-delay: 0.5s; }
-.product-card:nth-child(6) { animation-delay: 0.6s; }
-.product-card:nth-child(7) { animation-delay: 0.7s; }
-.product-card:nth-child(8) { animation-delay: 0.8s; }
+.product-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.product-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.product-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.product-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.product-card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.product-card:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.product-card:nth-child(7) {
+  animation-delay: 0.7s;
+}
+.product-card:nth-child(8) {
+  animation-delay: 0.8s;
+}
 </style>

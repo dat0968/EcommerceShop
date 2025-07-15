@@ -66,27 +66,28 @@ namespace APIClothesEcommerceShop.Repositories.Product
                             : $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ - {p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)} VNĐ")
                         : "Chưa có giá",
                         SoLuong = p.Chitietsanphams.Where(p => p.IsActive == true).Sum(p => p.SoLuongTon),
-                        MoTa = p.MoTa,
-                        NgayTao = p.NgayTao,
-                        HasVariants = p.Chitietsanphams.Where(p => p.IsActive == true && (string.IsNullOrEmpty(p.MauSac) == true && string.IsNullOrEmpty(p.KichThuoc) == true)).Count() > 0 ? false : true,
-                        CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
-                        {
-                            MaDanhMucCha = p.MaDanhMucCha,
-                            MaDanhMucCon = p.MaDanhMucCon
-                        }).ToList(),
-                        ProductDetails = p.Chitietsanphams.Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
-                        {
-                            MaCtsp = p.MaCtsp,
-                            KichThuoc = p.KichThuoc,
-                            MauSac = p.MauSac,
-                            SoLuongTon = p.SoLuongTon,
-                            DonGia = p.DonGia,
-                            Images = p.Hinhanhs.Count() > 0 ? p.Hinhanhs.Select(p => new ImageProductResponseDTO
-                            {
-                                MaCtsp = p.MaCtsp,
-                                TenHinhAnh = p.TenHinhAnh
-                            }).ToList() : new List<ImageProductResponseDTO>(),
-                        }).ToList(),
+                        //MoTa = p.MoTa,
+                        //NgayTao = p.NgayTao,
+                        //HasVariants = p.Chitietsanphams.Where(p => p.IsActive == true && (string.IsNullOrEmpty(p.MauSac) == true && string.IsNullOrEmpty(p.KichThuoc) == true)).Count() > 0 ? false : true,
+                        //CategoryDetails = p.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
+                        //{
+                        //    MaDanhMucCha = p.MaDanhMucCha,
+                        //    MaDanhMucCon = p.MaDanhMucCon
+                        //}).ToList(),
+                        AnhDaiDien = p.Chitietsanphams.FirstOrDefault(p => p.IsActive == true).Hinhanhs.First().TenHinhAnh,
+                        //ProductDetails = p.Chitietsanphams.Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
+                        //{
+                        //    MaCtsp = p.MaCtsp,
+                        //    KichThuoc = p.KichThuoc,
+                        //    MauSac = p.MauSac,
+                        //    SoLuongTon = p.SoLuongTon,
+                        //    DonGia = p.DonGia,
+                        //    Images = p.Hinhanhs.Count() > 0 ? p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                        //    {
+                        //        MaCtsp = p.MaCtsp,
+                        //        TenHinhAnh = p.TenHinhAnh
+                        //    }).ToList() : new List<ImageProductResponseDTO>(),
+                        //}).ToList(),
                     }).ToListAsync();
 
                 if (!string.IsNullOrEmpty(search))
@@ -160,6 +161,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                     TenSanPham = GetProductById.TenSanPham,
                     MoTa = GetProductById.MoTa,
                     NgayTao = GetProductById.NgayTao,
+                    HasVariants = GetProductById.Chitietsanphams.Where(p => p.IsActive == true && (string.IsNullOrEmpty(p.MauSac) == true && string.IsNullOrEmpty(p.KichThuoc) == true)).Count() > 0 ? false : true,
                     LuotXem = GetProductById.LuotXem,
                     CategoryDetails = GetProductById.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
                     {

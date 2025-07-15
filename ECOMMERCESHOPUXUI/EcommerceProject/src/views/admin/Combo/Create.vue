@@ -463,7 +463,7 @@ const result = await response.json();
                   <td>{{ product.tenSanPham }}</td>
                   <td>
                     <img
-                      :src="product.hinh ? `${getApiUrl}/HinhAnh/AnhSanPham/${product.hinh}` : '/placeholder-image.jpg'"
+                      :src="product.productDetails[0].images[0].tenHinhAnh ? `${getApiUrl}/HinhAnh/Products/${product.productDetails[0].images[0].tenHinhAnh}` : '/placeholder-image.jpg'"
                       alt="Product Image" width="50" height="50" style="object-fit: cover; border-radius: 5px" />
                   </td>
                   <td>
