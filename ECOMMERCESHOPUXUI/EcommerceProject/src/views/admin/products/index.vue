@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
@@ -202,17 +202,29 @@ async function ExportExcel() {
     })
 }
 // Kiểm soát đóng/mở của modal details và update
-const selectedProduct = ref({})
-
+const selectedProduct = ref(null)
 const openModalProductDetails = ref(false)
-function openDetailsModal(product) {
-  selectedProduct.value = product
+const openModalProductUpdate = ref(false)
+
+// Gọi hàm này khi muốn mở modal chi tiết
+async function openDetailsModal(maSp) {
+  if (!maSp) return
+  selectedProduct.value = null
+  openModalProductDetails.value = false
+
+  await nextTick()
+  selectedProduct.value = maSp
   openModalProductDetails.value = true
 }
 
-const openModalProductUpdate = ref(false)
-function openUpdateModal(product) {
-  selectedProduct.value = product
+// Gọi hàm này khi muốn mở modal cập nhật
+async function openUpdateModal(maSp) {
+  if (!maSp) return
+  selectedProduct.value = null
+  openModalProductUpdate.value = false
+
+  await nextTick()
+  selectedProduct.value = maSp
   openModalProductUpdate.value = true
 }
 </script>
@@ -307,16 +319,10 @@ function openUpdateModal(product) {
             <td>{{ product.tenSanPham }}</td>
             <td>
               <img
-                :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                  product.productDetails[0].images[0].tenHinhAnh
-                }`"
+                :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${product.anhDaiDien}`"
                 alt="Hình ảnh sản phẩm"
                 style="width: 60px; height: 60px; object-fit: cover"
-                v-if="
-                  product.productDetails.length > 0 &&
-                  product.productDetails[0].images &&
-                  product.productDetails[0].images.length > 0
-                "
+                v-if="product.anhDaiDien != ''"
               />
               <span v-else class="text-muted"> Không có ảnh </span>
             </td>
@@ -326,7 +332,7 @@ function openUpdateModal(product) {
               <button
                 v-if="roleUser.toLowerCase() == 'admin'"
                 type="button"
-                @click="openUpdateModal(product)"
+                @click="openUpdateModal(product.maSp)"
                 class="btn btn-sm btn-warning me-1"
               >
                 Sửa
@@ -335,7 +341,7 @@ function openUpdateModal(product) {
               <button
                 type="button"
                 class="btn btn-sm btn-info me-1"
-                @click="openDetailsModal(product)"
+                @click="openDetailsModal(product.maSp)"
               >
                 Chi tiết
               </button>
@@ -352,28 +358,28 @@ function openUpdateModal(product) {
           <tr v-if="products.length === 0">
             <td colspan="6" class="text-center text-muted">Không có sản phẩm nào.</td>
           </tr>
-
-          <EditProductModel
-            v-if="roleUser.toLowerCase() == 'admin'"
-            :productinformation="selectedProduct"
-            :listBigCategories="listBigCategories"
-            :listSmallCategories="listSmallCategories"
-            @update-success="fetchAPIProducts"
-            @update:openModalProductUpdate="openModalProductUpdate = $event"
-            :openModalProductUpdate="openModalProductUpdate"
-          />
-
-          <DetailProductModel
-            @update:openModalProductDetails="openModalProductDetails = $event"
-            :openModalProductDetails="openModalProductDetails"
-            :productinformation="selectedProduct"
-            :listBigCategories="listBigCategories"
-            :listSmallCategories="listSmallCategories"
-          />
         </tbody>
       </table>
     </div>
+    <EditProductModel
+      v-if="
+        roleUser.toLowerCase() == 'admin'
+      "
+      :maSp="selectedProduct"
+      :listBigCategories="listBigCategories"
+      :listSmallCategories="listSmallCategories"
+      @update-success="fetchAPIProducts"
+      @update:openModalProductUpdate="openModalProductUpdate = $event"
+      :openModalProductUpdate="openModalProductUpdate"
+    />
 
+    <DetailProductModel
+      @update:openModalProductDetails="openModalProductDetails = $event"
+      :openModalProductDetails="openModalProductDetails"
+      :maSp="selectedProduct"
+      :listBigCategories="listBigCategories"
+      :listSmallCategories="listSmallCategories"
+    />
     <!-- Phân trang -->
     <nav style="margin-bottom: 60px" class="d-flex justify-content-center mt-3">
       <ul class="pagination">

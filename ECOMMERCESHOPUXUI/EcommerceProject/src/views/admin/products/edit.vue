@@ -16,13 +16,56 @@ const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const router = useRouter()
 const readToken = ref({})
+const isLoading = ref(false)
 const openModalProductUpdate = ref(false)
 const props = defineProps({
   listBigCategories: Object,
   listSmallCategories: Object,
-  productinformation: Object,
+  maSp: Number,
   openModalProductUpdate: Boolean,
 })
+const maSp = ref(props.maSp)
+const product = ref({})
+async function fetchAPIProductsDetails() {
+  try {
+    if (maSp.value == null) {
+      return
+    }
+    isLoading.value = true
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid == false) {
+      router.push('/LoginStaff')
+      return
+    }
+    accessToken.value = validatetoken.newAccessToken
+    const response = await fetch(`${getUrlAPI.value}/api/Products/${maSp.value}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + accessToken.value,
+      },
+    })
+    if (!response.ok) {
+      if (response.status >= 400 && response.status <= 403) {
+        router.push('/LoginStaff')
+        return
+      } else {
+        throw new Error('Failed to FetchAPI')
+      }
+    }
+    const result = await response.json()
+    product.value = result.data
+    console.log(product.value)
+  } catch (error) {
+    console.error('Error fetching product:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+onMounted(async () => {
+  await fetchAPIProductsDetails()
+})
+
 // Định nghĩa emit
 const emit = defineEmits(['update-success', 'update:openModalProductUpdate'])
 watch(
@@ -50,95 +93,75 @@ listBigCategories.value = props.listBigCategories
 listSmallCategories.value = props.listSmallCategories
 openModalProductUpdate.value = props.openModalProductUpdate
 // Lấy data từ props product và productdetails (2 case sản phẩm đơn và đa biến thể)
-const product = ref({
-  maSp: props.productinformation.maSp,
-  tenSanPham: props.productinformation.tenSanPham,
-  moTa: props.productinformation.moTa,
-  isActive: true,
-  hasVariants: props.productinformation.hasVariants,
-  confirmhasVariants: props.productinformation.hasVariants,
-  categoryDetails: props.productinformation.categoryDetails,
-  productDetails: props.productinformation.productDetails
-    ? props.productinformation.productDetails.map((detail) => ({
-        ...detail,
-        images: [...detail.images],
-      }))
-    : [],
-})
+// const product = ref({
+//   maSp: props.productinformation.maSp,
+//   tenSanPham: props.productinformation.tenSanPham,
+//   moTa: props.productinformation.moTa,
+//   isActive: true,
+//   hasVariants: props.productinformation.hasVariants,
+//   confirmhasVariants: props.productinformation.hasVariants,
+//   categoryDetails: props.productinformation.categoryDetails,
+//   productDetails: props.productinformation.productDetails
+//     ? props.productinformation.productDetails.map((detail) => ({
+//         ...detail,
+//         images: [...detail.images],
+//       }))
+//     : [],
+// })
 
 // Đa biến thể
-const detailsproductHasVariants = ref({
-  productDetails: product.value.productDetails.map((detail) => ({
-    ...detail,
-    images: [...detail.images],
-  })),
-})
+// const detailsproductHasVariants = ref({
+//   productDetails: product.value.productDetails.map((detail) => ({
+//     ...detail,
+//     images: [...detail.images],
+//   })),
+// })
 
 // Đơn biến thể
-const detailsproductSingle = ref({
-  productDetails:
-    product.value.hasVariants == false
-      ? product.value.productDetails.map((detail) => ({
-          ...detail,
-          images: [...detail.images],
-        }))
-      : [
-          {
-            kichThuoc: '',
-            mauSac: '',
-            soLuongTon: 0,
-            donGia: 0,
-            images: [],
-          },
-        ],
-})
+// const detailsproductSingle = ref({
+//   productDetails:
+//     product.value.hasVariants == false
+//       ? product.value.productDetails.map((detail) => ({
+//           ...detail,
+//           images: [...detail.images],
+//         }))
+//       : [
+//           {
+//             kichThuoc: '',
+//             mauSac: '',
+//             soLuongTon: 0,
+//             donGia: 0,
+//             images: [],
+//           },
+//         ],
+// })
 watch(
-  () => props.productinformation,
-  (newVal) => {
-    product.value = {
-      ...newVal,
-      confirmhasVariants: newVal.hasVariants,
-    }
-    detailsproductHasVariants.value.productDetails = newVal.productDetails.map((detail) => ({
-      ...detail,
-      images: [...detail.images],
-    }))
-    detailsproductSingle.value.productDetails =
-      product.value.hasVariants == false || product.value.confirmhasVariants == false
-        ? product.value.productDetails.map((detail) => ({
-            ...detail,
-            images: [...detail.images],
-          }))
-        : [
-            {
-              kichThuoc: '',
-              mauSac: '',
-              soLuongTon: 0,
-              donGia: 0,
-              images: [],
-            },
-          ]
+  () => props.maSp,
+  async (newVal) => {
+    maSp.value = newVal
+    await fetchAPIProductsDetails()
   }
 )
 
 // Chuyển đổi cập nhật biến thể đơn thành đa biến thể và ngược lại
 watch(
-  () => product.value.confirmhasVariants,
-  (newVal) => {
-    if (newVal == true && product.value.hasVariants == false) {
+  () => product.value.hasVariants,
+  (newVal, oldVal) => {
+    if (newVal === oldVal || isLoading.value == false) return
+    if (newVal == true && oldVal == false) {
       Swal.fire({
         title: 'Xác nhận chuyển đổi sản phẩm này thành sản phẩm đa biến thể chứ ?',
         showCancelButton: true,
         confirmButtonText: 'Xác nhận',
         cancelButtonText: 'Hủy',
       }).then(async (result) => {
-        if (result.isConfirmed) {
-          product.value.confirmhasVariants = true
+        if (!result.isConfirmed) {
+          product.value.hasVariants = true
         } else {
-          product.value.confirmhasVariants = false
+          product.value.hasVariants = false
         }
       })
-    } else if (newVal == false && product.value.hasVariants == true) {
+    } else if (newVal == false && oldVal == true) {
       Swal.fire({
         title: 'Xác nhận chuyển đổi sản phẩm này thành sản phẩm đơn lẻ chứ ?',
         showCancelButton: true,
@@ -146,9 +169,9 @@ watch(
         cancelButtonText: 'Hủy',
       }).then(async (result) => {
         if (result.isConfirmed) {
-          product.value.confirmhasVariants = false
+          product.value.hasVariants = false
         } else {
-          product.value.confirmhasVariants = true
+          product.value.hasVariants = true
         }
       })
     }
@@ -160,7 +183,7 @@ function addCategoryDetail() {
 }
 
 function addProductDetail() {
-  detailsproductHasVariants.value.productDetails.push({
+  product.value.productDetails.push({
     kichThuoc: '',
     mauSac: '',
     soLuongTon: 0,
@@ -180,36 +203,44 @@ async function updateProduct() {
       readToken.value = decodeToken(accessToken.value)
       isSubmitting.value = true
       // Validate cho sản phẩm không có biến thể
-      if (product.value.confirmhasVariants == false) {
+      if (product.value.hasVariants == false) {
         if (!product.value.tenSanPham.trim()) {
           Swal.fire('Vui lòng nhập tên sản phẩm', '', 'error')
           return
         }
         if (
-          !detailsproductSingle.value.productDetails[0].donGia ||
-          detailsproductSingle.value.productDetails[0].donGia <= 0
+          !product.value.productDetails[0].donGia ||
+          product.value.productDetails[0].donGia <= 0
         ) {
           Swal.fire('Vui lòng nhập đơn giá là một giá trị lớn hơn 0', '', 'error')
           return
         }
         if (
-          !detailsproductSingle.value.productDetails[0].soLuongTon ||
-          detailsproductSingle.value.productDetails[0].soLuongTon <= 0
+          !product.value.productDetails[0].soLuongTon ||
+          product.value.productDetails[0].soLuongTon <= 0
         ) {
           Swal.fire('Vui lòng nhập số lượng tồn là một giá trị lớn hơn 0', '', 'error')
           return
         }
-        if (detailsproductSingle.value.productDetails[0].images.length === 0) {
+        if (product.value.productDetails[0].images.length === 0) {
           Swal.fire('Vui lòng chọn ít nhất một ảnh cho sản phẩm', '', 'error')
           return
         }
-
-        product.value.productDetails = detailsproductSingle.value.productDetails.map((detail) => ({
-          ...detail,
-          images: detail.images.map((image) => ({
-            tenHinhAnh: image.tenHinhAnh,
-          })),
-        }))
+        const firstDetail = product.value.productDetails[0]
+        product.value.productDetails = firstDetail
+          ? [
+              {
+                kichThuoc: '',
+                mauSac: '',
+                soLuongTon: firstDetail.soLuongTon,
+                donGia: firstDetail.donGia,
+                images:
+                  firstDetail.images && firstDetail.images.length > 0
+                    ? [{ tenHinhAnh: firstDetail.images[0].tenHinhAnh }]
+                    : [],
+              },
+            ]
+          : []
         for (const file of mainImages.value) {
           if (!file || file.size === 0) {
             Swal.fire('Tệp ảnh không hợp lệ hoặc đã bị xóa', '', 'error')
@@ -236,8 +267,8 @@ async function updateProduct() {
           return
         }
         // Kiểm tra kích thước và màu sắc của từng biến thể
-        for (let i = 0; i < detailsproductHasVariants.value.productDetails.length; i++) {
-          const detail = detailsproductHasVariants.value.productDetails[i]
+        for (let i = 0; i < product.value.productDetails.length; i++) {
+          const detail = product.value.productDetails[i]
           if (detail.kichThuoc.trim() == '' && detail.mauSac.trim() == '') {
             Swal.fire(
               `Vui lòng nhập kích thước hoặc màu sắc cho biến thể thứ ${i + 1}`,
@@ -264,14 +295,12 @@ async function updateProduct() {
           }
         }
         // Cập nhật productDetails này vô product
-        product.value.productDetails = detailsproductHasVariants.value.productDetails.map(
-          (detail) => ({
-            ...detail,
-            images: detail.images.map((image) => ({
-              tenHinhAnh: image.tenHinhAnh,
-            })),
-          })
-        )
+        product.value.productDetails = product.value.productDetails.map((detail) => ({
+          ...detail,
+          images: detail.images.map((image) => ({
+            tenHinhAnh: image.tenHinhAnh,
+          })),
+        }))
         // Kiểm tra trùng lặp chi tiết sản phẩm
         var checkVarianrs = hasDuplicatesByColorAndSize(product.value.productDetails)
         if (checkVarianrs == true) {
@@ -377,7 +406,7 @@ function handleMultipleImages(event, index) {
     const preview = URL.createObjectURL(file)
     multiImages.value.push(file)
     // product.value.productDetails[index].images.push({ preview, file })
-    detailsproductHasVariants.value.productDetails[index].images.push({
+    product.value.productDetails[index].images.push({
       preview,
       tenHinhAnh: file.name,
     })
@@ -388,15 +417,15 @@ function handleMultipleImages(event, index) {
 }
 
 function removeDetail(index) {
-  if (detailsproductHasVariants.value.productDetails.length > 1) {
-    detailsproductHasVariants.value.productDetails.splice(index, 1)
+  if (product.value.productDetails.length > 1) {
+    product.value.productDetails.splice(index, 1)
   } else {
     Swal.fire('Tối thiểu cần giữ lại một chi tiết sản phẩm', '', 'error')
   }
 }
 function removeImage(detailIndex, imageIndex) {
   // product.value.productDetails[detailIndex].images.splice(imageIndex, 1)
-  detailsproductHasVariants.value.productDetails[detailIndex].images.splice(imageIndex, 1)
+  product.value.productDetails[detailIndex].images.splice(imageIndex, 1)
 }
 
 function handleMainImages(event) {
@@ -407,7 +436,7 @@ function handleMainImages(event) {
     const preview = URL.createObjectURL(file)
     mainImages.value.push(file)
     mainImagePreviews.value.push(preview)
-    detailsproductSingle.value.productDetails[0].images.push({ preview, tenHinhAnh: file.name })
+    product.value.productDetails[0].images.push({ preview, tenHinhAnh: file.name })
   })
   event.target.value = ''
 }
@@ -434,7 +463,7 @@ function hasDuplicateByCategory(categories) {
 function removeMainImage(index) {
   mainImages.value.splice(index, 1)
   mainImagePreviews.value.splice(index, 1)
-  detailsproductSingle.value.productDetails[0].images.splice(index, 1)
+  product.value.productDetails[0].images.splice(index, 1)
 }
 
 function removeCategoryDetail(index) {
@@ -463,15 +492,20 @@ function closeModal() {
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Sửa Thông Tin Sản Phẩm ({{ productinformation.maSp }})</h5>
+          <h5 class="modal-title">Sửa Thông Tin Sản Phẩm ({{ product.maSp }})</h5>
           <button
             type="button"
-            :class="['btn-close', 'btn-close-white', 'close_modal_' + productinformation.maSp]"
+            :class="['btn-close', 'btn-close-white', 'close_modal_' + product.maSp]"
             @click="closeModal"
           ></button>
         </div>
-
-        <div class="modal-body">
+        <div class="loading-overlay" style="text-align: center" v-if="isLoading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="text-white mt-2">Đang xử lý...</p>
+        </div>
+        <div class="modal-body" v-else>
           <!-- Tên sản phẩm -->
           <div class="mb-3">
             <label class="form-label">Tên sản phẩm</label>
@@ -489,21 +523,17 @@ function closeModal() {
             </textarea>
           </div>
           <!-- Giá sản phẩm - chỉ hiển thị khi không có biến thể -->
-          <div class="mb-3" v-if="!product.confirmhasVariants">
+          <div class="mb-3" v-if="!product.hasVariants">
             <label class="form-label"
               >Đơn giá
               <span style="color: red; font-style: italic"
                 >(dành cho sản phẩm không có biến thể)</span
               ></label
             >
-            <input
-              v-model="detailsproductSingle.productDetails[0].donGia"
-              type="number"
-              class="form-control"
-            />
+            <input v-model="product.productDetails[0].donGia" type="number" class="form-control" />
           </div>
           <!-- Số lượng sản phẩm - chỉ hiển thị khi không có biến thể -->
-          <div class="mb-3" v-if="!product.confirmhasVariants">
+          <div class="mb-3" v-if="!product.hasVariants">
             <label class="form-label"
               >Số lượng tồn
               <span style="color: red; font-style: italic"
@@ -511,13 +541,13 @@ function closeModal() {
               ></label
             >
             <input
-              v-model="detailsproductSingle.productDetails[0].soLuongTon"
+              v-model="product.productDetails[0].soLuongTon"
               type="number"
               class="form-control"
             />
           </div>
           <!-- Ảnh sản phẩm chính - chỉ hiển thị khi không có biến thể -->
-          <div class="mb-3" v-if="!product.confirmhasVariants">
+          <div class="mb-3" v-if="!product.hasVariants">
             <label class="form-label"
               >Ảnh sản phẩm
               <span style="color: red; font-style: italic"
@@ -533,7 +563,7 @@ function closeModal() {
             />
             <div class="d-flex flex-wrap gap-3 mt-3">
               <div
-                v-for="(image, index) in detailsproductSingle.productDetails[0].images"
+                v-for="(image, index) in product.productDetails[0].images"
                 :key="index"
                 class="position-relative"
               >
@@ -618,7 +648,7 @@ function closeModal() {
           <div class="mb-3">
             <div class="form-check">
               <input
-                v-model="product.confirmhasVariants"
+                v-model="product.hasVariants"
                 class="form-check-input"
                 type="checkbox"
                 :id="`hasVariants_${product.maSp}`"
@@ -627,10 +657,10 @@ function closeModal() {
             </div>
           </div>
           <!-- Chi tiết sản phẩm - chỉ hiển thị khi có biến thể -->
-          <div class="mb-3" v-if="product.confirmhasVariants">
+          <div class="mb-3" v-if="product.hasVariants">
             <label class="form-label fw-bold">Chi tiết sản phẩm</label>
             <div
-              v-for="(detail, index) in detailsproductHasVariants.productDetails"
+              v-for="(detail, index) in product.productDetails"
               :key="index"
               class="border rounded p-3 mb-3"
             >
@@ -714,7 +744,6 @@ function closeModal() {
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
           <button @click="updateProduct" :disabled="isSubmitting" class="btn btn-primary">
             <span
               v-if="isSubmitting"
