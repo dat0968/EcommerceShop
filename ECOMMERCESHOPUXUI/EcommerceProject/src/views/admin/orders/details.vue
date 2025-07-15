@@ -7,10 +7,11 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  isOpenModalDetails: Boolean
 })
 
 const emit = defineEmits(['close'])
-
+const isOpenModalDetails = ref(false)
 const order = ref({
   maHd: props.Order.maHd,
   maKh: props.Order.maKh,
@@ -35,7 +36,9 @@ const order = ref({
   chitietcombohoadons: props.Order.chitietcombohoadons ? [...props.Order.chitietcombohoadons] : [],
   cthoadons: props.Order.cthoadons ? [...props.Order.cthoadons] : [],
 })
-
+watch(() => props.isOpenModalDetails, (newValue) => {
+  isOpenModalDetails.value = newValue
+})
 watch(
   () => props.Order,
   (newOrder) => {
@@ -67,21 +70,11 @@ watch(
   { deep: true }
 )
 
-const modalInstance = ref(null)
-
 const closeDetails = () => {
-  if (modalInstance.value) {
-    modalInstance.value.hide()
-  }
   emit('close')
 }
 
-onMounted(() => {
-  const modalElement = document.getElementById(`orderDetailModal_${order.value.maHd}`)
-  if (modalElement) {
-    modalInstance.value = new Modal(modalElement)
-  }
-})
+
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', {
@@ -98,42 +91,43 @@ const formatDate = (dateString) => {
 const statusSteps = [
   { label: 'Chờ xác nhận', key: 'Chờ xác nhận', color: 'bg-warning' },
   { label: 'Đã xác nhận', key: 'Đã xác nhận', color: 'bg-success' },
-  { label: 'Đã giao cho đơn vị vận chuyển', key: 'Đã giao cho đơn vị vận chuyển', color: 'bg-info' },
+  {
+    label: 'Đã giao cho đơn vị vận chuyển',
+    key: 'Đã giao cho đơn vị vận chuyển',
+    color: 'bg-info',
+  },
   { label: 'Đã nhận', key: 'Đã nhận', color: 'bg-primary' },
   { label: 'Đã thanh toán', key: 'Đã thanh toán', color: 'bg-dark' },
   { label: 'Đã hủy', key: 'Đã hủy', color: 'bg-danger' },
   { label: 'Hoàn trả/Hoàn tiền', key: 'Hoàn trả/Hoàn tiền', color: 'bg-secondary' },
 ]
-
 const getStatusIndex = (status) => {
-  return statusSteps.findIndex(step => step.key.toLowerCase() === status.toLowerCase())
+  const safeStatus = typeof status === 'string' ? status.toLowerCase() : ''
+  return statusSteps.findIndex((step) => step.key.toLowerCase() === safeStatus)
 }
 
 const isStatusActive = (step) => {
   const currentIndex = getStatusIndex(order.value.tinhTrang)
-  const stepIndex = statusSteps.findIndex(s => s.key === step.key)
+  const stepIndex = statusSteps.findIndex((s) => s.key === step.key)
   return stepIndex <= currentIndex
 }
 </script>
 
 <template>
   <div
-    class="modal fade"
-    :id="`orderDetailModal_${order.maHd}`"
+    class="modal fade show custom-modal-overlay"
+    v-if="isOpenModalDetails"
     tabindex="-1"
     aria-labelledby="orderDetailModalLabel"
     aria-hidden="true"
- 
   >
-    <div class="modal-dialog modal-xl"  >
+    <div class="modal-dialog modal-xl">
       <div class="modal-content fs-5">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title fw-bold">Chi tiết đơn hàng #{{ order.maHd }}</h5>
           <button
             type="button"
             class="btn-close btn-close-white"
-            data-bs-dismiss="modal"
-            aria-label="Close"
             @click="closeDetails"
           ></button>
         </div>
@@ -151,14 +145,12 @@ const isStatusActive = (step) => {
                   :class="[
                     'status-circle',
                     isStatusActive(step) ? step.color : 'bg-light',
-                    isStatusActive(step) ? 'text-white' : 'text-muted'
+                    isStatusActive(step) ? 'text-white' : 'text-muted',
                   ]"
                 >
                   {{ index + 1 }}
                 </div>
-                <div
-                  :class="['mt-2', isStatusActive(step) ? 'fw-bold' : 'text-muted']"
-                >
+                <div :class="['mt-2', isStatusActive(step) ? 'fw-bold' : 'text-muted']">
                   {{ step.label }}
                 </div>
               </div>
@@ -167,7 +159,7 @@ const isStatusActive = (step) => {
           </div>
 
           <!-- Thông tin đơn hàng -->
-          <div class="row mb-4"style="font-size:1rem">
+          <div class="row mb-4" style="font-size: 1rem">
             <div class="col-12">
               <h6 class="fw-bold mb-3 text-primary">Thông tin đơn hàng</h6>
               <div class="table-responsive">
@@ -222,7 +214,11 @@ const isStatusActive = (step) => {
           </div>
 
           <!-- Danh sách sản phẩm -->
-          <div class="product-list mb-4" v-if="order.cthoadons.some((i) => !i.maCombo)"style="font-size:1rem">
+          <div
+            class="product-list mb-4"
+            v-if="order.cthoadons.some((i) => !i.maCombo)"
+            style="font-size: 1rem"
+          >
             <h6 class="fw-bold mb-3 text-success">Sản phẩm trong đơn hàng</h6>
             <div class="table-responsive">
               <table class="table table-sm align-middle table-bordered">
@@ -263,7 +259,11 @@ const isStatusActive = (step) => {
           </div>
 
           <!-- Danh sách combo -->
-          <div class="combo-list mb-4" v-if="order.cthoadons.some((i) => i.maCombo)"style="font-size:1rem">
+          <div
+            class="combo-list mb-4"
+            v-if="order.cthoadons.some((i) => i.maCombo)"
+            style="font-size: 1rem"
+          >
             <h6 class="fw-bold mb-3 text-success">Combo trong đơn hàng</h6>
             <div class="table-responsive">
               <table class="table table-sm align-middle table-bordered">
@@ -304,7 +304,8 @@ const isStatusActive = (step) => {
                           <div>
                             <strong>Tên SP:</strong> {{ detail.tenSanPham }}
                             <span v-if="detail.mauSac || detail.kichThuoc">
-                              ({{ detail.kichThuoc }} {{ '- ' + detail.mauSac }})</span>
+                              ({{ detail.kichThuoc }} {{ '- ' + detail.mauSac }})</span
+                            >
                             - <strong>Số lượng:</strong> {{ detail.soLuong }}
                           </div>
                         </li>
@@ -317,7 +318,7 @@ const isStatusActive = (step) => {
           </div>
 
           <!-- Tổng tiền -->
-          <div class="row justify-content-end mt-4"style="font-size:1.2rem">
+          <div class="row justify-content-end mt-4" style="font-size: 1.2rem">
             <div class="col-md-4">
               <table class="table table-bordered">
                 <tr>
@@ -333,8 +334,10 @@ const isStatusActive = (step) => {
                   <td class="text-end text-danger">-{{ formatCurrency(order.giamGiaCoupon) }}</td>
                 </tr>
                 <tr class="fw-bold text-primary">
-                  <td style="color: red;">Tổng cộng:</td>
-                  <td class="text-end">{{ formatCurrency(order.tienGoc + order.phiVanChuyen - order.giamGiaCoupon) }}</td>
+                  <td style="color: red">Tổng cộng:</td>
+                  <td class="text-end">
+                    {{ formatCurrency(order.tienGoc + order.phiVanChuyen - order.giamGiaCoupon) }}
+                  </td>
                 </tr>
               </table>
             </div>
@@ -351,7 +354,7 @@ const isStatusActive = (step) => {
 }
 
 .modal-content {
-  font-size:0.5rem;
+  font-size: 0.5rem;
 }
 
 .table td,
@@ -382,5 +385,17 @@ const isStatusActive = (step) => {
   height: 4px;
   background: linear-gradient(to right, #007bff 50%, #e9ecef 50%);
   z-index: -1;
+}
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

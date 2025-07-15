@@ -118,8 +118,8 @@ async function submitProduct() {
   try {
     const validatetoken = await validateToken(accessToken.value, refreshToken.value)
     if (validatetoken.isValid == false) {
-      router.push('/Login')
-      return;
+      router.push('/LoginStaff')
+      return
     }
     isSubmitting.value = true
     // Validate cho sản phẩm không có biến thể
@@ -409,12 +409,17 @@ async function submitProduct() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + accessToken.value
+          Authorization: 'Bearer ' + accessToken.value,
         },
         body: JSON.stringify(product.value),
       })
-      if(!response.ok){
-
+      if (!response.ok) {
+        if (response.status >= 400 && response.status <= 403) {
+          router.push('/LoginStaff') 
+          return
+        } else {
+          throw new Error('Lỗi khi gọi API')
+        }
       }
       const result = await response.json()
       if (result.success) {

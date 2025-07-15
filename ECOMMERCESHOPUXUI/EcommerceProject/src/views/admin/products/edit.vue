@@ -16,14 +16,21 @@ const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const router = useRouter()
 const readToken = ref({})
+const openModalProductUpdate = ref(false)
 const props = defineProps({
   listBigCategories: Object,
   listSmallCategories: Object,
   productinformation: Object,
+  openModalProductUpdate: Boolean,
 })
 // Định nghĩa emit
-const emit = defineEmits(['update-success'])
-
+const emit = defineEmits(['update-success', 'update:openModalProductUpdate'])
+watch(
+  () => props.openModalProductUpdate,
+  (newVal) => {
+    openModalProductUpdate.value = newVal
+  }
+)
 // Lấy data Categories từ props cha truyền vào
 watch(
   () => props.listSmallCategories,
@@ -41,7 +48,7 @@ watch(
 )
 listBigCategories.value = props.listBigCategories
 listSmallCategories.value = props.listSmallCategories
-
+openModalProductUpdate.value = props.openModalProductUpdate
 // Lấy data từ props product và productdetails (2 case sản phẩm đơn và đa biến thể)
 const product = ref({
   maSp: props.productinformation.maSp,
@@ -51,10 +58,12 @@ const product = ref({
   hasVariants: props.productinformation.hasVariants,
   confirmhasVariants: props.productinformation.hasVariants,
   categoryDetails: props.productinformation.categoryDetails,
-  productDetails: props.productinformation.productDetails.map((detail) => ({
-    ...detail,
-    images: [...detail.images],
-  })),
+  productDetails: props.productinformation.productDetails
+    ? props.productinformation.productDetails.map((detail) => ({
+        ...detail,
+        images: [...detail.images],
+      }))
+    : [],
 })
 
 // Đa biến thể
@@ -164,7 +173,7 @@ async function updateProduct() {
   try {
     const validatetoken = await validateToken(accessToken.value, refreshToken.value)
     if (validatetoken.isValid == false) {
-      router.push('/Login')
+      router.push('/LoginStaff')
       return
     } else {
       accessToken.value = validatetoken.newAccessToken
@@ -323,10 +332,18 @@ async function updateProduct() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + accessToken.value
+          Authorization: 'Bearer ' + accessToken.value,
         },
         body: JSON.stringify(product.value),
       })
+      if (!response.ok) {
+        if (response.status >= 400 && response.status <= 403) {
+          router.push('/LoginStaff')
+          return
+        } else {
+          throw new Error('Lỗi khi gọi API')
+        }
+      }
       const result = await response.json()
       if (result.success) {
         Swal.fire({
@@ -427,16 +444,21 @@ function removeCategoryDetail(index) {
     Swal.fire('Tối thiểu cần giữ lại một cặp danh mục', '', 'error')
   }
 }
+
+function closeModal() {
+  // openModalProductDetails.value = !openModalProductDetails.value
+  emit('update:openModalProductUpdate', false)
+}
 </script>
 <template>
   <!-- Modal -->
   <div
-    class="modal fade"
-    :id="`productModal_${productinformation.maSp}`"
+    class="modal fade show custom-modal-overlay"
     tabindex="-1"
     aria-labelledby="productModalLabel"
     aria-hidden="true"
     style="text-align: left"
+    v-if="openModalProductUpdate"
   >
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
@@ -445,7 +467,7 @@ function removeCategoryDetail(index) {
           <button
             type="button"
             :class="['btn-close', 'btn-close-white', 'close_modal_' + productinformation.maSp]"
-            data-bs-dismiss="modal"
+            @click="closeModal"
           ></button>
         </div>
 
@@ -708,4 +730,17 @@ function removeCategoryDetail(index) {
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>

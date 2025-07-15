@@ -60,7 +60,7 @@ const fetchAPIProducts = async () => {
   try {
     const validatetoken = await validateToken(accessToken.value, refreshToken.value)
     if (validatetoken.isValid == false) {
-      router.push('/Login')
+      router.push('/LoginStaff')
       return
     } else {
       accessToken.value = validatetoken.newAccessToken
@@ -78,11 +78,19 @@ const fetchAPIProducts = async () => {
         }
       )
 
-      if (!response.ok) throw new Error('Lỗi khi gọi API')
+      if (!response.ok) {
+        if (response.status >= 400 && response.status <= 403) {
+          router.push('/LoginStaff')
+          return
+        } else {
+          throw new Error('Lỗi khi gọi API')
+        }
+      }
 
       const result = await response.json()
       products.value = result.data
       toTalPages.value = result.toTalPages
+      console.log(products.value)
     }
   } catch (error) {
     console.error('Lỗi fetchAPIProducts:', error)
@@ -91,21 +99,21 @@ const fetchAPIProducts = async () => {
   }
 }
 onMounted(async () => {
-  fetchAPIProducts()
-  fetchAPICategories()
+  await fetchAPIProducts()
+  await fetchAPICategories()
 })
 
 // Chuyển trang
-function ChangePage(page) {
+async function ChangePage(page) {
   if (page !== pageSelected.value && page >= 1 && page <= toTalPages.value) {
     pageSelected.value = page
-    fetchAPIProducts()
+    await fetchAPIProducts()
   }
 }
 
 // Tìm kiếm
-function filterProducts() {
-  fetchAPIProducts()
+async function filterProducts() {
+  await fetchAPIProducts()
 }
 
 async function RemoveProducts(productid) {
@@ -120,7 +128,7 @@ async function RemoveProducts(productid) {
       if (result.isConfirmed) {
         const validatetoken = await validateToken(accessToken.value, refreshToken.value)
         if (validatetoken.isValid == false) {
-          router.push('/Login')
+          router.push('/LoginStaff')
           return
         } else {
           accessToken.value = validatetoken.newAccessToken
@@ -133,6 +141,14 @@ async function RemoveProducts(productid) {
               Authorization: 'Bearer ' + accessToken.value,
             },
           })
+          if (!response.ok) {
+            if (response.status >= 400 && response.status <= 403) {
+              router.push('/LoginStaff')
+              return
+            } else {
+              throw new Error('Lỗi khi gọi API')
+            }
+          }
           const result = await response.json()
           if (result.success) {
             Swal.fire({
@@ -157,7 +173,7 @@ async function RemoveProducts(productid) {
 async function ExportExcel() {
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
   if (validatetoken.isValid == false) {
-    router.push('/Login')
+    router.push('/LoginStaff')
     return
   }
   accessToken.value = validatetoken.newAccessToken
@@ -169,6 +185,7 @@ async function ExportExcel() {
       responseType: 'blob',
     })
     .then((response) => {
+      console.log(response)
       //Chuyển Blod file thành URL để trình duyệt tải về
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
@@ -184,12 +201,26 @@ async function ExportExcel() {
       console.error('Tải file thất bại:', error)
     })
 }
+// Kiểm soát đóng/mở của modal details và update
+const selectedProduct = ref({})
+
+const openModalProductDetails = ref(false)
+function openDetailsModal(product) {
+  selectedProduct.value = product
+  openModalProductDetails.value = true
+}
+
+const openModalProductUpdate = ref(false)
+function openUpdateModal(product) {
+  selectedProduct.value = product
+  openModalProductUpdate.value = true
+}
 </script>
 <template>
   <div class="container mt-4">
     <!-- Tiêu đề chính -->
     <div style="margin-top: 90px" class="mb-4 text-center">
-      <h1 class="fw-bold text-uppercase text-dark" style="font-size: 3rem;">Quản lý sản phẩm</h1>
+      <h1 class="fw-bold text-uppercase text-dark" style="font-size: 3rem">Quản lý sản phẩm</h1>
     </div>
     <!-- Bộ lọc và tìm kiếm -->
     <div class="row g-3 mb-3">
@@ -223,7 +254,14 @@ async function ExportExcel() {
         </select>
       </div>
       <div class="col-md-3">
-        <button type="button" class="btn " @click="ExportExcel()" style="background-color:#4C7CF3; color: white">Xuất Excel</button>
+        <button
+          type="button"
+          class="btn"
+          @click="ExportExcel()"
+          style="background-color: #4c7cf3; color: white"
+        >
+          Xuất Excel
+        </button>
       </div>
     </div>
     <!-- Tiêu đề phụ và nút thêm -->
@@ -251,8 +289,8 @@ async function ExportExcel() {
       <div class="fw-semibold text-primary mt-2">Đang tải dữ liệu...</div>
     </div>
     <!-- Bảng sản phẩm -->
-    <div v-else class="table-responsive" style="border-radius:10px; border: solid 0.5px" >
-      <table class="table table-bordered table-hover" style="text-align: center; ">
+    <div v-else class="table-responsive" style="border-radius: 10px; border: solid 0.5px">
+      <table class="table table-bordered table-hover" style="text-align: center">
         <thead class="table-light">
           <tr>
             <th>Mã sản phẩm</th>
@@ -288,32 +326,20 @@ async function ExportExcel() {
               <button
                 v-if="roleUser.toLowerCase() == 'admin'"
                 type="button"
-                data-bs-toggle="modal"
-                :data-bs-target="`#productModal_${product.maSp}`"
+                @click="openUpdateModal(product)"
                 class="btn btn-sm btn-warning me-1"
               >
                 Sửa
               </button>
-              <EditProductModel
-                v-if="roleUser.toLowerCase() == 'admin'"
-                :productinformation="product"
-                :listBigCategories="listBigCategories"
-                :listSmallCategories="listSmallCategories"
-                @update-success="fetchAPIProducts"
-              />
+
               <button
                 type="button"
-                data-bs-toggle="modal"
-                :data-bs-target="`#productDetailsModal_${product.maSp}`"
                 class="btn btn-sm btn-info me-1"
+                @click="openDetailsModal(product)"
               >
                 Chi tiết
               </button>
-              <DetailProductModel
-                :productinformation="product"
-                :listBigCategories="listBigCategories"
-                :listSmallCategories="listSmallCategories"
-              />
+
               <button
                 v-if="roleUser.toLowerCase() == 'admin'"
                 @click="RemoveProducts(product.maSp)"
@@ -326,6 +352,24 @@ async function ExportExcel() {
           <tr v-if="products.length === 0">
             <td colspan="6" class="text-center text-muted">Không có sản phẩm nào.</td>
           </tr>
+
+          <EditProductModel
+            v-if="roleUser.toLowerCase() == 'admin'"
+            :productinformation="selectedProduct"
+            :listBigCategories="listBigCategories"
+            :listSmallCategories="listSmallCategories"
+            @update-success="fetchAPIProducts"
+            @update:openModalProductUpdate="openModalProductUpdate = $event"
+            :openModalProductUpdate="openModalProductUpdate"
+          />
+
+          <DetailProductModel
+            @update:openModalProductDetails="openModalProductDetails = $event"
+            :openModalProductDetails="openModalProductDetails"
+            :productinformation="selectedProduct"
+            :listBigCategories="listBigCategories"
+            :listSmallCategories="listSmallCategories"
+          />
         </tbody>
       </table>
     </div>

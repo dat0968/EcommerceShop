@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
+using DocumentFormat.OpenXml.Drawing;
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -271,61 +272,17 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet("Product/{id}")]
         public async Task<IActionResult> DetailsProduct(int id)
         {
-            var startTime = DateTime.UtcNow;
-
             try
             {
-                var cacheKey = $"product_detail_{id}";
-
-                if (_cache.TryGetValue(cacheKey, out var cachedProduct))
-                {
-                    // Async view count update
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await _db.Database.ExecuteSqlRawAsync(
-                                "UPDATE Sanphams SET LuotXem = LuotXem + 1 WHERE MaSp = {0}", id);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogWarning(ex, "Failed to update view count for product {ProductId}", id);
-                        }
-                    });
-
-                    _logger.LogInformation("Product {ProductId} from cache in {LoadTime}ms", id, (DateTime.UtcNow - startTime).TotalMilliseconds);
-                    return Ok(cachedProduct);
-                }
-
                 var details = await _productRepository.GetById(id);
                 if (details == null)
                 {
                     return NotFound(new { message = "Sản phẩm không tồn tại" });
                 }
-
-                _cache.Set(cacheKey, details, TimeSpan.FromMinutes(3));
-
-                // Async view count update
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await _db.Database.ExecuteSqlRawAsync(
-                            "UPDATE Sanphams SET LuotXem = LuotXem + 1 WHERE MaSp = {0}", id);
-                        _cache.Remove(cacheKey); // Remove cache after update
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to update view count for product {ProductId}", id);
-                    }
-                });
-
-                _logger.LogInformation("Product {ProductId} from DB in {LoadTime}ms", id, (DateTime.UtcNow - startTime).TotalMilliseconds);
                 return Ok(details);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading product {ProductId}", id);
                 return BadRequest(new { Success = false, Message = "Lỗi tải chi tiết sản phẩm" });
             }
         }
@@ -333,27 +290,13 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet("Combo/{id}")]
         public async Task<IActionResult> DetailsCombo(int id)
         {
-            var startTime = DateTime.UtcNow;
-
             try
             {
-                var cacheKey = $"combo_detail_{id}";
-
-                if (_cache.TryGetValue(cacheKey, out var cachedCombo))
-                {
-                    _logger.LogInformation("Combo {ComboId} from cache in {LoadTime}ms", id, (DateTime.UtcNow - startTime).TotalMilliseconds);
-                    return Ok(cachedCombo);
-                }
-
                 var details = await _comboRepository.GetById(id);
                 if (details == null)
                 {
                     return NotFound(new { message = "Combo không tồn tại" });
                 }
-
-                _cache.Set(cacheKey, details, TimeSpan.FromMinutes(10));
-                _logger.LogInformation("Combo {ComboId} from DB in {LoadTime}ms", id, (DateTime.UtcNow - startTime).TotalMilliseconds);
-
                 return Ok(details);
             }
             catch (Exception ex)

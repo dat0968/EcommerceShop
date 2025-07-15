@@ -641,6 +641,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
                 Id = model.Id,
                 HoTen = model.HoTen,
                 SDT = model.SDT,
+                VaiTro = model.VaiTro,
             };
             var generateAccessToken = _tokenServices.GenerateAccessToken(information);
             return new OkObjectResult(new
