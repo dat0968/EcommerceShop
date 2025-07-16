@@ -1,6 +1,6 @@
 <script setup>
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
-import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
+import ReviewProductCombo from '@/components/pages/customers/reviews/ReviewProductCombo.vue'
 import $ from 'jquery'
 
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
@@ -198,7 +198,7 @@ const fetchAPI = async () => {
 
     colors.value = [
       ...new Set(
-        product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== '')
+        product.value.productDetails?.map((d) => d?.mauSac || '').filter((color) => color !== ''),
       ),
     ]
 
@@ -221,7 +221,7 @@ const fetchRcmProduct = async () => {
           headers: {
             'Content-Type': 'application/json',
           },
-        }
+        },
       )
 
       if (!response.ok) {
@@ -257,7 +257,7 @@ const originalPrice = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
   )
   return match ? match.donGia : 0
 })
@@ -267,7 +267,7 @@ const maxQuantity = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
   )
   quantity.value = '1'
   return match ? match.soLuongTon : 'Hết hàng'
@@ -304,7 +304,7 @@ const showMainImage = computed(() => {
   var match = product.value.productDetails.find(
     (p) =>
       (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase(),
   )
   var maCtsp = match.maCtsp
   return allImages.value.findIndex((p) => p.maCtsp == maCtsp) + 1
@@ -402,7 +402,7 @@ const addToCart = async () => {
       const matched = product.value.productDetails.find(
         (p) =>
           p.mauSac?.toLowerCase() === selectedColor.value?.toLowerCase() &&
-          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase()
+          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase(),
       )
 
       const content = {
@@ -494,7 +494,7 @@ watch(
     currentImage.value = 1
     isLoading.value = true
     await Promise.all([fetchAPI(), fetchRcmProduct()])
-  }
+  },
 )
 </script>
 
@@ -849,7 +849,6 @@ watch(
     <!-- Product Details Section End -->
   </div>
 </template>
-
 
 <style scoped>
 .product-page-container {
