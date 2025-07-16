@@ -18,7 +18,7 @@ const categorySmallSelected = ref('')
 const sortByPrice = ref('')
 const filterPrice = ref('')
 const isSearching = ref(false) // Loading state for search
-
+const isCombo = ref(false)
 const fetchBigCategories = async () => {
   const fetchAPI = await fetch(`${getUrlAPI.value}/api/Categories/GetCategoriesforShop`, {
     method: 'GET',
@@ -37,7 +37,7 @@ const fetchAPIProducts = async () => {
   try {
     isSearching.value = true
     const response = await fetch(
-      `${getUrlAPI.value}/api/Shop?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&Category&sortByPrice=${sortByPrice.value}&filterPrice=${filterPrice.value}&page=${pageSelected.value}`,
+      `${getUrlAPI.value}/api/Shop?search=${search.value}&selectedBigCategory=${categoryBigSelected.value}&selectedSmallCategory=${categorySmallSelected.value}&Category&sortByPrice=${sortByPrice.value}&filterPrice=${filterPrice.value}&isCombo=${isCombo.value}&page=${pageSelected.value}`,
       {
         method: 'GET',
         headers: {
@@ -50,7 +50,7 @@ const fetchAPIProducts = async () => {
 
     const result = await response.json()
     products.value = result.data
-    toTalPages.value = result.totalPages
+    toTalPages.value = result.toTalPages
     console.log(result)
   } catch (error) {
     console.error('Lỗi fetchAPIProducts:', error)
@@ -61,12 +61,14 @@ const fetchAPIProducts = async () => {
 
 // New search functionality
 const handleSearch = () => {
+  isCombo.value = false;
   search.value = searchInput.value.trim()
   pageSelected.value = 1 // Reset to first page when searching
   fetchAPIProducts()
 }
 
 const clearSearch = () => {
+  isCombo.value = false;
   searchInput.value = ''
   search.value = ''
   pageSelected.value = 1
@@ -95,6 +97,7 @@ function ChangePage(page) {
 // Lọc danh mục
 function selectedCategory(maDanhMucCon, maDanhMucCha) {
   if (maDanhMucCon !== categorySmallSelected.value) {
+    isCombo.value = false;
     categoryBigSelected.value = maDanhMucCha
     categorySmallSelected.value = maDanhMucCon
     pageSelected.value = 1 // Reset to first page when filtering
@@ -115,6 +118,7 @@ const toggleCategory = (categoryId) => {
 }
 
 const selectPriceRange = (rangeId) => {
+  isCombo.value = false;
   selectedPriceRange.value = rangeId
   const range = priceRanges.find((r) => r.id === rangeId)
   filterPrice.value = range.label
@@ -134,7 +138,10 @@ const handleSortChange = (event) => {
   pageSelected.value = 1 // Reset to first page when sorting
   fetchAPIProducts()
 }
-
+function selectedCombo(){
+  isCombo.value = true;
+  fetchAPIProducts()
+}
 onMounted(async () => {
   await fetchBigCategories()
   await fetchAPIProducts()
@@ -164,7 +171,7 @@ onMounted(async () => {
     <section class="shop spad">
       <div class="container">
         <!-- Search Bar Section -->
-        <div class="row" >
+        <div class="row">
           <div class="col-lg-12">
             <div class="search-section">
               <div class="search-container">
@@ -192,16 +199,15 @@ onMounted(async () => {
                     <span>Tìm kiếm</span>
                   </button> -->
                 </div>
-                
+
                 <!-- Search Results Info -->
                 <div v-if="search" class="search-info">
                   <span class="search-term">
                     <i class="fa fa-search"></i>
-                    Kết quả tìm kiếm cho: "<strong>{{ search }}</strong>"
+                    Kết quả tìm kiếm cho: "<strong>{{ search }}</strong
+                    >"
                   </span>
-                  <span class="results-count">
-                    {{ products.length }} sản phẩm được tìm thấy
-                  </span>
+                  <span class="results-count"> {{ products.length }} sản phẩm được tìm thấy </span>
                 </div>
               </div>
 
@@ -245,13 +251,13 @@ onMounted(async () => {
                     text-align: center;
                   "
                 >
-                  <h4 style="display: inline-block; margin: 0; font-weight: 600">Loại sản phẩm</h4>
+                <h4 style="display: inline-block; margin: 0; font-weight: 600">Loại sản phẩm</h4>
                 </div>
                 <div class="categories__accordion">
                   <div class="accordion" id="accordionExample">
-                    <div class="card-heading" style="margin-bottom: 10px;">
-                        <a href="/shop">Tất cả</a>
-                      </div>
+                    <div class="card-heading" style="margin-bottom: 10px">
+                      <a href="/shop">Tất cả</a>
+                    </div>
                     <div
                       class="card"
                       v-for="category in listCategories"
@@ -260,7 +266,7 @@ onMounted(async () => {
                       <div class="card-heading" @click="toggleCategory(category.maDanhMucCha)">
                         <a href="javascript:void(0)">{{ category.tenDanhMucCha }}</a>
                       </div>
-                   
+
                       <div
                         :id="category.maDanhMucCha"
                         class="collapse"
@@ -278,10 +284,12 @@ onMounted(async () => {
                             >
                               <a href="#">{{ smallcategory.tenDanhMucCon }}</a>
                             </li>
-                            
                           </ul>
                         </div>
                       </div>
+                    </div>
+                    <div class="card-heading" style="margin-bottom: 10px">
+                      <li @click="selectedCombo()" style="list-style: none;">Combo</li>
                     </div>
                   </div>
                 </div>
@@ -351,7 +359,11 @@ onMounted(async () => {
                   <div class="product__item__text">
                     <h6>
                       <RouterLink
-                        :to="product.type.toLowerCase() === 'product' ? `/product/${product.id}` : `/combo/${product.id}`"
+                        :to="
+                          product.type.toLowerCase() === 'product'
+                            ? `/product/${product.id}`
+                            : `/combo/${product.id}`
+                        "
                         style="text-decoration-line: none"
                       >
                         {{ product.name }}
@@ -377,7 +389,8 @@ onMounted(async () => {
                   </div>
                   <h3>Không tìm thấy sản phẩm</h3>
                   <p v-if="search">
-                    Không có sản phẩm nào phù hợp với từ khóa "<strong>{{ search }}</strong>"
+                    Không có sản phẩm nào phù hợp với từ khóa "<strong>{{ search }}</strong
+                    >"
                   </p>
                   <p v-else>Không có sản phẩm nào trong danh mục này</p>
                   <button @click="clearSearch" v-if="search" class="btn-clear-search">
@@ -390,16 +403,20 @@ onMounted(async () => {
                   <a @click="ChangePage(1)" href="#" :class="{ disabled: pageSelected === 1 }">
                     <i class="fa fa-angle-left"></i>
                   </a>
-                  <a 
-                    @click="ChangePage(page)" 
-                    v-for="page in toTalPages" 
-                    :key="page" 
+                  <a
+                    @click="ChangePage(page)"
+                    v-for="page in toTalPages"
+                    :key="page"
                     href="#"
                     :class="{ active: pageSelected === page }"
                   >
                     {{ page }}
                   </a>
-                  <a @click="ChangePage(toTalPages)" href="#" :class="{ disabled: pageSelected === toTalPages }">
+                  <a
+                    @click="ChangePage(toTalPages)"
+                    href="#"
+                    :class="{ disabled: pageSelected === toTalPages }"
+                  >
                     <i class="fa fa-angle-right"></i>
                   </a>
                 </div>
@@ -879,33 +896,34 @@ onMounted(async () => {
     padding: 20px;
     margin-bottom: 30px;
   }
-  
+
   .search-box {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .search-btn {
     width: 100%;
     justify-content: center;
   }
-  
+
   .search-info {
     flex-direction: column;
     gap: 8px;
     text-align: center;
   }
-  
+
   .filter-bar {
     flex-direction: column;
     gap: 16px;
     align-items: stretch;
   }
-  
-  .filter-left, .filter-right {
+
+  .filter-left,
+  .filter-right {
     justify-content: center;
   }
-  
+
   .sort-select {
     min-width: auto;
     width: 100%;
@@ -917,16 +935,16 @@ onMounted(async () => {
     padding: 14px 16px;
     font-size: 14px;
   }
-  
+
   .search-btn {
     padding: 14px 20px;
     font-size: 14px;
   }
-  
+
   .search-btn span {
     display: none;
   }
-  
+
   .view-options {
     display: none;
   }

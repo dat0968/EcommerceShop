@@ -54,8 +54,52 @@ namespace APIClothesEcommerceShop.Repositories.Product
         {
             try
             {
-                var GetProduct = await db.Sanphams.AsNoTracking()
-                    .Where(p => p.IsActive == true)
+                var products = db.Sanphams.AsNoTracking()
+                    .Where(p => p.IsActive == true);
+                if (!string.IsNullOrEmpty(search))
+                {
+                    products = products.Where(p => p.MaSp.ToString().Contains(search) || p.TenSanPham.ToLower().Contains(search.ToLower()));
+                }
+                if (!string.IsNullOrEmpty(selectedBigCategory))
+                {
+                    products = products.Where(p => p.Chitietdanhmucs.Any(cd =>
+                    cd.MaDanhMucCha.ToString().Contains(selectedBigCategory)));
+                }
+                if (!string.IsNullOrEmpty(selectedSmallCategory))
+                {
+                    products = products.Where(p => p.Chitietdanhmucs.Any(cd =>
+                    cd.MaDanhMucCon.ToString().Contains(selectedSmallCategory)));
+                }
+                if (!string.IsNullOrEmpty(sortByPrice))
+                {
+                    if (sortByPrice.ToLower() == "asc")
+                    {
+                        products = products.OrderBy(p => p.Chitietsanphams.Any() ? p.Chitietsanphams.Min(ct => ct.DonGia) : 0);
+                    }
+                    else if (sortByPrice.ToLower() == "desc")
+                    {
+                        products = products.OrderByDescending(p => p.Chitietsanphams.Any() ? p.Chitietsanphams.Min(ct => ct.DonGia) : 0);
+                    }
+                }
+                switch (filterPrice?.ToLower())
+                {
+                    case "dưới 300k":
+                        products = products.Where(p => p.Chitietsanphams.Max(ct => ct.DonGia) < 300000);
+                        break;
+                    case "300k - 1 triệu":
+                        products = products.Where(p => p.Chitietsanphams.Max(ct => ct.DonGia) >= 300000 && p.Chitietsanphams.Max(ct => ct.DonGia) <= 1000000);
+                        break;
+                    case "1 triệu - 2 triệu":
+                        products = products.Where(p => p.Chitietsanphams.Max(ct => ct.DonGia) >= 1000000 && p.Chitietsanphams.Max(ct => ct.DonGia) <= 2000000);
+                        break;
+                    case "trên 2 triệu":
+                        products = products.Where(p => p.Chitietsanphams.Max(ct => ct.DonGia) >= 2000000);
+                        break;
+                    default:
+                        products = products;
+                        break;
+                }
+                var GetProduct = await products
                     .Select(p => new ProductResponseDTO
                     {
                         MaSp = p.MaSp,
@@ -90,49 +134,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                         //}).ToList(),
                     }).ToListAsync();
 
-                if (!string.IsNullOrEmpty(search))
-                {
-                    GetProduct = GetProduct.Where(p => p.MaSp.ToString().Contains(search) || p.TenSanPham.ToLower().Contains(search.ToLower())).ToList();
-                }
-                if (!string.IsNullOrEmpty(selectedBigCategory))
-                {
-                    GetProduct = GetProduct.Where(p => p.CategoryDetails.Any(cd =>
-                    cd.MaDanhMucCha.ToString().Contains(selectedBigCategory))).ToList();
-                }
-                if (!string.IsNullOrEmpty(selectedSmallCategory))
-                {
-                    GetProduct = GetProduct.Where(p => p.CategoryDetails.Any(cd =>
-                    cd.MaDanhMucCon.ToString().Contains(selectedSmallCategory))).ToList();
-                }
-                if (!string.IsNullOrEmpty(sortByPrice))
-                {
-                    if (sortByPrice.ToLower() == "asc")
-                    {
-                        GetProduct = GetProduct.OrderBy(p => p.ProductDetails.Any() ? p.ProductDetails.Min(ct => ct.DonGia) : 0).ToList();
-                    }
-                    else if (sortByPrice.ToLower() == "desc")
-                    {
-                        GetProduct = GetProduct.OrderByDescending(p => p.ProductDetails.Any() ? p.ProductDetails.Min(ct => ct.DonGia) : 0).ToList();
-                    }
-                }
-                switch (filterPrice?.ToLower())
-                {
-                    case "dưới 300k":
-                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) < 300000).ToList();
-                        break;
-                    case "300k - 1 triệu":
-                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) >= 300000 && p.ProductDetails.Max(ct => ct.DonGia) <= 1000000).ToList();
-                        break;
-                    case "1 triệu - 2 triệu":
-                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) >= 1000000 && p.ProductDetails.Max(ct => ct.DonGia) <= 2000000).ToList();
-                        break;
-                    case "trên 2 triệu":
-                        GetProduct = GetProduct.Where(p => p.ProductDetails.Max(ct => ct.DonGia) >= 2000000).ToList();
-                        break;
-                    default:
-                        GetProduct = GetProduct.ToList();
-                        break;
-                }
+
 
 
                 return GetProduct;

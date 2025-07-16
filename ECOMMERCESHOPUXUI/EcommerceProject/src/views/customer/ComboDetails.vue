@@ -54,7 +54,6 @@ const fetchCombo = async () => {
       size: availableSizes.value[index]?.[0] || '',
     }
   })
-  console.log(combo.value)
 }
 const availableSizes = computed(() => {
   return (
@@ -99,7 +98,7 @@ function selectedvariant(productIndex, type, value) {
     (v) =>
       v.mauSac === (selectedVariants.value[productIndex].color || product.colors[0]) &&
       v.kichThuoc ===
-        (selectedVariants.value[productIndex].size || availableSizes.value[productIndex]?.[0]),
+        (selectedVariants.value[productIndex].size || availableSizes.value[productIndex]?.[0])
   )
   if (!variant || variant.soLuongTon <= 0) {
     Swal.fire('Lỗi', 'Biến thể này không có sẵn hoặc đã hết hàng!', 'error')
@@ -112,7 +111,7 @@ const OrginalPriceCombo = computed(() => {
     const selectedColor = selectedVariants.value[index].color
     const selectedSize = selectedVariants.value[index].size
     const variant = combo.variants.find(
-      (p) => p.kichThuoc == selectedSize && p.mauSac == selectedColor,
+      (p) => p.kichThuoc == selectedSize && p.mauSac == selectedColor
     )
     return variant.donGia * combo.quantity
   })
@@ -157,7 +156,7 @@ async function addToCart() {
         const selectedColor = selectedVariants.value[index]?.color
         const selectedSize = selectedVariants.value[index]?.size
         const variant = product.variants.find(
-          (v) => v.mauSac === selectedColor && v.kichThuoc === selectedSize,
+          (v) => v.mauSac === selectedColor && v.kichThuoc === selectedSize
         )
         return {
           maCtsp: variant?.maCtsp,
@@ -274,7 +273,7 @@ async function addToCart() {
                     class="variant-section"
                   >
                     <div class="variant-title">
-                      <h4>{{ product.tenSp }}</h4>
+                      <h4>{{ product.name }}</h4>
                     </div>
                     <div class="variant-options">
                       <div class="variant-group">
@@ -338,7 +337,7 @@ async function addToCart() {
                     @click.prevent="activeTab = 'review'"
                     >Đánh giá</a
                   >
-                  <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">MÔ TẢ</a>
+                  <!-- <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">MÔ TẢ</a> -->
                 </li>
               </ul>
               <div class="tab-content vh-100 overflow-auto">
@@ -365,135 +364,7 @@ async function addToCart() {
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-lg-12 text-center">
-              <div class="related__title">
-                <h5>RELATED PRODUCTS</h5>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6">
-              <div class="product__item">
-                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-1.jpg">
-                  <div class="label new">New</div>
-                  <ul class="product__hover">
-                    <li>
-                      <a href="img/product/related/rp-1.jpg" class="image-popup"
-                        ><span class="arrow_expand"></span
-                      ></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_heart_alt"></span></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_bag_alt"></span></a>
-                    </li>
-                  </ul>
-                </div>
-                <div class="product__item__text">
-                  <h6><a href="#">Buttons tweed blazer</a></h6>
-                  <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                  </div>
-                  <div class="product__price">$ 59.0</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6">
-              <div class="product__item">
-                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-2.jpg">
-                  <ul class="product__hover">
-                    <li>
-                      <a href="img/product/related/rp-2.jpg" class="image-popup"
-                        ><span class="arrow_expand"></span
-                      ></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_heart_alt"></span></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_bag_alt"></span></a>
-                    </li>
-                  </ul>
-                </div>
-                <div class="product__item__text">
-                  <h6><a href="#">Flowy striped skirt</a></h6>
-                  <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                  </div>
-                  <div class="product__price">$ 49.0</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6">
-              <div class="product__item">
-                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-3.jpg">
-                  <div class="label stockout">out of stock</div>
-                  <ul class="product__hover">
-                    <li>
-                      <a href="img/product/related/rp-3.jpg" class="image-popup"
-                        ><span class="arrow_expand"></span
-                      ></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_heart_alt"></span></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_bag_alt"></span></a>
-                    </li>
-                  </ul>
-                </div>
-                <div class="product__item__text">
-                  <h6><a href="#">Cotton T-Shirt</a></h6>
-                  <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                  </div>
-                  <div class="product__price">$ 59.0</div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-3 col-md-4 col-sm-6">
-              <div class="product__item">
-                <div class="product__item__pic set-bg" data-setbg="img/product/related/rp-4.jpg">
-                  <ul class="product__hover">
-                    <li>
-                      <a href="img/product/related/rp-4.jpg" class="image-popup"
-                        ><span class="arrow_expand"></span
-                      ></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_heart_alt"></span></a>
-                    </li>
-                    <li>
-                      <a href="#"><span class="icon_bag_alt"></span></a>
-                    </li>
-                  </ul>
-                </div>
-                <div class="product__item__text">
-                  <h6><a href="#">Slim striped pocket shirt</a></h6>
-                  <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                  </div>
-                  <div class="product__price">$ 59.0</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          
           <RecomendationProduct />
         </div>
       </div>
