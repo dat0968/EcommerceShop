@@ -34,7 +34,7 @@ export default {
       const dataSet = this.customers.map((customer) => ({
         customerId: customer.customerId,
         customerName: customer.customerName,
-        revenue: formatCurrency(customer.revenue), // Định dạng doanh thu
+        revenue: customer.revenue, // Keep as a number
         location: customer.location,
         ageGroup: customer.ageGroup,
       }))
@@ -47,8 +47,28 @@ export default {
           configsDt.defaultTdToShowDetail,
           { data: 'customerId', title: 'Mã khách hàng', className: 'text-center' },
           { data: 'customerName', title: 'Tên khách hàng' },
-          { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
-          { data: 'location', title: 'Địa điểm' },
+          {
+            data: 'revenue',
+            title: 'Doanh thu',
+            className: 'text-right',
+            render: function (data, type, row) {
+              if (type === 'display') {
+                return formatCurrency(data)
+              }
+              return data
+            },
+          },
+          {
+            data: 'location',
+            title: 'Địa điểm',
+            render: function (data, type, row) {
+              if (type === 'sort') {
+                const match = data.match(/^(\d+)/)
+                return match ? parseInt(match[1], 10) : 0
+              }
+              return data
+            },
+          },
           { data: 'ageGroup', title: 'Nhóm tuổi' },
         ],
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs

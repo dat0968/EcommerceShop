@@ -117,7 +117,7 @@ export default {
           labels: labels,
           datasets: [
             {
-              label: 'Tỉ lệ khách hàng',
+              label: 'Số lượng khách hàng',
               data: dataValues,
               backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
               borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
@@ -133,31 +133,31 @@ export default {
               position: 'bottom',
               labels: {
                 font: {
-                  size: 14
-                }
-              }
+                  size: 14,
+                },
+              },
             },
             tooltip: {
               callbacks: {
-                label: function(context) {
-                  let label = context.label || '';
+                label: function (context) {
+                  let label = context.label || ''
                   if (label) {
-                    label += ': ';
+                    label += ': '
                   }
                   if (context.parsed !== null) {
-                    label += context.parsed;
+                    label += context.parsed
                   }
-                  return label;
-                }
-              }
+                  return label
+                },
+              },
             },
             title: {
               display: true,
-              text: 'Tỉ lệ khách hàng hoạt động/không hoạt động',
+              text: 'Số lượng khách hàng hoạt động/không hoạt động',
               font: {
-                size: 16
-              }
-            }
+                size: 16,
+              },
+            },
           },
         },
       })

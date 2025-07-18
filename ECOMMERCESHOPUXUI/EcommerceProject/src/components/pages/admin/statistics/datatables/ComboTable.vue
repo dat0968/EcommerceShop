@@ -32,7 +32,7 @@ export default {
         comboId: combo.comboId,
         comboName: combo.comboName,
         salesCount: combo.salesCount,
-        revenue: formatCurrency(combo.revenue), // Định dạng doanh thu
+        revenue: combo.revenue, // Keep as a number
       }))
 
       // Khởi tạo DataTable
@@ -63,7 +63,17 @@ export default {
             },
           },
           { data: 'salesCount', title: 'Số lượng bán', className: 'text-center' },
-          { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
+          {
+            data: 'revenue',
+            title: 'Doanh thu',
+            className: 'text-right',
+            render: function (data, type, row) {
+              if (type === 'display') {
+                return formatCurrency(data)
+              }
+              return data
+            },
+          },
         ],
         language: configsDt.defaultLanguageDatatable, // Sử dụng ngôn ngữ từ configs
         initComplete: () => {

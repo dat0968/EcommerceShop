@@ -31,14 +31,21 @@ export default {
   methods: {
     async initDataTable() {
       await this.$nextTick()
-      const dataSet = this.products.map((product) => ({
-        productId: product.productId,
-        productName: product.productName,
-        categoryName: product.categoryName,
-        revenue: formatCurrency(product.revenue),
-        count: product.count,
-        detailTopProducts: product.detailTopProducts,
-      }))
+      const productMap = new Map(this.products.map((p) => [p.productId, p]))
+      const dataSet = this.products.map((product) => {
+        const totalReviewStar =
+          product.detailTopProducts && Array.isArray(product.detailTopProducts)
+            ? product.detailTopProducts.reduce((total, x) => total + x.soSao, 0)
+            : 0
+        return {
+          productId: product.productId,
+          productName: product.productName,
+          categoryName: product.categoryName,
+          revenue: product.revenue, // Keep as a number
+          count: product.count,
+          totalReviewStar: totalReviewStar,
+        }
+      })
 
       const table = $('#productDatatable').DataTable({
         data: dataSet,
@@ -48,41 +55,44 @@ export default {
           { data: 'productId', title: 'Mã sản phẩm', className: 'text-center' },
           { data: 'productName', title: 'Tên sản phẩm' },
           {
-            data: null,
+            data: 'totalReviewStar',
             title: 'Đánh giá',
             render: function (data, type, row) {
-              const totalReviewStar =
-                row.detailTopProducts && Array.isArray(row.detailTopProducts)
-                  ? row.detailTopProducts.reduce((total, x) => total + x.soSao, 0)
-                  : 0
               return `
               <span class="star-rating">
-                ${Array.from(
-                  { length: totalReviewStar },
-                  () => `<span class="star filled">★</span>`,
-                ).join('')}
-                ${Array.from(
-                  { length: 5 - totalReviewStar },
-                  () => `<span class="star">★</span>`,
-                ).join('')}
+                ${Array.from({ length: data }, () => `<span class="star filled">★</span>`).join('')}
+                ${Array.from({ length: 5 - data }, () => `<span class="star">★</span>`).join('')}
               </span>
               `
             },
           },
           { data: 'categoryName', title: 'Tên danh mục' },
-          { data: 'revenue', title: 'Doanh thu', className: 'text-right' },
+          {
+            data: 'revenue',
+            title: 'Doanh thu',
+            className: 'text-right',
+            render: function (data, type, row) {
+              if (type === 'display') {
+                return formatCurrency(data)
+              }
+              return data
+            },
+          },
           { data: 'count', title: 'Số lượng bán', className: 'text-center' },
         ],
         language: configsDt.defaultLanguageDatatable,
         initComplete: () => {
-          configsDt.attachDetailsControl(`#productDatatable`, this.formatDetails.bind(this))
+          configsDt.attachDetailsControl(
+            `#productDatatable`,
+            this.formatDetails.bind(this, productMap),
+          )
         },
       })
       configsDt.attachSearchDebounce('#productDatatable', table)
     },
-    formatDetails(rowData) {
+    formatDetails(productMap, rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')
-      const detailProduct = this.products.find((x) => x.productId == rowData.productId)
+      const detailProduct = productMap.get(rowData.productId)
 
       const detailsHtml = `
         <div class="container-fluid p-3">
