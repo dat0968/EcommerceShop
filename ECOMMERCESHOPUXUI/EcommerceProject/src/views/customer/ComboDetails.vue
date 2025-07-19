@@ -18,14 +18,27 @@ const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const router = useRouter()
 const quantity = ref('1')
-
+const readToken = ref({})
 const fetchCombo = async () => {
-  const response = await fetch(getUrlAPI.value + `/api/Combos/${id}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid) {
+    accessToken.value = validatetoken.newAccessToken
+    readToken.value = decodeToken(accessToken.value)
+  }
+  const maKhachHang = readToken.value?.IdUser ?? null
+  let url = `${getUrlAPI.value}/api/shop/Combo/${id}`
+  if (maKhachHang != null) {
+    url += `?maKh=${maKhachHang}`
+  }
+  const response = await fetch(
+    url,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  )
   if (!response.ok) {
     throw new Error('Error fetchAPI Combo')
   }
@@ -364,7 +377,7 @@ async function addToCart() {
               </div>
             </div>
           </div>
-          
+
           <RecomendationProduct />
         </div>
       </div>

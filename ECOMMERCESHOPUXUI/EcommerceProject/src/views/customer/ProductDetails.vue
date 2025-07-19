@@ -26,7 +26,7 @@ const quantity = ref('1')
 const activeTab = ref('desc')
 const recommendationProduct = ref([])
 const isLoading = ref(true)
-
+const readToken = ref({})
 function ReadToken(token) {
   if (token) {
     const decoded = jwtDecode(token)
@@ -171,12 +171,25 @@ const toggleFavoriteProduct = async () => {
 // Call Api ProductDetails
 const fetchAPI = async () => {
   try {
-    const response = await fetch(`${getUrlAPI.value}/api/Shop/Product/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid) {
+      accessToken.value = validatetoken.newAccessToken
+      readToken.value = decodeToken(accessToken.value)
+    }
+    const maKhachHang = readToken.value?.IdUser ?? null
+    let url = `${getUrlAPI.value}/api/Shop/Product/${id}`
+    if (maKhachHang != null) {
+      url += `?maKh=${maKhachHang}`
+    }
+    const response = await fetch(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
     if (!response.ok) {
       throw new Error('Failed to FetchAPI')
     }

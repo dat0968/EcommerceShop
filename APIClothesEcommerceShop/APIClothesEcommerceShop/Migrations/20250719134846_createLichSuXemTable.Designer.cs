@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250719134846_createLichSuXemTable")]
+    partial class createLichSuXemTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -656,21 +659,16 @@ namespace APIClothesEcommerceShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("MaCombo")
-                        .HasColumnType("int");
-
                     b.Property<int>("MaKh")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MaSp")
+                    b.Property<int>("MaSp")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ThoiGianXem")
+                    b.Property<DateTime>("ViewedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MaCombo");
 
                     b.HasIndex("MaKh");
 
@@ -1126,11 +1124,6 @@ namespace APIClothesEcommerceShop.Migrations
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.LichSuXem", b =>
                 {
-                    b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
-                        .WithMany("LichSuXems")
-                        .HasForeignKey("MaCombo")
-                        .HasConstraintName("FK__LSXEM__MaCombo__6751189E");
-
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "MaKhNavigation")
                         .WithMany("LichSuXems")
                         .HasForeignKey("MaKh")
@@ -1140,9 +1133,8 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "MaSpNavigation")
                         .WithMany("LichSuXems")
                         .HasForeignKey("MaSp")
-                        .HasConstraintName("FK__LSXEM__MaSp__6751189E");
-
-                    b.Navigation("MaComboNavigation");
+                        .IsRequired()
+                        .HasConstraintName("FK__LSXEM__MaKH__6751189E");
 
                     b.Navigation("MaKhNavigation");
 
@@ -1208,8 +1200,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("DanhGias");
 
                     b.Navigation("Giohangs");
-
-                    b.Navigation("LichSuXems");
                 });
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Cthoadon", b =>

@@ -8,6 +8,9 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using DocumentFormat.OpenXml.Drawing;
 using APIClothesEcommerceShop.Repositories.Combos;
+using APIClothesEcommerceShop.Repositories.ViewHistory;
+using System.Runtime.CompilerServices;
+using System;
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -18,12 +21,14 @@ namespace APIClothesEcommerceShop.Controllers
         private readonly IProductRepository _productRepository;
         private readonly IComboRepository _comboRepository;
         private readonly EcommerceShopContext _db;
-
+        private readonly IViewHistoryRepository viewHistoryRepository;
         public ShopController(
             IProductRepository productRepository,
             IComboRepository comboRepository,
+            IViewHistoryRepository viewHistoryRepository,
             EcommerceShopContext db)
         {
+             this.viewHistoryRepository = viewHistoryRepository;
             _productRepository = productRepository;
             _comboRepository = comboRepository;
             _db = db;
@@ -93,7 +98,7 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpGet("Product/{id}")]
-        public async Task<IActionResult> DetailsProduct(int id)
+        public async Task<IActionResult> DetailsProduct([FromQuery] int? maKh, int id)
         {
             try
             {
@@ -101,6 +106,10 @@ namespace APIClothesEcommerceShop.Controllers
                 if (details == null)
                 {
                     return NotFound(new { message = "Sản phẩm không tồn tại" });
+                }
+                if (maKh.HasValue)
+                {
+                    await viewHistoryRepository.AddOrUpdateAsync(maKh.Value, id, null);
                 }
                 return Ok(details);
             }
@@ -111,7 +120,7 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         [HttpGet("Combo/{id}")]
-        public async Task<IActionResult> DetailsCombo(int id)
+        public async Task<IActionResult> DetailsCombo(int? maKh, int id)
         {
             try
             {
@@ -119,6 +128,10 @@ namespace APIClothesEcommerceShop.Controllers
                 if (details == null || (details.NgayBatDau > DateTime.Now || details.NgayKetThuc < DateTime.Now ) )
                 {
                     return NotFound(new { message = "Combo không tồn tại" });
+                }
+                if (maKh.HasValue)
+                {
+                    await viewHistoryRepository.AddOrUpdateAsync(maKh.Value, null, id);
                 }
                 return Ok(details);
             }

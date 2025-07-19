@@ -19,4 +19,5 @@ public partial class Sanpham
     public virtual ICollection<Chitietcombo> Chitietcombos { get; set; } = new List<Chitietcombo>();
     public virtual ICollection<DanhGia> DanhGias { get; set; } = new List<DanhGia>();
     public virtual ICollection<Sanphamyeuthich> Sanphamyeuthichs { get; set; } = new List<Sanphamyeuthich>();
+    public virtual ICollection<LichSuXem> LichSuXems { get; set; } = new List<LichSuXem>();
 }
