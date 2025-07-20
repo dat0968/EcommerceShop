@@ -141,9 +141,7 @@ function applyFilter() {
   // Sắp xếp theo maCombo (giảm dần để combo mới lên đầu) rồi theo tenCombo (A-Z hoặc Z-A)
   combos.sort((a, b) => {
     // Sắp xếp theo maCombo giảm dần (combo mới có maCombo lớn hơn)
-    if (a.maCombo !== b.maCombo) {
-      return b.maCombo - a.maCombo;
-    }
+    
     // Sắp xếp theo tenCombo dựa trên sortOrder
     return sortOrder.value === 'asc'
       ? a.tenCombo.localeCompare(b.tenCombo, 'vi', { sensitivity: 'base' })
@@ -394,5 +392,21 @@ onMounted(() => {
 
 .action-buttons .btn {
   margin: 0;
+}
+
+/* Thêm hiệu ứng hover cho tất cả các nút */
+.btn-warning:hover {
+  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
+  background-color: #be9629 !important; /* Đổi màu nền sáng hơn */
+}
+
+.btn-danger:hover {
+  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
+  background-color: #dc3545 !important; /* Đổi màu nền đậm hơn */
+}
+
+.btn-info:hover {
+  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
+  background-color: #17a2b8 !important; /* Đổi màu nền đậm hơn */
 }
 </style>

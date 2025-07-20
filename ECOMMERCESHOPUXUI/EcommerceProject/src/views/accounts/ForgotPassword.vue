@@ -344,9 +344,11 @@ const handleResendCode = async () => {
                         opacity="0.5" />
 
                       <!-- Angel text with soft cursive font -->
+                        <RouterLink to="/" style="text-decoration: none;">
                       <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
                         Angel
                       </text>
+                      </RouterLink>
                     </svg>
                   </div>
                   <div class="p-3">

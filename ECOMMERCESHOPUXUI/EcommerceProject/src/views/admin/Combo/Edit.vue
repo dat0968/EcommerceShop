@@ -79,7 +79,7 @@ onMounted(() => {
       ...detail,
     })),
   }
-  
+
   comboEdit.value = {
     ...initialCombo.value,
     chitietcombos: initialCombo.value.chitietcombos.map((detail) => ({ ...detail })),
@@ -91,7 +91,7 @@ onMounted(() => {
       productMap.value[product.maSp] = product.tenSanPham
     })
   }
-  
+
   // Cập nhật productMap với các sản phẩm đã chọn
   comboEdit.value.chitietcombos.forEach(detail => {
     if (detail.maSp && props.ListProduct) {
@@ -295,7 +295,7 @@ async function UpdateCombo() {
       if (messageErrorCombo) {
         messageErrorCombo.textContent = ''
       }
-      
+
     })
 
     // Kiểm tra chi tiết combo
@@ -309,13 +309,16 @@ async function UpdateCombo() {
         isValid = false;
       }
     });
-
+    if (!comboEdit.value.tenCombo) {
+      isValid = false;
+      Swal.fire('Tên combo không được để trống', '', 'error');
+    }
     // Kiểm tra ngày bắt đầu và ngày kết thúc
     if (!comboEdit.value.ngayBatDau || !comboEdit.value.ngayKetThuc) {
       Swal.fire('Ngày bắt đầu và ngày kết thúc không được để trống', '', 'error')
       isValid = false
     }
-console.log(isValid)
+    console.log(isValid)
     if (!isValid) {
       return;
     }
@@ -337,7 +340,7 @@ console.log(isValid)
     formData.append('isActive', comboEdit.value.isActive.toString());
     formData.append('ngayBatDau', formatDateForAPI(comboEdit.value.ngayBatDau));
     formData.append('ngayKetThuc', formatDateForAPI(comboEdit.value.ngayKetThuc));
-    
+
     comboEdit.value.chitietcombos.forEach((detail, index) => {
       formData.append(`chitietcombos[${index}].maSp`, detail.maSp);
       formData.append(`chitietcombos[${index}].soLuongSp`, detail.soLuongSp);
@@ -348,7 +351,7 @@ console.log(isValid)
       ngayKetThuc: formatDateForAPI(comboEdit.value.ngayKetThuc),
       // ... các trường khác
     });
-console.log("sdhsajh")
+    console.log("sdhsajh")
     const response = await fetch(`https://localhost:7217/api/Combos/${props.Combo.maCombo}`, {
       method: 'PUT',
       headers: {
@@ -374,13 +377,8 @@ console.log("sdhsajh")
 </script>
 
 <template>
-  <div
-    class="modal fade"
-    :id="`comboEditModal_${props.Combo.maCombo}`"
-    tabindex="-1"
-    data-bs-backdrop="static"
-    data-bs-keyboard="false"
-  >
+  <div class="modal fade" :id="`comboEditModal_${props.Combo.maCombo}`" tabindex="-1" data-bs-backdrop="static"
+    data-bs-keyboard="false">
     <button class="btn-close" data-bs-dismiss="modal"></button>
     <div class="modal-dialog modal-xl text-start">
       <div class="modal-content">
@@ -403,95 +401,56 @@ console.log("sdhsajh")
             <!-- Mô tả -->
             <div class="mb-3">
               <label for="moTa" class="form-label">Mô tả</label>
-              <textarea
-                v-model="comboEdit.moTa"
-                class="form-control"
-                id="moTa"
-                rows="3"
-                placeholder="Nhập mô tả combo"
-              ></textarea>
+              <textarea v-model="comboEdit.moTa" class="form-control" id="moTa" rows="3"
+                placeholder="Nhập mô tả combo"></textarea>
               <label style="color: red" class="error-message"></label>
             </div>
 
             <!-- Số lượng combo -->
             <div class="mb-3">
               <label class="form-label">Số lượng</label>
-              <input
-                @keydown="blockNegativeNumbers"
-                v-model="comboEdit.soLuong"
-                type="number"
-                class="form-control"
-                min="1"
-              />
+              <input @keydown="blockNegativeNumbers" v-model="comboEdit.soLuong" type="number" class="form-control"
+                min="1" />
               <label style="color: red" class="error-message"></label>
             </div>
 
             <!-- Ngày bắt đầu -->
             <div class="mb-3">
               <label class="form-label">Ngày bắt đầu</label>
-              <input
-                type="date"
-                class="form-control"
-                v-model="comboEdit.ngayBatDau"
-              />
+              <input type="date" class="form-control" v-model="comboEdit.ngayBatDau" />
               <label style="color: red" class="error-message"></label>
             </div>
 
             <!-- Ngày kết thúc -->
             <div class="mb-3">
               <label class="form-label">Ngày kết thúc</label>
-              <input
-                type="date"
-                class="form-control"
-                v-model="comboEdit.ngayKetThuc"
-              />
+              <input type="date" class="form-control" v-model="comboEdit.ngayKetThuc" />
               <label style="color: red" class="error-message"></label>
             </div>
 
             <!-- Chi tiết combo -->
             <div class="mb-3">
               <label class="form-label">Chi tiết combo</label>
-              <div
-                class="card mb-3"
-                v-for="(detail, index) in comboEdit.chitietcombos"
-                :key="index"
-              >
+              <div class="card mb-3" v-for="(detail, index) in comboEdit.chitietcombos" :key="index">
                 <div class="card-body">
                   <div class="row">
                     <div class="col-md-6">
                       <label class="form-label">Sản phẩm</label>
                       <div class="input-group">
-                        <input
-                          type="text"
-                          class="form-control"
-                          :value="productMap[detail.maSp] || 'Chọn sản phẩm'"
-                          readonly
-                        />
-                        <button
-                          class="btn btn-outline-primary"
-                          type="button"
-                          @click="openProductModal(index)"
-                        >
+                        <input type="text" class="form-control" :value="productMap[detail.maSp] || 'Chọn sản phẩm'"
+                          readonly />
+                        <button class="btn btn-outline-primary" type="button" @click="openProductModal(index)">
                           Chọn
                         </button>
                       </div>
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Số lượng</label>
-                      <input
-                        type="number"
-                        class="form-control"
-                        v-model="detail.soLuongSp"
-                        min="1"
-                        @keydown="blockNegativeNumbers"
-                      />
+                      <input type="number" class="form-control" v-model="detail.soLuongSp" min="1"
+                        @keydown="blockNegativeNumbers" />
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                      <button
-                        @click="removeDetailCombo(index)"
-                        type="button"
-                        class="btn btn-danger btn-sm"
-                      >
+                      <button @click="removeDetailCombo(index)" type="button" class="btn btn-danger btn-sm">
                         Xóa
                       </button>
                     </div>
@@ -506,46 +465,26 @@ console.log("sdhsajh")
             <!-- Phần trăm giảm -->
             <div class="mb-3">
               <label class="form-label">Phần trăm giảm</label>
-              <input
-                type="number"
-                class="form-control"
-                v-model="comboEdit.phanTramGiam"
-                min="0"
-                @input="resetSoTienGiam"
-              />
+              <input type="number" class="form-control" v-model="comboEdit.phanTramGiam" min="0"
+                @input="resetSoTienGiam" />
               <label style="color: red" class="error-message"></label>
             </div>
 
             <!-- Số tiền giảm -->
             <div class="mb-3">
               <label class="form-label">Số tiền giảm</label>
-              <input
-                type="number"
-                class="form-control"
-                v-model="comboEdit.soTienGiam"
-                min="0"
-                @input="resetPhanTramGiam"
-              />
+              <input type="number" class="form-control" v-model="comboEdit.soTienGiam" min="0"
+                @input="resetPhanTramGiam" />
               <label style="color: red" class="error-message"></label>
             </div>
 
             <!-- Hình ảnh -->
             <div>
               <label class="form-label">Hình ảnh</label>
-              <input
-                @change="handleFileChange(comboEdit, $event)"
-                type="file"
-                class="form-control"
-                accept="image/*"
-              />
-              <img
-                v-if="comboEdit.hinh && typeof comboEdit.hinh === 'string'"
-                :src="getApiUrl+'/HinhAnh/AnhCombo/'+comboEdit.hinh"
-                alt="Ảnh combo"
-                class="img-fluid mt-2"
-                style="max-width: 100px; height: auto"
-                @error="comboEdit.hinh = null"
-              />
+              <input @change="handleFileChange(comboEdit, $event)" type="file" class="form-control" accept="image/*" />
+              <img v-if="comboEdit.hinh && typeof comboEdit.hinh === 'string'"
+                :src="getApiUrl + '/HinhAnh/AnhCombo/' + comboEdit.hinh" alt="Ảnh combo" class="img-fluid mt-2"
+                style="max-width: 100px; height: auto" @error="comboEdit.hinh = null" />
               <span v-else>Không có ảnh</span>
               <label style="color: red" class="error-message imageMessage"></label>
             </div>
@@ -563,24 +502,13 @@ console.log("sdhsajh")
   </div>
 
   <!-- Modal Chọn Sản Phẩm -->
-  <div
-    class="modal fade"
-    id="productModal"
-    tabindex="-1"
-    aria-labelledby="productModalLabel"
-    aria-hidden="true"
-    v-if="showProductModal"
-  >
+  <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true"
+    v-if="showProductModal">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="productModalLabel">Chọn sản phẩm</h5>
-          <button
-            type="button"
-            class="btn-close"
-            @click="showProductModal = false"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" @click="showProductModal = false" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="table-responsive">
@@ -600,17 +528,10 @@ console.log("sdhsajh")
                   <td>
                     <img
                       :src="product.hinh ? `${getApiUrl}/HinhAnh/AnhSanPham/${product.hinh}` : '/placeholder-image.jpg'"
-                      alt="Product Image"
-                      width="50"
-                      height="50"
-                      style="object-fit: cover; border-radius: 5px"
-                    />
+                      alt="Product Image" width="50" height="50" style="object-fit: cover; border-radius: 5px" />
                   </td>
                   <td>
-                    <button
-                      class="btn btn-primary btn-sm"
-                      @click="selectProduct(product)"
-                    >
+                    <button class="btn btn-primary btn-sm" @click="selectProduct(product)">
                       Chọn
                     </button>
                   </td>
@@ -618,17 +539,13 @@ console.log("sdhsajh")
               </tbody>
             </table>
           </div>
-          
+
           <!-- Phân trang -->
           <nav style="margin-bottom: 60px" class="d-flex justify-content-center mt-3">
             <ul class="pagination">
               <li @click="ChangePage(1)" class="page-item"><a class="page-link" href="#">Đầu</a></li>
-              <li
-                @click="ChangePage(page)"
-                v-for="page in toTalPages"
-                :key="page"
-                :class="['page-item', { active: page == pageSelected }]"
-              >
+              <li @click="ChangePage(page)" v-for="page in toTalPages" :key="page"
+                :class="['page-item', { active: page == pageSelected }]">
                 <a class="page-link" href="#">{{ page }}</a>
               </li>
               <li @click="ChangePage(toTalPages)" class="page-item">
@@ -638,11 +555,7 @@ console.log("sdhsajh")
           </nav>
         </div>
         <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            @click="showProductModal = false"
-          >
+          <button type="button" class="btn btn-secondary" @click="showProductModal = false">
             Đóng
           </button>
         </div>
@@ -655,9 +568,11 @@ console.log("sdhsajh")
 .card {
   border: 1px solid #ddd;
 }
+
 .modal-xl {
   max-width: 60%;
 }
+
 .btn-danger {
   font-size: 12px;
   padding: 2px 6px;

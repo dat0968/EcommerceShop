@@ -310,7 +310,7 @@ onMounted(() => {
                         aria-haspopup="true"
                         aria-expanded="false"
                         ><img
-                          src="../../assets/admin/images/topbar/user.jpg"
+                          src="../../assets/admin/images/topbar/Avtdf.jpg"
                           alt="user-profile"
                           class="rounded-circle img-fluid"
                         /><span class="xp-user-live"></span
