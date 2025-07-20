@@ -21,12 +21,14 @@ import '../../assets/Customer/js/jquery.slicknav'
 import 'owl.carousel'
 import 'jquery.nicescroll'
 import '../../assets/Customer/js/main.js'
+import chatbot from '@/components/chatbot/chatbot.vue'
 // import 'owl.carousel/dist/assets/owl.carousel.min.css'
 </script>
 <template>
   <div>
     <HeaderComponent />
     <router-view :key="$route.fullPath" />
+    <chatbot></chatbot>
     <FooterComponent />
   </div>
 </template>

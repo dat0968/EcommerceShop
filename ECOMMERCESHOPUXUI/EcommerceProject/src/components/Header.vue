@@ -2,7 +2,6 @@
   <div>
     <!-- Offcanvas Menu Begin -->
     <div class="offcanvas-menu-overlay"></div>
-    <!-- Offcanvas Menu End -->
     <!-- Header Section Begin -->
     <header class="header">
       <div class="container-fluid">
@@ -12,30 +11,22 @@
               <defs>
                 <linearGradient id="start" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="20%" stop-color="#EC4E79">
-                    <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;" dur="6s"
-                      repeatCount="indefinite" />
+                    <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;" dur="6s" repeatCount="indefinite" />
                   </stop>
                   <stop offset="40%" stop-color="#ABA2B7">
-                    <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;" dur="6s"
-                      repeatCount="indefinite" />
+                    <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;" dur="6s" repeatCount="indefinite" />
                   </stop>
                   <stop offset="55%" stop-color="#5CCAE7">
-                    <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;" dur="6s"
-                      repeatCount="indefinite" />
+                    <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;" dur="6s" repeatCount="indefinite" />
                   </stop>
                 </linearGradient>
               </defs>
-
               <!-- Left wing - smooth curves -->
               <path class="wing left" d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z" />
-              <path class="wing left" d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
-                opacity="0.5" />
-
+              <path class="wing left" d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z" opacity="0.5" />
               <!-- Right wing - smooth curves -->
               <path class="wing right" d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z" />
-              <path class="wing right" d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
-                opacity="0.5" />
-
+              <path class="wing right" d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z" opacity="0.5" />
               <!-- Angel text with soft cursive font -->
               <RouterLink to="/" style="text-decoration: none;">
                 <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
@@ -60,8 +51,33 @@
             </nav>
           </div>
           <div class="col-lg-3">
-            <div class="header__right d-flex align-items-center justify-content-end gap-3">
-              <ul class="header__right__widget d-flex align-items-center gap-3 list-unstyled mb-0">
+            <div class="header__right">
+              <div class="header__right__auth">
+                <template v-if="!isLoggedIn">
+                  <div class="dropdown">
+                    <button class="dropdown-toggle text-primary" id="loginDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      Tài khoản
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
+                      <li><router-link to="/Login" class="dropdown-item">Đăng nhập</router-link></li>
+                      <li><router-link to="/Register" class="dropdown-item">Đăng ký</router-link></li>
+                    </ul>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="dropdown">
+                    <button class="dropdown-toggle d-flex align-items-center" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                      <img src="/src/assets/default/Avtdf.jpg" alt="Avtdf" class="avatar-img" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 8px;">
+                      <span></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
+                      <li><a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger">Đăng xuất</a></li>
+                      <li><router-link to="/profile" class="dropdown-item text-danger">Cập nhật thông tin</router-link></li>
+                    </ul>
+                  </div>
+                </template>
+              </div>
+              <ul class="header__right__widget">
                 <li>
                   <router-link to="/favoriteproduct" class="position-relative">
                     <i class="fa fa-heart fs-5"></i>
@@ -127,7 +143,6 @@
     </header>
     <!-- Header Section End -->
   </div>
-
 </template>
 
 <script setup>
@@ -138,6 +153,7 @@ import { validateToken } from '@/utils/auth'
 import NavigationUserReview from './ui/navigationUserReview.vue'
 import WheelRandomCode from './specicals/WheelRandomCode.vue'
 
+import Swal from 'sweetalert2'
 const router = useRouter()
 const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
@@ -159,17 +175,36 @@ const checkLogin = async () => {
 }
 
 const handleLogout = () => {
-  Cookies.remove('accessToken')
-  Cookies.remove('refreshToken')
-  isLoggedIn.value = false
-  router.push('/Login')
+  Swal.fire({
+    title: 'Bạn có chắc chắn muốn đăng xuất?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Đăng xuất',
+    cancelButtonText: 'Hủy'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Cookies.remove('accessToken')
+      Cookies.remove('refreshToken')
+      isLoggedIn.value = false
+      Swal.fire({
+        title: 'Đăng xuất thành công!',
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+        timer: 1500
+      }).then(() => {
+        router.push('/Login')
+      })
+    }
+  })
 }
-
 onMounted(() => {
   checkLogin()
 })
 </script>
-<style>
+
+<style scoped>
 .header__menu {
   display: flex;
   justify-content: center;
@@ -191,5 +226,71 @@ onMounted(() => {
 .header__menu li a {
   text-decoration: none;
   color: #333;
+}
+
+.header__right__auth .dropdown-toggle {
+  text-decoration: none;
+  color: #333;
+  display: flex;
+  align-items: center;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.header__right__auth .dropdown-toggle::after {
+  margin-left: 5px;
+}
+
+.header__right__auth .dropdown-menu {
+  min-width: 150px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header__right__auth .dropdown-item {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.header__right__auth .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.header__right__widget {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.header__right__widget li {
+  margin-left: 15px;
+  position: relative;
+}
+
+.header__right__widget .tip {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #EC4E79;
+  color: #fff;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.avatar-img {
+  vertical-align: middle;
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
 }
 </style>

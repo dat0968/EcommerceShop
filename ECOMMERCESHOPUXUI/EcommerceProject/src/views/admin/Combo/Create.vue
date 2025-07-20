@@ -260,7 +260,10 @@ const addCombo = async () => {
         Swal.fire('Combo phải chứa tối thiểu một sản phẩm!', '', 'error');
       }
     });
-
+    if (!combo.value.tenCombo) {
+          isValid = false;
+          Swal.fire('Tên combo không được để trống', '', 'error');
+        }
     // Kiểm tra ngày bắt đầu và ngày kết thúc
     if (!combo.value.ngayBatDau || !combo.value.ngayKetThuc) {
       isValid = false;
@@ -439,7 +442,7 @@ const result = await response.json();
         <div class="modal-body">
           <!-- Bộ lọc và tìm kiếm -->
           <div class="row g-3 mb-3">
-            <div class="col-md-4">
+            <div class="col-md">
               <input style="background-color: white" v-model="search" @click.stop @keydown.stop
                 @input="filterProducts()" type="text" class="form-control" placeholder="Tìm kiếm sản phẩm..." />
             </div>
@@ -463,7 +466,9 @@ const result = await response.json();
                   <td>{{ product.tenSanPham }}</td>
                   <td>
                     <img
-                      :src="product.productDetails[0].images[0].tenHinhAnh ? `${getApiUrl}/HinhAnh/Products/${product.productDetails[0].images[0].tenHinhAnh}` : '/placeholder-image.jpg'"
+                       :src="`https://localhost:7217/HinhAnh/Products/HinhAnh/Products/${
+                          product.hinh
+                        }`"
                       alt="Product Image" width="50" height="50" style="object-fit: cover; border-radius: 5px" />
                   </td>
                   <td>

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import {RouterLink, useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
 import { GetApiUrl } from '../../constants/api.js';
 
@@ -16,13 +16,15 @@ const emailValid = ref(true);
 const loading = ref(false);
 const router = useRouter();
 const getApiUrl = GetApiUrl();
-
+const showPassword = ref(false)
 // Hàm kiểm tra định dạng email cơ bản
 const isValidEmailFormat = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
-
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value
+}
 // Hàm kiểm tra định dạng mật khẩu
 const isValidPassword = (password) => {
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
@@ -528,9 +530,11 @@ const handleRegister = async () => {
                         opacity="0.5" />
 
                       <!-- Angel text with soft cursive font -->
+                       <RouterLink to="/" style="text-decoration: none;">
                       <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
                         Angel
                       </text>
+                      </RouterLink>
                     </svg>
                   </div>
                   <div class="p-3">
@@ -596,16 +600,22 @@ const handleRegister = async () => {
                           required
                         />
                       </div>
-                      <div class="form-group" >
+                      <div class="form-group position-relative" style="margin-bottom: 10px;">
                         <input
                           v-model="matKhau"
-                          type="password"
+                          :type="showPassword ? 'text' : 'password'"
                           class="form-control"
                           id="password"
                           placeholder="Mật khẩu"
                           required
-                          style="margin-bottom: 10px;"
                         />
+                        <span
+                          class="password-toggle-icon"
+                          @click="togglePasswordVisibility"
+                          style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; z-index: 1;"
+                        >
+                          <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                        </span>
                         <small class="form-text text-muted">
                           Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt (!@#$%^&*).
                         </small>
@@ -655,5 +665,24 @@ const handleRegister = async () => {
 }
 .g-recaptcha {
   margin-bottom: 15px;
+}
+.password-toggle-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 1;
+  line-height: 1;
+  padding: 5px; /* Thêm padding để tránh chồng lấn */
+  height: 75px;
+}
+.password-toggle-icon i {
+  font-size: 1.2rem;
+  color: #666;
+}
+.form-control {
+  padding-right: 40px; /* Đảm bảo khoảng cách cho icon */
+  
 }
 </style>

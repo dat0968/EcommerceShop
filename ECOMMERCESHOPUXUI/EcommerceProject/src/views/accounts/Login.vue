@@ -174,8 +174,7 @@ const handleGoogleLogin = () => {
                       <img src="../../assets/Customer/img/logo.png" height="150" alt="logo" />
                     </a>
                   </h3> -->
-                  <div class="col-xl-3 col-lg-2"
-                    style="width: 300px; margin-right: 50px; display:block;margin:0 auto;">
+                  <div class="col-xl-3 col-lg-2" style="width: 300px; margin-right: 50px; display:block;margin:0 auto;">
                     <svg viewBox="0 0 700 250" role="img"
                       aria-label="Angel soft curvy logo with wings and animated gradient">
                       <defs>
@@ -206,9 +205,12 @@ const handleGoogleLogin = () => {
                         opacity="0.5" />
 
                       <!-- Angel text with soft cursive font -->
-                      <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
-                        Angel
-                      </text>
+                      <RouterLink to="/" style="text-decoration: none;">
+
+                        <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
+                          Angel
+                        </text>
+                      </RouterLink>
                     </svg>
                   </div>
                   <div class="p-3">

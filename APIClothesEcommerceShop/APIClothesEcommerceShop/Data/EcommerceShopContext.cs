@@ -53,11 +53,31 @@ public partial class EcommerceShopContext : DbContext
     public virtual DbSet<Diachi> Diachis { get; set; }
     public virtual DbSet<Sanphamyeuthich> Sanphamyeuthiches { get; set; }
     public virtual DbSet<DanhGia> DanhGias { get; set; }
+    public virtual DbSet<LichSuXem> LichSuXems { get; set; }
 
     // ? public virtual DbSet<BinhLuan> BinhLuans { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<LichSuXem>(entity =>
+        {
+            entity.HasKey(e => new { e.Id});
+
+            entity.ToTable("LICHSUXEM");
+
+            entity.HasOne(d => d.MaKhNavigation).WithMany(p => p.LichSuXems)
+                .HasForeignKey(d => d.MaKh)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__LSXEM__MaKH__6224119E");
+            entity.HasOne(d => d.MaSpNavigation).WithMany(p => p.LichSuXems)
+                .HasForeignKey(d => d.MaSp)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__LSXEM__MaSp__6751189E");
+            entity.HasOne(d => d.MaComboNavigation).WithMany(p => p.LichSuXems)
+                .HasForeignKey(d => d.MaCombo)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__LSXEM__MaCombo__6751189E");
+        });
         modelBuilder.Entity<Sanphamyeuthich>(entity =>
         {
             entity.HasKey(e => new { e.MaSp, e.MaKh });

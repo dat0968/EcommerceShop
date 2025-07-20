@@ -39,6 +39,7 @@ using APIClothesEcommerceShop.Repositories.Address;
 using APIClothesEcommerceShop.Repositories.FavoriteProduct;
 using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Controllers;
+using APIClothesEcommerceShop.Repositories.ViewHistory;
 var builder = WebApplication.CreateBuilder(args);
 //QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
@@ -49,6 +50,14 @@ builder.WebHost.ConfigureKestrel(options =>
     {
         listenOptions.UseHttps(); // HTTPS for web
     });
+});
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(1);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 /*
 Cấu hình kết nối đến database
@@ -112,6 +121,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyOrigin()
               .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+              //.AllowCredentials();
         //ops.WithOrigins("http://localhost:8080", "http://192.168.1.150:8080", "http://localhost:5173") // Thêm IP nội bộ
         //   .AllowAnyHeader()
         //   .AllowAnyMethod()
@@ -154,6 +164,7 @@ builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenServices, TokenServices>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
+builder.Services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
 
 // Email Service
 builder.Services.AddScoped<GoogleSenderService>();
@@ -261,6 +272,7 @@ app.Use(async (context, next) =>
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 SeedDatabase();
 
 // Health check and test endpoints for mobile

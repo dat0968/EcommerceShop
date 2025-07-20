@@ -48,8 +48,23 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                         Chitietcombos = p.Chitietcombos.Select(cc => new DetaisComboResponseDTO
                         {
                             MaSp = cc.MaSp,
-                            TenSp = cc.MaSpNavigation != null ? cc.MaSpNavigation.TenSanPham : "N/A",  // Thêm null check
-                            SoLuongSp = cc.SoLuongSP
+                            TenSp = cc.MaSpNavigation != null ? cc.MaSpNavigation.TenSanPham : "N/A",
+                            SoLuongSp = cc.SoLuongSP,
+                            SanPhamCTs = cc.MaSpNavigation!.Chitietsanphams
+                            .Where(ctsp => ctsp.IsActive == true)
+                            .Select(ctsp => new ProductDetailResponseDTO
+                            {
+                                MaCtsp = ctsp.MaCtsp,
+                                KichThuoc = ctsp.KichThuoc,
+                                MauSac = ctsp.MauSac,
+                                SoLuongTon = ctsp.SoLuongTon,
+                                DonGia = ctsp.DonGia,
+                                Images = ctsp.Hinhanhs.Select(img => new ImageProductResponseDTO
+                                {
+                                    MaCtsp = img.MaCtsp,
+                                    TenHinhAnh = img.TenHinhAnh
+                                }).ToList()
+                            }).ToList()
                         }).ToList()
                     });
 

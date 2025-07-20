@@ -2,7 +2,7 @@
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import ReviewProductCombo from '@/components/pages/customers/reviews/ReviewProductCombo.vue'
 import $ from 'jquery'
-
+import RecomendationProduct from '@/components/RecommendationProduct/RecomendationProduct.vue'
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
@@ -27,7 +27,7 @@ const quantity = ref('1')
 const activeTab = ref('desc')
 const recommendationProduct = ref([])
 const isLoading = ref(true)
-
+const readToken = ref({})
 function ReadToken(token) {
   if (token) {
     const decoded = jwtDecode(token)
@@ -172,12 +172,25 @@ const toggleFavoriteProduct = async () => {
 // Call Api ProductDetails
 const fetchAPI = async () => {
   try {
-    const response = await fetch(`${getUrlAPI.value}/api/Shop/Product/${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid) {
+      accessToken.value = validatetoken.newAccessToken
+      readToken.value = decodeToken(accessToken.value)
+    }
+    const maKhachHang = readToken.value?.IdUser ?? null
+    let url = `${getUrlAPI.value}/api/Shop/Product/${id}`
+    if (maKhachHang != null) {
+      url += `?maKh=${maKhachHang}`
+    }
+    const response = await fetch(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
     if (!response.ok) {
       throw new Error('Failed to FetchAPI')
     }
@@ -714,136 +727,7 @@ watch(
           </div>
         </div>
 
-        <!-- Recommendation Section with Smart Spacing -->
-        <div
-          v-if="isLogin"
-          class="recommendation-section"
-          :class="{ 'close-spacing': isShortDescription }"
-        >
-          <!-- Section Header -->
-          <div class="section-header">
-            <div class="header-content">
-              <h2 class="section-title">
-                <span class="title-icon">✨</span>
-                Gợi ý cho bạn
-              </h2>
-              <p class="section-subtitle">Những sản phẩm được chọn riêng cho bạn</p>
-            </div>
-            <div class="header-decoration">
-              <div class="decoration-line"></div>
-            </div>
-          </div>
-
-          <!-- Loading State -->
-          <div v-if="isLoading" class="loading-container">
-            <div class="loading-grid">
-              <div v-for="n in 8" :key="n" class="loading-card">
-                <div class="loading-image"></div>
-                <div class="loading-content">
-                  <div class="loading-line"></div>
-                  <div class="loading-line short"></div>
-                  <div class="loading-line price"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Products Grid -->
-          <div v-else-if="recommendationProduct.length > 0" class="products-container">
-            <div class="products-grid">
-              <div
-                v-for="(item, index) in recommendationProduct"
-                :key="item.maSp"
-                class="product-card"
-                :style="{ 'animation-delay': `${index * 0.1}s` }"
-              >
-                <!-- Product Image -->
-                <div class="product-image-container">
-                  <div class="product-image">
-                    <img
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                        item.productDetails[0].images[0].tenHinhAnh
-                      }`"
-                      :alt="item.tenSanPham"
-                      class="product-img"
-                    />
-                    <div class="image-overlay">
-                      <div class="overlay-content">
-                        <button
-                          class="action-btn favorite-btn"
-                          @click="addToFavorites(item.maSp)"
-                          title="Thêm vào yêu thích"
-                        >
-                          <svg viewBox="0 0 24 24" width="18" height="18">
-                            <path
-                              fill="currentColor"
-                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          class="action-btn cart-btn"
-                          @click="addToCartRecommendation(item.maSp)"
-                          title="Thêm vào giỏ hàng"
-                        >
-                          <svg viewBox="0 0 24 24" width="18" height="18">
-                            <path
-                              fill="currentColor"
-                              d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a1 1 0 0 0-1 1v11a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V8a1 1 0 0 0-1-1zM10 6a2 2 0 0 1 4 0v1h-4V6zm8 15a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9h2v1a1 1 0 0 0 2 0V9h4v1a1 1 0 0 0 2 0V9h2v12z"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Product Info -->
-                <div class="product-info">
-                  <h3 class="product-title">
-                    <router-link :to="`/product/${item.maSp}`" class="product-link">
-                      {{ item.tenSanPham }}
-                    </router-link>
-                  </h3>
-
-                  <!-- Rating -->
-                  <div class="product-rating">
-                    <div class="stars">
-                      <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= 4 }">
-                        <svg viewBox="0 0 24 24" width="14" height="14">
-                          <path
-                            fill="currentColor"
-                            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                    <span class="rating-count">(4.0)</span>
-                  </div>
-
-                  <!-- Price -->
-                  <div class="product-price">
-                    <span class="current-price">{{ formatPrice(item.khoangGia) }}</span>
-                  </div>
-
-                  <!-- Quick Actions -->
-                  <div class="quick-actions">
-                    <router-link :to="`/product/${item.maSp}`" class="view-btn">
-                      Xem chi tiết
-                    </router-link>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Empty State -->
-          <div v-else class="empty-state">
-            <div class="empty-icon">🛍️</div>
-            <h3>Không có gợi ý nào</h3>
-            <p>Hãy thử xem các sản phẩm khác để nhận được gợi ý phù hợp</p>
-          </div>
-        </div>
+        <RecomendationProduct />
       </div>
     </section>
     <!-- Product Details Section End -->
