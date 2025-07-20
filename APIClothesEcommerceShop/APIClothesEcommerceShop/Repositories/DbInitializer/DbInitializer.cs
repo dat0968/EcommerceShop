@@ -20,6 +20,8 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
             // _db.Database.EnsureCreated();
             InitTestAccount();
             // InitTestOrder(3);
+            // CreateOrderForTest("customer.demo@email.com");
+            // UpdateStreakForTest("customer.demo@email.com");
         }
         private void InitCombo(int numCreate, int? idOrder = null)
         {
@@ -162,7 +164,7 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
             _db.SaveChanges();
         }
 
-        private void InitTestOrder(int numCreate, string username = "customer.demo")
+        private void InitTestOrder(int numCreate, string username = "customer.demo", int? totalAmount = null)
         {
             var khachHang = _db.Khachhangs.FirstOrDefault(kh => kh.TenTaiKhoan == username);
             if (khachHang == null) return;
@@ -184,53 +186,62 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
                     PhiVanChuyen = 20000,
                     TienGoc = 0, // Sẽ tính sau
                     HinhThucTt = "VnPay",
-                    TinhTrang = "Chờ xử lý",
+                    TinhTrang = "Đã nhận",
                     IsActive = true
                 };
 
                 int tongTien = 0;
 
-                // Chọn ngẫu nhiên 1-3 sản phẩm cho hóa đơn này
-                var ctspInOrder = chitietsanphams.Take(random.Next(1, 4)).ToList();
-                List<Cthoadon> cthdInOrder = new();
-                foreach (var ctsp in ctspInOrder)
+                if (totalAmount.HasValue)
                 {
-                    int soLuong = random.Next(1, 5);
-                    int donGia = ctsp.DonGia;
-
-                    Cthoadon newCtHd = (new Cthoadon
-                    {
-                        MaCtsp = ctsp.MaCtsp,
-                        SoLuong = soLuong,
-                        Gia = donGia
-                    });
-
-                    tongTien += donGia * soLuong;
-
-                    cthdInOrder.Add(newCtHd);
+                    tongTien = totalAmount.Value;
                 }
-
-                var ctcbos = _db.Combos
-                    .Take(random.Next(1, 3))
-                    .ToList();
-                List<Chitietcombohoadon> ctcboInOrders = new();
-                foreach (var combo in ctcbos)
+                else
                 {
-                    int soLuong = random.Next(1, 3);
-                    int donGia =
-                     ((int?)combo?.Chitietcombos.Sum(ctbo => ctbo.SoLuongSP
-                     * ctbo.MaSpNavigation.Chitietsanphams.Average(ctsp => ctsp.DonGia)) ?? 0); // ? Maybe not fine
-
-                    Chitietcombohoadon ctcbo = (new Chitietcombohoadon
+                    // Chọn ngẫu nhiên 1-3 sản phẩm cho hóa đơn này
+                    var ctspInOrder = chitietsanphams.Take(random.Next(1, 4)).ToList();
+                    List<Cthoadon> cthdInOrder = new();
+                    foreach (var ctsp in ctspInOrder)
                     {
-                        MaCtsp = chitietsanphams.FirstOrDefault()?.MaCtsp ?? 3, // Combo không có mã chi tiết sản phẩm
-                        SoLuong = soLuong,
-                        DonGia = donGia,
-                        MaCombo = combo.MaCombo // Gán ID của combo
-                    });
+                        int soLuong = random.Next(1, 5);
+                        int donGia = ctsp.DonGia;
 
-                    tongTien += donGia * soLuong;
-                    ctcboInOrders.Add(ctcbo);
+                        Cthoadon newCtHd = (new Cthoadon
+                        {
+                            MaCtsp = ctsp.MaCtsp,
+                            SoLuong = soLuong,
+                            Gia = donGia
+                        });
+
+                        tongTien += donGia * soLuong;
+
+                        cthdInOrder.Add(newCtHd);
+                    }
+
+                    var ctcbos = _db.Combos
+                        .Take(random.Next(1, 3))
+                        .ToList();
+                    List<Chitietcombohoadon> ctcboInOrders = new();
+                    foreach (var combo in ctcbos)
+                    {
+                        int soLuong = random.Next(1, 3);
+                        int donGia =
+                         ((int?)combo?.Chitietcombos.Sum(ctbo => ctbo.SoLuongSP
+                         * ctbo.MaSpNavigation.Chitietsanphams.Average(ctsp => ctsp.DonGia)) ?? 0); // ? Maybe not fine
+
+                        Chitietcombohoadon ctcbo = (new Chitietcombohoadon
+                        {
+                            MaCtsp = chitietsanphams.FirstOrDefault()?.MaCtsp ?? 3, // Combo không có mã chi tiết sản phẩm
+                            SoLuong = soLuong,
+                            DonGia = donGia,
+                            MaCombo = combo.MaCombo // Gán ID của combo
+                        });
+
+                        tongTien += donGia * soLuong;
+                        ctcboInOrders.Add(ctcbo);
+                    }
+                    _db.AddRange(cthdInOrder);
+                    _db.AddRange(ctcboInOrders);
                 }
 
                 // Gán tổng tiền là tổng giá các sản phẩm giảm 10%
@@ -239,23 +250,24 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
                 _db.Hoadons.Add(hoadon);
                 _db.SaveChanges();
 
-                foreach (var cthd in cthdInOrder)
-                {
-                    cthd.MaHd = hoadon.MaHd;
-                }
-
-                foreach (var ctcbo in ctcboInOrders)
-                {
-                    ctcbo.MaHd = hoadon.MaHd;
-                }
-
-                _db.AddRange(cthdInOrder);
-                _db.AddRange(ctcboInOrders);
-                _db.SaveChanges();
-
                 Console.WriteLine($">>> Đã tạo hóa đơn {hoadon.MaHd} cho khách hàng {khachHang.HoTen} với tổng tiền {hoadon.TienGoc} VNĐ");
             }
 
+        }
+
+        public void CreateOrderForTest(string email, int? totalAmount = null)
+        {
+            InitTestOrder(1, email, totalAmount);
+        }
+
+        public void UpdateStreakForTest(string email, int streak)
+        {
+            var customer = _db.Khachhangs.FirstOrDefault(kh => kh.Email == email);
+            if (customer != null)
+            {
+                customer.Streak = streak;
+                _db.SaveChanges();
+            }
         }
     }
 }
