@@ -131,12 +131,42 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
+        private async Task<bool> CanSpin(int? userId)
+        {
+            if (!userId.HasValue || userId == 0)
+            {
+                return false;
+            }
+            var customer = await _db.Khachhangs
+                    .Include(kh => kh.Hoadons)
+                    .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+            if (customer == null)
+            {
+                return false;
+            }
+            bool isInWeekSteak = customer.Streak > 0 && customer.Streak % 7 == 0;
+
+            int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
+            decimal totalCompleted = customer.Hoadons
+                .Where(x => x.TinhTrang == CompletelyStatus)
+                .Sum(x => x.TienGoc - x.PhiVanChuyen);
+            int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
+
+            int spinsLeft = totalSpin - numPrivateCoupon;
+            return spinsLeft > 0;
+        }
+
         public async Task<ResponseAPI<dynamic>> CreatePrivateCoupon(int? userId)
         {
 
             ResponseAPI<dynamic> response = new();
             try
             {
+                if (!await CanSpin(userId))
+                {
+                    throw new Exception("Không đủ điều kiện để tạo coupon.");
+                }
+
                 if (userId == 0)
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
@@ -168,7 +198,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     coupon.SoTienGiam = new Random().Next(10, 15) * 10000;
                 }
-                await base.AddAsync(coupon);
+                await _db.AddAsync(coupon);
                 await _db.SaveChangesAsync();
                 var transformData = new
                 {
@@ -242,6 +272,11 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             ResponseAPI<dynamic> response = new();
             try
             {
+                if (!await CanSpin(userId))
+                {
+                    throw new Exception("Không đủ điều kiện để tạo coupon.");
+                }
+
                 if (userId == 0)
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");

@@ -128,23 +128,25 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
         {
             try
             {
-                var editCouponCode = new APIClothesEcommerceShop.Models.Macoupon
+                var editCouponCode = await db.Macoupons.FirstOrDefaultAsync(p => p.MaCode == maCoupon.MaCode);
+
+                if (editCouponCode != null)
                 {
-                    MaCode = maCoupon.MaCode,
-                    MoTa = maCoupon.MoTa,
-                    SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : 0,
-                    PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : 0,
-                    NgayKetThuc = maCoupon.NgayKetThuc,
-                    SoLuong = maCoupon.SoLuong,
-                    TrangThai = maCoupon.TrangThai,
-                    NgayBatDau = maCoupon.NgayBatDau,
-                    SoLuongDaDung = maCoupon.SoLuongDaDung,
-                    DonHangToiThieu = maCoupon.DonHangToiThieu,
-                };
-                db.Macoupons.Update(editCouponCode);
-                await db.SaveChangesAsync();
+                    editCouponCode.MoTa = maCoupon.MoTa;
+                    editCouponCode.SoTienGiam = maCoupon.SoTienGiam > 0 ? maCoupon.SoTienGiam : 0;
+                    editCouponCode.PhanTramGiam = maCoupon.PhanTramGiam > 0 ? maCoupon.PhanTramGiam : 0;
+                    editCouponCode.NgayKetThuc = maCoupon.NgayKetThuc;
+                    editCouponCode.SoLuong = maCoupon.SoLuong;
+                    editCouponCode.TrangThai = maCoupon.TrangThai;
+                    editCouponCode.NgayBatDau = maCoupon.NgayBatDau;
+                    editCouponCode.SoLuongDaDung = maCoupon.SoLuongDaDung;
+                    editCouponCode.DonHangToiThieu = maCoupon.DonHangToiThieu;
+
+                    db.Macoupons.Update(editCouponCode);
+                    await db.SaveChangesAsync();
+                }
             }
-           catch (Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("Error", ex);
             }
