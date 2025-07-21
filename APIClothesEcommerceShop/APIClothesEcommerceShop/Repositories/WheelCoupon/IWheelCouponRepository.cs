@@ -21,5 +21,6 @@ namespace APIClothesEcommerceShop.Repositories.WheelCoupon
         /// <param name="userId">ID người dùng</param>
         /// <returns>ResponseAPI với thông tin khách hàng đã cập nhật</returns>
         Task<ResponseAPI<Khachhang>> UpdateLastLoginAndStreak(int? userId);
+        Task<ResponseAPI<dynamic>> CreateBlankCoupon(int? userId);
     }
 }

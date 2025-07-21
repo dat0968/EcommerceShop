@@ -81,5 +81,16 @@ namespace APIClothesEcommerceShop.Controllers
             var response = await _unit.WheelCoupon.UpdateLastLoginAndStreak(userId);
             return Ok(response);
         }
+
+        /// <summary>
+        /// CreateBlankCoupon (POST): Tạo coupon rỗng cho người dùng khi quay vào ô "Chúc bạn may mắn lần sau". Lấy userId từ token.
+        /// </summary>
+        [HttpPost("blank-coupon")]
+        public async Task<IActionResult> CreateBlankCoupon()
+        {
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var response = await _unit.WheelCoupon.CreateBlankCoupon(userId);
+            return Ok(response);
+        }
     }
 }

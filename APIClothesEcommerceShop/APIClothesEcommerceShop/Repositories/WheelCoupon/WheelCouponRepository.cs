@@ -236,5 +236,47 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
         #endregion
+
+        public async Task<ResponseAPI<dynamic>> CreateBlankCoupon(int? userId)
+        {
+            ResponseAPI<dynamic> response = new();
+            try
+            {
+                if (userId == 0)
+                {
+                    throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
+                }
+                var customer = await _db.Khachhangs.FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+                if (customer == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
+                }
+
+                var blankCoupon = new Models.Macoupon()
+                {
+                    MaCode = "BLANK", // A special code for blank coupons
+                    MoTa = $"Mã coupon rỗng cho khách hàng {customer.HoTen} (không trúng giải)",
+                    DonHangToiThieu = 0,
+                    NgayBatDau = DateTime.Now,
+                    NgayKetThuc = DateTime.Now, // Expire immediately
+                    SoLuong = 1,
+                    SoLuongDaDung = 1, // Mark as used immediately
+                    TrangThai = false, // Mark as inactive
+                    PhanTramGiam = 0,
+                    SoTienGiam = 0,
+                    MaKhachHang = userId
+                };
+
+                await base.AddAsync(blankCoupon);
+                await _db.SaveChangesAsync();
+
+                response.SetSuccessResponse(data: new { message = "Blank coupon created successfully" });
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
     }
 }

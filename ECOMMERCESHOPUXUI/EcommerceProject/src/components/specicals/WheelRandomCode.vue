@@ -278,9 +278,19 @@ const spin = async () => {
         // spinConsumed remains false, as the spin was not successfully completed due to API response
       }
     } else {
-      // If it's a blank spin, target the blank slot
+      // If it's a blank spin, target the blank slot and call API to create blank coupon
       targetIndex = blankIndex;
-      spinConsumed = true; // Blank spin consumed
+      const blankCouponRes = await postToApi('/WheelCoupon/blank-coupon');
+      if (blankCouponRes && blankCouponRes.success) {
+        spinConsumed = true; // Blank coupon successfully created, spin consumed
+      } else {
+        console.error('Failed to create blank coupon:', blankCouponRes?.message);
+        Swal.fire({
+          title: 'Lỗi!',
+          text: blankCouponRes?.message || 'Không thể ghi nhận lượt quay trống. Vui lòng thử lại.',
+          icon: 'error',
+        });
+      }
     }
   } catch (error) {
     console.error('Failed to get coupon from API:', error);
