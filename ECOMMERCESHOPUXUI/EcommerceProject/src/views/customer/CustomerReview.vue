@@ -192,7 +192,11 @@
                     <div class="flex-grow-1">
                       <h6 class="mb-1">{{ item.tenDoiTuong }}</h6>
                       <div class="star-rating mb-2">
-                        <span v-for="n in 5" :key="n" class="star" :class="{ filled: n <= item.soSao }"
+                        <span
+                          v-for="n in 5"
+                          :key="n"
+                          class="star"
+                          :class="{ filled: n <= item.soSao }"
                           >★</span
                         >
                         <span class="ms-2 text-muted small">{{
@@ -250,7 +254,6 @@ import * as axiosConfig from '@/utils/axiosClient'
 import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
 import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
-import offensiveWords from '@/assets/default/texts/vn_offensive_words.json'
 
 import Swal from 'sweetalert2'
 import VueEasyLightbox from 'vue-easy-lightbox'
@@ -269,15 +272,12 @@ export default {
       isLightboxOpen: false,
       lightboxImages: [],
       lightboxIndex: 0,
-      
     }
   },
   created() {
-    this.loadOffensiveWords()
     this.reloadReviews()
   },
   methods: {
-    
     async reloadReviews() {
       this.isLoading = true
       try {
@@ -377,8 +377,6 @@ export default {
         Swal.fire('Chưa nhập nội dung', 'Vui lòng chia sẻ cảm nhận của bạn.', 'warning')
         return
       }
-      
-
       item._isSubmitting = true
       try {
         const formData = new FormData()

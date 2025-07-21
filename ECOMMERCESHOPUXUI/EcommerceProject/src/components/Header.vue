@@ -6,30 +6,72 @@
     <header class="header">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-xl-3 col-lg-2" style="width: 300px; margin-right: 50px; padding-bottom: 20px">
-            <svg viewBox="0 0 700 250" role="img" aria-label="Angel soft curvy logo with wings and animated gradient">
+          <div
+            class="col-xl-3 col-lg-2"
+            style="width: 300px; margin-right: 50px; padding-bottom: 20px"
+          >
+            <svg
+              viewBox="0 0 700 250"
+              role="img"
+              aria-label="Angel soft curvy logo with wings and animated gradient"
+            >
               <defs>
                 <linearGradient id="start" x1="0%" y1="0%" x2="0%" y2="100%">
                   <stop offset="20%" stop-color="#EC4E79">
-                    <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;" dur="6s" repeatCount="indefinite" />
+                    <animate
+                      attributeName="stop-color"
+                      values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;"
+                      dur="6s"
+                      repeatCount="indefinite"
+                    />
                   </stop>
                   <stop offset="40%" stop-color="#ABA2B7">
-                    <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;" dur="6s" repeatCount="indefinite" />
+                    <animate
+                      attributeName="stop-color"
+                      values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;"
+                      dur="6s"
+                      repeatCount="indefinite"
+                    />
                   </stop>
                   <stop offset="55%" stop-color="#5CCAE7">
-                    <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;" dur="6s" repeatCount="indefinite" />
+                    <animate
+                      attributeName="stop-color"
+                      values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;"
+                      dur="6s"
+                      repeatCount="indefinite"
+                    />
                   </stop>
                 </linearGradient>
               </defs>
               <!-- Left wing - smooth curves -->
-              <path class="wing left" d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z" />
-              <path class="wing left" d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z" opacity="0.5" />
+              <path
+                class="wing left"
+                d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z"
+              />
+              <path
+                class="wing left"
+                d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
+                opacity="0.5"
+              />
               <!-- Right wing - smooth curves -->
-              <path class="wing right" d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z" />
-              <path class="wing right" d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z" opacity="0.5" />
+              <path
+                class="wing right"
+                d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z"
+              />
+              <path
+                class="wing right"
+                d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
+                opacity="0.5"
+              />
               <!-- Angel text with soft cursive font -->
-              <RouterLink to="/" style="text-decoration: none;">
-                <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
+              <RouterLink to="/" style="text-decoration: none">
+                <text
+                  x="50%"
+                  y="60%"
+                  dominant-baseline="middle"
+                  text-anchor="middle"
+                  class="angel-text"
+                >
                   Angel
                 </text>
               </RouterLink>
@@ -55,24 +97,51 @@
               <div class="header__right__auth">
                 <template v-if="!isLoggedIn">
                   <div class="dropdown">
-                    <button class="dropdown-toggle text-primary" id="loginDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button
+                      class="dropdown-toggle text-primary"
+                      id="loginDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
                       Tài khoản
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
-                      <li><router-link to="/Login" class="dropdown-item">Đăng nhập</router-link></li>
-                      <li><router-link to="/Register" class="dropdown-item">Đăng ký</router-link></li>
+                      <li>
+                        <router-link to="/Login" class="dropdown-item">Đăng nhập</router-link>
+                      </li>
+                      <li>
+                        <router-link to="/Register" class="dropdown-item">Đăng ký</router-link>
+                      </li>
                     </ul>
                   </div>
                 </template>
                 <template v-else>
                   <div class="dropdown">
-                    <button class="dropdown-toggle d-flex align-items-center" id="accountDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                      <img src="/src/assets/default/Avtdf.jpg" alt="Avtdf" class="avatar-img" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 8px;">
+                    <button
+                      class="dropdown-toggle d-flex align-items-center"
+                      id="accountDropdown"
+                      data-bs-toggle="dropdown"
+                      aria-expanded="false"
+                    >
+                      <img
+                        src="/src/assets/default/Avtdf.jpg"
+                        alt="Avtdf"
+                        class="avatar-img"
+                        style="width: 40px; height: 40px; border-radius: 50%; margin-right: 8px"
+                      />
                       <span></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                      <li><a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger">Đăng xuất</a></li>
-                      <li><router-link to="/profile" class="dropdown-item text-danger">Cập nhật thông tin</router-link></li>
+                      <li>
+                        <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"
+                          >Đăng xuất</a
+                        >
+                      </li>
+                      <li>
+                        <router-link to="/profile" class="dropdown-item text-danger"
+                          >Cập nhật thông tin</router-link
+                        >
+                      </li>
                     </ul>
                   </div>
                 </template>
@@ -107,34 +176,6 @@
                   <WheelRandomCode />
                 </li>
               </ul>
-              <div class="dropdown">
-                <button
-                  class="btn btn-light dropdown-toggle"
-                  type="button"
-                  id="userDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i class="fa fa-user"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                  <template v-if="!isLoggedIn">
-                    <li><router-link class="dropdown-item" to="/Login">Đăng nhập</router-link></li>
-                    <li><router-link class="dropdown-item" to="/Register">Đăng ký</router-link></li>
-                  </template>
-                  <template v-else>
-                    <li>
-                      <router-link class="dropdown-item" to="/Profile"
-                        >Thông tin cá nhân</router-link
-                      >
-                    </li>
-                    <li><hr class="dropdown-divider" /></li>
-                    <li>
-                      <a class="dropdown-item" href="#" @click.prevent="handleLogout">Đăng xuất</a>
-                    </li>
-                  </template>
-                </ul>
-              </div>
             </div>
           </div>
         </div>
@@ -182,7 +223,7 @@ const handleLogout = () => {
     confirmButtonColor: '#d33',
     cancelButtonColor: '#3085d6',
     confirmButtonText: 'Đăng xuất',
-    cancelButtonText: 'Hủy'
+    cancelButtonText: 'Hủy',
   }).then((result) => {
     if (result.isConfirmed) {
       Cookies.remove('accessToken')
@@ -192,7 +233,7 @@ const handleLogout = () => {
         title: 'Đăng xuất thành công!',
         icon: 'success',
         confirmButtonColor: '#3085d6',
-        timer: 1500
+        timer: 1500,
       }).then(() => {
         router.push('/Login')
       })
@@ -275,7 +316,7 @@ onMounted(() => {
   position: absolute;
   top: -5px;
   right: -5px;
-  background: #EC4E79;
+  background: #ec4e79;
   color: #fff;
   border-radius: 50%;
   width: 16px;

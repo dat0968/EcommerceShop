@@ -28,7 +28,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
                 }
-                bool havePrivateCoupon = await base.ExistsAsync(x => x.MaKhachHang == userId);
+                bool havePrivateCoupon = await base.ExistsAsync(x => x.MaKhachHang == userId && x.TrangThai == true && x.SoLuong > 0);
                 response.SetSuccessResponse(data: havePrivateCoupon);
             }
             catch (Exception ex)
@@ -46,7 +46,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
                 }
-                var customer = await _db.Khachhangs.FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+                var customer = await _db.Khachhangs
+                        .Include(kh => kh.Hoadons)
+                        .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
                 if (customer == null)
                 {
                     throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
@@ -146,15 +148,18 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
                 }
                 bool isPercent = new Random().NextDouble() > 0.5;
-                var coupon = new Models.Macoupon();
-                coupon.MaCode = GenerateRandomCouponCode();
-                coupon.MoTa = $"Mã coupon riêng cho khách hàng {customer.HoTen}";
-                coupon.DonHangToiThieu = 1;
-                coupon.NgayBatDau = DateTime.Now;
-                coupon.NgayKetThuc = DateTime.MaxValue;
-                coupon.SoLuong = 1;
-                coupon.SoLuongDaDung = 0;
-                coupon.TrangThai = true;
+                var coupon = new Models.Macoupon()
+                {
+                    MaCode = GenerateRandomCouponCode(),
+                    MoTa = $"Mã coupon riêng cho khách hàng {customer.HoTen}",
+                    DonHangToiThieu = 1,
+                    NgayBatDau = DateTime.Now,
+                    NgayKetThuc = DateTime.MaxValue,
+                    SoLuong = 1,
+                    SoLuongDaDung = 0,
+                    TrangThai = true,
+                    MaKhachHang = userId
+                };
                 if (isPercent)
                 {
                     coupon.PhanTramGiam = (new Random().Next(10, 30));
@@ -164,6 +169,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     coupon.SoTienGiam = new Random().Next(10, 15) * 10000;
                 }
                 await base.AddAsync(coupon);
+                await _db.SaveChangesAsync();
                 var transformData = new
                 {
                     maCode = coupon.MaCode,

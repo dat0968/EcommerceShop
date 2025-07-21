@@ -62,6 +62,15 @@
             <span v-else>Quay ({{ maxSpins - spinCount }} lượt)</span>
           </button>
 
+          <button
+            class="btn btn-info mt-3 px-4 py-2 fs-5 text-white"
+            :disabled="checkingCoupon"
+            @click="checkSpinCount"
+          >
+            <span v-if="checkingCoupon">Đang kiểm tra...</span>
+            <span v-else>Kiểm tra lượt quay</span>
+          </button>
+
           <!-- Result Display -->
           <div
             v-if="selectedPrize"
@@ -109,6 +118,7 @@ const selectedPrize = ref(null)
 const maxSpins = ref(0)
 const spinCount = ref(0)
 const copied = ref(false)
+const checkingCoupon = ref(false) // New state for loading button
 
 // --- Computed Properties ---
 const arc = computed(() => (prizes.value.length > 0 ? 360 / prizes.value.length : 0))
@@ -224,87 +234,99 @@ const spin = async () => {
   selectedPrize.value = null
   copied.value = false
 
-  // Decide if user will land on blank (1/10 chance)
+  // Determine if it's a blank spin (10% chance)
   const blankIndex = prizes.value.findIndex((p) => p.isBlank)
-  const isBlank = Math.random() < 0.9 // 90% chance
+  const willBeBlank = Math.random() < 0.1; // 10% chance of landing on blank
 
-  if (isBlank) {
-    // Spin and stop at blank after 5s
-    const minRounds = 5
-    const extraRotation = 360 * minRounds
-    const finalAngle = extraRotation + (360 - blankIndex * arc.value - arc.value / 2)
-    rotation.value += finalAngle
-    setTimeout(() => {
-      selectedPrize.value = prizes.value[blankIndex]
-      spinning.value = false
-      spinCount.value++
-    }, 5000)
-    return
-  }
+  let targetIndex;
+  let couponData = null;
+  let spinConsumed = false; // New flag to track if spin was consumed
 
-  // Not blank: spin continuously while waiting for API
-  let running = true
-  let currentRotation = rotation.value
-  let frameId
-  const speed = 15 // degrees per frame
+  // Start continuous spin animation
+  let running = true;
+  let currentRotation = rotation.value;
+  let frameId;
+  const speed = 15; // degrees per frame
   function animateSpin() {
-    if (!running) return
-    currentRotation += speed
-    rotation.value = currentRotation
-    frameId = requestAnimationFrame(animateSpin)
+    if (!running) return;
+    currentRotation += speed;
+    rotation.value = currentRotation;
+    frameId = requestAnimationFrame(animateSpin);
   }
-  animateSpin()
+  animateSpin();
 
   try {
-    const res = await postToApi('/WheelCoupon/private-coupon')
-    running = false
-    cancelAnimationFrame(frameId)
-    // Find a random unrevealed non-blank slot to stop at
-    const availableIndexes = prizes.value
-      .map((p, idx) => (!p.isBlank && !p.revealed ? idx : -1))
-      .filter((idx) => idx !== -1)
-    const targetIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)]
-    // Calculate final rotation to stop at targetIndex
-    const finalAngle = 360 - (targetIndex * arc.value + arc.value / 2)
-    // Smoothly rotate to target
-    const currentDeg = rotation.value % 360
-    let delta = finalAngle - currentDeg
-    if (delta < 0) delta += 360
-    const smoothRotation = currentRotation + delta + 360 * 2 // 2 extra rounds for effect
-    rotation.value = smoothRotation
-    setTimeout(() => {
+    if (!willBeBlank) {
+      // If not blank, call API to get a coupon
+      const res = await postToApi('/WheelCoupon/private-coupon');
       if (res && res.success && res.data) {
-        const coupon = res.data
-        const winningPrize = {
-          name: coupon.isPercent
-            ? `Giảm ${coupon.phanTramGiam}%`
-            : `Giảm ${formatCurrency(coupon.soTienGiam)}`,
-          code: coupon.maCode,
-          isPercent: coupon.isPercent,
-          revealed: true,
-          isBlank: false,
-        }
-        prizes.value.splice(targetIndex, 1, winningPrize)
-        selectedPrize.value = winningPrize
+        couponData = res.data;
+        // Find a random unrevealed non-blank slot to stop at
+        const availableIndexes = prizes.value
+          .map((p, idx) => (!p.isBlank && !p.revealed ? idx : -1))
+          .filter((idx) => idx !== -1);
+        targetIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+        spinConsumed = true; // Coupon successfully received, spin consumed
       } else {
-        selectedPrize.value = { name: 'Chúc bạn may mắn lần sau!', isBlank: true }
+        // If API call succeeds but returns no data or success: false
+        targetIndex = blankIndex; // Default to blank prize
+        Swal.fire({
+          title: 'Lỗi!',
+          text: res?.message || 'Không thể nhận kết quả từ máy chủ. Vui lòng thử lại.',
+          icon: 'error',
+        });
+        // spinConsumed remains false, as the spin was not successfully completed due to API response
       }
-      spinning.value = false
-      spinCount.value++
-    }, 2000)
+    } else {
+      // If it's a blank spin, target the blank slot
+      targetIndex = blankIndex;
+      spinConsumed = true; // Blank spin consumed
+    }
   } catch (error) {
-    running = false
-    cancelAnimationFrame(frameId)
-    selectedPrize.value = { name: 'Lỗi! Vui lòng thử lại.', isBlank: true }
+    console.error('Failed to get coupon from API:', error);
+    // If API call fails, default to blank
+    targetIndex = blankIndex;
     Swal.fire({
       title: 'Lỗi!',
-      text: 'Không thể nhận kết quả từ máy chủ. Vui lòng thử lại.',
+      text: 'Đã xảy ra lỗi khi nhận kết quả từ máy chủ. Vui lòng thử lại.',
       icon: 'error',
-    })
-    spinning.value = false
-    spinCount.value++
+    });
+    // spinConsumed remains false, as the spin was not successfully completed due to network error
+  } finally {
+    running = false;
+    cancelAnimationFrame(frameId);
+
+    // Calculate final rotation to stop at targetIndex
+    const finalAngle = 360 - (targetIndex * arc.value + arc.value / 2);
+    const currentDeg = rotation.value % 360;
+    let delta = finalAngle - currentDeg;
+    if (delta < 0) delta += 360;
+    const smoothRotation = currentRotation + delta + 360 * 2; // 2 extra rounds for effect
+    rotation.value = smoothRotation;
+
+    setTimeout(() => {
+      if (couponData) {
+        const winningPrize = {
+          name: couponData.isPercent
+            ? `Giảm ${couponData.phanTramGiam}%`
+            : `Giảm ${formatCurrency(couponData.soTienGiam)}`,
+          code: couponData.maCode,
+          isPercent: couponData.isPercent,
+          revealed: true,
+          isBlank: false,
+        };
+        prizes.value.splice(targetIndex, 1, winningPrize);
+        selectedPrize.value = winningPrize;
+      } else {
+        selectedPrize.value = prizes.value[targetIndex]; // This will be the blank prize or error blank
+      }
+      spinning.value = false;
+      if (spinConsumed) { // Only increment if the spin was successfully consumed
+        spinCount.value++;
+      }
+    }, 2000); // Adjust timeout as needed for animation
   }
-}
+};
 
 const copyCode = (code) => {
   if (!code || !navigator.clipboard) return
@@ -321,6 +343,38 @@ const copyCode = (code) => {
       Swal.fire({ title: 'Lỗi', text: 'Không thể sao chép mã.', icon: 'error' })
     })
 }
+
+const checkSpinCount = async () => {
+  checkingCoupon.value = true;
+  try {
+    const res = await getFromApi('/WheelCoupon/time-spin-wheel-coupon');
+    if (res && res.success) {
+      const spins = Number(res.data) || 0;
+      maxSpins.value = spins; // Update maxSpins with the fetched value
+      Swal.fire({
+        title: 'Lượt quay của bạn',
+        text: `Bạn hiện có ${spins} lượt quay.`, 
+        icon: 'info',
+        confirmButtonText: 'Đã hiểu'
+      });
+    } else {
+      Swal.fire({
+        title: 'Lỗi',
+        text: res?.message || 'Không thể kiểm tra lượt quay. Vui lòng thử lại.',
+        icon: 'error',
+      });
+    }
+  } catch (error) {
+    console.error('Failed to check spin count:', error);
+    Swal.fire({
+      title: 'Lỗi',
+      text: 'Đã xảy ra lỗi khi kiểm tra lượt quay. Vui lòng thử lại.',
+      icon: 'error',
+    });
+  } finally {
+    checkingCoupon.value = false;
+  }
+};
 </script>
 
 <style scoped>
