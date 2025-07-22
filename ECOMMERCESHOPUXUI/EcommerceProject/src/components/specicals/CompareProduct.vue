@@ -989,7 +989,7 @@ export default {
         }
 
         // Use the selected or uploaded model image for the try-on process
-        const tryOnImageResultUrl = await this.processWithStabilityAI(modelInfo.url, productImages)
+        const tryOnImageResultUrl = await this.processWithStabilityAI(modelInfo.url, productImages, group.products)
 
         // Combine the try-on image with the original product images for Gemini analysis
         const combinedImageForGemini = await this.combineImagesOnCanvas([
@@ -997,7 +997,7 @@ export default {
           ...productImages,
         ])
 
-        const geminiRatings = await this.analyzeImageWithGemini(combinedImageForGemini)
+        const geminiRatings = await this.analyzeImageWithGemini(combinedImageForGemini, group.products)
 
         this.tryOnResults[groupIdx] = {
           model: modelInfo,
@@ -1094,7 +1094,7 @@ export default {
         throw new Error('Failed to upload image to Cloudinary: ' + error.message)
       }
     },
-    async processWithStabilityAI(modelDataUrl, productDataUrls) {
+    async processWithStabilityAI(modelDataUrl, productDataUrls, productsData) {
       // Process images with Stability AI API
       try {
         const formData = new FormData()
@@ -1102,7 +1102,19 @@ export default {
         productDataUrls.forEach((url, index) => {
           formData.append(`product_image_${index}`, dataURLtoBlob(url))
         })
-        formData.append('prompt', 'A fashion model wearing the provided clothes.')
+        let prompt = 'A fashion model wearing the provided clothes.'
+        if (productsData && productsData.length > 0) {
+            const productDescriptions = productsData.map(item => {
+                if (item.type === 'combo') {
+                    const comboItems = item.products.map(prod => `${prod.variant.color} ${prod.name}`).join(' and ')
+                    return `a combo including ${comboItems}`
+                } else {
+                    return `${item.variant.color} ${item.name}`
+                }
+            }).join(' and ')
+            prompt = `A fashion model wearing ${productDescriptions}.`
+        }
+        formData.append('prompt', prompt)
         formData.append('output_format', 'jpeg')
 
         const response = await fetch('https://api.stability.ai/v2beta/stable-image/generate/sd3', {
@@ -1168,12 +1180,26 @@ export default {
 
       return canvas.toDataURL('image/jpeg')
     },
-    async analyzeImageWithGemini(imageDataUrl) {
+    async analyzeImageWithGemini(imageDataUrl, productsData) {
       try {
         const API_KEY = this.apiKeys.geminiApiKey
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`
 
         const base64Image = imageDataUrl.split(',')[1]
+
+        let promptText = 'Phân tích tính thẩm mỹ, phong cách và sự phù hợp giới tính của trang phục trong hình ảnh này. Cung cấp điểm thẩm mỹ trên thang điểm 10, và mô tả phong cách cũng như sự phù hợp giới tính. Định dạng phản hồi dưới dạng đối tượng JSON với các khóa: aesthetic_score (float), style (string), gender_suitability (string).'
+
+        if (productsData && productsData.length > 0) {
+            const productDetails = productsData.map(item => {
+                if (item.type === 'combo') {
+                    const comboItems = item.products.map(prod => `  - ${prod.name} (${prod.variant.color}, ${prod.variant.size})`).join('\n')
+                    return `Combo: ${item.comboName}\nMô tả: ${item.description}\nCác sản phẩm:\n${comboItems}`
+                } else {
+                    return `Sản phẩm: ${item.name}\nDanh mục: ${item.category}\nMô tả: ${item.description}\nMàu sắc: ${item.variant.color}\nKích thước: ${item.variant.size}`
+                }
+            }).join('\n\n')
+            promptText = `Dựa trên thông tin sản phẩm gốc sau:\n\n${productDetails}\n\nPhân tích tính thẩm mỹ, phong cách và sự phù hợp giới tính của trang phục được người mẫu mặc trong hình ảnh đã cung cấp. Xem xét mức độ phù hợp của trang phục với người mẫu và tổng thể hình ảnh. Cung cấp điểm thẩm mỹ trên thang điểm 10, và mô tả phong cách cũng như sự phù hợp giới tính. Định dạng phản hồi dưới dạng đối tượng JSON với các khóa: aesthetic_score (float), style (string), gender_suitability (string).`
+        }
 
         const response = await fetch(API_URL, {
           method: 'POST',
@@ -1185,7 +1211,7 @@ export default {
               {
                 parts: [
                   {
-                    text: 'Analyze the aesthetic, style, and gender suitability of the clothing in this image. Provide a score out of 10 for aesthetic, and describe the style and gender suitability. Format the response as a JSON object with keys: aesthetic_score (float), style (string), gender_suitability (string).',
+                    text: promptText,
                   },
                   { inline_data: { mime_type: 'image/jpeg', data: base64Image } },
                 ],
