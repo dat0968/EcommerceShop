@@ -22,6 +22,7 @@ import 'owl.carousel'
 import 'jquery.nicescroll'
 import '../../assets/Customer/js/main.js'
 import chatbot from '@/components/chatbot/chatbot.vue'
+import CompareProduct from '@/components/specicals/CompareProduct.vue'
 // import 'owl.carousel/dist/assets/owl.carousel.min.css'
 </script>
 <template>
@@ -29,6 +30,7 @@ import chatbot from '@/components/chatbot/chatbot.vue'
     <HeaderComponent />
     <router-view :key="$route.fullPath" />
     <chatbot></chatbot>
+    <CompareProduct/>
     <FooterComponent />
   </div>
 </template>

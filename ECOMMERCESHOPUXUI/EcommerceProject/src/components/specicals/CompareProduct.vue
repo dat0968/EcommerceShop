@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Nút so sánh sản phẩm cố định giữa dưới -->
-    <button class="compare-btn-fixed" @click="showModal = true">So sánh sản phẩm</button>
+    <button class="compare-btn-fixed" @click="showModal = true"></button>
 
     <!-- Modal so sánh sản phẩm -->
     <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
@@ -989,12 +989,17 @@ export default {
         }
 
         // Use the selected or uploaded model image for the try-on process
-        const tryOnImageResultUrl = await this.processWithStabilityAI(modelInfo.url, productImages, group.products)
+        let modelImageForAI = modelInfo.url;
+        if (!modelImageForAI.startsWith('data:')) {
+            const loadedModelImage = await this.loadImage(modelImageForAI);
+            modelImageForAI = imageToDataURL(loadedModelImage);
+        }
+        const tryOnImageResultUrl = await this.processWithStabilityAI(modelImageForAI, productImages.map(img => imageToDataURL(img)), group.products)
 
         // Combine the try-on image with the original product images for Gemini analysis
         const combinedImageForGemini = await this.combineImagesOnCanvas([
           await this.loadImage(tryOnImageResultUrl),
-          ...productImages,
+          ...(productImages.map(img => imageToDataURL(img))),
         ])
 
         const geminiRatings = await this.analyzeImageWithGemini(combinedImageForGemini, group.products)
@@ -1024,35 +1029,7 @@ export default {
       this.userModelPreviewUrl = ''
       this.selectedTryOnModel = null
     },
-    async simulateChangeClothesAI(modelUrlOrDataUrl, productImages) {
-      // This function now directly uses Stability AI, which is more efficient.
-      try {
-        // Step 1: Convert all images to data URLs
-        const modelDataUrl = modelUrlOrDataUrl.startsWith('data:')
-          ? modelUrlOrDataUrl
-          : imageToDataURL(await this.loadImage(modelUrlOrDataUrl))
-
-        const productDataUrls = []
-        for (const prodImg of productImages) {
-          productDataUrls.push(imageToDataURL(prodImg))
-        }
-
-        // Step 2: Send to Stability AI for processing
-        const processedImageUrl = await this.processWithStabilityAI(modelDataUrl, productDataUrls)
-        return processedImageUrl
-      } catch (error) {
-        console.error('Error during AI processing:', error)
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi xử lý AI',
-          text:
-            'Đã xảy ra lỗi khi xử lý ảnh với AI: ' +
-            error.message +
-            '. Vui lòng kiểm tra console để biết thêm chi tiết.',
-        })
-        throw error
-      }
-    },
+    
     async uploadToCloudinary(urlOrDataUrl, tag) {
       // Upload image to Cloudinary using direct API call
       try {
@@ -1129,9 +1106,11 @@ export default {
         if (!response.ok) {
           const errorData = await response.json()
           console.error('Error from Stability AI API:', errorData)
-          throw new Error(
-            `Stability AI API request failed: ${errorData.message || response.statusText}`,
-          )
+          let errorMessage = `Stability AI API request failed: ${errorData.message || response.statusText}`;
+          if (response.status === 402) {
+            errorMessage = 'Stability AI API request failed: 402 Payment Required. Please check your API key and billing details.';
+          }
+          throw new Error(errorMessage);
         }
 
         const imageBlob = await response.blob()
