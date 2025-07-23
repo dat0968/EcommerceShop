@@ -160,7 +160,6 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 var cthoadons = await _db.Cthoadons
                     .Include(ct => ct.MaHdNavigation)
-                        .Where(ct => ct.MaHdNavigation.MaKh == userId && ct.MaHdNavigation.TinhTrang == filterStatusOrder)
                     .Include(ct => ct.DanhGia)
                         .ThenInclude(dg => dg.KhachHang)
                     .Include(ct => ct.MaCtspNavigation)
@@ -168,7 +167,10 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Include(ct => ct.MaCtspNavigation)
                         .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .Include(ct => ct.MaComboNavigation)
-                    .AsNoTracking().ToListAsync();
+                        .ThenInclude(cbo => cbo.Hinh)
+                    .Where(ct => (ct.MaHdNavigation.MaKh == userId && ct.MaHdNavigation.TinhTrang == filterStatusOrder) || ct.DanhGia != null)
+                    .AsNoTracking()
+                    .ToListAsync();
 
                 var notReviewIn7days = new List<ReviewResponseDTO>();
                 var listReviewed = new List<ReviewResponseDTO>();
