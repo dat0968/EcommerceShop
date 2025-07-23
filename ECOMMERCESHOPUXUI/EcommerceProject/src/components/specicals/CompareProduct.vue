@@ -1,14 +1,16 @@
 <template>
   <div>
     <!-- Nút so sánh sản phẩm cố định giữa dưới -->
-    <button class="compare-btn-fixed" @click="showModal = true"></button>
+    <button class="compare-btn-fixed" @click="showModal = true" title="So sánh sản phẩm">
+      <i class="bi bi-arrow-left-right"></i>
+    </button>
 
     <!-- Modal so sánh sản phẩm -->
     <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
       <div class="compare-modal">
         <div class="modal-header">
-          <button class="col-1 btn" @click="showSidebarModal = !showSidebarModal">
-            {{ showSidebarModal ? '>' : '=' }}
+          <button class="col-1 btn btn-light" @click="showSidebarModal = !showSidebarModal" title="Danh sách sản phẩm">
+            <i :class="showSidebarModal ? 'bi bi-chevron-left' : 'bi bi-list-ul'"></i>
           </button>
           <h2 class="text-center col-10">So sánh sản phẩm</h2>
           <button class="btn col-1" @click="showApiSettingsModal" title="Cài đặt API Keys">
@@ -506,21 +508,21 @@
               />
             </div>
             <div class="form-group">
-              <label for="stabilityApiKey" class="d-flex align-items-center">
-                Stability AI API Key
+              <label for="lightxApiKey" class="d-flex align-items-center">
+                LightX API Key
                 <i
                   class="bi bi-info-circle ms-2"
                   style="cursor: pointer"
-                  @click="showApiKeyHelp('stability')"
+                  @click="showApiKeyHelp('lightx')"
                   title="Làm thế nào để lấy API Key?"
                 ></i>
               </label>
               <input
                 type="text"
-                id="stabilityApiKey"
-                v-model="apiKeys.stabilityApiKey"
+                id="lightxApiKey"
+                v-model="apiKeys.lightxApiKey"
                 class="form-control"
-                placeholder="Nhập Stability AI API Key"
+                placeholder="Nhập LightX API Key"
               />
             </div>
             <div class="form-group">
@@ -631,7 +633,7 @@ export default {
         cloudinaryApiSecret: localStorage.getItem('cloudinaryApiSecret') || '',
         cloudinaryCloudName: localStorage.getItem('cloudinaryCloudName') || '',
         cloudinaryUploadPreset: localStorage.getItem('cloudinaryUploadPreset') || 'unsigned_upload',
-        stabilityApiKey: localStorage.getItem('stabilityApiKey') || '',
+        lightxApiKey: localStorage.getItem('lightxApiKey') || '',
         geminiApiKey: localStorage.getItem('geminiApiKey') || '',
       },
       compareGroups: [
@@ -677,13 +679,13 @@ export default {
       this.selectedProducts = CompareStorageHelper.getCompareList()
     },
     showApiKeyHelp(keyType) {
-      if (keyType === 'stability') {
+      if (keyType === 'lightx') {
         alert(
-          'Cách lấy Stability AI API Key:\n\n' +
-            '1. Đăng ký hoặc đăng nhập vào tài khoản DreamStudio tại https://dreamstudio.com/\n' +
-            '2. Nhấp vào biểu tượng tài khoản của bạn ở góc trên bên phải.\n' +
-            '3. Chọn "API Keys" từ menu.\n' +
-            '4. Sao chép (copy) API Key của bạn và dán vào đây.',
+          'Cách lấy LightX API Key:\n\n' +
+            '1. Đăng ký hoặc đăng nhập vào tài khoản LightX tại https://www.lightxeditor.com/\n' +
+            '2. Điều hướng đến phần API hoặc cài đặt tài khoản của bạn.\n' +
+            '3. Tạo một API Key mới hoặc sao chép một API Key hiện có.\n' +
+            '4. Dán API Key của bạn vào đây.',
         )
       } else if (keyType === 'gemini') {
         alert(
@@ -899,7 +901,7 @@ export default {
         !this.apiKeys.cloudinaryApiKey ||
         !this.apiKeys.cloudinaryApiSecret ||
         !this.apiKeys.cloudinaryCloudName ||
-        !this.apiKeys.stabilityApiKey ||
+        !this.apiKeys.lightxApiKey ||
         !this.apiKeys.geminiApiKey
       ) {
         Swal.fire({
@@ -927,7 +929,7 @@ export default {
       localStorage.setItem('cloudinaryApiSecret', this.apiKeys.cloudinaryApiSecret)
       localStorage.setItem('cloudinaryCloudName', this.apiKeys.cloudinaryCloudName)
       localStorage.setItem('cloudinaryUploadPreset', this.apiKeys.cloudinaryUploadPreset)
-      localStorage.setItem('stabilityApiKey', this.apiKeys.stabilityApiKey)
+      localStorage.setItem('lightxApiKey', this.apiKeys.lightxApiKey)
       localStorage.setItem('geminiApiKey', this.apiKeys.geminiApiKey)
       this.showApiSettings = false
       Swal.fire({
@@ -994,12 +996,14 @@ export default {
             const loadedModelImage = await this.loadImage(modelImageForAI);
             modelImageForAI = imageToDataURL(loadedModelImage);
         }
-        const tryOnImageResultUrl = await this.processWithStabilityAI(modelImageForAI, productImages.map(img => imageToDataURL(img)), group.products)
+        const tryOnImageResultUrl = await this.processWithLightX(modelImageForAI, productImages.map(img => imageToDataURL(img)));
+
+        const cloudinaryUrl = await this.uploadToCloudinary(tryOnImageResultUrl, 'try-on-result');
 
         // Combine the try-on image with the original product images for Gemini analysis
         const combinedImageForGemini = await this.combineImagesOnCanvas([
           await this.loadImage(tryOnImageResultUrl),
-          ...(productImages.map(img => imageToDataURL(img))),
+          ...productImages,
         ])
 
         const geminiRatings = await this.analyzeImageWithGemini(combinedImageForGemini, group.products)
@@ -1030,6 +1034,116 @@ export default {
       this.selectedTryOnModel = null
     },
     
+    async processWithLightX(modelDataUrl, productDataUrls) {
+      try {
+        const apiKey = this.apiKeys.lightxApiKey;
+
+        // Step 1 & 2: Upload model image
+        const modelBlob = dataURLtoBlob(modelDataUrl);
+        const modelUploadData = await this.getLightXUploadUrl(apiKey, modelBlob.size);
+        await this.uploadToLightX(modelUploadData.uploadImage, modelBlob);
+        const modelImageUrl = modelUploadData.imageUrl;
+
+        // Step 1 & 2: Upload product image (assuming one for now)
+        const productBlob = dataURLtoBlob(productDataUrls[0]);
+        const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size);
+        await this.uploadToLightX(productUploadData.uploadImage, productBlob);
+        const styleImageUrl = productUploadData.imageUrl;
+
+        // Step 3: Start the job
+        const orderId = await this.startLightXJob(apiKey, modelImageUrl, styleImageUrl);
+
+        // Step 4: Poll for the result
+        const resultUrl = await this.pollLightXJob(apiKey, orderId);
+        return resultUrl;
+
+      } catch (error) {
+        console.error('Error processing with LightX API:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi LightX API',
+          text: error.message,
+        });
+        throw error; // Re-throw to be caught by the calling function
+      }
+    },
+
+    async getLightXUploadUrl(apiKey, size) {
+      const response = await fetch('https://api.lightxeditor.com/external/api/v2/uploadImageUrl', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+        },
+        body: JSON.stringify({
+          uploadType: 'imageUrl',
+          size: size,
+          contentType: 'image/jpeg',
+        }),
+      })
+      const data = await response.json()
+      if (data.statusCode !== 2000) {
+        console.error('LightX getUploadUrl failed. Full response:', data)
+        throw new Error('Failed to get LightX upload URL: ' + data.message)
+      }
+      return data.body
+    },
+
+    async uploadToLightX(uploadUrl, blob) {
+      const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'image/jpeg' },
+        body: blob,
+      })
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('LightX image upload failed. Full response:', errorText)
+        throw new Error('Failed to upload image to LightX.')
+      }
+    },
+
+    async startLightXJob(apiKey, imageUrl, styleImageUrl) {
+      const response = await fetch('https://api.lightxeditor.com/external/api/v2/aivirtualtryon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+        },
+        body: JSON.stringify({ imageUrl, styleImageUrl }),
+      })
+      const data = await response.json()
+      if (data.statusCode !== 2000) {
+        console.error('LightX startJob failed. Full response:', data)
+        throw new Error('Failed to start LightX job: ' + data.message)
+      }
+      return data.body.orderId
+    },
+
+    async pollLightXJob(apiKey, orderId) {
+      const maxRetries = 5
+      const delay = 3000 // 3 seconds
+      for (let i = 0; i < maxRetries; i++) {
+        await new Promise((resolve) => setTimeout(resolve, delay))
+        const response = await fetch('https://api.lightxeditor.com/external/api/v2/order-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+          },
+          body: JSON.stringify({ orderId }),
+        })
+        const data = await response.json()
+        if (data.body.status === 'active') {
+          return data.body.output
+        }
+        if (data.body.status === 'failed') {
+          console.error('LightX job failed. Full response:', data)
+          throw new Error('LightX job failed.')
+        }
+      }
+      throw new Error('LightX job timed out.')
+    },
+
     async uploadToCloudinary(urlOrDataUrl, tag) {
       // Upload image to Cloudinary using direct API call
       try {
@@ -1069,55 +1183,6 @@ export default {
       } catch (error) {
         console.error('Error uploading to Cloudinary:', error)
         throw new Error('Failed to upload image to Cloudinary: ' + error.message)
-      }
-    },
-    async processWithStabilityAI(modelDataUrl, productDataUrls, productsData) {
-      // Process images with Stability AI API
-      try {
-        const formData = new FormData()
-        formData.append('init_image', dataURLtoBlob(modelDataUrl))
-        productDataUrls.forEach((url, index) => {
-          formData.append(`product_image_${index}`, dataURLtoBlob(url))
-        })
-        let prompt = 'A fashion model wearing the provided clothes.'
-        if (productsData && productsData.length > 0) {
-            const productDescriptions = productsData.map(item => {
-                if (item.type === 'combo') {
-                    const comboItems = item.products.map(prod => `${prod.variant.color} ${prod.name}`).join(' and ')
-                    return `a combo including ${comboItems}`
-                } else {
-                    return `${item.variant.color} ${item.name}`
-                }
-            }).join(' and ')
-            prompt = `A fashion model wearing ${productDescriptions}.`
-        }
-        formData.append('prompt', prompt)
-        formData.append('output_format', 'jpeg')
-
-        const response = await fetch('https://api.stability.ai/v2beta/stable-image/generate/sd3', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${this.apiKeys.stabilityApiKey}`,
-            Accept: 'image/*',
-          },
-          body: formData,
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          console.error('Error from Stability AI API:', errorData)
-          let errorMessage = `Stability AI API request failed: ${errorData.message || response.statusText}`;
-          if (response.status === 402) {
-            errorMessage = 'Stability AI API request failed: 402 Payment Required. Please check your API key and billing details.';
-          }
-          throw new Error(errorMessage);
-        }
-
-        const imageBlob = await response.blob()
-        return URL.createObjectURL(imageBlob)
-      } catch (error) {
-        console.error('Error processing with Stability AI API:', error)
-        throw new Error('Failed to process image with Stability AI API.')
       }
     },
     loadImage(url) {
@@ -1212,8 +1277,13 @@ export default {
 
         // Attempt to parse the JSON string from the text response
         try {
-          const parsedResponse = JSON.parse(textResponse)
-          return parsedResponse
+          // Extract JSON from the potentially markdown-formatted string
+          const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) {
+            throw new Error('No JSON object found in Gemini response');
+          }
+          const parsedResponse = JSON.parse(jsonMatch[0]);
+          return parsedResponse;
         } catch (jsonError) {
           console.error('Error parsing Gemini JSON response:', textResponse, jsonError)
           // Fallback if JSON parsing fails, try to extract information heuristically
@@ -1300,13 +1370,18 @@ export default {
   z-index: 1001;
   background: #42a5f5;
   color: #fff;
-  font-size: 1.3rem;
-  padding: 16px 48px;
+  font-size: 1.5rem; /* Tăng kích thước icon */
+  width: 64px; /* Đặt chiều rộng và chiều cao bằng nhau */
+  height: 64px;
+  padding: 0; /* Xóa padding */
   border: none;
-  border-radius: 32px;
+  border-radius: 50%; /* Bo tròn thành hình tròn */
   box-shadow: 0 2px 12px #0002;
   cursor: pointer;
   transition: background 0.2s;
+  display: flex; /* Căn giữa icon */
+  align-items: center;
+  justify-content: center;
 }
 .compare-btn-fixed:hover {
   background: #1976d2;
