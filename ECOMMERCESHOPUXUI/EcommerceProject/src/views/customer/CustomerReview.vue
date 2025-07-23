@@ -311,14 +311,20 @@ export default {
         _previewImgs: [],
         _isSubmitting: false,
       }))
-      this.reviewed = (data.listReviewed || []).map((item) => ({
-        ...item,
-        hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
-        hinhAnhs: (item.hinhAnhs || '')
-          .split(',')
-          .filter(Boolean)
-          .map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
-      }))
+      this.reviewed = (data.listReviewed || []).map((item) => {
+        let hinhAnhs = [];
+        if (Array.isArray(item.hinhAnhs)) {
+          hinhAnhs = item.hinhAnhs;
+        } else if (typeof item.hinhAnhs === 'string') {
+          hinhAnhs = item.hinhAnhs.split(',').filter(Boolean);
+        }
+
+        return {
+          ...item,
+          hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
+          hinhAnhs: hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+        };
+      });
     },
     onImagesChange(event, item) {
       const files = Array.from(event.target.files)

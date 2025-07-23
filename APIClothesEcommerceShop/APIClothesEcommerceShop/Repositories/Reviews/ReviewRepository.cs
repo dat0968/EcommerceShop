@@ -167,7 +167,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Include(ct => ct.MaCtspNavigation)
                         .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .Include(ct => ct.MaComboNavigation)
-                        .ThenInclude(cbo => cbo.Hinh)
+                    // .ThenInclude(cbo => cbo.Hinh)
                     .Where(ct => (ct.MaHdNavigation.MaKh == userId && ct.MaHdNavigation.TinhTrang == filterStatusOrder) || ct.DanhGia != null)
                     .AsNoTracking()
                     .ToListAsync();
