@@ -1,11 +1,16 @@
 <template>
-  <div style="margin-top: 0px" class="xp-contentbar">
-    <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
-      </ol>
-      <hr />
-    </nav>
+  <div style="margin-top: 5rem" class="xp-contentbar">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
+        </ol>
+      </nav>
+      <button class="btn btn-primary" @click="reloadData" :disabled="isLoading">
+        <i class="bi bi-arrow-clockwise"></i> Tải lại
+      </button>
+    </div>
+    <hr />
 
     <RevenueStatistic
       :data="revenueStatisticData"
@@ -89,6 +94,7 @@ export default {
       categoryStatisticData: {},
       inventoryAnalysisData: {},
       reviewAnalysisData: {},
+      isLoading: false,
       revenueIsLoading: true,
       productIsLoading: true,
       customerIsLoading: true,
@@ -104,130 +110,55 @@ export default {
   computed: {},
   watch: {},
   async mounted() {
-    this.isLoading = true
-
-    const CACHE_KEY = 'statisticsData'
-    const CACHE_EXPIRE = 1 * 60 * 1000 // 5 phút
-
-    let cached = localStorage.getItem(CACHE_KEY)
-    let now = Date.now()
-    if (cached) {
-      try {
-        const parsed = await JSON.parse(cached)
-        const isExpired = parsed.expire && parsed.expire < now
-        if (!isExpired) {
-          this.orderSummaryData = await parsed.orderSummaryData
-          this.productStatisticData = await parsed.productStatisticData
-          this.customerStatisticsData = await parsed.customerStatisticsData
-          this.employeeStatisticsData = await parsed.employeeStatisticsData
-          this.revenueStatisticData = await parsed.revenueStatisticData
-          this.datatableStatisticsResponse = await parsed.datatableStatisticsResponse
-          this.isLoading = false
-          this.revenueIsLoading = false
-          this.productIsLoading = false
-          this.customerIsLoading = false
-          this.employeeIsLoading = false
-          this.orderSummaryIsLoading = false
-          this.datatableIsLoading = false
-          return // Dừng nếu dữ liệu không hết hạn
-        }
-        localStorage.removeItem(CACHE_KEY) // Xóa cache nếu hết hạn
-      } catch (e) {
-        localStorage.removeItem(CACHE_KEY)
-        console.error(e)
-      }
-    }
-
-    // Nếu không có cache hoặc cache đã hết hạn
-    let errorMessage = ''
-    let errorLogs = []
-
-    try {
-      await this.loadOrderSummaryData()
-    } catch (error) {
-      errorMessage += 'Đơn hàng. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadProductStatisticsData()
-    } catch (error) {
-      errorMessage += 'Sản phẩm. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadCustomerStatisticsData()
-    } catch (error) {
-      errorMessage += 'Khách hàng. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadEmployeeStatisticsData()
-    } catch (error) {
-      errorMessage += 'Nhân viên. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadRevenueStatisticsData()
-    } catch (error) {
-      errorMessage += 'Doanh thu. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadDatatableData()
-    } catch (error) {
-      errorMessage += 'Datatable. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadCouponStatisticsData()
-    } catch (error) {
-      errorMessage += 'Mã giảm giá. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadCategoryStatisticsData()
-    } catch (error) {
-      errorMessage += 'Danh mục. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadInventoryAnalysisData()
-    } catch (error) {
-      errorMessage += 'Tồn kho. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadReviewAnalysisData()
-    } catch (error) {
-      errorMessage += 'Đánh giá. '
-      errorLogs.push(error)
-    }
-
-    if (errorMessage !== '') {
-      Swal.fire('Hiện không thể load các dữ liệu dưới', errorMessage, 'error')
-      console.warn(errorLogs)
-    }
-    // Lưu cache với thời gian hết hạn
-    localStorage.setItem(
-      CACHE_KEY,
-      JSON.stringify({
-        orderSummaryData: JSON.parse(JSON.stringify(this.orderSummaryData)),
-        productStatisticData: JSON.parse(JSON.stringify(this.productStatisticData)),
-        customerStatisticsData: JSON.parse(JSON.stringify(this.customerStatisticsData)),
-        employeeStatisticsData: JSON.parse(JSON.stringify(this.employeeStatisticsData)),
-        revenueStatisticData: JSON.parse(JSON.stringify(this.revenueStatisticData)),
-        datatableStatisticsResponse: JSON.parse(JSON.stringify(this.datatableStatisticsResponse)),
-        couponStatisticData: JSON.parse(JSON.stringify(this.couponStatisticData)),
-        categoryStatisticData: JSON.parse(JSON.stringify(this.categoryStatisticData)),
-        inventoryAnalysisData: JSON.parse(JSON.stringify(this.inventoryAnalysisData)),
-        reviewAnalysisData: JSON.parse(JSON.stringify(this.reviewAnalysisData)),
-        expire: now + CACHE_EXPIRE,
-      }),
-    )
-
-    this.isLoading = false // Chuyển trạng thái loading sau khi hoàn thành
+    this.reloadData()
   },
   methods: {
+    async reloadData() {
+      this.isLoading = true
+      let errorMessage = ''
+      let errorLogs = []
+
+      const tasks = [
+        this.loadOrderSummaryData(),
+        this.loadProductStatisticsData(),
+        this.loadCustomerStatisticsData(),
+        this.loadEmployeeStatisticsData(),
+        this.loadRevenueStatisticsData(),
+        this.loadDatatableData(),
+        this.loadCouponStatisticsData(),
+        this.loadCategoryStatisticsData(),
+        this.loadInventoryAnalysisData(),
+        this.loadReviewAnalysisData(),
+      ]
+
+      const results = await Promise.allSettled(tasks)
+
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const errorSources = [
+            'Đơn hàng',
+            'Sản phẩm',
+            'Khách hàng',
+            'Nhân viên',
+            'Doanh thu',
+            'Datatable',
+            'Mã giảm giá',
+            'Danh mục',
+            'Tồn kho',
+            'Đánh giá',
+          ]
+          errorMessage += `${errorSources[index]}. `
+          errorLogs.push(result.reason)
+        }
+      })
+
+      if (errorMessage) {
+        Swal.fire('Không thể tải lại dữ liệu từ các nguồn sau:', errorMessage, 'error')
+        console.warn('Lỗi khi tải lại dữ liệu:', errorLogs)
+      }
+
+      this.isLoading = false
+    },
     async loadOrderSummaryData() {
       this.orderSummaryIsLoading = true
       const response = await axiosConfig.getFromApi(
@@ -328,6 +259,9 @@ export default {
       this.reviewIsLoading = false
     },
   },
-}
+
+  
+  }
+
 </script>
 <style scoped></style>
