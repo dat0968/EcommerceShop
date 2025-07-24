@@ -1,39 +1,41 @@
+
 <template>
   <div>
-    <br />
-    <br />
-    <br />
-    <div class="" style="width: 1400px;margin-left: 70px; background-color: aliceblue;">
+    <br /><br /><br />
+    <div style="width: 1400px; margin-left: 70px; background-color: aliceblue;">
       <div class="bg-white sticky-header border-b p-4 mb-6">
-        <h1 class="mb-0 text-primary modern-title"> <- Chỉnh sửa thông tin</h1>
+        <h1 class="mb-0 text-primary modern-title">← Chỉnh sửa thông tin</h1>
       </div>
 
-      <div v-if="loading" class="text-center">
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-8">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Đang tải...</span>
         </div>
       </div>
       
-      <div v-else-if="error" class="alert alert-danger modern-alert">
+      <!-- Error State -->
+      <div v-else-if="error" class="alert alert-danger modern-alert mx-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>
         {{ error }}
       </div>
       
+      <!-- Profile Content -->
       <div v-else-if="profile" class="row">
+        <!-- Avatar Section -->
         <div class="col-md-3" style="margin-left: 20px;">
-          <br>
-          <br>
+          <br /><br />
           <div class="modern-card">
             <div class="card-body text-center p-6">
               <div class="relative inline-block mb-4">
                 <div class="avatar-container">
-                  <br>
-          <br>
-
+                  <br /><br />
                   <img
-                    v-if="profile.hinhDaiDien"
-                    :src="'https://localhost:7139' + profile.hinhDaiDien"
+                    v-if="profile.hinh"
+                    :src="getImageUrl(profile.hinh)"
                     alt="Hình đại diện"
                     class="avatar-img mb-3"
+                    @error="handleImageError"
                   />
                   <div v-else class="modern-avatar-placeholder">
                     {{ getInitials(profile.hoTen) }}
@@ -41,13 +43,14 @@
                 </div>
                 <p class="text-sm text-muted">Nhấn để thay đổi ảnh đại diện</p>
               </div>
-              
             </div>
           </div>
         </div>
+
+        <!-- Profile Information -->
         <div class="col-md-8">
-                   <br>
-          <br>
+          <br /><br />
+          <!-- Personal Information Card -->
           <div class="modern-card">
             <div class="card-header p-4">
               <h5 class="card-title mb-0 flex items-center">
@@ -85,34 +88,39 @@
                 </label>
                 <span class="info-value">{{ profile.email || 'Chưa có' }}</span>
               </div>
-             
               <div class="info-row">
                 <label class="info-label">CCCD:</label>
                 <span class="info-value">{{ profile.cccd || 'Chưa cập nhật' }}</span>
               </div>
             </div>
           </div>
-          <br>
+          
+          <br />
+          
+          <!-- Address Card -->
           <div class="modern-card">
             <div class="card-header p-4">
               <h5 class="card-title mb-0 flex items-center">
-                <i class="fas fa-user me-2"></i>
-               Địa chỉ
+                <i class="fas fa-map-marker-alt me-2"></i>
+                Địa chỉ
               </h5>
             </div>
             <div class="card-body p-4 space-y-4">
-               <div class="info-row">
+              <div class="info-row">
                 <label class="info-label">Địa chỉ:</label>
                 <span class="info-value">{{ profile.diaChi || 'Chưa cập nhật' }}</span>
               </div>
             </div>
           </div>
-          <br>
+          
+          <br />
+          
+          <!-- Account Information Card -->
           <div class="modern-card">
             <div class="card-header p-4">
               <h5 class="card-title mb-0 flex items-center">
-                <i class="fas fa-user me-2"></i>
-                Thông tin cá nhân
+                <i class="fas fa-user-cog me-2"></i>
+                Thông tin tài khoản
               </h5>
             </div>
             <div class="card-body p-4 space-y-4">
@@ -122,8 +130,9 @@
               </div>
               <div class="info-row" style="margin-left: 20px;">
                 <label class="info-label">Trạng thái:</label>
-                <span  style="margin-right: 20px;"
-                  :class="{ 
+                <span
+                  style="margin-right: 20px;"
+                  :class="{
                     'status-badge status-active': profile.tinhTrang === 'Đang hoạt động',
                     'status-badge status-inactive': profile.tinhTrang === 'Đã tạm khóa',
                   }"
@@ -134,53 +143,69 @@
             </div>
           </div>
         </div>
+        
+        <!-- Edit Button -->
         <div class="col-12 mt-4">
           <div class="separator"></div>
           <div class="space-y-3">
-            <button class="modern-btn modern-btn-primary w-100" @click="showEditModal">
+            <button 
+              class="modern-btn modern-btn-primary w-100" 
+              @click="showEditModal"
+              :disabled="loading"
+            >
+              <i class="fas fa-edit me-2"></i>
               Chỉnh sửa hồ sơ
             </button>
           </div>
         </div>
       </div>
       
-      <div v-else class="modern-alert alert-warning">
+      <!-- No Profile Found -->
+      <div v-else class="modern-alert alert-warning mx-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>
         Không tìm thấy thông tin khách hàng.
       </div>
+
+      <!-- Edit Modal -->
       <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
           <div class="modal-content modern-modal">
             <div class="modal-header">
-              <h5 class="modal-title modern-modal-title" id="editModalLabel">Chỉnh sửa hồ sơ</h5>
+              <h5 class="modal-title modern-modal-title" id="editModalLabel">
+                <i class="fas fa-edit me-2"></i>
+                Chỉnh sửa hồ sơ
+              </h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-              <form @submit.prevent="updateProfile" enctype="multipart/form-data" class="space-y-6">
+              <form @submit.prevent="updateProfile" class="space-y-6">
+                
+                <!-- Avatar Upload Section -->
                 <div class="modern-card mb-4">
                   <div class="card-body text-center p-6">
                     <div class="relative inline-block">
                       <div class="avatar-container">
                         <img
-                          v-if="editProfile.hinhDaiDien && !editProfile.anh"
-                          :src="`${getApiUrl}${editProfile.hinhDaiDien}?t=${new Date().getTime()}`"
+                          v-if="previewImage"
+                          :src="previewImage"
                           alt="Hình đại diện"
                           class="modern-avatar"
-                          @error="imageError"
                         />
                         <img
-                          v-else-if="editProfile.anh"
-                          :src="URL.createObjectURL(editProfile.anh)"
-                          alt="Hình đại diện mới"
+                          v-else-if="editProfile.hinh"
+                          :src="getImageUrl(editProfile.hinh)"
+                          alt="Hình đại diện"
                           class="modern-avatar"
+                          @error="handleImageError"
                         />
                         <div v-else class="modern-avatar-placeholder">
                           {{ getInitials(editProfile.hoTen) }}
                         </div>
-                        <label class="avatar-upload-btn">
+                        <label class="avatar-upload-btn" for="fileInput">
                           <i class="fas fa-camera"></i>
                           <input
+                            id="fileInput"
                             type="file"
-                            id="anh"
                             @change="onFileChange"
                             accept="image/jpeg,image/jpg,image/png"
                             class="d-none"
@@ -188,9 +213,15 @@
                         </label>
                       </div>
                     </div>
-                    <p class="text-sm text-muted mt-3">Nhấn để thay đổi ảnh đại diện</p>
+                    <p class="text-sm text-muted mt-3">
+                      Nhấn để thay đổi ảnh đại diện
+                      <br>
+                      <small>Hỗ trợ: JPG, PNG (tối đa 5MB)</small>
+                    </p>
                   </div>
                 </div>
+                
+                <!-- Personal Information -->
                 <div class="modern-card">
                   <div class="card-header p-4">
                     <h6 class="card-title mb-0 flex items-center">
@@ -199,71 +230,116 @@
                     </h6>
                   </div>
                   <div class="card-body p-4 space-y-4">
-                    <div class="form-group">
-                      <label for="hoTen" class="form-label">Họ và tên</label>
-                      <input
-                        v-model="editProfile.hoTen"
-                        type="text"
-                        class="modern-input"
-                        id="hoTen"
-                        placeholder="Nhập họ và tên"
-                        required
-                      />
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="hoTen" class="form-label">
+                            Họ và tên <span class="text-danger">*</span>
+                          </label>
+                          <input
+                            v-model="editProfile.hoTen"
+                            type="text"
+                            class="modern-input"
+                            id="hoTen"
+                            placeholder="Nhập họ và tên"
+                            required
+                            maxlength="100"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="gioiTinh" class="form-label">
+                            Giới tính <span class="text-danger">*</span>
+                          </label>
+                          <select
+                            v-model="editProfile.gioiTinh"
+                            class="modern-input"
+                            id="gioiTinh"
+                            required
+                          >
+                            <option value="">Chọn giới tính</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
-                    <div class="form-group">
-                      <label for="gioiTinh" class="form-label">Giới tính</label>
-                      <select
-                        v-model="editProfile.gioiTinh"
-                        class="modern-input"
-                        id="gioiTinh"
-                        required
-                      >
-                        <option value="Nam">Nam</option>
-                        <option value="Nữ">Nữ</option>
-                        <option value="Khác">Khác</option>
-                      </select>
+                    
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="ngaySinh" class="form-label flex items-center">
+                            <i class="fas fa-calendar me-2"></i>
+                            Ngày sinh
+                          </label>
+                          <input
+                            v-model="editProfile.ngaySinh"
+                            type="date"
+                            class="modern-input"
+                            id="ngaySinh"
+                            :max="maxDate"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="sdt" class="form-label flex items-center">
+                            <i class="fas fa-phone me-2"></i>
+                            Số điện thoại <span class="text-danger">*</span>
+                          </label>
+                          <input
+                            v-model="editProfile.sdt"
+                            type="text"
+                            class="modern-input"
+                            id="sdt"
+                            placeholder="Nhập số điện thoại"
+                            required
+                            maxlength="11"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div class="form-group">
-                      <label for="ngaySinh" class="form-label flex items-center">
-                        <i class="fas fa-calendar me-2"></i>
-                        Ngày sinh
-                      </label>
-                      <input
-                        v-model="editProfile.ngaySinh"
-                        type="date"
-                        class="modern-input"
-                        id="ngaySinh"
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="sdt" class="form-label flex items-center">
-                        <i class="fas fa-phone me-2"></i>
-                        Số điện thoại
-                      </label>
-                      <input
-                        v-model="editProfile.sdt"
-                        type="text"
-                        class="modern-input"
-                        id="sdt"
-                        placeholder="Nhập số điện thoại"
-                        required
-                      />
-                    </div>
-                    <div class="form-group">
-                      <label for="email" class="form-label flex items-center">
-                        <i class="fas fa-envelope me-2"></i>
-                        Email
-                      </label>
-                      <input
-                        v-model="editProfile.email"
-                        type="email"
-                        class="modern-input"
-                        id="email"
-                        placeholder="Nhập email"
-                      />
+                    
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="email" class="form-label flex items-center">
+                            <i class="fas fa-envelope me-2"></i>
+                            Email
+                          </label>
+                          <input
+                            v-model="editProfile.email"
+                            type="email"
+                            class="modern-input"
+                            id="email"
+                            placeholder="Nhập email"
+                            maxlength="100"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label for="cccd" class="form-label">
+                            CCCD <span class="text-danger">*</span>
+                          </label>
+                          <input
+                            v-model="editProfile.cccd"
+                            type="text"
+                            class="modern-input"
+                            id="cccd"
+                            placeholder="Nhập số CCCD"
+                            required
+                            maxlength="12"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
+                
+                <!-- Address Information -->
                 <div class="modern-card">
                   <div class="card-header p-4">
                     <h6 class="card-title mb-0 flex items-center">
@@ -271,37 +347,42 @@
                       Địa chỉ
                     </h6>
                   </div>
-                  <div class="card-body p-4 space-y-4">
+                  <div class="card-body p-4">
                     <div class="form-group">
-                      <label for="diaChi" class="form-label">Địa chỉ</label>
+                      <label for="diaChi" class="form-label">
+                        Địa chỉ <span class="text-danger">*</span>
+                      </label>
                       <textarea
                         v-model="editProfile.diaChi"
                         class="modern-input modern-textarea"
                         id="diaChi"
                         placeholder="Nhập địa chỉ của bạn"
                         required
+                        maxlength="500"
+                        rows="3"
                       ></textarea>
-                    </div>
-                    <div class="form-group">
-                      <label for="cccd" class="form-label">CCCD</label>
-                      <input
-                        v-model="editProfile.cccd"
-                        type="text"
-                        class="modern-input"
-                        id="cccd"
-                        placeholder="Nhập số CCCD"
-                        required
-                      />
                     </div>
                   </div>
                 </div>
 
+                <!-- Form Actions -->
                 <div class="separator"></div>
                 <div class="space-y-3">
-                  <button type="submit" class="modern-btn modern-btn-primary w-100" :disabled="loading">
-                    {{ loading ? 'Đang cập nhật...' : 'Lưu thay đổi' }}
+                  <button 
+                    type="submit" 
+                    class="modern-btn modern-btn-primary w-100" 
+                    :disabled="isSubmitting"
+                  >
+                    <i class="fas fa-save me-2"></i>
+                    {{ isSubmitting ? 'Đang cập nhật...' : 'Lưu thay đổi' }}
                   </button>
-                  <button type="button" class="modern-btn modern-btn-outline w-100" data-bs-dismiss="modal">
+                  <button 
+                    type="button" 
+                    class="modern-btn modern-btn-outline w-100" 
+                    data-bs-dismiss="modal"
+                    :disabled="isSubmitting"
+                  >
+                    <i class="fas fa-times me-2"></i>
                     Hủy bỏ
                   </button>
                 </div>
@@ -316,7 +397,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 import Swal from 'sweetalert2'
@@ -325,6 +406,8 @@ import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+
+// Reactive data
 const profile = ref(null)
 const editProfile = ref({
   maKh: null,
@@ -335,60 +418,98 @@ const editProfile = ref({
   cccd: '',
   sdt: '',
   email: '',
-  tenTaiKhoan: '',
-  tinhTrang: 'Đang hoạt động',
-  hinhDaiDien: '',
-  anh: null,
+  hinh: null,
 })
+
 const loading = ref(true)
+const isSubmitting = ref(false)
 const error = ref(null)
+const selectedFile = ref(null)
+const previewImage = ref(null)
+
+// Constants
 const getApiUrl = GetApiUrl()
+
+// Computed properties
+const maxDate = computed(() => {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
+})
+
+// Utility functions
 const getInitials = (name) => {
   if (!name) return 'N/A'
   return name.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2)
 }
 
-const fetchProfile = async () => {
-  loading.value = true
-  error.value = null
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return ''
+  return imagePath.startsWith('http') ? imagePath : `${getApiUrl}${imagePath}`
+}
+
+const formatDate = (date) => {
+  if (!date) return 'Chưa cập nhật'
   try {
-    const accessToken = Cookies.get('accessToken')
-    if (!accessToken) {
-      throw new Error('Vui lòng đăng nhập để xem thông tin cá nhân.')
-    }
-
-    const response = await axios.get(`${getApiUrl}/api/Profile/GetProfile`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-    console.log('API Response:', response.data)
-
-    if (response.data.success) {
-      profile.value = response.data.data || {}
-      editProfile.value = {
-        ...editProfile.value,
-        ...response.data.data,
-        anh: null,
-      }
-      // editProfile.value.hoTen = editProfile.value.hoTen || ''
-      // editProfile.value.gioiTinh = editProfile.value.gioiTinh || ''
-      // editProfile.value.diaChi = editProfile.value.diaChi || ''
-      // editProfile.value.cccd = editProfile.value.cccd || ''
-      // editProfile.value.sdt = editProfile.value.sdt || ''
-      // editProfile.value.email = editProfile.value.email || ''
-      // editProfile.value.tenTaiKhoan = editProfile.value.tenTaiKhoan || ''
-    } else {
-      error.value = response.data.message || 'Không tìm thấy thông tin khách hàng'
-    }
-  } catch (err) {
-    console.error('Lỗi khi lấy thông tin hồ sơ:', err)
-    error.value = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi tải thông tin hồ sơ.'
-    if (err.response?.status === 401) {
-      await handleTokenRefresh()
-      await fetchProfile() 
-    }
-  } finally {
-    loading.value = false
+    const d = new Date(date)
+    return isNaN(d.getTime()) ? 'Chưa cập nhật' : d.toLocaleDateString('vi-VN')
+  } catch (e) {
+    return 'Chưa cập nhật'
   }
+}
+
+const formatDateForInput = (date) => {
+  if (!date) return ''
+  try {
+    const d = new Date(date)
+    if (isNaN(d.getTime()) || d.getFullYear() < 1900) {
+      return ''
+    }
+    return d.toISOString().split('T')[0]
+  } catch (e) {
+    return ''
+  }
+}
+
+// Validation functions
+const validateForm = () => {
+  const errors = []
+
+  if (!editProfile.value.hoTen?.trim()) {
+    errors.push('Họ tên không được để trống')
+  }
+
+  if (!editProfile.value.gioiTinh) {
+    errors.push('Giới tính không được để trống')
+  }
+
+  if (!editProfile.value.diaChi?.trim()) {
+    errors.push('Địa chỉ không được để trống')
+  }
+
+  if (!editProfile.value.cccd?.trim()) {
+    errors.push('CCCD không được để trống')
+  } else if (!/^\d{12}$/.test(editProfile.value.cccd.trim())) {
+    errors.push('CCCD phải là 12 chữ số')
+  }
+
+  if (!editProfile.value.sdt?.trim()) {
+    errors.push('Số điện thoại không được để trống')
+  } else if (!/^0\d{9,10}$/.test(editProfile.value.sdt.trim())) {
+    errors.push('Số điện thoại phải bắt đầu bằng 0 và có 10-11 chữ số')
+  }
+
+  if (editProfile.value.email?.trim() && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(editProfile.value.email.trim())) {
+    errors.push('Email không hợp lệ')
+  }
+
+  return errors
+}
+
+// API functions
+const getAuthHeaders = () => {
+  const accessToken = Cookies.get('accessToken')
+  console.log('Access Token:', accessToken) // Debug
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
 }
 
 const handleTokenRefresh = async () => {
@@ -401,7 +522,7 @@ const handleTokenRefresh = async () => {
       confirmButtonText: 'OK',
     })
     router.push('/login')
-    return
+    return false
   }
 
   try {
@@ -411,13 +532,19 @@ const handleTokenRefresh = async () => {
       SDT: profile.value?.sdt,
       RefreshToken: refreshToken,
     })
+
     if (response.data.success) {
-      Cookies.set('accessToken', response.data.data.accessToken, { expires: 2 / 24, secure: true, sameSite: 'Strict' })
+      Cookies.set('accessToken', response.data.data.accessToken, { 
+        expires: 2 / 24, 
+        secure: true, 
+        sameSite: 'Strict' 
+      })
+      return true
     } else {
       throw new Error(response.data.message || 'Không thể làm mới token')
     }
   } catch (err) {
-    console.error('Lỗi khi làm mới token:', err)
+    console.error('Token refresh error:', err)
     await Swal.fire({
       icon: 'error',
       title: 'Phiên hết hạn',
@@ -425,109 +552,228 @@ const handleTokenRefresh = async () => {
       confirmButtonText: 'OK',
     })
     router.push('/login')
+    return false
   }
 }
 
-const showEditModal = () => {
-  const modal = new Modal(document.getElementById('editModal'))
-  modal.show()
-}
-const onFileChange = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    if (file.size > 5 * 1024 * 1024) {
-      Swal.fire('Lỗi!', 'Kích thước file không được vượt quá 5MB.', 'error')
-      return
-    }
-    const validExtensions = ['.jpg', '.jpeg', '.png']
-    const extension = `.${file.name.split('.').pop().toLowerCase()}`
-    if (!validExtensions.includes(extension)) {
-      Swal.fire('Lỗi!', 'Chỉ hỗ trợ file .jpg, .jpeg, .png.', 'error')
-      return
-    }
-    editProfile.value.anh = file
-  }
-}
-
-const updateProfile = async () => {
+const fetchProfile = async () => {
   loading.value = true
+  error.value = null
+  
   try {
-    const fields = [
-      { key: 'hoTen', message: 'Họ tên không được để trống' },
-      { key: 'gioiTinh', message: 'Giới tính không được để trống' },
-      { key: 'diaChi', message: 'Địa chỉ không được để trống' },
-      { key: 'cccd', message: 'CCCD không được để trống' },
-      { key: 'sdt', message: 'Số điện thoại không được để trống' },
-    ]
-
-    for (const field of fields) {
-      const value = editProfile.value[field.key]
-      if (!value || (typeof value === 'string' && !value.trim())) {
-        throw new Error(field.message)
-      }
+    const headers = getAuthHeaders()
+    if (!headers.Authorization) {
+      throw new Error('Vui lòng đăng nhập để xem thông tin cá nhân.')
     }
 
-    if (!/^\d{12}$/.test(editProfile.value.cccd)) {
-      throw new Error('CCCD phải là 12 chữ số')
-    }
-    if (!/^0\d{9,10}$/.test(editProfile.value.sdt)) {
-      throw new Error('Số điện thoại phải bắt đầu bằng 0 và có 10-11 chữ số')
-    }
-    if (editProfile.value.email && !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(editProfile.value.email)) {
-      throw new Error('Email không hợp lệ')
-    }
-
-    const formData = new FormData()
-    formData.append('MaKh', editProfile.value.maKh || 104)
-    formData.append('HoTen', editProfile.value.hoTen.trim())
-    formData.append('GioiTinh', editProfile.value.gioiTinh.trim())
-    if (editProfile.value.ngaySinh) formData.append('NgaySinh', editProfile.value.ngaySinh)
-    formData.append('DiaChi', editProfile.value.diaChi.trim())
-    formData.append('Cccd', editProfile.value.cccd.trim())
-    formData.append('Sdt', editProfile.value.sdt.trim())
-    if (editProfile.value.email) formData.append('Email', editProfile.value.email.trim())
-    formData.append('TenTaiKhoan', editProfile.value.tenTaiKhoan.trim())
-    formData.append('TinhTrang', editProfile.value.tinhTrang || 'Đang hoạt động')
-    if (editProfile.value.anh) formData.append('Anh', editProfile.value.anh)
-
-    const accessToken = Cookies.get('accessToken')
-    const response = await axios.put(`${getApiUrl}/api/Profile/UpdateProfile`, formData, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const response = await axios.get(`${getApiUrl}/api/Profile/GetProfile`, { headers })
 
     if (response.data.success) {
-      await Swal.fire('Thành công!', 'Cập nhật thông tin thành công!', 'success')
-      const modal = Modal.getInstance(document.getElementById('editModal'))
-      modal.hide()
-      await fetchProfile() 
-      editProfile.value.anh = null
+      profile.value = response.data.data || {}
+      editProfile.value = {
+        maKh: response.data.data.maKh,
+        hoTen: response.data.data.hoTen || '',
+        gioiTinh: response.data.data.gioiTinh || '',
+        ngaySinh: formatDateForInput(response.data.data.ngaySinh),
+        diaChi: response.data.data.diaChi || '',
+        cccd: response.data.data.cccd || '',
+        sdt: response.data.data.sdt || '',
+        email: response.data.data.email || '',
+        hinh: response.data.data.hinh || null,
+      }
     } else {
-      throw new Error(response.data.message)
+      error.value = response.data.message || 'Không tìm thấy thông tin khách hàng'
     }
-  } catch (error) {
-    console.error('Lỗi khi cập nhật thông tin:', error)
-    await Swal.fire('Lỗi!', error.message || 'Có lỗi xảy ra khi cập nhật thông tin.', 'error')
+  } catch (err) {
+    console.error('Fetch profile error:', err)
+    
+    if (err.response?.status === 401) {
+      const refreshSuccess = await handleTokenRefresh()
+      if (refreshSuccess) {
+        await fetchProfile()
+        return
+      }
+    }
+    
+    error.value = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi tải thông tin hồ sơ.'
   } finally {
     loading.value = false
   }
 }
 
-const formatDate = (date) => {
-  if (!date) return 'Chưa cập nhật'
-  const d = new Date(date)
-  return isNaN(d) ? 'Chưa cập nhật' : d.toLocaleDateString('vi-VN')
+// Event handlers
+const handleImageError = (event) => {
+  console.warn('Image load error:', event)
+  event.target.style.display = 'none'
 }
 
+const onFileChange = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Validate file size (5MB max)
+  if (file.size > 5 * 1024 * 1024) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: 'Kích thước file không được vượt quá 5MB.',
+      confirmButtonText: 'OK'
+    })
+    event.target.value = ''
+    return
+  }
+
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png']
+  if (!validTypes.includes(file.type)) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: 'Chỉ hỗ trợ file JPG, PNG.',
+      confirmButtonText: 'OK'
+    })
+    event.target.value = ''
+    return
+  }
+
+  selectedFile.value = file
+  
+  // Create preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    previewImage.value = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+const showEditModal = () => {
+  // Reset form with only editable fields
+  editProfile.value = {
+    maKh: profile.value?.maKh,
+    hoTen: profile.value?.hoTen || '',
+    gioiTinh: profile.value?.gioiTinh || '',
+    ngaySinh: formatDateForInput(profile.value?.ngaySinh),
+    diaChi: profile.value?.diaChi || '',
+    cccd: profile.value?.cccd || '',
+    sdt: profile.value?.sdt || '',
+    email: profile.value?.email || '',
+    hinh: profile.value?.hinh || null,
+  }
+  selectedFile.value = null
+  previewImage.value = null
+  
+  const modal = new Modal(document.getElementById('editModal'))
+  modal.show()
+}
+
+const updateProfile = async () => {
+  // Validate only editable fields
+  const validationErrors = validateForm()
+  if (validationErrors.length > 0) {
+    await Swal.fire({
+      icon: 'error',
+      title: 'Lỗi validation!',
+      text: validationErrors.join(', '),
+      confirmButtonText: 'OK'
+    })
+    return
+  }
+
+  isSubmitting.value = true
+  
+  try {
+    const formData = new FormData()
+
+    // Chỉ gửi các trường cần chỉnh sửa
+    formData.append('MaKH', editProfile.value.maKh || '')
+    formData.append('HoTen', editProfile.value.hoTen?.trim() || '')
+    formData.append('GioiTinh', editProfile.value.gioiTinh || '')
+    formData.append('DiaChi', editProfile.value.diaChi?.trim() || '')
+    formData.append('CCCD', editProfile.value.cccd?.trim() || '')
+    formData.append('SDT', editProfile.value.sdt?.trim() || '')
+    if (editProfile.value.email?.trim()) {
+      formData.append('Email', editProfile.value.email.trim())
+    }
+    if (editProfile.value.ngaySinh) {
+      formData.append('NgaySinh', editProfile.value.ngaySinh)
+    }
+    if (selectedFile.value) {
+      formData.append('HinhDaiDien', selectedFile.value)
+    }
+
+    // Debug: Log form data
+    console.log('Form data being sent:')
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value instanceof File ? '[File]' : value}`)
+    }
+
+    const headers = {
+      ...getAuthHeaders(),
+      'Content-Type': 'multipart/form-data',
+    }
+
+    const response = await axios.put(`${getApiUrl}/api/Profile/UpdateProfile`, formData, { headers })
+
+    if (response.data.success) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Thành công!',
+        text: 'Cập nhật thông tin thành công!',
+        confirmButtonText: 'OK'
+      })
+      
+      // Close modal
+      const modal = Modal.getInstance(document.getElementById('editModal'))
+      if (modal) modal.hide()
+      
+      // Refresh profile data
+      await fetchProfile()
+    } else {
+      throw new Error(response.data.message || 'Cập nhật thất bại')
+    }
+  } catch (err) {
+    console.error('Update profile error:', err.response?.data || err.message)
+    
+    let errorMessage = 'Có lỗi xảy ra khi cập nhật thông tin.'
+    
+    if (err.response?.status === 401) {
+      const refreshSuccess = await handleTokenRefresh()
+      if (refreshSuccess) {
+        await updateProfile()
+        return
+      }
+    } else if (err.response?.data?.message) {
+      errorMessage = err.response.data.message
+    } else if (err.message) {
+      errorMessage = err.message
+    }
+    
+    await Swal.fire({
+      icon: 'error',
+      title: 'Lỗi!',
+      text: errorMessage,
+      confirmButtonText: 'OK'
+    })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// Watchers
+watch(() => editProfile.value.maKh, (newVal) => {
+  if (!newVal && profile.value?.maKh) {
+    editProfile.value.maKh = profile.value.maKh
+  }
+})
+
+// Lifecycle
 onMounted(() => {
   fetchProfile()
 })
 </script>
 
 <style scoped>
-.container { 
+.container {
   max-width: 1200px;
   background: #f8fafc;
   border-radius: 0.5rem;
@@ -549,6 +795,7 @@ onMounted(() => {
   color: #1e40af;
   margin: 0;
 }
+
 .space-y-6 > * + * {
   margin-top: 1.5rem;
 }
@@ -616,6 +863,7 @@ onMounted(() => {
 .d-none {
   display: none;
 }
+
 .modern-card {
   background: white;
   border-radius: 0.5rem;
@@ -638,6 +886,7 @@ onMounted(() => {
 .card-body {
   background: white;
 }
+
 .avatar-container {
   position: relative;
   display: inline-block;

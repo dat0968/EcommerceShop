@@ -116,9 +116,9 @@ function confirmCart() {
 }
 </script>
 <template>
-  <div>
+  <div >
     <!-- Shop Cart Section Begin -->
-    <section class="shop-cart spad">
+    <section class="shop-cart spad"style="margin-bottom: 200px;">
       <div class="container">
         <div class="row">
           <div class="col-lg-9">

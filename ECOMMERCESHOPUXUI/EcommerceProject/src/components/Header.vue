@@ -93,7 +93,7 @@
             </nav>
           </div>
           <div class="col-lg-3">
-            <div class="header__right">
+            <div class="header__right" style="margin-top: 10px;">
               <div class="header__right__auth">
                 <template v-if="!isLoggedIn">
                   <div class="dropdown">

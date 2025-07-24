@@ -48,7 +48,7 @@ namespace APIClothesEcommerceShop.Repositories.Home
                                            TenHinhAnh = p.TenHinhAnh
                                        }).ToList(),
                                    }).ToList(),
-                               }).Take(4).ToListAsync();
+                               }).Take(8).ToListAsync();
                 return await products;
             }
             catch (Exception ex)
@@ -86,7 +86,7 @@ namespace APIClothesEcommerceShop.Repositories.Home
                             TenHinhAnh = p.TenHinhAnh
                         }).ToList(),
                     }).ToList(),
-                }).OrderByDescending(d => d.LuotXem).Take(4).ToListAsync();
+                }).OrderByDescending(d => d.LuotXem).Take(8).ToListAsync();
                 return products;
             }
             catch (Exception ex)
@@ -126,7 +126,7 @@ namespace APIClothesEcommerceShop.Repositories.Home
                             TenHinhAnh = p.TenHinhAnh
                         }).ToList(),
                     }).ToList(),
-                }).OrderByDescending(d => d.NgayTao).Take(8).ToListAsync();
+                }).OrderByDescending(d => d.NgayTao).Take(12).ToListAsync();
                 return products;
             }catch(Exception ex)
             {

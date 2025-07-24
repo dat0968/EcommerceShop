@@ -27,7 +27,6 @@ namespace APIClothesEcommerceShop.Controllers
         {
             try
             {
-                Console.WriteLine("User Claims: " + string.Join(", ", User.Claims.Select(c => $"{c.Type}: {c.Value}")));
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 var userIdClaim = identity?.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -63,7 +62,7 @@ namespace APIClothesEcommerceShop.Controllers
                     TenTaiKhoan = customer.TenTaiKhoan,
                     MatKhau = null,
                     Hinh = customer.Hinh,
-                    HinhDaiDien = null, 
+                    HinhDaiDien = null,
                     TinhTrang = customer.TinhTrang ?? "Đang hoạt động",
                     IsActive = customer.IsActive,
                     NgayTao = customer.NgayTao
@@ -92,57 +91,55 @@ namespace APIClothesEcommerceShop.Controllers
         {
             try
             {
-                Console.WriteLine("Nhận được request UpdateProfile...");
-                Console.WriteLine($"Dữ liệu nhận được: HoTen={customerDto.HoTen}, SDT={customerDto.SDT}, Email={customerDto.Email}");
-
-                //if (string.IsNullOrWhiteSpace(customerDto.HoTen))
-                //{
-                //    return BadRequest(new
-                //    {
-                //        Success = false,
-                //        Message = "Họ tên không được để trống"
-                //    });
-                //}
-                //if (string.IsNullOrWhiteSpace(customerDto.GioiTinh))
-                //{
-                //    return BadRequest(new
-                //    {
-                //        Success = false,
-                //        Message = "Giới tính không được để trống"
-                //    });
-                //}
-                //if (string.IsNullOrWhiteSpace(customerDto.DiaChi))
-                //{
-                //    return BadRequest(new
-                //    {
-                //        Success = false,
-                //        Message = "Địa chỉ không được để trống"
-                //    });
-                //}
-                //if (string.IsNullOrWhiteSpace(customerDto.CCCD) || !Regex.IsMatch(customerDto.CCCD, @"^\d{12}$"))
-                //{
-                //    return BadRequest(new
-                //    {
-                //        Success = false,
-                //        Message = "CCCD phải là 12 chữ số"
-                //    });
-                //}
-                //if (string.IsNullOrWhiteSpace(customerDto.SDT) || !Regex.IsMatch(customerDto.SDT, @"^0\d{9,10}$"))
-                //{
-                //    return BadRequest(new
-                //    {
-                //        Success = false,
-                //        Message = "Số điện thoại phải bắt đầu bằng 0 và có 10-11 chữ số"
-                //    });
-                //}
-                //if (!string.IsNullOrWhiteSpace(customerDto.Email) && !Regex.IsMatch(customerDto.Email, @"^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$"))
-                //{
-                //    return BadRequest(new
-                //    {
-                //        Success = false,
-                //        Message = "Email không hợp lệ"
-                //    });
-                //}
+                // Validation
+                if (string.IsNullOrWhiteSpace(customerDto.HoTen))
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "Họ tên không được để trống"
+                    });
+                }
+                if (string.IsNullOrWhiteSpace(customerDto.GioiTinh))
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "Giới tính không được để trống"
+                    });
+                }
+                if (string.IsNullOrWhiteSpace(customerDto.DiaChi))
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "Địa chỉ không được để trống"
+                    });
+                }
+                if (string.IsNullOrWhiteSpace(customerDto.CCCD) || !Regex.IsMatch(customerDto.CCCD, @"^\d{12}$"))
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "CCCD phải là 12 chữ số"
+                    });
+                }
+                if (string.IsNullOrWhiteSpace(customerDto.SDT) || !Regex.IsMatch(customerDto.SDT, @"^0\d{9,10}$"))
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "Số điện thoại phải bắt đầu bằng 0 và có 10-11 chữ số"
+                    });
+                }
+                if (!string.IsNullOrWhiteSpace(customerDto.Email) && !Regex.IsMatch(customerDto.Email, @"^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$"))
+                {
+                    return BadRequest(new
+                    {
+                        Success = false,
+                        Message = "Email không hợp lệ"
+                    });
+                }
 
                 var identity = HttpContext.User.Identity as ClaimsIdentity;
                 var userIdClaim = identity?.FindFirst(ClaimTypes.NameIdentifier);
@@ -155,6 +152,7 @@ namespace APIClothesEcommerceShop.Controllers
                         Message = "Bạn cần đăng nhập để cập nhật thông tin cá nhân."
                     });
                 }
+
                 var existingCustomer = await _customerRepository.GetCustomerByIdAsync(userId);
                 if (existingCustomer == null)
                 {
@@ -167,7 +165,6 @@ namespace APIClothesEcommerceShop.Controllers
 
                 if (customerDto.HinhDaiDien != null && customerDto.HinhDaiDien.Length > 0)
                 {
-                    Console.WriteLine("Bắt đầu xử lý file ảnh...");
                     if (customerDto.HinhDaiDien.Length > 5 * 1024 * 1024)
                     {
                         return BadRequest(new
@@ -191,21 +188,32 @@ namespace APIClothesEcommerceShop.Controllers
                     var uploadsFolder = Path.Combine(_environment.WebRootPath ?? "wwwroot", "images");
                     if (!Directory.Exists(uploadsFolder))
                     {
-                        Console.WriteLine("Tạo thư mục uploads...");
                         Directory.CreateDirectory(uploadsFolder);
                     }
 
                     var fileName = $"{Guid.NewGuid()}_{customerDto.HinhDaiDien.FileName}";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
+                    var imagePath = $"/images/{fileName}";
+                    if (imagePath.Length > 255)
+                    {
+                        return BadRequest(new
+                        {
+                            Success = false,
+                            Message = "Đường dẫn file ảnh quá dài"
+                        });
+                    }
+
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await customerDto.HinhDaiDien.CopyToAsync(stream);
                     }
 
-                    customerDto.Hinh = $"/images/{fileName}";
+                    customerDto.Hinh = imagePath;
                 }
 
+                customerDto.TinhTrang = customerDto.TinhTrang ?? "Đang hoạt động";
+                customerDto.IsActive = customerDto.IsActive ?? true;
 
                 var result = await _customerRepository.UpdateCustomerAsync(userId, customerDto);
                 if (!result.IsSuccess)
@@ -217,7 +225,6 @@ namespace APIClothesEcommerceShop.Controllers
                     });
                 }
 
-                Console.WriteLine("Cập nhật thành công!");
                 return Ok(new
                 {
                     Success = true,
@@ -226,11 +233,11 @@ namespace APIClothesEcommerceShop.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Lỗi khi cập nhật hồ sơ: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                Console.WriteLine($"Lỗi khi cập nhật hồ sơ: {ex.Message}\nInner Exception: {ex.InnerException?.Message}\nStackTrace: {ex.StackTrace}");
                 return StatusCode(500, new
                 {
                     Success = false,
-                    Message = $"Lỗi server: {ex.Message}"
+                    Message = $"Lỗi server: {ex.Message}. Inner Exception: {ex.InnerException?.Message}"
                 });
             }
         }
