@@ -20,8 +20,8 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
             // _db.Database.EnsureCreated();
             InitTestAccount();
             // InitTestOrder(3);
-            // CreateOrderForTest("customer.demo@email.com");
-            // UpdateStreakForTest("customer.demo@email.com");
+            // CreateOrderForTest("customer.demo@email.com", 14000000);
+            // UpdateStreakForTest("customer.demo@email.com", 7);
         }
         private void InitCombo(int numCreate, int? idOrder = null)
         {
@@ -166,7 +166,7 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
 
         private void InitTestOrder(int numCreate, string username = "customer.demo", int? totalAmount = null)
         {
-            var khachHang = _db.Khachhangs.FirstOrDefault(kh => kh.TenTaiKhoan == username);
+            var khachHang = _db.Khachhangs.FirstOrDefault(kh => kh.TenTaiKhoan == username || kh.Email == username);
             if (khachHang == null) return;
 
             var sanphams = _db.Sanphams.ToList();
