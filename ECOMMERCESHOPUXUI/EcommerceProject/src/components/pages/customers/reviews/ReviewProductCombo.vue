@@ -221,7 +221,7 @@ export default {
         const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig())
 
         if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
-          errorMessage.value = res.data?.message || 'Không thể tải đánh giá.'
+          errorMessage.value = res.data?.message || 'Không thể có đánh giá.'
           reviews.value = []
           return
         }
