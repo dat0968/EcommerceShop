@@ -5,7 +5,7 @@
     <!-- Header Section Begin -->
     <header class="header">
       <div class="container-fluid">
-        <div class="row">
+        <div class="row justify-content-between align-items-center">
           <div
             class="col-xl-3 col-lg-2"
             style="width: 300px; margin-right: 50px; padding-bottom: 20px"
@@ -333,5 +333,6 @@ onMounted(() => {
 .header__right {
   display: flex;
   align-items: center;
+  justify-content:space-evenly;
 }
 </style>
