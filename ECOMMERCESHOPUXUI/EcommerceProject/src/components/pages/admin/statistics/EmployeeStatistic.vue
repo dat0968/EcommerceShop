@@ -202,11 +202,13 @@ export default {
     },
     renderAllCharts() {
       this.destroyCharts()
-      this.renderRevenueChart('daily')
-      this.renderRevenueChart('weekly')
-      this.renderRevenueChart('monthly')
-      this.renderRevenueChart('yearly')
-      this.renderEmployeeChart()
+      this.$nextTick(() => {
+        this.renderRevenueChart('daily')
+        this.renderRevenueChart('weekly')
+        this.renderRevenueChart('monthly')
+        this.renderRevenueChart('yearly')
+        this.renderEmployeeChart()
+      })
     },
     renderRevenueChart(period) {
       try {
@@ -221,7 +223,7 @@ export default {
         }
 
         const chartData = this.data.revenueByTime[period] || []
-        const chartLabel = `Doanh thu theo ${this.selectedPeriodText.charAt(0).toUpperCase() + this.selectedPeriodText.slice(1)}`
+        const chartLabel = `Doanh thu`
 
         this[refName] = new Chart(context, {
           type: 'bar',
