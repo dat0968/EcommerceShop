@@ -11,6 +11,7 @@ import $ from 'jquery'
 import 'datatables.net'
 import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
+import pathReplaceImg from '@/utils/processPathImg'
 import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 export default {
@@ -89,20 +90,25 @@ export default {
 
       const orderDetailsHtml = `
         <div class="container-fluid p-3">
-          <h6 class="mb-3 text-primary">Chi tiết đơn hàng gần đây của Combo: ${combo.comboName}</h6>
+          <h6 class="mb-3 text-primary">Chi tiết combo: ${combo.comboName}</h6>
           <div class="row g-3">
             ${
-              combo.orderRecents && combo.orderRecents.length > 0
-                ? combo.orderRecents
+              combo.detailTopCombos && combo.detailTopCombos.length > 0
+                ? combo.detailTopCombos
                     .map(
-                      (order) => `
+                      (dCbo) => `
                         <div class="col-sm-12 col-md-6 col-lg-4">
                           <div class="card h-100 shadow-sm border-0">
                             <div class="card-body d-flex flex-column">
-                              <h5 class="card-title mb-2">Mã hóa đơn: ${order.maHd}</h5>
-                              <p class="mb-1"><strong>Ngày tạo:</strong> ${order.ngayTao ? new Date(order.ngayTao).toLocaleDateString() : '-'}</p>
-                              <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge ${order.isActive ? 'bg-success' : 'bg-danger'}">${order.tinhTrang}</span></p>
-                              <p class="mb-0"><strong>Địa chỉ nhận:</strong> <span title="${order.diaChiNhanHang}">${order.diaChiNhanHang}</span></p>
+                              <div class="d-flex align-items-center mb-3">
+                                <img src="${pathReplaceImg(undefined, 'HinhAnh/Products', dCbo.hinhAnh)}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" alt="Hình ảnh sản phẩm">
+                                <div>
+                                  <h5 class="card-title mb-0">Sản phẩm: ${dCbo.tenSanPham}</h5>
+                                  <p class="card-subtitle text-muted">Mã sản phẩm: ${dCbo.comboId}</p>
+                                </div>
+                              </div>
+                              <p class="mb-1"><strong>Số lượng:</strong> <span class="text-info">${dCbo.soLuong}</span></p>
+                              <p class="mb-1"><strong>Đơn giá:</strong> <span class="text-danger">${formatCurrency(dCbo.donGia)}</span></p>
                             </div>
                           </div>
                         </div>
