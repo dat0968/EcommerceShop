@@ -2,12 +2,14 @@
   <div style="margin-top: 90px" class="xp-contentbar position-relative">
     <Overlay :is-visible="isDisabled" :overlayContent="overlayContent" />
     <!-- Breadcrumb trạng thái -->
-    <nav aria-label="breadcrumb" class="mb-3">
+     
+    <h1 class="fw-bold text-uppercase text-center text-dark mb-4" style="font-size: 3rem">Quản lý đánh giá</h1>
+    <!-- <nav aria-label="breadcrumb  text-center" class="mb-3">
       <ol class="breadcrumb">
         <li class="breadcrumb-item active h5"><strong>Quản lý đánh giá</strong></li>
       </ol>
       <hr />
-    </nav>
+    </nav> -->
 
     <div class="row">
       <div class="col-md-3">
