@@ -135,25 +135,20 @@ export default {
   },
   computed: {
     hasCouponData() {
-      return (
-        this.couponData &&
+      return this.couponData?.totalCoupons > 0 &&
         Array.isArray(this.couponData.topCoupons) &&
         this.couponData.topCoupons.length > 0
-      )
     },
     hasCategoryData() {
-      return (
-        this.categoryData &&
+      return this.categoryData?.totalCategories > 0 &&
         Array.isArray(this.categoryData.topCategories) &&
         this.categoryData.topCategories.length > 0
-      )
     },
     hasReviewData() {
-      return (
-        this.reviewData &&
+      return typeof this.reviewData?.averageRating === 'number' &&
+        this.reviewData.averageRating > 0 &&
         this.reviewData.reviewCountsByStar &&
         Object.keys(this.reviewData.reviewCountsByStar).length > 0
-      )
     },
     tableTitle() {
       switch (this.selectedTable) {
@@ -176,7 +171,7 @@ export default {
     },
   },
   mounted() {
-    this.setDefaultSelectedStats()
+    // this.setDefaultSelectedStats()
   },
   methods: {
     setDefaultSelectedStats() {
