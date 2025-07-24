@@ -1,56 +1,25 @@
 <template>
   <div class="col-12">
-    <!-- Khung dữ liệu tóm tắt và biểu đồ -->
     <div class="card m-b-30">
       <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="card-title text-black mb-0">Doanh thu theo {{ selectedPeriodText }}</h5>
-        <div class="btn-group" role="group">
+        <h5 class="card-title text-black mb-0">Thống kê doanh thu & nhân sự</h5>
+        <div class="btn-group btn-group-sm" role="group">
           <button
+            v-for="period in periods"
+            :key="period.value"
             type="button"
-            class="btn btn-sm"
+            class="btn"
             :class="{
-              'btn-primary': selectedPeriod === 'daily',
-              'btn-outline-primary': selectedPeriod !== 'daily',
+              'btn-primary': selectedPeriod === period.value,
+              'btn-outline-primary': selectedPeriod !== period.value,
             }"
-            @click="changePeriod('daily')"
+            @click="selectedPeriod = period.value"
           >
-            Ngày
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm"
-            :class="{
-              'btn-primary': selectedPeriod === 'weekly',
-              'btn-outline-primary': selectedPeriod !== 'weekly',
-            }"
-            @click="changePeriod('weekly')"
-          >
-            Tuần
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm"
-            :class="{
-              'btn-primary': selectedPeriod === 'monthly',
-              'btn-outline-primary': selectedPeriod !== 'monthly',
-            }"
-            @click="changePeriod('monthly')"
-          >
-            Tháng
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm"
-            :class="{
-              'btn-primary': selectedPeriod === 'yearly',
-              'btn-outline-primary': selectedPeriod !== 'yearly',
-            }"
-            @click="changePeriod('yearly')"
-          >
-            Năm
+            {{ period.label }}
           </button>
         </div>
       </div>
+
       <div class="card-body">
         <div v-if="isLoading" class="text-center my-4">
           <LoadingSpinner />
@@ -58,54 +27,68 @@
         <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
           <NoDataMessage />
         </div>
-        <div v-else class="row align-items-center g-3">
-          <div class="col-md-6">
-            <!-- Khung dữ liệu tóm tắt -->
-            <div class="xp-chart-label">
-              <ul class="list-inline text-center">
-                <li class="list-inline-item mx-3">
-                  <p class="text-black">Lương trung bình</p>
-                  <h4 class="text-primary-gradient mb-3">
-                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.averageSalary) }}
-                  </h4>
-                </li>
-                <li class="list-inline-item mx-3">
-                  <p class="text-black">Tổng lương</p>
-                  <h4 class="text-success-gradient mb-3">
-                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.totalSalary) }}
-                  </h4>
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="border rounded-except-top-right border p-1 bg-white">
-              <canvas ref="employeeChart"></canvas>
-              <div v-show="isLoading" class="text-center my-4">
-                <LoadingSpinner />
+        <div v-else class="row align-items-start g-4">
+          <!-- Icon tình trạng nhân sự -->
+          <div class="col-12 position-relative">
+            <div class="bg-white border rounded p-3">
+
+              <div class="row">
+                <h6 class="col-md-4 col-sm-12">Tình trạng nhân sự</h6>
+                <!-- Nhân viên đang làm -->
+                <div class="col-md-4 col-sm-12">
+                  <div class="d-flex align-items-center ">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="status-circle bg-primary"></span>
+                      <span>Đang làm: </span>
+                    </div>
+                    <strong>{{ data.totalActiveEmployees ?? 0 }}</strong>
+                  </div>
+                </div>
+
+                <!-- Nhân viên nghỉ việc -->
+                <div class="col-md-4 col-sm-12 mt-2 mt-md-0">
+                  <div class="d-flex align-items-center ">
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="status-circle bg-danger"></span>
+                      <span>Nghỉ việc: </span>
+                    </div>
+                    <strong>{{ data.totalInactiveEmployees ?? 0 }}</strong>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="col-md-12">
-            <!-- Khung biểu đồ -->
-            <div class="chart-container position-relative">
+
+          <!-- Biểu đồ doanh thu -->
+          <div class="col-12">
+            <div class="chart-container border p-2 rounded bg-white position-relative">
               <canvas
-                ref="revenueChartDaily"
-                v-show="!isLoading && selectedPeriod === 'daily'"
+                v-for="period in periods"
+                :key="period.value"
+                :ref="`chart_${period.value}`"
+                v-show="selectedPeriod === period.value"
               ></canvas>
-              <canvas
-                ref="revenueChartWeekly"
-                v-show="!isLoading && selectedPeriod === 'weekly'"
-              ></canvas>
-              <canvas
-                ref="revenueChartMonthly"
-                v-show="!isLoading && selectedPeriod === 'monthly'"
-              ></canvas>
-              <canvas
-                ref="revenueChartYearly"
-                v-show="!isLoading && selectedPeriod === 'yearly'"
-              ></canvas>
+            </div>
+          </div>
+
+          <!-- Thống kê tiền lương -->
+          <div class="col-md-12 mt-4">
+            <div class="xp-chart-label">
+              <ul class="list-inline text-center mb-0">
+                <li class="list-inline-item mx-4">
+                  <p class="text-black mb-1">Doanh thu trung bình</p>
+                  <h4 class="text-primary-gradient">
+                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.averageSalary) }}
+                  </h4>
+                </li>
+                <li class="list-inline-item mx-4">
+                  <p class="text-black mb-1">Tổng doanh thu</p>
+                  <h4 class="text-success-gradient">
+                    <i class="icon-wallet mr-2"></i>{{ formatCurrency(data?.totalSalary) }}
+                  </h4>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
@@ -118,66 +101,40 @@
 import { Chart, registerables } from 'chart.js'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 import NoDataMessage from '@/components/common/NoDataMessage.vue'
-
 import { formatCurrency } from '@/constants/formatCurrency'
+
 Chart.register(...registerables)
+
 export default {
   name: 'EmployeeStatistic',
-  components: {
-    LoadingSpinner,
-    NoDataMessage,
-  },
+  components: { LoadingSpinner, NoDataMessage },
   props: {
-    data: {
-      default: () => ({}),
-    },
-    isLoading: {
-      type: Boolean,
-      default: false,
-    },
+    data: { default: () => ({}) },
+    isLoading: { type: Boolean, default: false },
   },
   data() {
     return {
-      employeeChart: null,
-      revenueChartDaily: null,
-      revenueChartWeekly: null,
-      revenueChartMonthly: null,
-      revenueChartYearly: null,
-      chartError: false,
       selectedPeriod: 'daily',
+      chartInstances: {},
+      periods: [
+        { label: 'Ngày', value: 'daily' },
+        { label: 'Tuần', value: 'weekly' },
+        { label: 'Tháng', value: 'monthly' },
+        { label: 'Năm', value: 'yearly' },
+      ],
     }
   },
-  computed: {
-    selectedPeriodText() {
-      switch (this.selectedPeriod) {
-        case 'daily':
-          return 'Ngày'
-        case 'weekly':
-          return 'Tuần'
-        case 'monthly':
-          return 'Tháng'
-        case 'yearly':
-          return 'Năm'
-        default:
-          return ''
-      }
-    },
-  },
   watch: {
-    isLoading(newVal) {
-      if (!newVal) {
-        this.$nextTick(() => {
-          this.renderAllCharts()
-        })
-      }
-    },
     data: {
       handler() {
-        this.$nextTick(() => {
-          this.renderAllCharts()
-        })
+        this.$nextTick(this.renderAllCharts)
       },
       deep: true,
+    },
+    isLoading(newVal) {
+      if (!newVal) {
+        this.$nextTick(this.renderAllCharts)
+      }
     },
   },
   mounted() {
@@ -186,136 +143,84 @@ export default {
     }
   },
   beforeUnmount() {
-    this.destroyCharts()
+    Object.values(this.chartInstances).forEach(chart => chart.destroy?.())
   },
   methods: {
     formatCurrency,
-    changePeriod(period) {
-      this.selectedPeriod = period
-    },
-    destroyCharts() {
-      if (this.revenueChartDaily) this.revenueChartDaily.destroy()
-      if (this.revenueChartWeekly) this.revenueChartWeekly.destroy()
-      if (this.revenueChartMonthly) this.revenueChartMonthly.destroy()
-      if (this.revenueChartYearly) this.revenueChartYearly.destroy()
-      if (this.employeeChart) this.employeeChart.destroy()
-    },
     renderAllCharts() {
-      this.destroyCharts()
-      this.$nextTick(() => {
-        this.renderRevenueChart('daily')
-        this.renderRevenueChart('weekly')
-        this.renderRevenueChart('monthly')
-        this.renderRevenueChart('yearly')
-        this.renderEmployeeChart()
+      this.periods.forEach(({ value }) => this.renderChart(value))
+    },
+    renderChart(period) {
+      const canvasArray = this.$refs[`chart_${period}`]
+      const canvas = Array.isArray(canvasArray) ? canvasArray[0] : canvasArray
+
+      if (!canvas || !this.data?.revenueByTime?.[period]) return
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+
+      // Hủy biểu đồ cũ nếu có
+      if (this.chartInstances[period]) {
+        this.chartInstances[period].destroy()
+      }
+
+      const chartData = this.data.revenueByTime[period] || []
+
+      this.chartInstances[period] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartData.map((d) => d.label),
+          datasets: [
+            {
+              label: `Doanh thu (${period})`,
+              data: chartData.map((d) => d.revenue),
+              backgroundColor: 'rgba(75, 192, 192, 0.7)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: { enabled: true },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Doanh thu (VNĐ)',
+              },
+            },
+          },
+        },
       })
-    },
-    renderRevenueChart(period) {
-      try {
-        const refName = `revenueChart${period.charAt(0).toUpperCase() + period.slice(1)}`
-        const canvas = this.$refs[refName]
-        if (!canvas || !this.data || !this.data.revenueByTime) {
-          return
-        }
-        const context = canvas.getContext('2d')
-        if (!context) {
-          return
-        }
+    }
 
-        const chartData = this.data.revenueByTime[period] || []
-        const chartLabel = `Doanh thu`
-
-        this[refName] = new Chart(context, {
-          type: 'bar',
-          data: {
-            labels: chartData.map((d) => d.label),
-            datasets: [
-              {
-                label: chartLabel,
-                data: chartData.map((d) => d.revenue),
-                backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: 'top',
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-              },
-            },
-          },
-        })
-      } catch (e) {
-        console.error(`Failed to render ${period} revenue chart:`, e)
-      }
-    },
-    renderEmployeeChart() {
-      try {
-        const canvas = this.$refs.employeeChart
-        if (!canvas || !this.data) {
-          return
-        }
-        const context = canvas.getContext('2d')
-        if (!context) {
-          return
-        }
-        // Kiểm tra dữ liệu hợp lệ
-        const active = this.data?.totalActiveEmployees ?? 0
-        const inactive = this.data?.totalInactiveEmployees ?? 0
-        if (active === 0 && inactive === 0) {
-          return
-        }
-        this.employeeChart = new Chart(context, {
-          type: 'bar',
-          data: {
-            labels: ['Tổng số nhân viên'],
-            datasets: [
-              {
-                label: 'Đang làm',
-                data: [active],
-                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-              },
-              {
-                label: 'Nghỉ việc',
-                data: [inactive],
-                backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: 'bottom',
-              },
-            },
-            scales: {
-              x: {
-                stacked: true,
-              },
-              y: {
-                stacked: true,
-                beginAtZero: true,
-              },
-            },
-          },
-        })
-      } catch (e) {
-        console.error('Failed to render employee chart:', e)
-      }
-    },
   },
 }
 </script>
+
+<style scoped>
+.chart-container {
+  width: 100%;
+  min-height: 10em;
+}
+.status-circle {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+}
+.bg-primary {
+  background-color: #007bff !important;
+}
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+canvas {
+  max-height:10rem
+}
+</style>

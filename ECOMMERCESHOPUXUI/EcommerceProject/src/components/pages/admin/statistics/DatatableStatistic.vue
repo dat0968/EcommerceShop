@@ -47,10 +47,9 @@
           <h5 class="card-title text-black mb-0 col-6">Thống kê bổ sung</h5>
           <div class="mb-3 col-auto">
             <select id="statsSelect" class="form-select" v-model="selectedStats">
-              <option :disabled="couponData == null" value="coupons">Mã giảm giá</option>
-              <option :disabled="categoryData == null" value="categories">Danh mục</option>
-              <option :disabled="inventoryData == null" value="inventory">Tồn kho</option>
-              <option :disabled="reviewData == null" value="reviews">Đánh giá</option>
+              <option :disabled="!couponData" value="coupons">Mã giảm giá</option>
+              <option :disabled="!categoryData" value="categories">Danh mục</option>
+              <option :disabled="!reviewData" value="reviews">Đánh giá</option>
             </select>
           </div>
         </div>
@@ -60,9 +59,6 @@
           </div>
           <div v-if="selectedStats === 'categories'">
             <CategoryStatistic :data="categoryData" :is-loading="categoryLoading" />
-          </div>
-          <div v-if="selectedStats === 'inventory'">
-            <InventoryAnalysis :data="inventoryData" :is-loading="inventoryLoading" />
           </div>
           <div v-if="selectedStats === 'reviews'">
             <ReviewAnalysis :data="reviewData" :is-loading="reviewLoading" />
@@ -83,7 +79,6 @@ import EmployeeTable from '@/components/pages/admin/statistics/datatables/Employ
 import ComboTable from '@/components/pages/admin/statistics/datatables/ComboTable.vue'
 import CouponStatistic from '@/components/pages/admin/statistics/CouponStatistic.vue'
 import CategoryStatistic from '@/components/pages/admin/statistics/CategoryStatistic.vue'
-import InventoryAnalysis from '@/components/pages/admin/statistics/InventoryAnalysis.vue'
 import ReviewAnalysis from '@/components/pages/admin/statistics/ReviewAnalysis.vue'
 
 export default {
@@ -95,7 +90,6 @@ export default {
     ComboTable,
     CouponStatistic,
     CategoryStatistic,
-    InventoryAnalysis,
     ReviewAnalysis,
     LoadingSpinner,
     NoDataMessage,
@@ -125,10 +119,6 @@ export default {
     inventoryData: {
       default: () => ({}),
     },
-    inventoryLoading: {
-      type: Boolean,
-      default: true,
-    },
     reviewData: {
       default: () => ({}),
     },
@@ -144,6 +134,27 @@ export default {
     }
   },
   computed: {
+    hasCouponData() {
+      return (
+        this.couponData &&
+        Array.isArray(this.couponData.topCoupons) &&
+        this.couponData.topCoupons.length > 0
+      )
+    },
+    hasCategoryData() {
+      return (
+        this.categoryData &&
+        Array.isArray(this.categoryData.topCategories) &&
+        this.categoryData.topCategories.length > 0
+      )
+    },
+    hasReviewData() {
+      return (
+        this.reviewData &&
+        this.reviewData.reviewCountsByStar &&
+        Object.keys(this.reviewData.reviewCountsByStar).length > 0
+      )
+    },
     tableTitle() {
       switch (this.selectedTable) {
         case 'customers':
@@ -152,7 +163,7 @@ export default {
           return 'Nhân viên hàng đầu'
         case 'combos':
           return 'Combo hàng đầu'
-        default: // 'products'
+        default:
           return 'Sản phẩm bán chạy nhất'
       }
     },
@@ -164,8 +175,18 @@ export default {
       deep: true,
     },
   },
-  mounted() {},
-  methods: {},
+  mounted() {
+    this.setDefaultSelectedStats()
+  },
+  methods: {
+    setDefaultSelectedStats() {
+      if (this.hasCouponData) this.selectedStats = 'coupons'
+      else if (this.hasCategoryData) this.selectedStats = 'categories'
+      else if (this.hasReviewData) this.selectedStats = 'reviews'
+      else this.selectedStats = null
+    },
+  }
+
 }
 </script>
 

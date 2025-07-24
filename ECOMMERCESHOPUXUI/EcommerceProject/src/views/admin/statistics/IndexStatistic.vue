@@ -50,7 +50,6 @@
       :coupon-loading="couponIsLoading"
       :category-data="categoryStatisticData"
       :category-loading="categoryIsLoading"
-      :inventory-data="inventoryAnalysisData"
       :inventory-loading="inventoryIsLoading"
       :review-data="reviewAnalysisData"
       :review-loading="reviewIsLoading"
@@ -92,7 +91,6 @@ export default {
       datatableStatisticsResponse: {},
       couponStatisticData: {},
       categoryStatisticData: {},
-      inventoryAnalysisData: {},
       reviewAnalysisData: {},
       isLoading: false,
       revenueIsLoading: true,
@@ -127,7 +125,6 @@ export default {
         this.loadDatatableData(),
         this.loadCouponStatisticsData(),
         this.loadCategoryStatisticsData(),
-        this.loadInventoryAnalysisData(),
         this.loadReviewAnalysisData(),
       ]
 
@@ -237,16 +234,6 @@ export default {
       this.categoryStatisticData = response.data
       await this.$nextTick()
       this.categoryIsLoading = false
-    },
-    async loadInventoryAnalysisData() {
-      this.inventoryIsLoading = true
-      const response = await axiosConfig.getFromApi(
-        '/Statistics/GetInventoryAnalysis',
-        ConfigsRequest.takeAuth(),
-      )
-      this.inventoryAnalysisData = response.data
-      await this.$nextTick()
-      this.inventoryIsLoading = false
     },
     async loadReviewAnalysisData() {
       this.reviewIsLoading = true
