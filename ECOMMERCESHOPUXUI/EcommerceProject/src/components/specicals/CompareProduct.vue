@@ -9,14 +9,20 @@
     <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
       <div class="compare-modal">
         <div class="modal-header">
-          <button class="col-1 btn btn-light" @click="showSidebarModal = !showSidebarModal" title="Danh sách sản phẩm">
-            <i :class="showSidebarModal ? 'bi bi-chevron-left' : 'bi bi-list-ul'"></i>
-          </button>
-          <h2 class="text-center col-10">So sánh sản phẩm</h2>
-          <button class="btn col-1" @click="showApiSettingsModal" title="Cài đặt API Keys">
-            <i class="bi bi-gear"></i>
-          </button>
-          <button class="close-btn col-1" @click="showModal = false">×</button>
+          <div class="header-left">
+            <button class="btn btn-light" @click="showSidebarModal = !showSidebarModal" title="Danh sách sản phẩm">
+              <i :class="showSidebarModal ? 'bi bi-chevron-left' : 'bi bi-list-ul'"></i>
+            </button>
+          </div>
+          <div class="header-center">
+            <h2>So sánh sản phẩm</h2>
+          </div>
+          <div class="header-right">
+            <button class="btn" @click="showApiSettings = true" title="Cài đặt API Keys">
+              <i class="bi bi-gear"></i>
+            </button>
+            <button class="close-btn" @click="showModal = false">×</button>
+          </div>
         </div>
         <div class="modal-body overflow-auto">
           <!-- Cột phải: danh sách sản phẩm đã chọn để so sánh -->
@@ -94,18 +100,22 @@
           </div>
           <!-- Vùng so sánh chính -->
           <div class="compare-main position-relative">
-            <!-- Lớp phủ loading -->
-            <div v-if="isLoadingAI" class="loading-overlay">
+            <div
+              v-if="loadingGroup !== null"
+              class="loading-overlay-group"
+              :style="{ left: loadingGroup === 0 ? '0' : '50%' }"
+            >
               <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
-              <span class="mt-2">AI đang xử lý, vui lòng chờ...</span>
+              <span class="mt-2">AI đang xử lý...</span>
             </div>
             <div class="row align-items-stretch" style="min-height: 400px">
               <div
                 v-for="(group, groupIdx) in compareGroups"
                 :key="groupIdx"
                 class="col-6"
+                :class="{ 'group-disabled': loadingGroup === groupIdx }"
                 @dragover.prevent
                 @drop="onDropToGroup($event, groupIdx)"
               >
@@ -117,7 +127,7 @@
                   <button
                     class="btn btn-outline-secondary btn-sm position-absolute"
                     style="top: 8px; right: 8px; z-index: 2"
-                    :disabled="!tryOnResults[groupIdx]"
+                    :disabled="!tryOnResults[groupIdx] || loadingGroup === groupIdx"
                     @click="groupFlipped[groupIdx] = !groupFlipped[groupIdx]"
                   >
                     {{ groupFlipped[groupIdx] ? 'Xem sản phẩm' : 'Xem mẫu thử đồ' }}
@@ -133,7 +143,7 @@
                       </div>
                     </div>
                     <template v-else>
-                      <div class="w-100 row">
+                      <div class="row">
                         <div
                           v-for="(item, idx) in group.products"
                           :key="idx"
@@ -164,7 +174,7 @@
                               <div
                                 v-for="(prod, pidx) in item.products"
                                 :key="pidx"
-                                class="col-6 mb-2"
+                                class="col-6 m-1"
                                 :class="item.selectedComboProductIdx === pidx ? 'selected' : ''"
                                 @click.stop="selectComboProduct(groupIdx, idx, pidx)"
                               >
@@ -252,7 +262,11 @@
                     </template>
 
                     <div class="mt-3 text-center">
-                      <button class="btn btn-primary" @click="tryOnModel(groupIdx)">
+                      <button
+                        class="btn btn-primary"
+                        @click="tryOnModel(groupIdx)"
+                        :disabled="loadingGroup === groupIdx"
+                      >
                         Thử đồ trên người mẫu
                       </button>
                     </div>
@@ -468,7 +482,15 @@
           <div class="api-settings-modal">
             <h3>Cài đặt API Key</h3>
             <div class="form-group">
-              <label for="cloudinaryApiKey">Cloudinary API Key</label>
+              <label for="cloudinaryApiKey" class="d-flex align-items-center">
+                Cloudinary API Key
+                <i
+                  class="bi bi-info-circle ms-2"
+                  style="cursor: pointer"
+                  @click="showApiKeyHelp('cloudinary')"
+                  title="Làm thế nào để lấy thông tin API Cloudinary?"
+                ></i>
+              </label>
               <input
                 type="text"
                 id="cloudinaryApiKey"
@@ -627,7 +649,7 @@ export default {
       infoTabs: ['Mô tả', 'Đánh giá', 'Thông tin'],
       selectedProducts: [],
       showApiSettings: false,
-      isLoadingAI: false, // Trạng thái loading cho AI
+      loadingGroup: null, // Index of the group currently being processed by AI
       apiKeys: {
         cloudinaryApiKey: localStorage.getItem('cloudinaryApiKey') || '',
         cloudinaryApiSecret: localStorage.getItem('cloudinaryApiSecret') || '',
@@ -679,22 +701,69 @@ export default {
       this.selectedProducts = CompareStorageHelper.getCompareList()
     },
     showApiKeyHelp(keyType) {
-      if (keyType === 'lightx') {
-        alert(
-          'Cách lấy LightX API Key:\n\n' +
-            '1. Đăng ký hoặc đăng nhập vào tài khoản LightX tại https://www.lightxeditor.com/\n' +
-            '2. Điều hướng đến phần API hoặc cài đặt tài khoản của bạn.\n' +
-            '3. Tạo một API Key mới hoặc sao chép một API Key hiện có.\n' +
-            '4. Dán API Key của bạn vào đây.',
-        )
+      if (keyType === 'cloudinary') {
+        Swal.fire({
+          title: 'Cách lấy thông tin API Cloudinary',
+          html: `
+            <div style="text-align: left; padding: 1em;">
+              <p>Để lấy thông tin API của Cloudinary, bạn cần thực hiện các bước sau:</p>
+              <ol>
+                <li><strong>Đăng nhập vào Cloudinary:</strong> Truy cập <a href="https://cloudinary.com/users/login" target="_blank">trang đăng nhập Cloudinary</a> và vào tài khoản của bạn.</li>
+                <li><strong>Truy cập Dashboard:</strong> Sau khi đăng nhập, bạn sẽ được chuyển đến trang Dashboard chính.</li>
+                <li><strong>Tìm API Keys:</strong>
+                  <ul>
+                    <li><b>Cloud Name:</b> Thường được hiển thị nổi bật ở đầu trang Dashboard.</li>
+                    <li><b>API Key & API Secret:</b> Bạn có thể tìm thấy các thông tin này trong phần <b>"Account Details"</b> hoặc điều hướng đến <b>Settings > Account</b>.</li>
+                  </ul>
+                </li>
+                <li><strong>Tạo Upload Preset:</strong>
+                  <ul>
+                    <li>Đi đến <b>Settings > Upload</b>.</li>
+                    <li>Cuộn xuống phần <b>"Upload presets"</b> và nhấp vào <b>"Add upload preset"</b>.</li>
+                    <li>Đặt một tên cho preset (ví dụ: <i>unsigned_upload</i>).</li>
+                    <li>Chọn chế độ <b>"Signing Mode"</b> là <b>"Unsigned"</b>. Điều này rất quan trọng để cho phép tải lên không cần chữ ký từ phía client.</li>
+                    <li>Lưu lại preset và sao chép tên của nó vào ô "Cloudinary Upload Preset".</li>
+                  </ul>
+                </li>
+              </ol>
+              <p>Sau khi có đủ các thông tin trên, hãy điền chúng vào các ô tương ứng để hoàn tất cài đặt.</p>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonText: 'Đã hiểu'
+        });
+      } else if (keyType === 'lightx') {
+        Swal.fire({
+          title: 'Cách lấy LightX API Key',
+          html: `
+            <div style="text-align: left; padding: 1em;">
+              <ol>
+                <li>Đăng ký hoặc đăng nhập vào tài khoản LightX tại <a href="https://www.lightxeditor.com/" target="_blank">trang chủ LightX</a>.</li>
+                <li>Điều hướng đến phần API hoặc cài đặt tài khoản của bạn.</li>
+                <li>Tạo một API Key mới hoặc sao chép một API Key hiện có.</li>
+                <li>Dán API Key của bạn vào đây.</li>
+              </ol>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonText: 'Đã hiểu'
+        });
       } else if (keyType === 'gemini') {
-        alert(
-          'Cách lấy Gemini API Key:\n\n' +
-            '1. Truy cập Google AI Studio tại https://aistudio.google.com/\n' +
-            '2. Đăng nhập bằng tài khoản Google của bạn.\n' +
-            '3. Tạo một API Key mới hoặc sử dụng một API Key hiện có.\n' +
-            '4. Sao chép (copy) API Key của bạn và dán vào đây.',
-        )
+        Swal.fire({
+          title: 'Cách lấy Gemini API Key',
+          html: `
+            <div style="text-align: left; padding: 1em;">
+              <ol>
+                <li>Truy cập Google AI Studio tại <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</li>
+                <li>Đăng nhập bằng tài khoản Google của bạn.</li>
+                <li>Tạo một API Key mới bằng cách nhấp vào nút "Create API key".</li>
+                <li>Sao chép (copy) API Key của bạn và dán vào đây.</li>
+              </ol>
+            </div>
+          `,
+          icon: 'info',
+          confirmButtonText: 'Đã hiểu'
+        });
       }
     },
     selectPredefinedModel(model) {
@@ -950,8 +1019,10 @@ export default {
         return
       }
 
-      this.isLoadingAI = true // Bắt đầu loading
       const groupIdx = this.currentTryOnGroupIdx
+      this.loadingGroup = groupIdx // Set loading state for the group
+      this.showModelSelection = false // Close the model selection immediately
+
       const modelInfo = this.selectedTryOnModel
         ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
         : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl }
@@ -1002,7 +1073,7 @@ export default {
 
         // Combine the try-on image with the original product images for Gemini analysis
         const combinedImageForGemini = await this.combineImagesOnCanvas([
-          await this.loadImage(tryOnImageResultUrl),
+          await this.loadImage(cloudinaryUrl),
           ...productImages,
         ])
 
@@ -1010,7 +1081,7 @@ export default {
 
         this.tryOnResults[groupIdx] = {
           model: modelInfo,
-          image: tryOnImageResultUrl,
+          image: cloudinaryUrl,
           score: geminiRatings.aesthetic_score,
           style: geminiRatings.style,
           gender_suitability: geminiRatings.gender_suitability,
@@ -1018,11 +1089,12 @@ export default {
           time: new Date().toISOString(),
         }
         this.tryOnResults = { ...this.tryOnResults }
+        this.groupFlipped[groupIdx] = true // Flip the card to show the result
       } catch (error) {
         console.error('Error during try-on process:', error)
         // The alert is already shown in simulateChangeClothesAI
       } finally {
-        this.isLoadingAI = false // Kết thúc loading
+        this.loadingGroup = null // Reset loading state
         this.cancelModelSelection() // Reset state
       }
     },
@@ -1362,6 +1434,25 @@ export default {
 </script>
 
 <style scoped>
+.loading-overlay-group {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: left 0.3s ease;
+}
+
+.group-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .compare-btn-fixed {
   position: fixed;
   left: 50%;
@@ -1416,6 +1507,21 @@ export default {
   justify-content: space-between;
   padding: 16px 32px 8px 32px;
   border-bottom: 1px solid #eee;
+}
+
+.header-left, .header-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  flex: 2;
+  text-align: center;
+}
+
+.header-right {
+  justify-content: flex-end;
 }
 .close-btn {
   font-size: 2rem;
