@@ -248,7 +248,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         {
             // Tạo dictionary mã nhân viên -> danh sách hóa đơn đã sắp xếp mới nhất
             var ordersByEmployee = dataOrder
-                .Where(x => x.MaNv != null && x.MaNvNavigation != null)
+                // .Where(x => x.MaNv != null && x.MaNvNavigation != null)
                 .GroupBy(x => x.MaNv ?? 0)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
 
