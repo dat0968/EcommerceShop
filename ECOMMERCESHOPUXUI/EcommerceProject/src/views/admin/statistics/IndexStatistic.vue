@@ -162,7 +162,7 @@ export default {
         '/Statistics/GetOrderSummary',
         ConfigsRequest.takeAuth(),
       )
-      this.orderSummaryData = response.data
+      this.orderSummaryData = response.data || {}
       await this.$nextTick()
       this.orderSummaryIsLoading = false
     },
@@ -172,7 +172,7 @@ export default {
         '/Statistics/GetProductStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.productStatisticData = response.data
+      this.productStatisticData = response.data || {}
       await this.$nextTick()
       this.productIsLoading = false
     },
@@ -182,7 +182,7 @@ export default {
         '/Statistics/GetCustomerStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.customerStatisticsData = response.data
+      this.customerStatisticsData = response.data || {}
       await this.$nextTick()
       this.customerIsLoading = false
     },
@@ -192,7 +192,7 @@ export default {
         '/Statistics/GetEmployeeStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.employeeStatisticsData = response.data
+      this.employeeStatisticsData = response.data || {}
       await this.$nextTick()
       this.employeeIsLoading = false
     },
@@ -202,7 +202,7 @@ export default {
         '/Statistics/GetRevenueStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.revenueStatisticData = response.data
+      this.revenueStatisticData = response.data || {}
       await this.$nextTick()
       this.revenueIsLoading = false
     },
@@ -212,7 +212,8 @@ export default {
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
       )
-      ;(this.datatableStatisticsResponse = await response.data), await this.$nextTick()
+      this.datatableStatisticsResponse = response.data || {}
+      await this.$nextTick()
       this.datatableIsLoading = false
     },
     async loadCouponStatisticsData() {
@@ -221,7 +222,7 @@ export default {
         '/Statistics/GetCouponStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.couponStatisticData = response.data
+      this.couponStatisticData = response.data || {}
       await this.$nextTick()
       this.couponIsLoading = false
     },
@@ -231,7 +232,7 @@ export default {
         '/Statistics/GetCategoryStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.categoryStatisticData = response.data
+      this.categoryStatisticData = response.data || {}
       await this.$nextTick()
       this.categoryIsLoading = false
     },
@@ -241,7 +242,7 @@ export default {
         '/Statistics/GetReviewAnalysis',
         ConfigsRequest.takeAuth(),
       )
-      this.reviewAnalysisData = response.data
+      this.reviewAnalysisData = response.data || {}
       await this.$nextTick()
       this.reviewIsLoading = false
     },
