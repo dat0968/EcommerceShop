@@ -32,6 +32,11 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public decimal TotalRevenue { get; set; }
 
         /// <summary>
+        /// Tổng số sản phẩm đã bán
+        /// </summary>
+        public int ProductsSoldCount { get; set; }
+
+        /// <summary>
         /// Giá trung bình của sản phẩm
         /// </summary>
         public decimal AveragePrice { get; set; }

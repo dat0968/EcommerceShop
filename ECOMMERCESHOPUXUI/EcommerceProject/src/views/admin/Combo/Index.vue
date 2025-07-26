@@ -322,7 +322,7 @@ onMounted(() => {
                     type="button"
                     data-bs-toggle="modal"
                     :data-bs-target="`#comboEditModal_${combo.maCombo}`"
-                    class="btn btn-sm btn-warning me-1"
+                    class="btn btn-sm btn-warning me-1 mb-2"
                   >
                     Sửa
                   </button>
@@ -339,6 +339,7 @@ onMounted(() => {
                   data-bs-toggle="modal"
                   :data-bs-target="`#comboDetailModal_${combo.maCombo}`"
                   class="btn btn-sm btn-info me-1"
+                      style="width: 100px;"
                 >
                   Chi tiết
                 </button>

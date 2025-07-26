@@ -239,6 +239,8 @@ namespace APIClothesEcommerceShop.Controllers
                     _logger.LogInformation($"📱 Manual processing: OrderId={orderId}, Success={paymentResult.IsSuccess}");
                 }
 
+                var mobileFrontendUrl2 = _configuration["App:MobileFrontendUrl"] ?? "capacitor://localhost";
+
                 // Check if payment was successful
                 bool isPaymentSuccess = (paymentResult?.IsSuccess == true) || (responseCode == "00" && transactionStatus == "00");
 
@@ -602,6 +604,7 @@ namespace APIClothesEcommerceShop.Controllers
 
             return Ok(debugInfo);
         }
+        // Thêm method này vào MobileVNPAYController.cs
 
         [HttpGet("CheckOrderStatus/{orderId}")]
         public async Task<ActionResult> CheckOrderStatus(int orderId)

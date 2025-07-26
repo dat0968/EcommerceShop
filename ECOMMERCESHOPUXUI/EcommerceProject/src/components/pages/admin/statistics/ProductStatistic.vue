@@ -10,22 +10,7 @@
             <option value="year">Theo năm</option>
           </select>
         </div>
-        <span
-          @click="toggleProductStatusChart"
-          class="icon-layers"
-          style="cursor: pointer"
-          title="Biểu đồ trạng thái sản phẩm"
-        ></span>
-        <div
-          class="border rounded-except-top-right border p-1 bg-white"
-          v-show="showProductStatusChart"
-          style="position: absolute; top: 60px; right: 0"
-        >
-          <canvas id="productChart" v-if="!isLoading"></canvas>
-          <div v-show="isLoading" class="text-center my-4">
-            <span>Đang tải dữ liệu...</span>
-          </div>
-        </div>
+        
       </div>
     </div>
     <div class="card-body flex align-items-center m-3">
@@ -35,12 +20,12 @@
           overlay-content="Không có dữ liệu để hiển thị biểu đồ."
         />
         <div v-if="isLoading" class="text-center my-4">
-          <span>Đang tải dữ liệu...</span>
+          <LoadingSpinner />
         </div>
         <div v-else>
-          <canvas id="salesQuantityChartByDay" v-if="selectedTimePeriod === 'date'"></canvas>
-          <canvas id="salesQuantityChartByMonth" v-if="selectedTimePeriod === 'month'"></canvas>
-          <canvas id="salesQuantityChartByYear" v-if="selectedTimePeriod === 'year'"></canvas>
+          <canvas id="salesQuantityChartByDay" v-show="selectedTimePeriod === 'date'"></canvas>
+          <canvas id="salesQuantityChartByMonth" v-show="selectedTimePeriod === 'month'"></canvas>
+          <canvas id="salesQuantityChartByYear" v-show="selectedTimePeriod === 'year'"></canvas>
         </div>
       </div>
     </div>
@@ -63,15 +48,15 @@
 import { Chart, registerables } from 'chart.js'
 import { formatCurrency } from '@/constants/formatCurrency'
 import Overlay from '@/components/common/Overlay.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 Chart.register(...registerables)
 
 export default {
   name: 'ProductStatistic',
-  components: { Overlay },
+  components: { Overlay, LoadingSpinner },
   props: {
     data: {
-      type: Object,
-      required: true,
+      default: () => ({}),
     },
     isLoading: {
       type: Boolean,
@@ -83,7 +68,6 @@ export default {
       productChart: null,
       salesQuantityChart: null,
       selectedTimePeriod: 'date',
-      showProductStatusChart: false,
       hasSalesChartData: true,
     }
   },
@@ -100,7 +84,6 @@ export default {
     isLoading(newVal) {
       if (!newVal) {
         this.$nextTick(() => {
-          this.renderProductChart()
           this.updateSalesChart()
         })
       }
@@ -109,7 +92,6 @@ export default {
       handler() {
         if (!this.isLoading) {
           this.$nextTick(() => {
-            this.renderProductChart()
             this.updateSalesChart()
           })
         }
@@ -119,51 +101,11 @@ export default {
   },
   mounted() {
     if (!this.isLoading) {
-      this.renderProductChart()
       this.updateSalesChart()
     }
   },
   methods: {
     formatCurrency,
-    toggleProductStatusChart() {
-      this.showProductStatusChart = !this.showProductStatusChart
-    },
-    renderProductChart() {
-      const canvas = document.getElementById('productChart')
-      if (!canvas) return
-      const ctx = canvas.getContext('2d')
-      if (this.productChart) {
-        this.productChart.destroy()
-      }
-      this.productChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Đang bán', 'Ngừng bán'],
-          datasets: [
-            {
-              label: 'Tình trạng sản phẩm',
-              data: [this.data?.totalActiveProducts ?? 0, this.data?.totalInactiveProducts ?? 0],
-              backgroundColor: ['rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)'],
-              borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: {
-                boxWidth: 10,
-                padding: 10,
-              },
-            },
-          },
-        },
-      })
-    },
     updateSalesChart() {
       let canvasId = ''
       if (this.selectedTimePeriod === 'date') {
@@ -249,6 +191,10 @@ export default {
             y: {
               beginAtZero: true,
               position: 'left',
+              title: {
+                display: true,
+                text: 'Doanh thu'
+              }
             },
             y1: {
               beginAtZero: true,
@@ -256,8 +202,40 @@ export default {
               grid: {
                 drawOnChartArea: false,
               },
+              title: {
+                display: true,
+                text: 'Số lượng bán'
+              }
             },
           },
+          plugins: {
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += context.parsed.y;
+                  }
+                  return label;
+                }
+              }
+            },
+            legend: {
+              display: true,
+            },
+            title: {
+              display: true,
+              text: 'Doanh thu và số lượng bán theo thời gian',
+              font: {
+                size: 16
+              }
+            }
+          }
         },
       })
     },

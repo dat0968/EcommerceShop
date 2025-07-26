@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.Comments;
 using APIClothesEcommerceShop.Repositories.Reviews;
+using APIClothesEcommerceShop.Repositories.WheelCoupon;
+using APIClothesEcommerceShop.Services;
 
 namespace APIClothesEcommerceShop.Repositories.UnitOfWork
 {
@@ -13,6 +15,7 @@ namespace APIClothesEcommerceShop.Repositories.UnitOfWork
         Task SaveAsync();
         ICategoryRepository Category { get; }
         IReviewRepository Review { get; }
+        IWheelCouponRepository WheelCoupon { get; }
         // ICommentRepository Comment { get; }
     }
 }

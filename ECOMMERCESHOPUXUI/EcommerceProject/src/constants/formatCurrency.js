@@ -1,6 +1,21 @@
-export function formatCurrency(value) {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
+export function formatCurrency(value, unit = 'VND') {
+  if (typeof value !== 'number') return ''
+
+  const formatter = new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+
+  const formatted = formatter.format(value)
+
+  return formatted.replace('₫', unit)
+
+  // Trả về mặc định "VND"
+  // return formatted
 }
+
 
 // Phương thức chuyển đổi số thành chữ
 export function convertNumberToWords(number) {

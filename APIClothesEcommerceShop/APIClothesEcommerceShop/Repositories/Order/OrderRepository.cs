@@ -3,205 +3,118 @@ using APIClothesEcommerceShop.DTO.ComboDetails_Orders;
 using APIClothesEcommerceShop.DTO.Order;
 using APIClothesEcommerceShop.DTO.OrderDetails;
 using APIClothesEcommerceShop.Models;
-using iText.Kernel.Pdf.Canvas;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Net.NetworkInformation;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.Repositories.Order
 {
     public class OrderRepository : IOrderRepository
     {
         private readonly EcommerceShopContext db;
+
         public OrderRepository(EcommerceShopContext db)
         {
             this.db = db;
         }
+
         public async Task<Hoadon> CreateOrder(Hoadon model)
         {
-            try
-            {
-                db.Hoadons.Add(model);
-                await db.SaveChangesAsync();
-                return model;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error", ex);
-            }
+            db.Hoadons.Add(model);
+            await db.SaveChangesAsync();
+            return model;
         }
-        public async Task CancelOrders(int oderId, string selectedCancelStatus, string reasonCancel)
+
+        public async Task CancelOrders(int orderId, string selectedCancelStatus, string reasonCancel)
         {
-            await db.Database.BeginTransactionAsync();
+            using var transaction = await db.Database.BeginTransactionAsync();
             try
             {
-                // Cập nhật trạng thái Đã hủy hoặc Hoàn trả/Hoàn tiền cho đơn hàng
-                var existingHoaDon = db.Hoadons.Local.FirstOrDefault(p => p.MaHd == oderId) ?? await db.Hoadons.FindAsync(oderId);
+                var existingHoaDon = await db.Hoadons.FindAsync(orderId);
                 if (existingHoaDon == null)
                 {
-                    throw new Exception($"Không tìm thấy Hoadon với Id {oderId}");
+                    throw new Exception($"Không tìm thấy Hoadon với Id {orderId}");
                 }
+
                 existingHoaDon.TinhTrang = selectedCancelStatus;
                 existingHoaDon.LyDoHuy = reasonCancel;
-                db.Hoadons.Update(existingHoaDon);
-                // Hoàn lại số lượng sản phẩm mua lẻ và theo combo trong hóa đơn
+
                 var checkDetailOrder = await db.Cthoadons.Where(p => p.MaHd == existingHoaDon.MaHd).ToListAsync();
                 if (!checkDetailOrder.Any())
                 {
                     throw new Exception($"Không tìm thấy CTHoadon với Id {existingHoaDon.MaHd}");
                 }
+
                 foreach (var detail in checkDetailOrder)
                 {
                     if (detail.MaCombo == null)
                     {
-                        var findDetailproduct = db.Chitietsanphams.Local.FirstOrDefault(p => p.MaCtsp == detail.MaCtsp) ?? await db.Chitietsanphams.FindAsync(detail.MaCtsp);
-                        if (findDetailproduct == null)
+                        var findDetailproduct = await db.Chitietsanphams.FindAsync(detail.MaCtsp);
+                        if (findDetailproduct != null)
                         {
-                            throw new Exception($"Không tìm thấy CTSP với Id {detail.MaCtsp}");
+                            findDetailproduct.SoLuongTon += detail.SoLuong;
                         }
-                        findDetailproduct.SoLuongTon += detail.SoLuong;
-                        db.Chitietsanphams.Update(findDetailproduct);
                     }
                     else
                     {
-                        //Hoàn lại số lượng sản phẩm mua trong combo trong hóa đơn
-                        var checkDetailOrderCombo = await db.Chitietcombohoadons.Where(p => p.MaHd == existingHoaDon.MaHd && p.MaCombo == detail.MaCombo).ToListAsync();
+                        var checkDetailOrderCombo = await db.Chitietcombohoadons
+                            .Where(p => p.MaHd == existingHoaDon.MaHd && p.MaCombo == detail.MaCombo)
+                            .ToListAsync();
+
                         foreach (var detailComboOder in checkDetailOrderCombo)
                         {
-                            var findDetailproduct = db.Chitietsanphams.Local.FirstOrDefault(p => p.MaCtsp == detailComboOder.MaCtsp) ?? await db.Chitietsanphams.FindAsync(detailComboOder.MaCtsp);
-                            if (findDetailproduct == null)
+                            var findDetailproduct = await db.Chitietsanphams.FindAsync(detailComboOder.MaCtsp);
+                            if (findDetailproduct != null)
                             {
-                                throw new Exception($"Không tìm thấy CTSP với Id {detailComboOder.MaCtsp}");
+                                findDetailproduct.SoLuongTon += detailComboOder.SoLuong;
                             }
-                            findDetailproduct.SoLuongTon += detailComboOder.SoLuong;
-                            db.Chitietsanphams.Update(findDetailproduct);
                         }
-                        //Hoàn lại số lượng combo
-                        var findCombo = db.Combos.Local.FirstOrDefault(p => p.MaCombo == detail.MaCombo) ?? await db.Combos.FindAsync(detail.MaCombo);
-                        if (findCombo == null)
+
+                        var findCombo = await db.Combos.FindAsync(detail.MaCombo);
+                        if (findCombo != null)
                         {
-                            throw new Exception($"Không tìm thấy combo với Id {detail.MaCombo}");
+                            findCombo.SoLuong += detail.SoLuong;
                         }
-                        findCombo.SoLuong += detail.SoLuong;
-                        db.Combos.Update(findCombo);
                     }
                 }
-                //Hoàn lại mã coupon
+
                 if (!string.IsNullOrEmpty(existingHoaDon.MaCode))
                 {
-                    var findCoupon = db.Macoupons.Local.FirstOrDefault(p => p.MaCode == existingHoaDon.MaCode) ?? await db.Macoupons.FirstOrDefaultAsync(p => p.MaCode == existingHoaDon.MaCode);
-                    if (findCoupon == null)
+                    var findCoupon = await db.Macoupons.FirstOrDefaultAsync(p => p.MaCode == existingHoaDon.MaCode);
+                    if (findCoupon != null)
                     {
-                        throw new Exception($"Không tìm mã coupon {existingHoaDon.MaCode}");
+                        findCoupon.SoLuongDaDung -= 1;
                     }
-                    findCoupon.SoLuongDaDung -= 1;
-                    db.Macoupons.Update(findCoupon);
                 }
+
                 await db.SaveChangesAsync();
-                await db.Database.CommitTransactionAsync();
+                await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
-                await db.Database.RollbackTransactionAsync();
+                await transaction.RollbackAsync();
                 throw new Exception("Lỗi", ex);
             }
         }
 
-
         public async Task<List<OrderResponseDTO>> GetAll(string? search, string? filter)
         {
-            try
+            var query = GetOrderQuery();
+
+            if (!string.IsNullOrEmpty(search))
             {
-                var ordersRaw = await db.Hoadons
-                    .AsNoTracking()
-                    .Include(p => p.MaKhNavigation)
-                    .Include(p => p.MaCodeNavigation)
-                    .Include(p => p.MaNvNavigation)
-                    .Include(p => p.Chitietcombohoadons)
-                        .ThenInclude(p => p.MaCtspNavigation)
-                            .ThenInclude(p => p.MaSpNavigation)
-                    .Include(p => p.Cthoadons)
-                        .ThenInclude(ct => ct.MaCtspNavigation)
-                            .ThenInclude(ctsp => ctsp.MaSpNavigation)
-                    .Include(p => p.Cthoadons)
-                        .ThenInclude(p => p.MaComboNavigation)
-                    .ToListAsync();
-
-                var ListOrder = ordersRaw.Select(order => new OrderResponseDTO
-                {
-                    MaHd = order.MaHd,
-                    MaKh = order.MaKh,
-                    TenKh = order.MaKhNavigation.HoTen,
-                    MaNv = order.MaNv,
-                    TenNv = order.MaNvNavigation?.HoTen,
-                    MaCode = order.MaCode,
-                    NgayNhan = order.NgayNhan,
-                    NgayTao = order.NgayTao,
-                    NgayThanhToan = order.NgayThanhToan,
-                    BatDauGiao = order.BatDauGiao,
-                    DiaChiNhanHang = order.DiaChiNhanHang,
-                    HinhThucTt = order.HinhThucTt,
-                    TinhTrang = order.TinhTrang,
-                    MoTa = order.MoTa,
-                    HoTen = order.HoTen,
-                    Sdt = order.Sdt,
-                    LyDoHuy = order.LyDoHuy,
-                    PhiVanChuyen = order.PhiVanChuyen,
-                    TienGoc = order.TienGoc,
-
-                    GiamGiaCoupon = order.MaCodeNavigation != null
-                        ? (order.MaCodeNavigation.SoTienGiam != null && order.MaCodeNavigation.SoTienGiam > 0
-                            ? order.MaCodeNavigation.SoTienGiam : (order.MaCodeNavigation.PhanTramGiam * order.TienGoc / 100))
-                        : 0m,
-
-                    Chitietcombohoadons = order.Chitietcombohoadons.Select(ctcb => new ComboDetails_OrdersResponseDTO
-                    {
-                        MaHd = ctcb.MaHd,
-                        MaCtsp = ctcb.MaCtsp,
-                        TenSanPham = ctcb.MaCtspNavigation.MaSpNavigation.TenSanPham,
-                        MauSac = ctcb.MaCtspNavigation.MauSac,
-                        KichThuoc = ctcb.MaCtspNavigation.KichThuoc,
-                        MaCombo = ctcb.MaCombo,
-                        SoLuong = ctcb.SoLuong,
-                        DonGia = ctcb.DonGia,
-                    }).ToList(),
-
-                    Cthoadons = order.Cthoadons.Select(cthd => new OrderDetailsResponseDTO
-                    {
-                        Id = cthd.Id,
-                        TenSanPham = cthd.MaCtspNavigation != null && cthd.MaCtspNavigation.MaSpNavigation != null
-                        ? cthd.MaCtspNavigation.MaSpNavigation.TenSanPham
-                        : null,
-                        TenCombo = cthd.MaComboNavigation != null && cthd.MaComboNavigation.TenCombo != null
-                        ? cthd.MaComboNavigation.TenCombo
-                        : null,
-                        BienThe = cthd.MaCtspNavigation != null
-                        ? $"Màu: {cthd.MaCtspNavigation.MauSac} - Kích thước: {cthd.MaCtspNavigation.KichThuoc}"
-                        : null,
-                        MaHd = cthd.MaHd,
-                        MaCtsp = cthd.MaCtsp,
-                        MaCombo = cthd.MaCombo,
-                        SoLuong = cthd.SoLuong,
-                        Gia = cthd.Gia,
-                        GiamGia = cthd.GiamGia,
-                        GiaGoc = cthd.Gia + (decimal)(cthd.GiamGia != null && cthd.GiamGia > 0 ? cthd.GiamGia : 0),
-                    }).ToList()
-                }).ToList();
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    ListOrder = ListOrder.Where(p => p.MaHd.ToString().ToLower().Contains(search.ToLower()) || p.HoTen.ToLower().Contains(search.ToLower())).ToList();
-                }
-                if (!string.IsNullOrEmpty(filter))
-                {
-                    ListOrder = ListOrder.Where(p => p.TinhTrang.ToLower().Contains(filter.ToLower())).ToList();
-                }
-                return ListOrder;
+                query = query.Where(p => p.MaHd.ToString().Contains(search) || p.HoTen.ToLower().Contains(search.ToLower()));
             }
-            catch (Exception ex)
+
+            if (!string.IsNullOrEmpty(filter))
             {
-                throw new Exception("Error", ex);
+                query = query.Where(p => p.TinhTrang.ToLower().Contains(filter.ToLower()));
             }
+
+            var orders = await query.ToListAsync();
+            return orders.Select(MapToOrderResponseDTO).ToList();
         }
 
         public async Task UpdateStatusOrders(int id, string status, int? MaNv, string paymentmethod, string? reasonCancel)
@@ -343,99 +256,95 @@ namespace APIClothesEcommerceShop.Repositories.Order
 
         public async Task<List<OrderResponseDTO>> GetByMakh(int Makh, string? search, string? filter)
         {
-            try
+            var query = GetOrderQuery().Where(p => p.MaKh == Makh).OrderByDescending(p => p.MaHd);
+
+            if (!string.IsNullOrEmpty(search))
             {
-                var ordersRaw = await db.Hoadons
-                    .AsNoTracking()
-                    .Include(p => p.MaKhNavigation)
-                    .Include(p => p.MaCodeNavigation)
-                    .Include(p => p.MaNvNavigation)
-                    .Include(p => p.Chitietcombohoadons)
-                        .ThenInclude(p => p.MaCtspNavigation)
-                            .ThenInclude(p => p.MaSpNavigation)
-                    .Include(p => p.Cthoadons)
-                        .ThenInclude(ct => ct.MaCtspNavigation)
-                            .ThenInclude(ctsp => ctsp.MaSpNavigation)
-                    .Include(p => p.Cthoadons)
-                        .ThenInclude(p => p.MaComboNavigation)
-                    .Where(p => p.MaKh == Makh).OrderByDescending(p => p.MaHd)
-                    .ToListAsync(); 
+                query = (IOrderedQueryable<Hoadon>)query.Where(p => p.MaHd.ToString().Contains(search) || p.HoTen.ToLower().Contains(search.ToLower()));
+            }
 
-                var ListOrder = ordersRaw.Select(order => new OrderResponseDTO
+            if (!string.IsNullOrEmpty(filter))
+            {
+                query = (IOrderedQueryable<Hoadon>)query.Where(p => p.TinhTrang.ToLower().Contains(filter.ToLower()));
+            }
+
+            var orders = await query.ToListAsync();
+            return orders.Select(MapToOrderResponseDTO).ToList();
+        }
+
+        private IQueryable<Hoadon> GetOrderQuery()
+        {
+            return db.Hoadons
+                .AsNoTracking()
+                .Include(p => p.MaKhNavigation)
+                .Include(p => p.MaCodeNavigation)
+                .Include(p => p.MaNvNavigation)
+                .Include(p => p.Chitietcombohoadons)
+                    .ThenInclude(p => p.MaCtspNavigation)
+                        .ThenInclude(p => p.MaSpNavigation)
+                .Include(p => p.Cthoadons)
+                    .ThenInclude(ct => ct.MaCtspNavigation)
+                        .ThenInclude(ctsp => ctsp.MaSpNavigation)
+                .Include(p => p.Cthoadons)
+                    .ThenInclude(p => p.MaComboNavigation);
+        }
+
+        private OrderResponseDTO MapToOrderResponseDTO(Hoadon order)
+        {
+            return new OrderResponseDTO
+            {
+                MaHd = order.MaHd,
+                MaKh = order.MaKh,
+                TenKh = order.MaKhNavigation.HoTen,
+                MaNv = order.MaNv,
+                TenNv = order.MaNvNavigation?.HoTen,
+                MaCode = order.MaCode,
+                NgayNhan = order.NgayNhan,
+                NgayTao = order.NgayTao,
+                NgayThanhToan = order.NgayThanhToan,
+                BatDauGiao = order.BatDauGiao,
+                DiaChiNhanHang = order.DiaChiNhanHang,
+                HinhThucTt = order.HinhThucTt,
+                TinhTrang = order.TinhTrang,
+                MoTa = order.MoTa,
+                HoTen = order.HoTen,
+                Sdt = order.Sdt,
+                LyDoHuy = order.LyDoHuy,
+                PhiVanChuyen = order.PhiVanChuyen,
+                TienGoc = order.TienGoc,
+                GiamGiaCoupon = order.MaCodeNavigation != null
+                    ? (order.MaCodeNavigation.SoTienGiam > 0
+                        ? order.MaCodeNavigation.SoTienGiam
+                        : (order.MaCodeNavigation.PhanTramGiam * order.TienGoc / 100))
+                    : 0m,
+                Chitietcombohoadons = order.Chitietcombohoadons.Select(ctcb => new ComboDetails_OrdersResponseDTO
                 {
-                    MaHd = order.MaHd,
-                    MaKh = order.MaKh,
-                    TenKh = order.MaKhNavigation.HoTen,
-                    MaNv = order.MaNv,
-                    TenNv = order.MaNvNavigation?.HoTen,
-                    MaCode = order.MaCode,
-                    NgayNhan = order.NgayNhan,
-                    NgayTao = order.NgayTao,
-                    NgayThanhToan = order.NgayThanhToan,
-                    BatDauGiao = order.BatDauGiao,
-                    DiaChiNhanHang = order.DiaChiNhanHang,
-                    HinhThucTt = order.HinhThucTt,
-                    TinhTrang = order.TinhTrang,
-                    MoTa = order.MoTa,
-                    HoTen = order.HoTen,
-                    Sdt = order.Sdt,
-                    LyDoHuy = order.LyDoHuy,
-                    PhiVanChuyen = order.PhiVanChuyen,
-                    TienGoc = order.TienGoc,
-
-                    GiamGiaCoupon = order.MaCodeNavigation != null
-                        ? (order.MaCodeNavigation.SoTienGiam != null && order.MaCodeNavigation.SoTienGiam > 0
-                            ? order.MaCodeNavigation.SoTienGiam : (order.MaCodeNavigation.PhanTramGiam * order.TienGoc / 100))
-                        : 0m,
-
-                    Chitietcombohoadons = order.Chitietcombohoadons.Select(ctcb => new ComboDetails_OrdersResponseDTO
-                    {
-                        MaHd = ctcb.MaHd,
-                        MaCtsp = ctcb.MaCtsp,
-                        TenSanPham = ctcb.MaCtspNavigation.MaSpNavigation.TenSanPham,
-                        MauSac = ctcb.MaCtspNavigation.MauSac, 
-                        KichThuoc = ctcb.MaCtspNavigation.KichThuoc,
-                        MaCombo = ctcb.MaCombo,
-                        SoLuong = ctcb.SoLuong,
-                        DonGia = ctcb.DonGia,
-                    }).ToList(),
-
-                    Cthoadons = order.Cthoadons.Select(cthd => new OrderDetailsResponseDTO
-                    {
-                        Id = cthd.Id,
-                        TenSanPham = cthd.MaCtspNavigation != null && cthd.MaCtspNavigation.MaSpNavigation != null
-                        ? cthd.MaCtspNavigation.MaSpNavigation.TenSanPham
-                        : null,
-                        TenCombo = cthd.MaComboNavigation != null && cthd.MaComboNavigation.TenCombo != null
-                        ? cthd.MaComboNavigation.TenCombo
-                        : null,
-                        BienThe = cthd.MaCtspNavigation != null
+                    MaHd = ctcb.MaHd,
+                    MaCtsp = ctcb.MaCtsp,
+                    TenSanPham = ctcb.MaCtspNavigation.MaSpNavigation.TenSanPham,
+                    MauSac = ctcb.MaCtspNavigation.MauSac,
+                    KichThuoc = ctcb.MaCtspNavigation.KichThuoc,
+                    MaCombo = ctcb.MaCombo,
+                    SoLuong = ctcb.SoLuong,
+                    DonGia = ctcb.DonGia,
+                }).ToList(),
+                Cthoadons = order.Cthoadons.Select(cthd => new OrderDetailsResponseDTO
+                {
+                    Id = cthd.Id,
+                    TenSanPham = cthd.MaCtspNavigation?.MaSpNavigation?.TenSanPham,
+                    TenCombo = cthd.MaComboNavigation?.TenCombo,
+                    BienThe = cthd.MaCtspNavigation != null
                         ? $"Màu: {cthd.MaCtspNavigation.MauSac} - Kích thước: {cthd.MaCtspNavigation.KichThuoc}"
                         : null,
-                        MaHd = cthd.MaHd,
-                        MaCtsp = cthd.MaCtsp,
-                        MaCombo = cthd.MaCombo,
-                        SoLuong = cthd.SoLuong,
-                        Gia = cthd.Gia,
-                        GiamGia = cthd.GiamGia,
-                        GiaGoc = cthd.Gia + (decimal)(cthd.GiamGia != null && cthd.GiamGia > 0 ? cthd.GiamGia : 0),
-                    }).ToList()
-                }).ToList();
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    ListOrder = ListOrder.Where(p => p.MaHd.ToString().Contains(search.ToLower()) || p.HoTen.ToLower().Contains(search.ToLower())).ToList();
-                }
-                if (!string.IsNullOrEmpty(filter))
-                {
-                    ListOrder = ListOrder.Where(p => p.TinhTrang.ToLower().Contains(filter.ToLower())).ToList();
-                }
-                return ListOrder;
-            }
-            catch(Exception ex)
-            {
-                throw new Exception("Error", ex);
-            }
+                    MaHd = cthd.MaHd,
+                    MaCtsp = cthd.MaCtsp,
+                    MaCombo = cthd.MaCombo,
+                    SoLuong = cthd.SoLuong,
+                    Gia = cthd.Gia,
+                    GiamGia = cthd.GiamGia,
+                    GiaGoc = cthd.Gia + (cthd.GiamGia ?? 0),
+                }).ToList()
+            };
         }
     }
 }

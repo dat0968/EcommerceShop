@@ -1,18 +1,24 @@
 <template>
-  <div style="margin-top: 60px" class="xp-contentbar position-relative">
+  <div class="xp-contentbar position-relative mt-5">
     <Overlay
       :is-visible="isDisabled"
       overlayContent="Hiện không thể kết nối tới API để quản lý."
       isCoverPage="true"
     />
-    <nav aria-label="breadcrumb" class="mb-3" style="display: flex; justify-content: center; padding: 10px 0; background-color: transparent;">
-    <ol class="breadcrumb" style="display: flex; justify-content: center; margin: 0;">
-      <li class="breadcrumb-item active" style="display: flex; align-items: center;">
-        <h1 style="text-align: center; margin: 0; font-size: 3rem; font-weight: 700; color: #333;">QUẢN LÝ DANH MỤC</h1>
-      </li>
-    </ol>
-    <hr />
-  </nav>
+    <nav
+      aria-label="breadcrumb"
+      class="mb-3"
+      style="display: flex; justify-content: center; padding: 10px 0; background-color: transparent"
+    >
+      <ol class="breadcrumb" style="display: flex; justify-content: center; margin: 0">
+        <li class="breadcrumb-item active" style="display: flex; align-items: center">
+          <h1 style="text-align: center; margin: 0; font-size: 3rem; font-weight: 700; color: #333">
+            QUẢN LÝ DANH MỤC
+          </h1>
+        </li>
+      </ol>
+      <hr />
+    </nav>
     <!-- Chọn chế độ -->
     <div class="mb-3 d-flex align-items-center gap-3">
       <label class="me-2 fw-bold">Chế độ:</label>
@@ -75,13 +81,13 @@
                     v-model="selectedMaDanhMucCha"
                     @change="onFilterChange"
                   />
-                  <div
+                  <label
                     class="form-check-label d-flex justify-content-between"
                     :for="'parent-' + item.maDanhMucCha"
                   >
                     <span>{{ item.tenDanhMucCha }}</span>
                     <span>{{ item.isActive ? '🟢' : '🔴' }}</span>
-                  </div>
+                  </label>
                 </div>
               </div>
             </details>
@@ -105,13 +111,13 @@
                     @change="onFilterChange"
                   />
 
-                  <div
+                  <label
                     class="form-check-label d-flex justify-content-between"
                     :for="'child-' + item.maDanhMucCon"
                   >
                     <span>{{ item.tenDanhMucCon }}</span>
                     <span>{{ item.isActive ? '🟢' : '🔴' }}</span>
-                  </div>
+                  </label>
                 </div>
               </div>
             </details>
@@ -129,10 +135,12 @@
           </div>
           <div class="card-body">
             <table
+              v-if="filteredCategories.length > 0"
               id="datatableCategories"
               class="table table-bordered table-striped"
               style="width: 100%"
             ></table>
+            <NoDataMessage v-else contentText="Không có sản phẩm nào trong danh mục đã chọn." />
           </div>
         </div>
       </div>
@@ -163,7 +171,13 @@
                   <option :value="false">Không hoạt động</option>
                 </select>
               </div>
-              <button type="submit" class="btn btn-primary w-100">
+              <button type="submit" class="btn btn-primary w-100" :disabled="isSubmittingParent">
+                <span
+                  v-if="isSubmittingParent"
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
                 {{ isEditParent ? 'Cập nhật' : 'Thêm mới' }}
               </button>
               <button
@@ -185,10 +199,12 @@
           </div>
           <div class="card-body">
             <table
+              v-if="optionsParentCategory.length > 0"
               id="datatableParent"
               class="table table-bordered table-striped"
               style="width: 100%"
             ></table>
+            <NoDataMessage v-else contentText="Không có danh mục cha nào." />
           </div>
         </div>
       </div>
@@ -219,7 +235,13 @@
                   <option :value="false">Không hoạt động</option>
                 </select>
               </div>
-              <button type="submit" class="btn btn-primary w-100">
+              <button type="submit" class="btn btn-primary w-100" :disabled="isSubmittingChild">
+                <span
+                  v-if="isSubmittingChild"
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
                 {{ isEditChild ? 'Cập nhật' : 'Thêm mới' }}
               </button>
               <button
@@ -241,10 +263,12 @@
           </div>
           <div class="card-body">
             <table
+              v-if="optionsChildCategory.length > 0"
               id="datatableChild"
               class="table table-bordered table-striped"
               style="width: 100%"
             ></table>
+            <NoDataMessage v-else contentText="Không có danh mục con nào." />
           </div>
         </div>
       </div>
@@ -265,18 +289,20 @@ import ResponseAPI from '@/models/ResponseAPI'
 import { formatCurrency } from '@/constants/formatCurrency'
 import Overlay from '@/components/common/Overlay.vue'
 import pathReplaceImg from '@/utils/processPathImg'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 export default {
   name: 'CategoryIndex',
   components: {
     Overlay,
+    NoDataMessage,
   },
   data() {
     return {
       listCategories: [],
       optionsParentCategory: [],
       optionsChildCategory: [],
-      isLoading: true,
+      isLoading: false,
       selectedMaDanhMucCha: [],
       selectedMaDanhMucCon: [],
       isEditParent: false,
@@ -297,6 +323,8 @@ export default {
       datatableChild: null,
       focusMode: 'view',
       isEndpointActive: axiosConfig.isEndpointAvailable(), // Biến để kiểm tra kết nối API
+      isSubmittingParent: false,
+      isSubmittingChild: false,
     }
   },
   computed: {
@@ -318,6 +346,7 @@ export default {
     },
   },
   async mounted() {
+    this.isLoading = true
     // Kiểm tra endpoint trước khi load dữ liệu
     this.isEndpointActive = await axiosConfig.isEndpointAvailable?.()
     if (!this.isEndpointActive) {
@@ -327,6 +356,7 @@ export default {
         text: 'Không thể kết nối tới máy chủ API. Vui lòng kiểm tra lại kết nối hoặc cấu hình endpoint.',
         confirmButtonText: 'Đóng',
       })
+      this.isLoading = false
       return
     }
     await this.getCategories()
@@ -334,6 +364,7 @@ export default {
     this.initDataTable()
     this.initDataTableParent()
     this.initDataTableChild()
+    this.isLoading = false
   },
   methods: {
     async loadOption() {
@@ -344,13 +375,13 @@ export default {
       if (ResponseAPI.handleNotificationAndIsFailResponse(resOptionParen)) {
         return
       }
-      this.optionsParentCategory = resOptionParen.data
+      this.optionsParentCategory = Array.isArray(resOptionParen.data) ? resOptionParen.data : []
 
       const resOptionChild = await axiosConfig.getFromApi(
         '/categories/childs',
         ConfigsRequest.takeAuth(),
       )
-      this.optionsChildCategory = resOptionChild.data
+      this.optionsChildCategory = Array.isArray(resOptionChild.data) ? resOptionChild.data : []
       this.reloadDataTableParent()
       this.reloadDataTableChild()
     },
@@ -359,7 +390,7 @@ export default {
         '/categories/GetAllCategories',
         ConfigsRequest.takeAuth(),
       )
-      this.listCategories = res.data
+      this.listCategories = Array.isArray(res.data) ? res.data : []
       this.reloadDataTable()
     },
     onFilterChange() {
@@ -374,17 +405,18 @@ export default {
       this.breadcrumbText = 'Cập nhật danh mục cha'
     },
     async onDeleteParent(item) {
-      Swal.fire({
-        title: 'Xác nhận xóa',
-        text: 'Bạn có chắc chắn muốn xóa danh mục cha này?',
+      const result = await Swal.fire({
+        title: 'Bạn có chắc chắn muốn xóa?',
+        text: `Xóa danh mục cha: "${item.tenDanhMucCha}"`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-      }).then(async(result) => {
-        if (result.isConfirmed) {
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Vâng, xóa nó!',
+        cancelButtonText: 'Hủy',
+      })
+
+      if (result.isConfirmed) {
         const response = await axiosConfig.deleteFromApi(
           `/categories/parent/${item.maDanhMucCha}`,
           ConfigsRequest.takeAuth(),
@@ -400,43 +432,47 @@ export default {
         // await this.loadOption()
         this.resetFormParent()
       }
-    })
     },
     async onSubmitParent() {
-      if (this.isEditParent) {
-        const res = await axiosConfig.postToApi(
-          `/categories/parent/${this.formParent.maDanhMucCha}`,
-          {
-            tenDanhMucCha: this.formParent.tenDanhMucCha,
-            isActive: this.formParent.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
+      this.isSubmittingParent = true
+      try {
+        if (this.isEditParent) {
+          const res = await axiosConfig.postToApi(
+            `/categories/parent/${this.formParent.maDanhMucCha}`,
+            {
+              tenDanhMucCha: this.formParent.tenDanhMucCha,
+              isActive: this.formParent.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsParentCategory = this.optionsParentCategory.map((x) =>
+            x.maDanhMucCha === this.formParent.maDanhMucCha ? res.data : x,
+          )
+          this.breadcrumbText = 'Cập nhật danh mục cha thành công'
+        } else {
+          const res = await axiosConfig.postToApi(
+            `/categories/parent/0`,
+            {
+              maDanhMucCha: 0,
+              tenDanhMucCha: this.formParent.tenDanhMucCha,
+              isActive: this.formParent.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsParentCategory = [...this.optionsParentCategory, res.data]
+          this.breadcrumbText = 'Thêm mới danh mục cha thành công'
         }
-        this.optionsParentCategory = this.optionsParentCategory.map((x) =>
-          x.maDanhMucCha === this.formParent.maDanhMucCha ? res.data : x,
-        )
-        this.breadcrumbText = 'Cập nhật danh mục cha thành công'
-      } else {
-        const res = await axiosConfig.postToApi(
-          `/categories/parent/0`,
-          {
-            maDanhMucCha: 0,
-            tenDanhMucCha: this.formParent.tenDanhMucCha,
-            isActive: this.formParent.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
-        }
-        this.optionsParentCategory = [...this.optionsParentCategory, res.data]
-        this.breadcrumbText = 'Thêm mới danh mục cha thành công'
+        // await this.loadOption()
+        this.resetFormParent()
+      } finally {
+        this.isSubmittingParent = false
       }
-      // await this.loadOption()
-      this.resetFormParent()
     },
     resetFormParent() {
       this.isEditParent = false
@@ -456,73 +492,78 @@ export default {
       this.breadcrumbText = 'Cập nhật danh mục con'
     },
     async onDeleteChild(item) {
-      Swal.fire({
-        title: 'Xác nhận xóa',
-        text: 'Bạn có chắc chắn muốn xóa danh mục con này?',
+      const result = await Swal.fire({
+        title: 'Bạn có chắc chắn muốn xóa?',
+        text: `Xóa danh mục con: "${item.tenDanhMucCon}"`,
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Xóa',
-        cancelButtonText: 'Hủy'
-      }).then(async(result) => {
-        if (result.isConfirmed) {
-          const response = await axiosConfig.deleteFromApi(
-            `/categories/child/${item.maDanhMucCon}`,
-            ConfigsRequest.takeAuth(),
-          )
-          if (ResponseAPI.handleNotificationAndIsFailResponse(response, true)) {
-            return
-          }
-          this.optionsChildCategory = this.optionsChildCategory.filter(
-            (x) => x.maDanhMucCon !== item.maDanhMucCon,
-          )
-          this.reloadDataTableChild()
-          this.breadcrumbText = 'Đã xóa danh mục con'
-          // await this.loadOption()
-          this.resetFormChild()    
-        }
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Vâng, xóa nó!',
+        cancelButtonText: 'Hủy',
       })
+
+      if (result.isConfirmed) {
+        const response = await axiosConfig.deleteFromApi(
+          `/categories/child/${item.maDanhMucCon}`,
+          ConfigsRequest.takeAuth(),
+        )
+        if (ResponseAPI.handleNotificationAndIsFailResponse(response, true)) {
+          return
+        }
+        this.optionsChildCategory = this.optionsChildCategory.filter(
+          (x) => x.maDanhMucCon !== item.maDanhMucCon,
+        )
+        this.reloadDataTableChild()
+        this.breadcrumbText = 'Đã xóa danh mục con'
+        // await this.loadOption()
+        this.resetFormChild()
+      }
     },
     async onSubmitChild() {
-      if (this.isEditChild) {
-        // Cập nhật danh mục con
-        const res = await axiosConfig.postToApi(
-          `/categories/child/${this.formChild.maDanhMucCon}`,
-          {
-            tenDanhMucCon: this.formChild.tenDanhMucCon,
-            isActive: this.formChild.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
+      this.isSubmittingChild = true
+      try {
+        if (this.isEditChild) {
+          // Cập nhật danh mục con
+          const res = await axiosConfig.postToApi(
+            `/categories/child/${this.formChild.maDanhMucCon}`,
+            {
+              tenDanhMucCon: this.formChild.tenDanhMucCon,
+              isActive: this.formChild.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsChildCategory = this.optionsChildCategory.map((x) =>
+            x.maDanhMucCon === this.formChild.maDanhMucCon ? res.data : x,
+          )
+          this.reloadDataTableChild()
+          this.breadcrumbText = 'Cập nhật danh mục con thành công'
+        } else {
+          // Thêm mới danh mục con
+          const res = await axiosConfig.postToApi(
+            `/categories/child/0`,
+            {
+              maDanhMucCon: 0,
+              tenDanhMucCon: this.formChild.tenDanhMucCon,
+              isActive: this.formChild.isActive,
+            },
+            ConfigsRequest.takeAuth(),
+          )
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+            return
+          }
+          this.optionsChildCategory = [...this.optionsChildCategory, res.data]
+          this.reloadDataTableChild()
+          this.breadcrumbText = 'Thêm mới danh mục con thành công'
         }
-        this.optionsChildCategory = this.optionsChildCategory.map((x) =>
-          x.maDanhMucCon === this.formChild.maDanhMucCon ? res.data : x,
-        )
-        this.reloadDataTableChild()
-        this.breadcrumbText = 'Cập nhật danh mục con thành công'
-      } else {
-        // Thêm mới danh mục con
-        const res = await axiosConfig.postToApi(
-          `/categories/child/0`,
-          {
-            maDanhMucCon: 0,
-            tenDanhMucCon: this.formChild.tenDanhMucCon,
-            isActive: this.formChild.isActive,
-          },
-          ConfigsRequest.takeAuth(),
-        )
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-          return
-        }
-        this.optionsChildCategory = [...this.optionsChildCategory,res.data]
-        this.reloadDataTableChild()
-        this.breadcrumbText = 'Thêm mới danh mục con thành công'
+        // await this.loadOption()
+        this.resetFormChild()
+      } finally {
+        this.isSubmittingChild = false
       }
-      // await this.loadOption()
-      this.resetFormChild()
     },
     resetFormChild() {
       this.isEditChild = false
@@ -559,6 +600,7 @@ export default {
           language: configsDt.defaultLanguageDatatable,
           initComplete: () => {
             configsDt.attachDetailsControl(`#datatableCategories`, this.formatDetails.bind(this))
+            configsDt.attachSearchDebounce('#datatableCategories', this.datatable)
           },
         })
       })
@@ -647,6 +689,9 @@ export default {
           ],
           destroy: true,
           language: configsDt.defaultLanguageDatatable,
+          initComplete: () => {
+            configsDt.attachSearchDebounce('#datatableParent', this.datatableParent)
+          },
         })
 
         $('#datatableParent tbody')
@@ -706,6 +751,9 @@ export default {
           ],
           destroy: true,
           language: configsDt.defaultLanguageDatatable,
+          initComplete: () => {
+            configsDt.attachSearchDebounce('#datatableChild', this.datatableChild)
+          },
         })
 
         $('#datatableChild tbody')
@@ -772,5 +820,17 @@ select > option {
   overflow-y: auto;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

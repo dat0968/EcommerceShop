@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <video ref="video" style="width: 100%; max-width: 320px" autoplay></video>
+  <div class="row justify-content-center text-center gap-2">
+    <div ref="video" style="width: 100%; max-width: 320px"></div>
     <div v-if="error" class="text-danger">{{ error }}</div>
     <div v-if="scanned">Đã quét: {{ scanned }}</div>
   </div>

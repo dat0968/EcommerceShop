@@ -17,7 +17,7 @@ export default {
     return {
       userReviews: {},
       totalReviewNeedSubmit: 0,
-      isLogged: authService.isAccess(),
+      isLogged: authService.isAuthenticated(),
     }
   },
   mounted() {

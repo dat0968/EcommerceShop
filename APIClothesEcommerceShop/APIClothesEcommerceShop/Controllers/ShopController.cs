@@ -1,7 +1,12 @@
 ﻿using APIClothesEcommerceShop.DTO.Shop;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Combo;
+using APIClothesEcommerceShop.Repositories.Combos;
+using APIClothesEcommerceShop.Repositories.Home;
 using APIClothesEcommerceShop.Repositories.Product;
+using APIClothesEcommerceShop.Services;
+using Azure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using APIClothesEcommerceShop.Data;
@@ -33,7 +38,6 @@ namespace APIClothesEcommerceShop.Controllers
             _comboRepository = comboRepository;
             _db = db;
         }
-
         [HttpGet]
         public async Task<IActionResult> Index(
             string? search,
@@ -44,8 +48,6 @@ namespace APIClothesEcommerceShop.Controllers
             bool isCombo = false,
             int page = 1)
         {
-            var startTime = DateTime.UtcNow;
-
             try
             {
                 page = page < 1 ? 1 : page;
@@ -96,7 +98,6 @@ namespace APIClothesEcommerceShop.Controllers
                 return BadRequest(ex.InnerException);
             }
         }
-
         [HttpGet("Product/{id}")]
         public async Task<IActionResult> DetailsProduct([FromQuery] int? maKh, int id)
         {
@@ -118,7 +119,6 @@ namespace APIClothesEcommerceShop.Controllers
                 return BadRequest(new { Success = false, Message = "Lỗi tải chi tiết sản phẩm" });
             }
         }
-
         [HttpGet("Combo/{id}")]
         public async Task<IActionResult> DetailsCombo(int? maKh, int id)
         {
@@ -127,7 +127,7 @@ namespace APIClothesEcommerceShop.Controllers
                 var details = await _comboRepository.GetById(id);
                 if (details == null || (details.NgayBatDau > DateTime.Now || details.NgayKetThuc < DateTime.Now ) )
                 {
-                    return NotFound(new { message = "Combo không tồn tại" });
+                    return NotFound(new { message = "Combo tồn tại" });
                 }
                 if (maKh.HasValue)
                 {

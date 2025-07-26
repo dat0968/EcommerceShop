@@ -1,11 +1,16 @@
 <template>
-  <div style="margin-top: 0px; "  class="xp-contentbar">
-    <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
-      </ol>
-      <hr />
-    </nav>
+  <div style="margin-top: 5rem" class="xp-contentbar">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item active h5"><strong>Thống kê</strong></li>
+        </ol>
+      </nav>
+      <button class="btn btn-primary" @click="reloadData" :disabled="isLoading">
+        <i class="bi bi-arrow-clockwise"></i> Tải lại
+      </button>
+    </div>
+    <hr />
 
     <RevenueStatistic
       :data="revenueStatisticData"
@@ -41,6 +46,13 @@
     <DatatableStatistic
       :data="datatableStatisticsResponse"
       :is-loading="datatableIsLoading"
+      :coupon-data="couponStatisticData"
+      :coupon-loading="couponIsLoading"
+      :category-data="categoryStatisticData"
+      :category-loading="categoryIsLoading"
+      :inventory-loading="inventoryIsLoading"
+      :review-data="reviewAnalysisData"
+      :review-loading="reviewIsLoading"
     ></DatatableStatistic>
   </div>
 </template>
@@ -51,20 +63,11 @@ import * as axiosConfig from '@/utils/axiosClient'
 
 import Swal from 'sweetalert2'
 
-import OrderSummaryResponse from '@/models/dtos/statisticsDtos/orderSummaryResponse'
-import CustomerStatisticsResponse from '@/models/dtos/statisticsDtos/customerStatisticsResponse'
-import ProductStatisticsResponse from '@/models/dtos/statisticsDtos/productStatisticsResponse'
-import EmployeeStatisticsResponse from '@/models/dtos/statisticsDtos/employeeStatisticsResponse'
-import RevenueStatisticsResponse from '@/models/dtos/statisticsDtos/revenueStatisticsResponse'
-import ComboStatisticsResponse from '@/models/dtos/statisticsDtos/comboStatisticsResponse'
-import DatatableStatisticsResponse from '@/models/dtos/statisticsDtos/datatableStatisticsResponse'
-
 import OrderSummary from '@/components/pages/admin/statistics/OrderSummary.vue'
 import ProductStatistic from '@/components/pages/admin/statistics/ProductStatistic.vue'
 import CustomerStatistic from '@/components/pages/admin/statistics/CustomerStatistic.vue'
 import EmployeeStatistic from '@/components/pages/admin/statistics/EmployeeStatistic.vue'
 import RevenueStatistic from '@/components/pages/admin/statistics/RevenueStatistic.vue'
-// import ComboStatistic from '@/components/pages/admin/statistics/ComboStatistic.vue'
 import DatatableStatistic from '@/components/pages/admin/statistics/DatatableStatistic.vue'
 
 export default {
@@ -75,7 +78,6 @@ export default {
     CustomerStatistic,
     EmployeeStatistic,
     RevenueStatistic,
-    // ComboStatistic,
     DatatableStatistic,
   },
   props: {},
@@ -87,129 +89,80 @@ export default {
       employeeStatisticsData: {},
       revenueStatisticData: {},
       datatableStatisticsResponse: {},
-      comboStatisticsaryData: {}, // Đã thêm biến này để tránh lỗi runtime
+      couponStatisticData: {},
+      categoryStatisticData: {},
+      reviewAnalysisData: {},
+      isLoading: false,
       revenueIsLoading: true,
       productIsLoading: true,
       customerIsLoading: true,
       employeeIsLoading: true,
       orderSummaryIsLoading: true,
       datatableIsLoading: true,
+      couponIsLoading: true,
+      categoryIsLoading: true,
+      inventoryIsLoading: true,
+      reviewIsLoading: true,
     }
   },
   computed: {},
   watch: {},
   async mounted() {
-    this.isLoading = true
-
-    const CACHE_KEY = 'statisticsData'
-    const CACHE_EXPIRE = 1 * 60 * 1000 // 5 phút
-
-    let cached = localStorage.getItem(CACHE_KEY)
-    let now = Date.now()
-    if (cached) {
-      try {
-        const parsed = await JSON.parse(cached)
-        const isExpired = parsed.expire && parsed.expire < now
-        if (!isExpired) {
-          this.orderSummaryData = await parsed.orderSummaryData
-          this.productStatisticData = await parsed.productStatisticData
-          this.customerStatisticsData = await parsed.customerStatisticsData
-          this.employeeStatisticsData = await parsed.employeeStatisticsData
-          this.revenueStatisticData = await parsed.revenueStatisticData
-          this.comboStatisticsaryData = (await parsed.comboStatisticsaryData) || {} // Đảm bảo không lỗi khi lấy cache
-          this.datatableStatisticsResponse = await parsed.datatableStatisticsResponse
-          this.isLoading = false
-          this.revenueIsLoading = false
-          this.productIsLoading = false
-          this.customerIsLoading = false
-          this.employeeIsLoading = false
-          this.orderSummaryIsLoading = false
-          this.datatableIsLoading = false
-          return // Dừng nếu dữ liệu không hết hạn
-        }
-        localStorage.removeItem(CACHE_KEY) // Xóa cache nếu hết hạn
-      } catch (e) {
-        localStorage.removeItem(CACHE_KEY)
-        console.error(e)
-      }
-    }
-
-    // Nếu không có cache hoặc cache đã hết hạn
-    let errorMessage = ''
-    let errorLogs = []
-
-    try {
-      await this.loadOrderSummaryData()
-    } catch (error) {
-      errorMessage += 'Đơn hàng. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadProductStatisticsData()
-    } catch (error) {
-      errorMessage += 'Sản phẩm. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadCustomerStatisticsData()
-    } catch (error) {
-      errorMessage += 'Khách hàng. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadEmployeeStatisticsData()
-    } catch (error) {
-      errorMessage += 'Nhân viên. '
-      errorLogs.push(error)
-    }
-    try {
-      await this.loadRevenueStatisticsData()
-    } catch (error) {
-      errorMessage += 'Doanh thu. '
-      errorLogs.push(error)
-    }
-    /* try {
-      await this.loadComboStatisticsData()
-    } catch (error) {
-      errorMessage += 'Combo. '
-      errorLogs.push(error)
-    } */
-    try {
-      await this.loadDatatableData()
-    } catch (error) {
-      errorMessage += 'Datatable. '
-      errorLogs.push(error)
-    }
-
-    if (errorMessage !== '') {
-      Swal.fire('Hiện không thể load các dữ liệu dưới', errorMessage, 'error')
-      console.warn(errorLogs)
-    }
-    // Lưu cache với thời gian hết hạn
-    localStorage.setItem(
-      CACHE_KEY,
-      JSON.stringify({
-        orderSummaryData: JSON.parse(JSON.stringify(this.orderSummaryData)),
-        productStatisticData: JSON.parse(JSON.stringify(this.productStatisticData)),
-        customerStatisticsData: JSON.parse(JSON.stringify(this.customerStatisticsData)),
-        employeeStatisticsData: JSON.parse(JSON.stringify(this.employeeStatisticsData)),
-        revenueStatisticData: JSON.parse(JSON.stringify(this.revenueStatisticData)),
-        comboStatisticsaryData: JSON.parse(JSON.stringify(this.comboStatisticsaryData)), // Đã thêm vào cache
-        datatableStatisticsResponse: JSON.parse(JSON.stringify(this.datatableStatisticsResponse)),
-        expire: now + CACHE_EXPIRE,
-      }),
-    )
-
-    this.isLoading = false // Chuyển trạng thái loading sau khi hoàn thành
+    this.reloadData()
   },
   methods: {
+    async reloadData() {
+      this.isLoading = true
+      let errorMessage = ''
+      let errorLogs = []
+
+      const tasks = [
+        this.loadOrderSummaryData(),
+        this.loadProductStatisticsData(),
+        this.loadCustomerStatisticsData(),
+        this.loadEmployeeStatisticsData(),
+        this.loadRevenueStatisticsData(),
+        this.loadDatatableData(),
+        this.loadCouponStatisticsData(),
+        this.loadCategoryStatisticsData(),
+        this.loadReviewAnalysisData(),
+      ]
+
+      const results = await Promise.allSettled(tasks)
+
+      results.forEach((result, index) => {
+        if (result.status === 'rejected') {
+          const errorSources = [
+            'Đơn hàng',
+            'Sản phẩm',
+            'Khách hàng',
+            'Nhân viên',
+            'Doanh thu',
+            'Datatable',
+            'Mã giảm giá',
+            'Danh mục',
+            'Tồn kho',
+            'Đánh giá',
+          ]
+          errorMessage += `${errorSources[index]}. `
+          errorLogs.push(result.reason)
+        }
+      })
+
+      if (errorMessage) {
+        Swal.fire('Không thể tải lại dữ liệu từ các nguồn sau:', errorMessage, 'error')
+        console.warn('Lỗi khi tải lại dữ liệu:', errorLogs)
+      }
+
+      this.isLoading = false
+    },
     async loadOrderSummaryData() {
       this.orderSummaryIsLoading = true
       const response = await axiosConfig.getFromApi(
         '/Statistics/GetOrderSummary',
         ConfigsRequest.takeAuth(),
       )
-      this.orderSummaryData = OrderSummaryResponse.fromApiResponse(response.data)
+      this.orderSummaryData = response.data || {}
       await this.$nextTick()
       this.orderSummaryIsLoading = false
     },
@@ -219,7 +172,7 @@ export default {
         '/Statistics/GetProductStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.productStatisticData = ProductStatisticsResponse.fromApiResponse(response.data)
+      this.productStatisticData = response.data || {}
       await this.$nextTick()
       this.productIsLoading = false
     },
@@ -229,7 +182,7 @@ export default {
         '/Statistics/GetCustomerStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.customerStatisticsData = CustomerStatisticsResponse.fromApiResponse(response.data)
+      this.customerStatisticsData = response.data || {}
       await this.$nextTick()
       this.customerIsLoading = false
     },
@@ -239,7 +192,7 @@ export default {
         '/Statistics/GetEmployeeStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.employeeStatisticsData = EmployeeStatisticsResponse.fromApiResponse(response.data)
+      this.employeeStatisticsData = response.data || {}
       await this.$nextTick()
       this.employeeIsLoading = false
     },
@@ -249,17 +202,9 @@ export default {
         '/Statistics/GetRevenueStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.revenueStatisticData = RevenueStatisticsResponse.fromApiResponse(response.data)
+      this.revenueStatisticData = response.data || {}
       await this.$nextTick()
       this.revenueIsLoading = false
-    },
-    async loadComboStatisticsData() {
-      const response = await axiosConfig.getFromApi(
-        '/Statistics/GetComboStatistics',
-        ConfigsRequest.takeAuth(),
-      )
-      this.comboStatisticsaryData = ComboStatisticsResponse.fromApiResponse(response.data)
-      await this.$nextTick()
     },
     async loadDatatableData() {
       this.datatableIsLoading = true
@@ -267,13 +212,44 @@ export default {
         '/Statistics/GetDatatableStatistics',
         ConfigsRequest.takeAuth(),
       )
-      this.datatableStatisticsResponse = DatatableStatisticsResponse.fromApiResponse(
-        await response.data,
-      )
+      this.datatableStatisticsResponse = response.data || {}
       await this.$nextTick()
       this.datatableIsLoading = false
     },
+    async loadCouponStatisticsData() {
+      this.couponIsLoading = true
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetCouponStatistics',
+        ConfigsRequest.takeAuth(),
+      )
+      this.couponStatisticData = response.data || {}
+      await this.$nextTick()
+      this.couponIsLoading = false
+    },
+    async loadCategoryStatisticsData() {
+      this.categoryIsLoading = true
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetCategoryStatistics',
+        ConfigsRequest.takeAuth(),
+      )
+      this.categoryStatisticData = response.data || {}
+      await this.$nextTick()
+      this.categoryIsLoading = false
+    },
+    async loadReviewAnalysisData() {
+      this.reviewIsLoading = true
+      const response = await axiosConfig.getFromApi(
+        '/Statistics/GetReviewAnalysis',
+        ConfigsRequest.takeAuth(),
+      )
+      this.reviewAnalysisData = response.data || {}
+      await this.$nextTick()
+      this.reviewIsLoading = false
+    },
   },
-}
+
+  
+  }
+
 </script>
 <style scoped></style>

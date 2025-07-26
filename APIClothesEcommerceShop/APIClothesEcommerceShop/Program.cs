@@ -67,7 +67,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_Dot"));
 });
 
 // Add services to the container.
@@ -109,6 +109,7 @@ builder.Services.AddSwaggerGen(c =>
     };
 
     c.AddSecurityRequirement(securityRequirement);
+    #endregion
 });
 
 // Configure CORS for web and mobile
@@ -178,7 +179,7 @@ builder.Services.Configure<GoogleEmailSetting>(emailSettings);
 //});
 
 
-// JWT Authentication
+#region JWT Authentication
 var SecretKey = builder.Configuration["JWT:SecretKey"];
 var SecretKeyBytes = Encoding.UTF8.GetBytes(SecretKey);
 builder.Services.AddAuthentication(options =>
@@ -203,6 +204,7 @@ builder.Services.AddAuthentication(options =>
     options.ClientId = googleAuth["ClientId"];
     options.ClientSecret = googleAuth["ClientSecret"];
 });
+#endregion
 
 // Enable detailed logging for mobile debugging
 builder.Services.AddLogging(logging =>
@@ -219,7 +221,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
+    }
+});
+app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("MyPolicy");
@@ -329,6 +338,8 @@ logger.LogInformation("💡 Note: Same APIs available on both ports");
 logger.LogInformation("🚀 =================================");
 
 app.Run();
+
+#region Func tạo CConstantsL 
 void SeedDatabase()
 {
     using (var seedScope = app.Services.CreateScope())

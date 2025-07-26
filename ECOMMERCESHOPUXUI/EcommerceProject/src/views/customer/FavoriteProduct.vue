@@ -120,8 +120,15 @@ export default {
 </script>
 
 <template>
-    <div class="favorite-container">
-        <h2>Danh sách sản phẩm yêu thích</h2>
+    <div class="" style="margin-top: 20px; margin-left: 120px;margin-right: 120px;">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><router-link to="/" class="text-decoration-none text-muted">Trang chủ</router-link></li>
+                <li class="breadcrumb-item"><a href="/Shop" class="text-decoration-none text-muted">Sản phẩm</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">Sản phẩm yêu thích</li>
+            </ol>
+        </nav>
+        <h2 style="text-align: center;padding-bottom: 20px;">Sản phẩm yêu thích</h2>
 
 
         <!-- Hiển thị bảng -->
@@ -132,14 +139,14 @@ export default {
                     <th>Tên Sản Phẩm</th>
                     <th>Giá (VNĐ)</th>
                     <th>Chi tiết</th>
-                    <th>Hành Động</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="item in favorites.data" :key="item.maSp" class="favorite-item">
                     <td>
-                        <img :src="getApiUrl + '/HinhAnh/Products/' + item.hinhAnh" alt="Product Image" width="50"
-                            height="50" style="object-fit: cover; border-radius: 5px" />
+                        <img :src="getApiUrl + '/HinhAnh/Products/' + item.hinhAnh" alt="Product Image" width="100"
+                            height="100" style="object-fit: cover; border-radius: 5px" />
                     </td>
                     <td>{{ item.tenSanPham }}</td>
                     <td>{{ item.khoangGia }}</td>
@@ -148,7 +155,7 @@ export default {
                             Xem chi tiết
                         </router-link>
                     </td>
-                    <td><button @click="deleteFavorite(item.maSp)" class="delete-btn">Xóa</button></td>
+                    <td><button @click="deleteFavorite(item.maSp)" class="delete-btn"><i class="fa fa-times"></i></button></td>
                 </tr>
             </tbody>
         </table>
@@ -159,7 +166,31 @@ export default {
 
         <!-- Thông báo -->
         <p v-if="message" :class="{ 'success': success, 'error': !success }">{{ message }}</p>
+        <div class="row mb-5">
+          <div class="col-12">
+            <div class="row g-4">
+              <!-- Left Banner -->
+              <div class="col-md-6">
+                <div class="position-relative overflow-hidden rounded-4 angel-banner">
+                  <img src="https://i.pinimg.com/736x/1e/6b/26/1e6b26db806e77ae28f29ea52310746d.jpg"
+                    alt="Angel Fashion Banner" class="w-100" style="height: 350px; object-fit: cover; ">
+
+                </div>
+              </div>
+
+              <!-- Right Banner -->
+              <div class="col-md-6">
+                <div class="position-relative overflow-hidden rounded-4 angel-banner">
+                  <img src="https://i.pinimg.com/1200x/39/4b/4f/394b4f714fada2935ce2d63d867aca8d.jpg"
+                    alt="Angel Fashion Trends" class="w-100" style="height: 350px; object-fit: cover;">
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
+    
 </template>
 
 <style scoped>

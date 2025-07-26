@@ -41,9 +41,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var totalOrders = dataMain.Count;
                 var totalRevenue = dataMain.Sum(x => x.TienGoc);
                 var totalShippingFee = dataMain.Sum(x => x.PhiVanChuyen);
-                var totalDiscount = dataMain.Sum(x => x.MaCodeNavigation?.SoTienGiam ?? 0);
-                var totalCustomers = dataMain.Select(x => x.MaKh).Distinct().Count();
-                var totalProducts = dataMain.SelectMany(x => x.Cthoadons).Count();
+                var totalDiscount = dataMain.Sum(x => x.MaCodeNavigation != null ? (decimal?)(x.MaCodeNavigation.SoTienGiam) : 0);
+                var totalCustomers = dataMain.Where(x => x.MaKh.HasValue).Select(x => x.MaKh).Distinct().Count();
+                var totalProducts = dataMain.SelectMany(x => x.Cthoadons ?? Enumerable.Empty<Cthoadon>()).Count();
 
                 response.Data = new OrderSummaryResponse
                 {
@@ -118,7 +118,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             var productCategoryDict = dataProduct
                 .ToDictionary(
                     sp => sp.MaSp,
-                    sp => sp.Chitietdanhmucs?.FirstOrDefault()?.MaDanhMucChaNavigation?.TenDanhMucCha ?? string.Empty
+                    sp => sp.Chitietdanhmucs != null && sp.Chitietdanhmucs.Any() && sp.Chitietdanhmucs.First().MaDanhMucChaNavigation != null
+                        ? sp.Chitietdanhmucs.First().MaDanhMucChaNavigation.TenDanhMucCha ?? string.Empty
+                        : string.Empty
                 );
 
             // Gom tất cả các chi tiết hóa đơn
@@ -145,15 +147,15 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         {
                             var ctsp = ctspGroup.First().MaCtspNavigation;
                             return new DetailTopProduct(
-                                ctsp!.MaCtsp,
-                                ctsp.MaSp,
-                                ctsp.KichThuoc,
-                                ctsp.MauSac,
-                                ctsp.SoLuongTon,
-                                ctsp.DonGia,
-                                ctsp.Hinhanhs?.FirstOrDefault()?.TenHinhAnh ?? string.Empty,
-                                ctsp.Cthoadons.Sum(cthd => cthd.DanhGia?.SoSao ?? 0),
-                                ctsp.IsActive
+                                ctsp?.MaCtsp ?? 0,
+                                ctsp?.MaSp ?? 0,
+                                ctsp?.KichThuoc ?? string.Empty,
+                                ctsp?.MauSac ?? string.Empty,
+                                ctsp?.SoLuongTon ?? 0,
+                                ctsp?.DonGia ?? 0,
+                                ctsp?.Hinhanhs != null && ctsp.Hinhanhs.Any() ? ctsp.Hinhanhs.First().TenHinhAnh ?? string.Empty : string.Empty,
+                                ctsp?.Cthoadons?.Sum(cthd => cthd.DanhGia?.SoSao ?? 0) ?? 0,
+                                ctsp?.IsActive ?? false
                             );
                         })
                         .OrderByDescending(dtp =>
@@ -167,7 +169,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         ProductId = maSp,
                         ProductName = productName,
                         CategoryName = categoryName ?? string.Empty,
-                        Revenue = g.Sum(x => ((x.Gia) * (x.SoLuong))),
+                        Revenue = g.Sum(x => (x.Gia * x.SoLuong)),
                         Count = g.Sum(x => x.SoLuong),
                         DetailTopProducts = detailTopProducts
                     };
@@ -187,7 +189,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             // Tạo dictionary để truy xuất nhanh các đơn hàng theo mã khách hàng
             var ordersByCustomer = dataOrder
                 .Where(x => x != null && x.MaKhNavigation != null && x.MaKh.HasValue)
-                .GroupBy(x => x.MaKh.HasValue ? x.MaKh.Value : 0)
+                .GroupBy(x => x.MaKh!.Value)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
 
             return ordersByCustomer.Select(kvp =>
@@ -195,7 +197,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var customerOrders = kvp.Value;
                 var customer = customerOrders.First().MaKhNavigation;
                 var ageGroup = "Không xác định";
-                if (customer.NgaySinh.HasValue)
+                if (customer?.NgaySinh.HasValue == true)
                 {
                     var age = DateTime.Now.Year - customer.NgaySinh.Value.Year;
                     if (age < 18) ageGroup = "Dưới 18";
@@ -207,26 +209,26 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
 
                 return new TopCustomer
                 {
-                    CustomerId = customer.MaKh,
-                    CustomerName = customer.HoTen ?? "N/A",
+                    CustomerId = customer?.MaKh ?? 0,
+                    CustomerName = customer?.HoTen ?? "N/A",
                     Count = customerOrders.Count,
                     Revenue = customerOrders.Sum(x => x.TienGoc - x.PhiVanChuyen),
-                    Location = customer.DiaChi ?? "N/A",
+                    Location = customer?.DiaChi ?? "N/A",
                     AgeGroup = ageGroup,
                     OrderRecents = customerOrders
                         .Take(3)
                         .Select(o => new OrderRecentTopUser(
                             o.MaHd,
-                            customer.MaKh,
-                            customer.HoTen ?? "N/A",
+                            customer?.MaKh ?? 0,
+                            customer?.HoTen ?? "N/A",
                             o.MaNv,
                             o.MaCode,
                             o.NgayTao,
-                            o.DiaChiNhanHang,
-                            o.HinhThucTt,
-                            o.TinhTrang,
-                            o.MoTa,
-                            o.Sdt,
+                            o.DiaChiNhanHang ?? string.Empty,
+                            o.HinhThucTt ?? string.Empty,
+                            o.TinhTrang ?? string.Empty,
+                            o.MoTa ?? string.Empty,
+                            o.Sdt ?? string.Empty,
                             o.IsActive,
                             o.PhiVanChuyen,
                             o.TienGoc
@@ -246,7 +248,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         {
             // Tạo dictionary mã nhân viên -> danh sách hóa đơn đã sắp xếp mới nhất
             var ordersByEmployee = dataOrder
-                .Where(x => x.MaNv != null && x.MaNvNavigation != null)
+                // .Where(x => x.MaNv != null && x.MaNvNavigation != null)
                 .GroupBy(x => x.MaNv ?? 0)
                 .ToDictionary(g => g.Key, g => g.OrderByDescending(o => o.NgayTao).ToList());
 
@@ -269,16 +271,16 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                             .Take(3)
                             .Select(o => new OrderRecentTopUser(
                                 o.MaHd,
-                                o.MaKh != null ? o.MaKh.Value : null,
+                                o.MaKh.HasValue ? o.MaKh.Value : 0,
                                 o.MaKhNavigation?.HoTen ?? "N/A",
-                                o.MaNv,
-                                o.MaCode,
+                                o.MaNv ?? 0,
+                                o.MaCode ?? string.Empty,
                                 o.NgayTao,
-                                o.DiaChiNhanHang,
-                                o.HinhThucTt,
-                                o.TinhTrang,
-                                o.MoTa,
-                                o.Sdt,
+                                o.DiaChiNhanHang ?? string.Empty,
+                                o.HinhThucTt ?? string.Empty,
+                                o.TinhTrang ?? string.Empty,
+                                o.MoTa ?? string.Empty,
+                                o.Sdt ?? string.Empty,
                                 o.IsActive,
                                 o.PhiVanChuyen,
                                 o.TienGoc
@@ -340,7 +342,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         #region Sản phẩm
 
         /// <summary>
-        /// Lấy thống kê sản phẩm
+        /// Lấy thống kê sản phẩm (Đã tối ưu và sửa lỗi)
         /// </summary>
         /// <returns>Thống kê sản phẩm</returns>
         public async Task<ResponseAPI<ProductStatisticsResponse>> GetProductStatisticsAsync()
@@ -348,27 +350,36 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<ProductStatisticsResponse> response = new();
             try
             {
-                var dataMain = await GetSanphamsAsync();
-                var dataOrder = await _context.Hoadons
-                                                .Include(x => x.Cthoadons)
-                                                    .ThenInclude(x => x.MaCtspNavigation)
-                                                        .ThenInclude(x => x.MaSpNavigation)
-                                                .AsNoTracking().ToListAsync();
+                var products = _context.Sanphams.AsNoTracking();
+                var orders = _context.Hoadons.Include(h => h.Cthoadons).AsNoTracking();
 
-                if (!dataMain.Any())
+                if (!await products.AnyAsync())
                 {
                     response.SetErrorResponse("Không có dữ liệu sản phẩm nào trong hệ thống.", 404);
                     return response;
                 }
 
+                var totalRevenue = await orders.SelectMany(o => o.Cthoadons).SumAsync(od => od.Gia * od.SoLuong);
+                var productsSoldCount = await orders.SelectMany(o => o.Cthoadons).SumAsync(od => od.SoLuong);
+
+                var priceStats = await products.SelectMany(p => p.Chitietsanphams).Select(ctsp => ctsp.DonGia).ToListAsync();
+                var averagePrice = priceStats.Any() ? (decimal)priceStats.Average() : 0;
+
+                var productStats = await products.GroupBy(p => 1).Select(g => new
+                {
+                    TotalProducts = g.Count(),
+                    TotalActiveProducts = g.Count(p => p.IsActive ?? false),
+                }).SingleAsync();
+
                 response.Data = new ProductStatisticsResponse
                 {
-                    TotalProducts = dataMain.Count,
-                    TotalActiveProducts = dataMain.Count(x => x.IsActive ?? false),
-                    TotalInactiveProducts = dataMain.Count(x => !x.IsActive ?? false),
-                    TotalRevenue = dataMain.Sum(x => x.Chitietsanphams.Sum(y => y.DonGia)),
-                    AveragePrice = dataMain.Count > 0 ? dataMain.Sum(x => x.Chitietsanphams.Sum(y => y.DonGia)) / dataMain.Count : 0,
-                    SalesByTimes = GetSalesByTimes(dataOrder)
+                    TotalProducts = productStats.TotalProducts,
+                    TotalActiveProducts = productStats.TotalActiveProducts,
+                    TotalInactiveProducts = productStats.TotalProducts - productStats.TotalActiveProducts,
+                    TotalRevenue = totalRevenue,
+                    ProductsSoldCount = productsSoldCount,
+                    AveragePrice = averagePrice,
+                    SalesByTimes = GetSalesByTimes(await orders.ToListAsync())
                 };
 
                 response.SetSuccessResponse();
@@ -399,7 +410,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                     Date = g.Key,
                     Month = g.Key.Month,
                     Year = g.Key.Year,
-                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0))),
+                    Revenue = g.Sum(x => x.Cthoadons?.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0)) ?? 0),
                     Count = g.Count()
                 }).ToList();
 
@@ -412,7 +423,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 {
                     Month = g.Key.Month,
                     Year = g.Key.Year,
-                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0))),
+                    Revenue = g.Sum(x => x.Cthoadons?.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0)) ?? 0),
                     Count = g.Count()
                 }).ToList();
 
@@ -421,7 +432,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 .Select(g => new SalesByTime
                 {
                     Year = g.Key,
-                    Revenue = g.Sum(x => x.Cthoadons.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0))),
+                    Revenue = g.Sum(x => x.Cthoadons?.Sum(y => (y?.Gia ?? 0) * (y?.SoLuong ?? 0)) ?? 0),
                     Count = g.Count()
                 }).ToList();
 
@@ -432,7 +443,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         #region Khách hàng
 
         /// <summary>
-        /// Lấy thống kê khách hàng
+        /// Lấy thống kê khách hàng (Đã tối ưu và bổ sung dữ liệu)
         /// </summary>
         /// <returns>Thống kê khách hàng</returns>
         public async Task<ResponseAPI<CustomerStatisticsResponse>> GetCustomerStatisticsAsync()
@@ -440,44 +451,47 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<CustomerStatisticsResponse> response = new();
             try
             {
-                var data = await _context.Khachhangs
-                    .Include(x => x.Hoadons) // Tải trước hóa đơn liên quan
+                var customerData = await _context.Khachhangs
                     .Select(kh => new
                     {
-                        kh.MaKh,
-                        kh.HoTen,
-                        kh.IsActive,
-                        kh.DiaChi,
-                        kh.NgaySinh,
-                        TotalOrders = kh.Hoadons.Count(),
-                        TotalRevenue = kh.Hoadons.Sum(h => h.TienGoc) // Tính toán doanh thu tổng
+                        IsActive = kh.IsActive ?? false,
+                        TotalRevenue = kh.Hoadons.Sum(h => h.TienGoc),
+                        OrderCount = kh.Hoadons.Count(),
+                        FirstOrderDate = kh.Hoadons.Any() ? kh.Hoadons.Min(h => h.NgayTao) : (DateTime?)null
                     })
-                    .AsNoTracking().ToListAsync();
+                    .ToListAsync();
 
-                if (!data.Any())
+                if (!customerData.Any())
                 {
                     response.SetErrorResponse("Không có dữ liệu khách hàng nào trong hệ thống.", 404);
                     return response;
                 }
 
-                // Tính toán các thống kê cần thiết
-                var totalCustomers = data.Count;
-                var totalActiveCustomers = data.Count(x => x.IsActive ?? false);
-                // Tính toán số lượng khách hàng không hoạt động
-                var totalInactiveCustomers = totalCustomers - totalActiveCustomers;
-
-                var totalRevenue = data.Sum(x => x.TotalRevenue);
-
+                var totalCustomers = customerData.Count;
+                var totalActiveCustomers = customerData.Count(x => x.IsActive);
+                var totalRevenue = customerData.Sum(x => x.TotalRevenue);
+                var totalOrders = customerData.Sum(x => x.OrderCount);
                 var averagePurchaseAmount = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+                var averageOrdersPerCustomer = totalCustomers > 0 ? (decimal)totalOrders / totalCustomers : 0;
 
-                // Gán kết quả vào response
+                // Tính toán hoạt động khách hàng theo thời gian (số khách hàng mới theo tháng trong năm hiện tại)
+                var currentYear = DateTime.Now.Year;
+                var customerActivity = customerData
+                    .Where(x => x.FirstOrderDate.HasValue && x.FirstOrderDate.Value.Year == currentYear)
+                    .GroupBy(x => x.FirstOrderDate!.Value.Month)
+                    .Select(g => new { Month = g.Key, Count = g.Count() })
+                    .ToDictionary(g => $"Tháng {g.Month}/{currentYear}", g => g.Count);
+
                 response.Data = new CustomerStatisticsResponse
                 {
                     TotalCustomers = totalCustomers,
                     TotalActiveCustomers = totalActiveCustomers,
-                    TotalInactiveCustomers = totalInactiveCustomers,
+                    TotalInactiveCustomers = totalCustomers - totalActiveCustomers,
                     TotalPurchaseAmount = totalRevenue,
                     AveragePurchaseAmount = averagePurchaseAmount,
+                    TotalOrders = totalOrders,
+                    AverageOrdersPerCustomer = averageOrdersPerCustomer,
+                    CustomerActivityByTime = customerActivity
                 };
 
                 response.SetSuccessResponse();
@@ -495,7 +509,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         #region Nhân viên
 
         /// <summary>
-        /// Lấy thống kê nhân viên
+        /// Lấy thống kê nhân viên (Đã tối ưu)
         /// </summary>
         /// <returns>Thống kê nhân viên</returns>
         public async Task<ResponseAPI<EmployeeStatisticsResponse>> GetEmployeeStatisticsAsync()
@@ -503,27 +517,69 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<EmployeeStatisticsResponse> response = new();
             try
             {
-                var dataMain = await GetNhanviensAsync();
-                if (dataMain?.Any() != true)
+                var employeeStats = await _context.Nhanviens
+                    .Include(e => e.Hoadons)
+                    .GroupBy(e => 1)
+                    .Select(g => new
+                    {
+                        TotalEmployees = g.Count(),
+                        TotalActiveEmployees = g.Count(e => e.IsActive ?? false),
+                        TotalSalary = g.Sum(e => e.MaChucVuNavigation.Luong),
+                        AverageSalary = g.Average(e => e.MaChucVuNavigation.Luong),
+                        Hoadons = g.SelectMany(e => e.Hoadons)
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (employeeStats == null)
                 {
                     response.SetErrorResponse("Không có dữ liệu nhân viên nào trong hệ thống.", 404);
                     return response;
                 }
-                if (response.Data == null)
-                {
-                    response.Data = new EmployeeStatisticsResponse();
-                }
-                var totalEmployees = dataMain.Count;
-                var totalActiveEmployees = dataMain.Count(x => x.IsActive ?? false);
-                var totalInactiveEmployees = totalEmployees - totalActiveEmployees;
-                var averageSalary = dataMain.Average(x => x.MaChucVuNavigation.Luong);
-                var totalSalary = dataMain.Sum(x => x.MaChucVuNavigation.Luong);
 
-                response.Data.TotalEmployees = totalEmployees;
-                response.Data.TotalActiveEmployees = totalActiveEmployees;
-                response.Data.TotalInactiveEmployees = totalInactiveEmployees;
-                response.Data.AverageSalary = averageSalary;
-                response.Data.TotalSalary = totalSalary;
+                var revenueByTime = new Dictionary<string, List<RevenueByTimeStatistic>>();
+                var now = DateTime.Now;
+
+                // Revenue by day (last 7 days)
+                var last7Days = Enumerable.Range(0, 7).Select(i => now.AddDays(-i).Date);
+                var dailyRevenue = employeeStats.Hoadons
+                    .Where(h => last7Days.Contains(h.NgayTao.Date))
+                    .GroupBy(h => h.NgayTao.Date)
+                    .Select(g => new RevenueByTimeStatistic { Label = g.Key.ToString("yyyy-MM-dd"), Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["daily"] = dailyRevenue;
+
+                // Revenue by week (last 4 weeks)
+                var weeklyRevenue = employeeStats.Hoadons
+                    .AsEnumerable()
+                    .GroupBy(h => System.Globalization.ISOWeek.GetWeekOfYear(h.NgayTao))
+                    .Select(g => new RevenueByTimeStatistic { Label = "Week " + g.Key, Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["weekly"] = weeklyRevenue;
+
+                // Revenue by month (last 12 months)
+                var monthlyRevenue = employeeStats.Hoadons
+                    .Where(h => h.NgayTao.Year == now.Year)
+                    .GroupBy(h => h.NgayTao.Month)
+                    .Select(g => new RevenueByTimeStatistic { Label = "Month " + g.Key, Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["monthly"] = monthlyRevenue;
+
+                // Revenue by year
+                var yearlyRevenue = employeeStats.Hoadons
+                    .GroupBy(h => h.NgayTao.Year)
+                    .Select(g => new RevenueByTimeStatistic { Label = g.Key.ToString(), Revenue = g.Sum(h => h.TienGoc) })
+                    .ToList();
+                revenueByTime["yearly"] = yearlyRevenue;
+
+                response.Data = new EmployeeStatisticsResponse
+                {
+                    TotalEmployees = employeeStats.TotalEmployees,
+                    TotalActiveEmployees = employeeStats.TotalActiveEmployees,
+                    TotalInactiveEmployees = employeeStats.TotalEmployees - employeeStats.TotalActiveEmployees,
+                    AverageSalary = employeeStats.AverageSalary,
+                    TotalSalary = employeeStats.TotalSalary,
+                    RevenueByTime = revenueByTime
+                };
 
                 response.SetSuccessResponse();
             }
@@ -539,7 +595,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         #region Doanh thu
 
         /// <summary>
-        /// Lấy thống kê doanh thu
+        /// Lấy thống kê doanh thu (Đã tối ưu)
         /// </summary>
         /// <returns>Thống kê doanh thu</returns>
         public async Task<ResponseAPI<RevenueStatisticsResponse>> GetRevenueStatisticsAsync()
@@ -547,32 +603,35 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<RevenueStatisticsResponse> response = new();
             try
             {
-                var data = await _context.Hoadons
-                    .Include(h => h.Cthoadons) // Tải trước chi tiết hóa đơn liên quan
-                        .ThenInclude(h => h.MaCtspNavigation) // Tải trước sản phẩm liên quan
-                            .ThenInclude(h => h.MaSpNavigation) // Tải trước thông tin sản phẩm
-                    .Include(h => h.MaKhNavigation) // Tải trước thông tin khách hàng
-                    .Include(h => h.MaCodeNavigation)
-                    .AsNoTracking().ToListAsync();
+                var hoadons = _context.Hoadons.AsNoTracking();
 
-                if (!data.Any())
+                if (!await hoadons.AnyAsync())
                 {
                     response.SetErrorResponse("Không có dữ liệu doanh thu nào trong hệ thống.", 404);
                     return response;
                 }
 
-                // Khởi tạo thông tin thống kê
+                var totalRevenue = await hoadons.SumAsync(x => x.TienGoc);
+                var highestRevenue = await hoadons.MaxAsync(x => x.TienGoc);
+                var lowestRevenue = await hoadons.MinAsync(x => x.TienGoc);
+
+                var dailyRevenue = await hoadons
+                    .GroupBy(x => x.NgayTao.Date)
+                    .Select(g => g.Sum(x => x.TienGoc))
+                    .ToListAsync();
+
+                var monthlyRevenue = await hoadons
+                    .GroupBy(x => new { x.NgayTao.Year, x.NgayTao.Month })
+                    .Select(g => g.Sum(x => x.TienGoc))
+                    .ToListAsync();
+
                 response.Data = new RevenueStatisticsResponse
                 {
-                    TotalRevenue = data.Sum(x => x.TienGoc),
-                    AverageDailyRevenue = data.GroupBy(x => x.NgayTao.Date)
-                        .Select(g => g.Sum(x => x.TienGoc))
-                        .Average(),
-                    AverageMonthlyRevenue = data.GroupBy(x => new { x.NgayTao.Year, x.NgayTao.Month })
-                        .Select(g => g.Sum(x => x.TienGoc))
-                        .Average(),
-                    HighestRevenue = data.Max(x => x.TienGoc),
-                    LowestRevenue = data.Min(x => x.TienGoc),
+                    TotalRevenue = totalRevenue,
+                    AverageDailyRevenue = dailyRevenue.Any() ? dailyRevenue.Average() : 0,
+                    AverageMonthlyRevenue = monthlyRevenue.Any() ? monthlyRevenue.Average() : 0,
+                    HighestRevenue = highestRevenue,
+                    LowestRevenue = lowestRevenue,
                 };
 
                 response.SetSuccessResponse();
@@ -589,7 +648,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
         #region Combo
 
         /// <summary>
-        /// Lấy thống kê combo
+        /// Lấy thống kê combo (Đã sửa và tối ưu)
         /// </summary>
         /// <returns>Thống kê combo</returns>
         public async Task<ResponseAPI<ComboStatisticsResponse>> GetComboStatisticsAsync()
@@ -597,35 +656,34 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             ResponseAPI<ComboStatisticsResponse> response = new();
             try
             {
-                // Kết hợp việc lấy thông tin combo và hóa đơn trong một truy vấn
-                var data = await _context.Combos
-                    .Include(c => c.Cthoadons) // Tải trước thông tin chi tiết hóa đơn
+                var comboStats = await _context.Combos
                     .Select(c => new
                     {
-                        c.MaCombo,
-                        c.TenCombo,
-                        //c.GiaCombo,
-                        c.IsActive,
-                        SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
-                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong))
+                        IsActive = c.IsActive ?? false,
+                        Revenue = c.Chitietcombohoadons.Sum(ch => ch.DonGia * ch.SoLuong),
+                        QuantitySold = c.Chitietcombohoadons.Sum(ch => ch.SoLuong)
                     })
-                    .AsNoTracking().ToListAsync();
+                    .ToListAsync();
 
-                if (!data.Any())
+                if (!comboStats.Any())
                 {
                     response.SetErrorResponse("Không có dữ liệu combo nào trong hệ thống.", 404);
                     return response;
                 }
 
-                // Khởi tạo thông tin thống kê
-                //response.Data = new ComboStatisticsResponse
-                //{
-                //    TotalCombos = data.Count,
-                //    TotalActiveCombos = data.Count(x => x.IsActive ?? false),
-                //    TotalInactiveCombos = data.Count(x => !(x.IsActive ?? false)),
-                //    TotalComboRevenue = data.Sum(x => x.Revenue),
-                //    AverageComboPrice = data.Count > 0 ? data.Sum(x => x.GiaCombo) / data.Count : 0
-                //};
+                var totalCombos = comboStats.Count;
+                var totalActiveCombos = comboStats.Count(c => c.IsActive);
+                var totalRevenue = comboStats.Sum(c => c.Revenue);
+                var totalQuantitySold = comboStats.Sum(c => c.QuantitySold);
+
+                response.Data = new ComboStatisticsResponse
+                {
+                    TotalCombos = totalCombos,
+                    TotalActiveCombos = totalActiveCombos,
+                    TotalInactiveCombos = totalCombos - totalActiveCombos,
+                    TotalComboRevenue = totalRevenue,
+                    AverageComboPrice = totalQuantitySold > 0 ? totalRevenue / totalQuantitySold : 0
+                };
 
                 response.SetSuccessResponse();
             }
@@ -635,6 +693,204 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             }
             return response;
         }
+
+        #endregion
+
+        #region Coupon
+
+        /// <summary>
+        /// Lấy thống kê mã giảm giá
+        /// </summary>
+        /// <returns>Thống kê mã giảm giá</returns>
+        public async Task<ResponseAPI<CouponStatisticsResponse>> GetCouponStatisticsAsync()
+        {
+            ResponseAPI<CouponStatisticsResponse> response = new();
+            try
+            {
+                var coupons = _context.Macoupons.AsNoTracking();
+
+                if (!await coupons.AnyAsync())
+                {
+                    response.SetErrorResponse("Không có dữ liệu mã giảm giá nào trong hệ thống.", 404);
+                    return response;
+                }
+
+                var couponStats = await coupons
+                    .Select(c => new
+                    {
+                        UsageCount = c.Hoadons.Count(),
+                        TotalDiscount = c.Hoadons.Sum(h => !string.IsNullOrEmpty(h.MaCode) && h.MaCodeNavigation != null ? (decimal?)h.MaCodeNavigation.SoTienGiam : 0),
+                        RevenueGenerated = c.Hoadons.Sum(h => h.TienGoc)
+                    })
+                    .ToListAsync();
+
+                var topCoupons = await coupons
+                    .OrderByDescending(c => c.Hoadons.Count())
+                    .Take(10)
+                    .Select(c => new TopCoupon
+                    {
+                        CouponCode = c.MaCode,
+                        UsageCount = c.Hoadons.Count(),
+                        TotalDiscount = c.Hoadons.Sum(h => !string.IsNullOrEmpty(h.MaCode) && h.MaCodeNavigation != null ? (decimal?)h.MaCodeNavigation.SoTienGiam : 0),
+                        RevenueGenerated = c.Hoadons.Sum(h => h.TienGoc)
+                    })
+                    .ToListAsync();
+
+                response.Data = new CouponStatisticsResponse
+                {
+                    TotalCoupons = couponStats.Count(),
+                    TotalActiveCoupons = 0, // Assuming no IsActive field, set to 0 or implement logic if needed
+                    TotalInactiveCoupons = 0,
+                    TotalDiscountAmount = couponStats.Sum(c => c.TotalDiscount),
+                    TopCoupons = topCoupons
+                };
+
+                response.SetSuccessResponse();
+            }
+            catch (System.Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+
+        #endregion
+
+        #region Category
+
+        /// <summary>
+        /// Lấy thống kê danh mục
+        /// </summary>
+        /// <returns>Thống kê danh mục</returns>
+        public async Task<ResponseAPI<CategoryStatisticsResponse>> GetCategoryStatisticsAsync()
+        {
+            ResponseAPI<CategoryStatisticsResponse> response = new();
+            try
+            {
+                var categories = _context.Danhmuccons.AsNoTracking();
+
+                if (!await categories.AnyAsync())
+                {
+                    response.SetErrorResponse("Không có dữ liệu danh mục nào trong hệ thống.", 404);
+                    return response;
+                }
+
+                var topCategories = await _context.Chitietdanhmucs
+                    .AsNoTracking()
+                    .GroupBy(cd => cd.MaDanhMucConNavigation.TenDanhMucCon)
+                    .Select(g => new TopCategory
+                    {
+                        CategoryName = g.Key,
+                        ProductsSoldCount = g.SelectMany(cd => cd.MaSpNavigation.Chitietsanphams.SelectMany(ctsp => ctsp.Cthoadons)).Sum(cthd => cthd.SoLuong),
+                        TotalRevenue = g.SelectMany(cd => cd.MaSpNavigation.Chitietsanphams.SelectMany(ctsp => ctsp.Cthoadons)).Sum(cthd => cthd.Gia * cthd.SoLuong)
+                    })
+                    .OrderByDescending(c => c.TotalRevenue)
+                    .Take(10)
+                    .ToListAsync();
+
+                response.Data = new CategoryStatisticsResponse
+                {
+                    TotalCategories = await categories.CountAsync(),
+                    TopCategories = topCategories
+                };
+
+                response.SetSuccessResponse();
+            }
+            catch (System.Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+
+        #endregion
+
+        #region Inventory
+
+        /// <summary>
+        /// Lấy phân tích tồn kho
+        /// </summary>
+        /// <returns>Phân tích tồn kho</returns>
+        public async Task<ResponseAPI<InventoryAnalysisResponse>> GetInventoryAnalysisAsync()
+        {
+            ResponseAPI<InventoryAnalysisResponse> response = new();
+            try
+            {
+                var lowStockProducts = await _context.Chitietsanphams
+                    .AsNoTracking()
+                    .Where(p => p.SoLuongTon < 10) // Cảnh báo khi số lượng tồn kho dưới 10
+                    .Select(p => new LowStockProduct
+                    {
+                        ProductId = p.MaSp,
+                        ProductName = p.MaSpNavigation.TenSanPham,
+                        StockQuantity = p.SoLuongTon
+                    })
+                    .ToListAsync();
+
+                response.Data = new InventoryAnalysisResponse
+                {
+                    LowStockProducts = lowStockProducts
+                };
+
+                response.SetSuccessResponse();
+            }
+            catch (System.Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+
+        #endregion
+
+        #region Review
+
+        /// <summary>
+        /// Lấy phân tích đánh giá
+        /// </summary>
+        /// <returns>Phân tích đánh giá</returns>
+        public async Task<ResponseAPI<ReviewAnalysisResponse>> GetReviewAnalysisAsync()
+        {
+            ResponseAPI<ReviewAnalysisResponse> response = new();
+            try
+            {
+                var reviews = _context.DanhGias.AsNoTracking();
+
+                if (!await reviews.AnyAsync())
+                {
+                    response.SetErrorResponse("Không có dữ liệu đánh giá nào trong hệ thống.", 404);
+                    return response;
+                }
+
+                var productReviews = await _context.Sanphams
+                    .AsNoTracking()
+                    .Select(p => new ProductReviewSummary
+                    {
+                        ProductId = p.MaSp,
+                        ProductName = p.TenSanPham,
+                        AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(r => r.SoSao) : 0,
+                        ReviewCount = p.DanhGias.Count()
+                    })
+                    .ToListAsync();
+
+                response.Data = new ReviewAnalysisResponse
+                {
+                    AverageRating = await reviews.AverageAsync(r => r.SoSao),
+                    MostReviewedProduct = productReviews.OrderByDescending(p => p.ReviewCount).FirstOrDefault(),
+                    HighestRatedProduct = productReviews.OrderByDescending(p => p.AverageRating).FirstOrDefault(),
+                    LowestRatedProduct = productReviews.OrderBy(p => p.AverageRating).FirstOrDefault()
+                };
+
+                response.SetSuccessResponse();
+            }
+            catch (System.Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+
+        #endregion
 
         #region [Mix datatable]
         public async Task<ResponseAPI<DatatableStatisticsResponse>> GetDatatableStatisticsAsync()
@@ -646,17 +902,20 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                 var dataProduct = await GetSanphamsAsync();
                 var dataEmployee = await GetNhanviensAsync();
                 var dataCombo = await _context.Combos
-                    .Include(c => c.Cthoadons)
+                    .Include(c => c.Chitietcombos)
+                        .ThenInclude(ctbo => ctbo.MaSpNavigation)
+                            .ThenInclude(sp => sp.Chitietsanphams)
+                    .Include(c => c.Chitietcombohoadons)
                     .Include(c => c.DanhGias)
                     .Select(c => new
                     {
                         c.MaCombo,
                         c.TenCombo,
-                        // c.GiaCombo,
                         c.IsActive,
-                        SalesCount = c.Cthoadons.Sum(hoadon => hoadon.SoLuong),
-                        Revenue = c.Cthoadons.Sum(hoadon => (hoadon.Gia * hoadon.SoLuong)),
-                        StarCount = c.DanhGias.Any() ? (int)c.DanhGias.Average(dg => dg.SoSao) : 0
+                        SalesCount = c.Chitietcombohoadons.Sum(hoadon => hoadon.SoLuong),
+                        Revenue = c.Chitietcombohoadons.Sum(hoadon => (hoadon.DonGia * hoadon.SoLuong)),
+                        StarCount = c.DanhGias.Any() ? (int)c.DanhGias.Average(dg => dg.SoSao) : 0,
+                        c.Chitietcombos
                     })
                     .AsNoTracking().ToListAsync();
                 var dataOrder = await _context.Hoadons
@@ -696,7 +955,8 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         ComboName = x.TenCombo ?? string.Empty,
                         SalesCount = x.SalesCount,
                         Revenue = x.Revenue,
-                        StarCount = x.StarCount
+                        StarCount = x.StarCount,
+                        DetailTopCombos = x.Chitietcombos.Select(ct => new DetailTopCombo(ct)).ToList()
                     }).ToList();
 
                 // Khởi tạo response
@@ -714,8 +974,6 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             }
             return response;
         }
-        #endregion
-
         #endregion
 
 
@@ -748,7 +1006,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
             {
                 data = await _context.Sanphams
                                 .Include(x => x.Chitietsanphams)
-                                    //.ThenInclude(ctsp => ctsp.Hinhanhs)
+                                //.ThenInclude(ctsp => ctsp.Hinhanhs)
                                 .Include(x => x.Chitietdanhmucs)
                                     .ThenInclude(ctdm => ctdm.MaDanhMucChaNavigation)
                                 .Include(x => x.Chitietdanhmucs)

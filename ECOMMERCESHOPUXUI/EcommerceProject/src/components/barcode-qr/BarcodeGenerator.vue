@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="row justify-content-center text-center gap-2">
     <svg ref="barcode"></svg>
-    <button @click="downloadBarcode" v-if="isValid">Tải ảnh</button>
+    <button @click="downloadBarcode" v-if="isValid" class="btn btn-outline-success">Tải ảnh</button>
     <div v-if="!isValid" class="text-danger">Dữ liệu không hợp lệ để tạo barcode!</div>
   </div>
 </template>
@@ -26,7 +26,8 @@ export default {
     },
   },
   methods: {
-    renderBarcode(val) {
+    async renderBarcode(val) {
+      await this.$nextTick()
       if (!val || val.length < 3 || val.length > 32) {
         this.isValid = false
         this.$refs.barcode.innerHTML = ''
@@ -51,3 +52,10 @@ export default {
 }
 </script>
 <!-- npm install @zxing/browser | qrcode | quagga | jsbarcode -->
+
+<style scoped>
+svg {
+  width: 100%;
+  height: 320px;
+}
+</style>

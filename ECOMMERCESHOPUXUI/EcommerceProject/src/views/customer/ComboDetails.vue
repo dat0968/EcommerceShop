@@ -1,11 +1,14 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
+import { computed, watch, ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import RecomendationProduct from '@/components/RecommendationProduct/RecomendationProduct.vue'
 import Swal from 'sweetalert2'
+import ReviewProductCombo from '@/components/pages/customers/reviews/ReviewProductCombo.vue'
+
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
@@ -18,6 +21,8 @@ const accessToken = ref(Cookies.get('accessToken'))
 const refreshToken = ref(Cookies.get('refreshToken'))
 const router = useRouter()
 const quantity = ref('1')
+const activeTab = ref('desc')
+
 const readToken = ref({})
 const fetchCombo = async () => {
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
@@ -209,6 +214,17 @@ async function addToCart() {
     console.log(content)
   }
 }
+
+function addComboToCompare() {
+  CompareStorageHelper.addComboToCompare(combo.value, selectedVariants.value)
+  Swal.fire({
+    title: 'Đã thêm combo vào danh sách so sánh!',
+    icon: 'success',
+    timer: 1500,
+    showConfirmButton: false,
+    timerProgressBar: true,
+  })
+}
 </script>
 <template>
   <div>
@@ -257,8 +273,16 @@ async function addToCart() {
                     ></a>
                     <a
                       href="#"
-                      style="border-radius: 50%; width: 50px; height: 50px"
+                      style="
+                        height: 50px;
+                        background: #1976d2;
+                        color: #fff;
+                        border-radius: 50px;
+                        margin-left: 8px;
+                      "
                       class="action-btn"
+                      @click.prevent="addComboToCompare"
+                      title="Thêm vào so sánh Combo"
                       ><span class="icon_adjust-horiz"></span
                     ></a>
                   </button>
@@ -331,7 +355,6 @@ async function addToCart() {
           </div>
           <div class="col-lg-12">
             <div class="product__details__tab">
-              <!-- Thay thế phần tab hiện tại bằng đoạn này -->
               <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
                   <a
@@ -350,14 +373,13 @@ async function addToCart() {
                     @click.prevent="activeTab = 'review'"
                     >Đánh giá</a
                   >
-                  <!-- <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">MÔ TẢ</a> -->
                 </li>
               </ul>
               <div class="tab-content vh-100 overflow-auto">
                 <div
                   v-show="activeTab == 'desc'"
                   class="tab-pane"
-                  :class="[activeTab == 'desc' ? 'active' : '']"
+                  :class="{ active: activeTab === 'desc' }"
                   id="tabs-1"
                   role="tabpanel"
                 >
@@ -368,11 +390,11 @@ async function addToCart() {
                 <div
                   v-show="activeTab == 'review'"
                   class="tab-pane"
-                  :class="[activeTab == 'review' ? 'active' : '']"
+                  :class="{ active: activeTab === 'review' }"
                   id="tabs-2"
                   role="tabpanel"
                 >
-                  <ReviewProductCombo :objectId="comboId" :isProduct="false" />
+                  <ReviewProductCombo :objectId="id" :isProduct="false" />
                 </div>
               </div>
             </div>
@@ -387,118 +409,8 @@ async function addToCart() {
 </template>
 
 <script>
-import ReviewProductCombo from '@/components/reviews/ReviewProductCombo.vue'
-import { ref, onMounted } from 'vue'
-import $ from 'jquery'
-import { useRoute } from 'vue-router'
-
 export default {
   name: 'ComboDetails',
-  components: { ReviewProductCombo },
-  setup() {
-    const route = useRoute()
-    const comboId = route.params.id
-
-    const currentSlider = ref(1)
-    const quantity = ref(1)
-    const selectedVariants = ref([])
-
-    const combo = ref({
-      id: 1,
-      name: 'Combo Sản Phẩm Tốt',
-      image: '/images/combo.jpg',
-      price: 1500000,
-      originalPrice: 2000000,
-      description: 'Combo bao gồm các sản phẩm chất lượng cao với giá ưu đãi',
-      products: [
-        {
-          id: 1,
-          name: 'Sản phẩm 1',
-          image: '/images/product1.jpg',
-          price: 500000,
-          colors: ['Đỏ', 'Xanh', 'Vàng'],
-          sizes: ['S', 'M', 'L'],
-        },
-        {
-          id: 2,
-          name: 'Sản phẩm 2',
-          image: '/images/product2.jpg',
-          price: 700000,
-          colors: ['Đen', 'Trắng', 'Xám'],
-          sizes: ['M', 'L', 'XL'],
-        },
-        {
-          id: 3,
-          name: 'Sản phẩm 3',
-          image: '/images/product3.jpg',
-          price: 800000,
-          colors: ['Hồng', 'Tím', 'Cam'],
-          sizes: ['S', 'M', 'L'],
-        },
-      ],
-      details: '<p>Chi tiết về combo sản phẩm...</p>',
-    })
-
-    const formatPrice = (price) => {
-      return price.toLocaleString('vi-VN')
-    }
-
-    const changeImage = (index) => {
-      currentSlider.value = index
-      $('.product__details__pic__slider').trigger('to.owl.carousel', [index - 1, 300])
-    }
-
-    const selectVariant = (productIndex, type, value) => {
-      if (!selectedVariants.value[productIndex]) {
-        selectedVariants.value[productIndex] = {}
-      }
-      selectedVariants.value[productIndex][type] = value
-    }
-
-    const addToCart = () => {
-      console.log('Thêm vào giỏ hàng:', {
-        comboId: combo.value.id,
-        quantity: quantity.value,
-        variants: selectedVariants.value,
-      })
-    }
-
-    const activeTab = ref('desc')
-
-    onMounted(() => {
-      // Initialize Owl Carousel
-      const owl = $('.product__details__pic__slider').owlCarousel({
-        items: 1,
-        loop: true,
-        autoplay: false,
-        nav: false,
-        dots: true,
-        animateOut: 'fadeOut',
-        animateIn: 'fadeIn',
-      })
-
-      // Khởi tạo biến thể mặc định
-      combo.value.products.forEach((product, index) => {
-        selectedVariants.value[index] = {
-          color: product.colors[0],
-          size: product.sizes[0],
-        }
-      })
-    })
-
-    return {
-      comboId,
-      combo,
-      currentSlider,
-      quantity,
-      selectedVariants,
-      formatPrice,
-      changeImage,
-      selectVariant,
-      addToCart,
-      activeTab,
-    }
-  },
 }
 </script>
 

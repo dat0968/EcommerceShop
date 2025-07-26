@@ -12,5 +12,6 @@ namespace APIClothesEcommerceShop.DTO.Statistics
         public int TotalInactiveEmployees { get; set; } // Tổng số nhân viên không hoạt động
         public decimal AverageSalary { get; set; } // Lương trung bình của nhân viên
         public decimal TotalSalary { get; set; } // Tổng lương của tất cả nhân viên
+        public Dictionary<string, List<RevenueByTimeStatistic>> RevenueByTime { get; set; } // Doanh thu theo thời gian
     }
 }

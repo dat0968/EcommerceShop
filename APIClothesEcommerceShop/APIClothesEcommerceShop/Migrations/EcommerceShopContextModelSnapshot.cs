@@ -653,6 +653,9 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnName("SDT")
                         .IsFixedLength();
 
+                    b.Property<int>("Streak")
+                        .HasColumnType("int");
+
                     b.Property<string>("TenTaiKhoan")
                         .HasMaxLength(15)
                         .IsUnicode(false)
@@ -664,6 +667,9 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("nvarchar(25)")
                         .HasDefaultValue("Đang hoạt động");
+
+                    b.Property<DateTime>("TruyCapLlanCuoi")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("MaKh")
                         .HasName("PK__KHACHHAN__2725CF1E44D7EB2D");
@@ -713,6 +719,9 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Property<int?>("DonHangToiThieu")
                         .HasColumnType("int");
 
+                    b.Property<int?>("MaKhachHang")
+                        .HasColumnType("int");
+
                     b.Property<string>("MoTa")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -744,6 +753,8 @@ namespace APIClothesEcommerceShop.Migrations
 
                     b.HasKey("MaCode")
                         .HasName("PK__MACOUPON__152C7C5D253AC471");
+
+                    b.HasIndex("MaKhachHang");
 
                     b.ToTable("MACOUPON", (string)null);
                 });
@@ -1161,6 +1172,15 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("MaSpNavigation");
                 });
 
+            modelBuilder.Entity("APIClothesEcommerceShop.Models.Macoupon", b =>
+                {
+                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "KhachHang")
+                        .WithMany("MaCoupons")
+                        .HasForeignKey("MaKhachHang");
+
+                    b.Navigation("KhachHang");
+                });
+
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Nhanvien", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Chucvu", "MaChucVuNavigation")
@@ -1258,6 +1278,8 @@ namespace APIClothesEcommerceShop.Migrations
                     b.Navigation("Hoadons");
 
                     b.Navigation("LichSuXems");
+
+                    b.Navigation("MaCoupons");
 
                     b.Navigation("Sanphamyeuthichs");
                 });

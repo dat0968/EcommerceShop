@@ -7,10 +7,10 @@
       </div>
       <div class="card-body">
         <div v-if="isLoading" class="text-center my-4">
-          <span>Đang tải dữ liệu...</span>
+          <LoadingSpinner />
         </div>
         <div v-else-if="!data || Object.keys(data).length === 0" class="text-center my-4">
-          <span>Không có dữ liệu để hiển thị.</span>
+          <NoDataMessage />
         </div>
         <div v-else class="row align-items-center g-3">
           <div class="col-md-6">
@@ -39,7 +39,7 @@
             <div class="chart-container">
               <canvas ref="customerChart" v-show="!isLoading"></canvas>
               <div v-if="isLoading" class="text-center my-4">
-                <span>Đang tải dữ liệu...</span>
+                <LoadingSpinner />
               </div>
             </div>
           </div>
@@ -51,16 +51,21 @@
 
 <script>
 import { Chart, registerables } from 'chart.js'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
+import NoDataMessage from '@/components/common/NoDataMessage.vue'
 
 import { formatCurrency } from '@/constants/formatCurrency'
 Chart.register(...registerables)
 
 export default {
   name: 'CustomerStatistic',
+  components: {
+    LoadingSpinner,
+    NoDataMessage,
+  },
   props: {
     data: {
-      type: Object, // Để linh hoạt hơn, dùng Object thay vì CustomerStatisticsResponse
-      required: true,
+      default: () => ({}),
     },
     isLoading: {
       type: Boolean,
@@ -107,12 +112,12 @@ export default {
         this.data?.totalInactiveCustomers ?? 0,
       ]
       this.customerChart = new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
           labels: labels,
           datasets: [
             {
-              label: 'Tỉ lệ khách hàng',
+              label: 'Số lượng khách hàng',
               data: dataValues,
               backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 99, 132, 0.7)'],
               borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
@@ -122,9 +127,36 @@ export default {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
             legend: {
               position: 'bottom',
+              labels: {
+                font: {
+                  size: 14,
+                },
+              },
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  let label = context.label || ''
+                  if (label) {
+                    label += ': '
+                  }
+                  if (context.parsed !== null) {
+                    label += context.parsed
+                  }
+                  return label
+                },
+              },
+            },
+            title: {
+              display: true,
+              text: 'Số lượng khách hàng hoạt động/không hoạt động',
+              font: {
+                size: 16,
+              },
             },
           },
         },
@@ -138,6 +170,7 @@ export default {
 .chart-container {
   position: relative;
   width: 100%;
+  height: 100%; /* Ensure chart container takes full height */
 }
 
 canvas {
