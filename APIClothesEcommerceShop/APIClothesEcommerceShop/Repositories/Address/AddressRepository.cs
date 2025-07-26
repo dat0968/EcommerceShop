@@ -24,7 +24,7 @@ namespace APIClothesEcommerceShop.Repositories.Address
 
         public async Task<List<Diachi>> GetAll(int MaKh)
         {
-            return await db.Diachis.AsNoTracking().Where(p => p.MaKh == MaKh).ToListAsync();
+            return await db.Diachis.AsNoTracking().ToListAsync();
         }
     }
 }
