@@ -100,12 +100,13 @@ public partial class EcommerceShopContext : DbContext
             entity.ToTable("DIACHI");
 
             entity.Property(e => e.diachichitiet).HasColumnName("DiaChiChiTiet");
-            entity.Property(e => e.MaKh).HasColumnName("MaKh");
-
-            entity.HasOne(d => d.MaKhNavigation).WithMany(p => p.Diachichitiets)
-                .HasForeignKey(d => d.MaKh)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__DiaChiCT__MaKH__6754599E");
+            entity.Property(e => e.Tinh).HasColumnName("Tinh");
+            entity.Property(e => e.QuanHuyen).HasColumnName("QuanHuyen");
+            entity.Property(e => e.XaPhuong).HasColumnName("XaPhuong");
+            entity.Property(e => e.diachichitiet).HasColumnName("diachichitiet");
+            entity.Property(e => e.MacDinh).HasColumnName("MacDinh");
+            entity.Property(e => e.Hoten).HasColumnName("Hoten");
+            entity.Property(e => e.SDT).HasColumnName("SDT");
         });
         modelBuilder.Entity<Chitietcombohoadon>(entity =>
         {
