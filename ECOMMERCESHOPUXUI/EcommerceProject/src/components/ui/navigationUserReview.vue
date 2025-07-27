@@ -1,7 +1,7 @@
 <template>
-  <RouterLink to="/review">
+  <RouterLink to="/review" class="position-relative text-decoration-none">
     <span class="icon_star"></span>
-    <div class="tip">{{ totalReviewNeedSubmit }}</div>
+    <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalReviewNeedSubmit }}</div>
   </RouterLink>
 </template>
 

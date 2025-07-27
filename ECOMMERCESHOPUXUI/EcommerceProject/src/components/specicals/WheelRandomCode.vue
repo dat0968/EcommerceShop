@@ -1,8 +1,8 @@
 <template>
   <!-- Icon to trigger the modal -->
-  <a href="#" @click.prevent="showModal = true">
+  <a href="#" @click.prevent="showModal = true" class="position-relative text-decoration-none">
     <span class="icon_ribbon_alt"></span>
-    <div v-if="maxSpins > 0" class="tip">{{ maxSpins - spinCount }}</div>
+    <div v-if="maxSpins > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ maxSpins - spinCount }}</div>
   </a>
 
   <!-- Modal for the wheel -->

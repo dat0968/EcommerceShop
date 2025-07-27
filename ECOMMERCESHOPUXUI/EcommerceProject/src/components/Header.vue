@@ -191,7 +191,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
 import { validateToken } from '@/utils/auth'
-import NavigationUserReview from './ui/navigationUserReview.vue'
+import NavigationUserReview from './ui/NavigationUserReview.vue'
 import WheelRandomCode from './specicals/WheelRandomCode.vue'
 
 import Swal from 'sweetalert2'
