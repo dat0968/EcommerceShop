@@ -1,3 +1,5 @@
+[Tiếng Việt](./README.vi.md) | [English](./README.md) | [中文](./README.zh.md)
+
 # Dự án Cửa hàng Thương mại Điện tử
 ![Trạng thái Build](https://img.shields.io/badge/build-passing-brightgreen)
 ![Giấy phép](https://img.shields.io/badge/license-MIT-blue)
