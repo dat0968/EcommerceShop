@@ -63,7 +63,7 @@
         <div class="card shadow-sm mb-3">
           <div class="card-header bg-light fw-bold"><i class="bi bi-funnel"></i> Bộ lọc</div>
           <div class="card-body">
-            <details class="mb-3">
+            <details class="mb-3" open>
               <summary class="form-label bg-light rounded p-1">
                 Danh mục cha (Đã chọn {{ selectedMaDanhMucCha.length }})
               </summary>
@@ -92,7 +92,7 @@
               </div>
             </details>
             <hr />
-            <details class="mb-3">
+            <details class="mb-3" open>
               <summary class="form-label bg-light rounded p-1">
                 Danh mục con (Đã chọn {{ selectedMaDanhMucCon.length }})
               </summary>
