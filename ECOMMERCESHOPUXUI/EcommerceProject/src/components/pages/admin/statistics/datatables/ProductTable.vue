@@ -32,20 +32,14 @@ export default {
     async initDataTable() {
       await this.$nextTick()
       const productMap = new Map(this.products.map((p) => [p.productId, p]))
-      const dataSet = this.products.map((product) => {
-        const totalReviewStar =
-          product.detailTopProducts && Array.isArray(product.detailTopProducts)
-            ? product.detailTopProducts.reduce((total, x) => total + x.soSao, 0)
-            : 0
-        return {
-          productId: product.productId,
-          productName: product.productName,
-          categoryName: product.categoryName,
-          revenue: product.revenue, // Keep as a number
-          count: product.count,
-          totalReviewStar: totalReviewStar,
-        }
-      })
+      const dataSet = this.products.map((product) => ({
+        productId: product.productId,
+        productName: product.productName,
+        categoryName: product.categoryName,
+        revenue: product.revenue, // Keep as a number
+        count: product.count,
+        averageRating: product.averageRating ?? 0, // Assuming product has averageRating
+      }));
 
       const table = $('#productDatatable').DataTable({
         data: dataSet,
@@ -55,15 +49,24 @@ export default {
           { data: 'productId', title: 'Mã sản phẩm', className: 'text-center' },
           { data: 'productName', title: 'Tên sản phẩm' },
           {
-            data: 'totalReviewStar',
+            data: null,
             title: 'Đánh giá',
             render: function (data, type, row) {
-              return `
-              <span class="star-rating">
-                ${Array.from({ length: data }, () => `<span class="star filled">★</span>`).join('')}
-                ${Array.from({ length: 5 - data }, () => `<span class="star">★</span>`).join('')}
-              </span>
-              `
+              const averageRating = row.averageRating ?? 0;
+              const fullStars = Math.floor(averageRating);
+              const emptyStars = 5 - Math.ceil(averageRating);
+              let starsHtml = '';
+
+              for (let i = 0; i < fullStars; i++) {
+                starsHtml += '<span style="color: #ffc107">★</span>';
+              }
+              if (averageRating % 1 !== 0) { // Check for fractional part
+                starsHtml += '<span style="color: #ffc107; position: relative;">★<span style="position: absolute; width: ' + (averageRating % 1) * 100 + '%; overflow: hidden; display: inline-block;">★</span></span>'; // Partial star
+              }
+              for (let i = 0; i < emptyStars; i++) {
+                starsHtml += '<span style="color: #e4e5e9">★</span>';
+              }
+              return `<span>${starsHtml}</span>`;
             },
           },
           { data: 'categoryName', title: 'Tên danh mục' },

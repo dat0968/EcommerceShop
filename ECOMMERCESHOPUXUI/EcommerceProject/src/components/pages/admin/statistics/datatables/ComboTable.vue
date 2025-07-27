@@ -48,19 +48,21 @@ export default {
             data: null,
             title: 'Đánh giá',
             render: function (data, type, row) {
-              const totalReviewStar = row.starCount ?? 0
-              return `
-              <span>
-                ${Array.from(
-                  { length: totalReviewStar },
-                  () => `<span style="color: #ffc107">★</span>`,
-                ).join('')}
-                ${Array.from(
-                  { length: 5 - totalReviewStar },
-                  () => `<span style="color: #e4e5e9">★</span>`,
-                ).join('')}
-              </span>
-              `
+              const averageRating = row.averageRating ?? 0;
+              const fullStars = Math.floor(averageRating);
+              const emptyStars = 5 - Math.ceil(averageRating);
+              let starsHtml = '';
+
+              for (let i = 0; i < fullStars; i++) {
+                starsHtml += '<span style="color: #ffc107">★</span>';
+              }
+              if (averageRating % 1 !== 0) { // Check for fractional part
+                starsHtml += '<span style="color: #ffc107; position: relative;">★<span style="position: absolute; width: ' + (averageRating % 1) * 100 + '%; overflow: hidden; display: inline-block;">★</span></span>'; // Partial star
+              }
+              for (let i = 0; i < emptyStars; i++) {
+                starsHtml += '<span style="color: #e4e5e9">★</span>';
+              }
+              return `<span>${starsHtml}</span>`;
             },
           },
           { data: 'salesCount', title: 'Số lượng bán', className: 'text-center' },
