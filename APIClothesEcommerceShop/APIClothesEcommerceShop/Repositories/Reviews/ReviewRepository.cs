@@ -146,17 +146,16 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         #endregion
 
         #region [Lấy danh sách sản phẩm và combo trong hóa đơn cùng với đánh giá của người riêng người dùng]
-        public async Task<ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>> GetAllReviewOfUser(int userId)
+        public async Task<ResponseAPI<Dictionary<string, List<OrderReviewGroupDTO>>>> GetAllReviewOfUser(int userId)
         {
-            var response = new ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>();
-            response.Data = new Dictionary<string, List<ReviewResponseDTO>>();
+            var response = new ResponseAPI<Dictionary<string, List<OrderReviewGroupDTO>>>();
+            response.Data = new Dictionary<string, List<OrderReviewGroupDTO>>();
 
             try
             {
                 DateTime today = DateTime.UtcNow;
                 DateTime sevenDaysAgo = today.AddDays(-7);
 
-                // Lấy tất cả các hóa đơn người dùng trong vòng 7 ngày gần nhất đã nhận hàng
                 var hoaDons = await _db.Hoadons
                     .Include(h => h.Cthoadons)
                         .ThenInclude(ct => ct.DanhGia)
@@ -169,7 +168,6 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                             .ThenInclude(ctsp => ctsp.Hinhanhs)
                     .Include(h => h.Cthoadons)
                         .ThenInclude(ct => ct.MaComboNavigation)
-                    // Tùy nhu cầu: lọc các hóa đơn của người dùng trong 7 ngày gần nhất
                     .Where(hd =>
                         hd.MaKh == userId &&
                         filterStatusOrder.Contains(hd.TinhTrang.ToLower())
@@ -177,34 +175,54 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .AsNoTracking()
                     .ToListAsync();
 
-                var notReviewIn7days = new List<ReviewResponseDTO>();
-                var listReviewed = new List<ReviewResponseDTO>();
+                var notReviewedOrders = new List<OrderReviewGroupDTO>();
+                var reviewedOrders = new List<OrderReviewGroupDTO>();
 
                 foreach (var hd in hoaDons)
                 {
+                    var notReviewedGroup = new OrderReviewGroupDTO
+                    {
+                        MaHd = hd.MaHd,
+                        NgayTao = hd.NgayTao,
+                        TinhTrang = hd.TinhTrang
+                    };
+                    var reviewedGroup = new OrderReviewGroupDTO
+                    {
+                        MaHd = hd.MaHd,
+                        NgayTao = hd.NgayTao,
+                        TinhTrang = hd.TinhTrang
+                    };
+
                     foreach (var ct in hd.Cthoadons)
                     {
                         if (ct.DanhGia != null)
                         {
-                            // Đã có đánh giá
                             bool isProduct = ct.DanhGia.MaSp != null && ct.DanhGia.MaSp != 0;
-                            listReviewed.Add(ct.DanhGia.ToReviewResponseDTO(isProduct));
+                            reviewedGroup.Items.Add(ct.DanhGia.ToReviewResponseDTO(isProduct));
                         }
                         else
                         {
-                            // Chưa đánh giá, chỉ xét những đơn hàng nhận trong 7 ngày
                             if (hd.NgayNhan != null && hd.NgayNhan >= sevenDaysAgo)
                             {
                                 bool isProduct = ct.MaCtsp != null && ct.MaCtsp != 0;
                                 var dto = ReviewResponseDTO.MakeEmptyReview(ct, isProduct);
-                                notReviewIn7days.Add(dto);
+                                notReviewedGroup.Items.Add(dto);
                             }
                         }
                     }
+
+                    if (notReviewedGroup.Items.Any())
+                    {
+                        notReviewedOrders.Add(notReviewedGroup);
+                    }
+                    if (reviewedGroup.Items.Any())
+                    {
+                        reviewedOrders.Add(reviewedGroup);
+                    }
                 }
 
-                response.Data["notReviewIn7days"] = notReviewIn7days;
-                response.Data["listReviewed"] = listReviewed;
+                response.Data["notReviewIn7days"] = notReviewedOrders;
+                response.Data["listReviewed"] = reviewedOrders;
                 response.SetSuccessResponse();
             }
             catch (Exception ex)

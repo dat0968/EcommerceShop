@@ -65,178 +65,40 @@
             <!-- Tab Chưa đánh giá -->
             <div v-if="!isLoading && activeTab === 'notReviewed'">
               <div v-if="notReviewed.length">
-                <div
-                  v-for="item in notReviewed"
-                  :key="item.maCthd"
-                  class="border rounded p-3 mb-4 shadow-sm review-item"
-                >
-                  <div class="row">
-                    <div class="col-md-2">
-                      <img
-                        :src="item.hinhAnhUrl"
-                        alt="Ảnh sản phẩm"
-                        class="img-fluid rounded border"
-                        style="width: 100%; height: 150px; object-fit: cover; cursor: pointer"
-                        @click="openLightbox([item.hinhAnhUrl], 0)"
-                      />
-                    </div>
-                    <div class="col-md-10">
-                      <h5 class="mb-1">
-                        {{ item.tenDoiTuong }}
-                      </h5>
-                      <p class="text-muted small mb-2">
-                        <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
-                        {{ item.maSp || item.maCombo }}
-                        <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
-                        <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
-                      </p>
-
-                      <div class="mb-3">
-                        <label class="form-label fw-bold">Đánh giá của bạn:</label>
-                        <div class="star-rating mb-2">
-                          <span
-                            v-for="n in 5"
-                            :key="n"
-                            class="star"
-                            :class="{ filled: n <= item._editSoSao }"
-                            @click="item._editSoSao = n"
-                            >★</span
-                          >
-                        </div>
-                        <textarea
-                          v-model.trim="item._editNoiDung"
-                          class="form-control"
-                          rows="3"
-                          placeholder="Sản phẩm dùng có tốt không? Bạn có hài lòng không? Hãy chia sẻ cảm nhận của bạn tại đây nhé."
-                        ></textarea>
-                      </div>
-
-                      <div class="mb-3">
-                        <label class="form-label fw-bold">Hình ảnh kèm theo:</label>
-                        <input
-                          type="file"
-                          multiple
-                          accept="image/*"
-                          class="form-control"
-                          :disabled="getImageCount(item) >= maxImages"
-                          @change="onImagesChange($event, item)"
-                        />
-                        <small class="form-text text-muted"
-                          >Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá 5MB.</small
-                        >
-                        <div
-                          v-if="item._previewImgs && item._previewImgs.length"
-                          class="d-flex flex-wrap mt-2"
-                        >
-                          <div
-                            v-for="(img, idx) in item._previewImgs"
-                            :key="idx"
-                            class="position-relative me-2 mb-2"
-                          >
-                            <img
-                              :src="img"
-                              class="img-fluid border rounded"
-                              style="width: 100px; height: 100px; object-fit: cover"
-                              @click="openLightbox(item._previewImgs, idx)"
-                            />
-                            <button
-                              class="btn btn-sm btn-danger position-absolute top-0 end-0"
-                              @click="removePreviewImage(item, idx)"
-                            >
-                              &times;
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        class="btn btn-primary"
-                        @click="submitReview(item)"
-                        :disabled="item._isSubmitting"
-                      >
-                        <span
-                          v-if="item._isSubmitting"
-                          class="spinner-border spinner-border-sm"
-                          role="status"
-                          aria-hidden="true"
-                        ></span>
-                        Gửi đánh giá
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <EmptySuggestBox
-                v-else
-                contentText="Bạn không có sản phẩm nào cần đánh giá. Hãy mua sắm thêm nhé!"
-                linkNav="/shop"
-              />
-            </div>
-
-            <!-- Tab Đã đánh giá -->
-            <div v-if="!isLoading && activeTab === 'reviewed'">
-              <div v-if="reviewed.length">
-                <div
-                  v-for="item in reviewed"
-                  :key="item.id"
-                  class="border rounded p-3 mb-4 shadow-sm review-item"
-                >
-                  <div class="d-flex align-items-start">
-                    <img
-                      :src="item.hinhAnhUrl"
-                      alt="Ảnh sản phẩm"
-                      class="img-fluid rounded border me-3"
-                      style="width: 80px; height: 80px; object-fit: cover; cursor: pointer"
-                      @click="openLightbox([item.hinhAnhUrl], 0)"
-                    />
-                    <div class="flex-grow-1">
-                      <h6 class="mb-1">{{ item.tenDoiTuong }}</h6>
-                      <div class="star-rating mb-2">
-                        <span
-                          v-for="n in 5"
-                          :key="n"
-                          class="star"
-                          :class="{ filled: n <= item.soSao }"
-                          >★</span
-                        >
-                        <span class="ms-2 text-muted small">{{
-                          new Date(item.ngayDanhGia).toLocaleDateString('vi-VN')
-                        }}</span>
-                      </div>
-                      <p class="mb-2">{{ item.noiDung }}</p>
-                      <div
-                        v-if="item.hinhAnhs && item.hinhAnhs.length"
-                        class="d-flex flex-wrap my-2"
-                      >
+                <div v-for="orderGroup in notReviewed" :key="orderGroup.maHd" class="mb-5">
+                  <h5 class="mb-3 bg-info text-white p-2 rounded">
+                    Đơn hàng #{{ orderGroup.maHd }} - Ngày đặt:
+                    {{ new Date(orderGroup.ngayTao).toLocaleDateString('vi-VN') }} - Trạng thái:
+                    {{ orderGroup.tinhTrang }}
+                  </h5>
+                  <div
+                    v-for="item in orderGroup.items"
+                    :key="item.maCthd"
+                    class="border rounded p-3 mb-4 shadow-sm review-item"
+                  >
+                    <div class="row">
+                      <div class="col-md-2">
                         <img
-                          v-for="(img, idx) in item.hinhAnhs"
-                          :key="idx"
-                          :src="img"
-                          class="img-fluid me-2 mb-2 border rounded"
-                          style="width: 100px; height: 100px; object-fit: cover; cursor: pointer"
-                          @click="openLightbox(item.hinhAnhs, idx)"
+                          :src="item.hinhAnhUrl"
+                          alt="Ảnh sản phẩm"
+                          class="img-fluid rounded border"
+                          style="width: 100%; height: 150px; object-fit: cover; cursor: pointer"
+                          @click="openLightbox([item.hinhAnhUrl], 0)"
                         />
                       </div>
-                      <blockquote
-                        v-if="item.shopPhanHoi"
-                        class="blockquote bg-light p-2 rounded mt-2"
-                      >
-                        <p class="mb-0 small">
-                          <strong>Phản hồi từ Shop:</strong> {{ item.shopPhanHoi }}
+                      <div class="col-md-10">
+                        <h5 class="mb-1">
+                          {{ item.tenDoiTuong }}
+                        </h5>
+                        <p class="text-muted small mb-2">
+                          <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
+                          {{ item.maSp || item.maCombo }}
+                          <span v-if="item.kichThuoc">| Size: {{ item.kichThuoc }}</span>
+                          <span v-if="item.mauSac">| Màu: {{ item.mauSac }}</span>
                         </p>
-                      </blockquote>
-                      <button
-                        v-if="!item._isEditing"
-                        class="btn btn-sm btn-outline-primary mt-2"
-                        @click="toggleEditMode(item)"
-                      >
-                        <i class="fa fa-edit"></i> Chỉnh sửa
-                      </button>
 
-                      <div v-if="item._isEditing" class="mt-3 p-3 border rounded bg-light">
-                        <h6 class="mb-3">Chỉnh sửa đánh giá</h6>
                         <div class="mb-3">
-                          <label class="form-label fw-bold">Số sao:</label>
+                          <label class="form-label fw-bold">Đánh giá của bạn:</label>
                           <div class="star-rating mb-2">
                             <span
                               v-for="n in 5"
@@ -247,24 +109,23 @@
                               >★</span
                             >
                           </div>
-                        </div>
-                        <div class="mb-3">
-                          <label class="form-label fw-bold">Nội dung:</label>
                           <textarea
                             v-model.trim="item._editNoiDung"
                             class="form-control"
                             rows="3"
+                            placeholder="Sản phẩm dùng có tốt không? Bạn có hài lòng không? Hãy chia sẻ cảm nhận của bạn tại đây nhé."
                           ></textarea>
                         </div>
+
                         <div class="mb-3">
-                          <label class="form-label fw-bold">Hình ảnh:</label>
+                          <label class="form-label fw-bold">Hình ảnh kèm theo:</label>
                           <input
                             type="file"
                             multiple
                             accept="image/*"
                             class="form-control"
                             :disabled="getImageCount(item) >= maxImages"
-                            @change="onImagesChangeForEdit($event, item)"
+                            @change="onImagesChange($event, item)"
                           />
                           <small class="form-text text-muted"
                             >Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá 5MB.</small
@@ -286,16 +147,17 @@
                               />
                               <button
                                 class="btn btn-sm btn-danger position-absolute top-0 end-0"
-                                @click="removePreviewImageForEdit(item, idx)"
+                                @click="removePreviewImage(item, idx)"
                               >
                                 &times;
                               </button>
                             </div>
                           </div>
                         </div>
+
                         <button
-                          class="btn btn-primary me-2"
-                          @click="updateReview(item)"
+                          class="btn btn-primary"
+                          @click="submitReview(item)"
                           :disabled="item._isSubmitting"
                         >
                           <span
@@ -304,9 +166,161 @@
                             role="status"
                             aria-hidden="true"
                           ></span>
-                          Lưu thay đổi
+                          Gửi đánh giá
                         </button>
-                        <button class="btn btn-secondary" @click="cancelEdit(item)">Hủy</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <EmptySuggestBox
+                v-else
+                contentText="Bạn không có sản phẩm nào cần đánh giá. Hãy mua sắm thêm nhé!"
+                linkNav="/shop"
+              />
+            </div>
+
+            <!-- Tab Đã đánh giá -->
+            <div v-if="!isLoading && activeTab === 'reviewed'">
+              <div v-if="reviewed.length">
+                <div v-for="orderGroup in reviewed" :key="orderGroup.maHd" class="mb-5">
+                  <h5 class="mb-3 bg-info text-white p-2 rounded">
+                    Đơn hàng #{{ orderGroup.maHd }} - Ngày đặt:
+                    {{ new Date(orderGroup.ngayTao).toLocaleDateString('vi-VN') }} - Trạng thái:
+                    {{ orderGroup.tinhTrang }}
+                  </h5>
+                  <div
+                    v-for="item in orderGroup.items"
+                    :key="item.id"
+                    class="border rounded p-3 mb-4 shadow-sm review-item"
+                  >
+                    <div class="d-flex align-items-start">
+                      <img
+                        :src="item.hinhAnhUrl"
+                        alt="Ảnh sản phẩm"
+                        class="img-fluid rounded border me-3"
+                        style="width: 80px; height: 80px; object-fit: cover; cursor: pointer"
+                        @click="openLightbox([item.hinhAnhUrl], 0)"
+                      />
+                      <div class="flex-grow-1">
+                        <h6 class="mb-1">{{ item.tenDoiTuong }}</h6>
+                        <div class="star-rating mb-2">
+                          <span
+                            v-for="n in 5"
+                            :key="n"
+                            class="star"
+                            :class="{ filled: n <= item.soSao }"
+                            >★</span
+                          >
+                          <span class="ms-2 text-muted small">{{
+                            new Date(item.ngayDanhGia).toLocaleDateString('vi-VN')
+                          }}</span>
+                        </div>
+                        <p class="mb-2">{{ item.noiDung }}</p>
+                        <div
+                          v-if="item.hinhAnhs && item.hinhAnhs.length"
+                          class="d-flex flex-wrap my-2"
+                        >
+                          <img
+                            v-for="(img, idx) in item.hinhAnhs"
+                            :key="idx"
+                            :src="img"
+                            class="img-fluid me-2 mb-2 border rounded"
+                            style="width: 100px; height: 100px; object-fit: cover; cursor: pointer"
+                            @click="openLightbox(item.hinhAnhs, idx)"
+                          />
+                        </div>
+                        <blockquote
+                          v-if="item.shopPhanHoi"
+                          class="blockquote bg-light p-2 rounded mt-2"
+                        >
+                          <p class="mb-0 small">
+                            <strong>Phản hồi từ Shop:</strong> {{ item.shopPhanHoi }}
+                          </p>
+                        </blockquote>
+                        <button
+                          v-if="!item._isEditing"
+                          class="btn btn-sm btn-outline-primary mt-2"
+                          @click="toggleEditMode(item)"
+                        >
+                          <i class="fa fa-edit"></i> Chỉnh sửa
+                        </button>
+
+                        <div v-if="item._isEditing" class="mt-3 p-3 border rounded bg-light">
+                          <h6 class="mb-3">Chỉnh sửa đánh giá</h6>
+                          <div class="mb-3">
+                            <label class="form-label fw-bold">Số sao:</label>
+                            <div class="star-rating mb-2">
+                              <span
+                                v-for="n in 5"
+                                :key="n"
+                                class="star"
+                                :class="{ filled: n <= item._editSoSao }"
+                                @click="item._editSoSao = n"
+                                >★</span
+                              >
+                            </div>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label fw-bold">Nội dung:</label>
+                            <textarea
+                              v-model.trim="item._editNoiDung"
+                              class="form-control"
+                              rows="3"
+                            ></textarea>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label fw-bold">Hình ảnh:</label>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              class="form-control"
+                              :disabled="getImageCount(item) >= maxImages"
+                              @change="onImagesChangeForEdit($event, item)"
+                            />
+                            <small class="form-text text-muted"
+                              >Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá 5MB.</small
+                            >
+                            <div
+                              v-if="item._previewImgs && item._previewImgs.length"
+                              class="d-flex flex-wrap mt-2"
+                            >
+                              <div
+                                v-for="(img, idx) in item._previewImgs"
+                                :key="idx"
+                                class="position-relative me-2 mb-2"
+                              >
+                                <img
+                                  :src="img"
+                                  class="img-fluid border rounded"
+                                  style="width: 100px; height: 100px; object-fit: cover"
+                                  @click="openLightbox(item._previewImgs, idx)"
+                                />
+                                <button
+                                  class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                  @click="removePreviewImageForEdit(item, idx)"
+                                >
+                                  &times;
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            class="btn btn-primary me-2"
+                            @click="updateReview(item)"
+                            :disabled="item._isSubmitting"
+                          >
+                            <span
+                              v-if="item._isSubmitting"
+                              class="spinner-border spinner-border-sm"
+                              role="status"
+                              aria-hidden="true"
+                            ></span>
+                            Lưu thay đổi
+                          </button>
+                          <button class="btn btn-secondary" @click="cancelEdit(item)">Hủy</button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -385,36 +399,42 @@ export default {
       }
     },
     prepareData(data) {
-      this.notReviewed = (data.notReviewIn7days || []).map((item) => ({
-        ...item,
-        hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
-        _editSoSao: 5,
-        _editNoiDung: '',
-        _selectedFiles: [],
-        _previewImgs: [],
-        _isSubmitting: false,
-      }))
-      this.reviewed = (data.listReviewed || []).map((item) => {
-        let hinhAnhs = [];
-        if (Array.isArray(item.hinhAnhs)) {
-          hinhAnhs = item.hinhAnhs;
-        } else if (typeof item.hinhAnhs === 'string') {
-          hinhAnhs = item.hinhAnhs.split(',').filter(Boolean);
-        }
-
-        return {
+      this.notReviewed = (data.notReviewIn7days || []).map((orderGroup) => ({
+        ...orderGroup,
+        items: orderGroup.items.map((item) => ({
           ...item,
           hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
-          hinhAnhs: hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
-          _isEditing: false, // New property for editing state
-          _editSoSao: item.soSao,
-          _editNoiDung: item.noiDung,
-          _selectedFiles: [], // For new files to upload
-          _previewImgs: hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)), // For existing and new images
-          _removedImageUrls: [], // To track images removed by user
+          _editSoSao: 5,
+          _editNoiDung: '',
+          _selectedFiles: [],
+          _previewImgs: [],
           _isSubmitting: false,
-        };
-      });
+        })),
+      }));
+      this.reviewed = (data.listReviewed || []).map((orderGroup) => ({
+        ...orderGroup,
+        items: orderGroup.items.map((item) => {
+          let hinhAnhs = [];
+          if (Array.isArray(item.hinhAnhs)) {
+            hinhAnhs = item.hinhAnhs;
+          } else if (typeof item.hinhAnhs === 'string') {
+            hinhAnhs = item.hinhAnhs.split(',').filter(Boolean);
+          }
+
+          return {
+            ...item,
+            hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
+            hinhAnhs: hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+            _isEditing: false,
+            _editSoSao: item.soSao,
+            _editNoiDung: item.noiDung,
+            _selectedFiles: [],
+            _previewImgs: hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+            _removedImageUrls: [],
+            _isSubmitting: false,
+          };
+        }),
+      }));
     },
     onImagesChange(event, item) {
       const files = Array.from(event.target.files)
