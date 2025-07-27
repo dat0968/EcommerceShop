@@ -5,7 +5,7 @@ class ResponseAPI {
     callBackResult = {
       status: 204,
       success: false,
-      message: 'Phản hồi không xác định',
+      message: 'Hệ thống đang trục trặc, vui lòng thử lại sau',
       data: null,
       errors: [],
     },
@@ -14,7 +14,7 @@ class ResponseAPI {
 
     this.status = callBackResult?.status || 204 // Mã trạng thái của phản hồi (status code)
     this.success = callBackResult?.success || false // Trạng thái thành công/chưa thành công
-    this.message = callBackResult?.message || 'Phản hồi không xác định' // Thông báo phản hồi từ backend
+    this.message = callBackResult?.message || 'Hệ thống đang trục trặc, vui lòng thử lại sau' // Thông báo phản hồi từ backend
     this.data = callBackResult?.data || null // Payload dữ liệu trả về từ backend
     this.errors = callBackResult?.errors || [] // Danh sách lỗi nếu có
   }
