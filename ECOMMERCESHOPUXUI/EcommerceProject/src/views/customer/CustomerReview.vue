@@ -225,6 +225,89 @@
                           <strong>Phản hồi từ Shop:</strong> {{ item.shopPhanHoi }}
                         </p>
                       </blockquote>
+                      <button
+                        v-if="!item._isEditing"
+                        class="btn btn-sm btn-outline-primary mt-2"
+                        @click="toggleEditMode(item)"
+                      >
+                        <i class="fa fa-edit"></i> Chỉnh sửa
+                      </button>
+
+                      <div v-if="item._isEditing" class="mt-3 p-3 border rounded bg-light">
+                        <h6 class="mb-3">Chỉnh sửa đánh giá</h6>
+                        <div class="mb-3">
+                          <label class="form-label fw-bold">Số sao:</label>
+                          <div class="star-rating mb-2">
+                            <span
+                              v-for="n in 5"
+                              :key="n"
+                              class="star"
+                              :class="{ filled: n <= item._editSoSao }"
+                              @click="item._editSoSao = n"
+                              >★</span
+                            >
+                          </div>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label fw-bold">Nội dung:</label>
+                          <textarea
+                            v-model.trim="item._editNoiDung"
+                            class="form-control"
+                            rows="3"
+                          ></textarea>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label fw-bold">Hình ảnh:</label>
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            class="form-control"
+                            :disabled="getImageCount(item) >= maxImages"
+                            @change="onImagesChangeForEdit($event, item)"
+                          />
+                          <small class="form-text text-muted"
+                            >Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá 5MB.</small
+                          >
+                          <div
+                            v-if="item._previewImgs && item._previewImgs.length"
+                            class="d-flex flex-wrap mt-2"
+                          >
+                            <div
+                              v-for="(img, idx) in item._previewImgs"
+                              :key="idx"
+                              class="position-relative me-2 mb-2"
+                            >
+                              <img
+                                :src="img"
+                                class="img-fluid border rounded"
+                                style="width: 100px; height: 100px; object-fit: cover"
+                                @click="openLightbox(item._previewImgs, idx)"
+                              />
+                              <button
+                                class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                @click="removePreviewImageForEdit(item, idx)"
+                              >
+                                &times;
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          class="btn btn-primary me-2"
+                          @click="updateReview(item)"
+                          :disabled="item._isSubmitting"
+                        >
+                          <span
+                            v-if="item._isSubmitting"
+                            class="spinner-border spinner-border-sm"
+                            role="status"
+                            aria-hidden="true"
+                          ></span>
+                          Lưu thay đổi
+                        </button>
+                        <button class="btn btn-secondary" @click="cancelEdit(item)">Hủy</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -323,6 +406,13 @@ export default {
           ...item,
           hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
           hinhAnhs: hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+          _isEditing: false, // New property for editing state
+          _editSoSao: item.soSao,
+          _editNoiDung: item.noiDung,
+          _selectedFiles: [], // For new files to upload
+          _previewImgs: hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)), // For existing and new images
+          _removedImageUrls: [], // To track images removed by user
+          _isSubmitting: false,
         };
       });
     },
@@ -428,10 +518,134 @@ export default {
       this.isLightboxOpen = true
     },
     closeLightbox() {
-      this.isLightboxOpen = false
+      this.isLightboxOpen = false;
+    },
+    toggleEditMode(item) {
+      item._isEditing = !item._isEditing;
+      // Reset edit data if canceling edit
+      if (!item._isEditing) {
+        item._editSoSao = item.soSao;
+        item._editNoiDung = item.noiDung;
+        item._selectedFiles = [];
+        item._previewImgs = item.hinhAnhs.map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img));
+        item._removedImageUrls = [];
+      }
+    },
+    cancelEdit(item) {
+      this.toggleEditMode(item);
+    },
+    onImagesChangeForEdit(event, item) {
+      const files = Array.from(event.target.files);
+      if (!files.length) return;
+
+      const nonImageFiles = files.filter((file) => !file.type.startsWith('image/'));
+      if (nonImageFiles.length > 0) {
+        Swal.fire(
+          'Loại tệp không hợp lệ',
+          `Các tệp sau không phải là hình ảnh: ${nonImageFiles.map((f) => f.name).join(', ')}`,
+          'error',
+        );
+        event.target.value = '';
+        return;
+      }
+
+      const totalImages = (item._selectedFiles?.length || 0) + item._previewImgs.length + files.length;
+      if (totalImages > this.maxImages) {
+        Swal.fire(
+          'Số lượng ảnh vượt quá giới hạn',
+          `Bạn chỉ có thể tải lên tối đa ${this.maxImages} ảnh.`,
+          'warning',
+        );
+        event.target.value = '';
+        return;
+      }
+
+      const oversizedFiles = files.filter((file) => file.size > this.maxImageSize);
+      if (oversizedFiles.length > 0) {
+        Swal.fire(
+          'Kích thước ảnh quá lớn',
+          `Các ảnh sau vượt quá dung lượng ${
+            this.maxImageSize / 1024 / 1024
+          }MB: ${oversizedFiles.map((f) => f.name).join(', ')}`,
+          'error',
+        );
+        event.target.value = '';
+        return;
+      }
+
+      item._selectedFiles.push(...files);
+      item._previewImgs.push(...files.map((file) => URL.createObjectURL(file)));
+      event.target.value = ''; // Reset input for next selection
+    },
+    removePreviewImageForEdit(item, index) {
+      const removedUrl = item._previewImgs.splice(index, 1)[0];
+      // Check if the removed image was an existing one (not a newly selected file)
+      if (!removedUrl.startsWith('blob:')) {
+        item._removedImageUrls.push(removedUrl);
+      } else {
+        // If it was a new file, remove it from _selectedFiles as well
+        const fileIndex = item._selectedFiles.findIndex(file => URL.createObjectURL(file) === removedUrl);
+        if (fileIndex > -1) {
+          item._selectedFiles.splice(fileIndex, 1);
+        }
+        URL.revokeObjectURL(removedUrl);
+      }
+    },
+    async updateReview(item) {
+      if (!item._editSoSao) {
+        Swal.fire('Chưa chọn sao', 'Vui lòng chọn số sao để đánh giá.', 'warning');
+        return;
+      }
+      if (!item._editNoiDung) {
+        Swal.fire('Chưa nhập nội dung', 'Vui lòng chia sẻ cảm nhận của bạn.', 'warning');
+        return;
+      }
+      item._isSubmitting = true;
+      try {
+        const formData = new FormData();
+        formData.append('maDg', item.maDg);
+        formData.append('noiDung', item._editNoiDung);
+        formData.append('soSao', item._editSoSao);
+        if (item.maSp) formData.append('maSp', item.maSp);
+        if (item.maCombo) formData.append('maCombo', item.maCombo);
+        formData.append('maCtHd', item.maCthd);
+
+        item._selectedFiles.forEach((file) => {
+          formData.append('hinhAnhs', file);
+        });
+
+        // Append removed image URLs to send to API
+        item._removedImageUrls.forEach((url) => {
+          formData.append('removedImageUrls', url);
+        });
+
+        const res = await axiosConfig.putToApi(
+          `/Review?isProduct=${!!item.maSp}`,
+          formData,
+          ConfigsRequest.takeAuth(),
+        );
+
+        if (!res.success) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: res.message,
+          });
+          return;
+        }
+
+        Swal.fire('Thành công!', 'Đánh giá của bạn đã được cập nhật.', 'success');
+        await this.reloadReviews();
+      } catch (error) {
+        console.error('Update review failed:', error);
+        Swal.fire('Cập nhật thất bại', 'Đã có lỗi xảy ra, vui lòng thử lại.', 'error');
+      } finally {
+        item._isSubmitting = false;
+        item._isEditing = false; // Exit edit mode
+      }
     },
   },
-}
+};
 </script>
 
 <style scoped>
