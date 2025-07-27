@@ -22,5 +22,6 @@ namespace APIClothesEcommerceShop.DTO.Reviews
 
         public DateTime NgayDanhGia { get; set; } = DateTime.Now;
         public IFormFile[]? HinhAnhs { get; set; }
+        public string[]? RemovedImageUrls { get; set; }
     }
 }

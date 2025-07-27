@@ -30,7 +30,7 @@ namespace APIClothesEcommerceShop.Services
                 }
 
                 // Prepare the prompt for content moderation
-                var prompt = $"Kiểm tra nội dung đánh giá sau đây có phù hợp không: \"{reviewContent}\".\n" +
+                var prompt = $"Kiểm tra nội dung đánh giá sau đây có chứa các từ ngữ thô lỗ gây phản cảm không không: \"{reviewContent}\".\n" +
                              "Vui lòng trả lời với định dạng JSON như sau:\n" +
                              "{\n" +
                              "  \"IsAppropriate\": true/false,\n" +
@@ -51,10 +51,10 @@ namespace APIClothesEcommerceShop.Services
                     try
                     {
                         // Use regex to extract JSON content between first { and last }
-                        var match = Regex.Match(responseText, @"\{.*\}");
+                        var match = Regex.Match(responseText, @"```json([\s\S]*?)```");
                         if (match.Success)
                         {
-                            var jsonContent = match.Value;
+                            var jsonContent = match.Groups[1].Value;
                             var aiResult = Newtonsoft.Json.JsonConvert.DeserializeObject<AiReviewResponse>(jsonContent);
                             if (aiResult != null)
                             {

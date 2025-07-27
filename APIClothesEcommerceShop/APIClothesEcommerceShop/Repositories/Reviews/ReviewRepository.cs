@@ -19,11 +19,12 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         private readonly EcommerceShopContext _db;
         private readonly IGeminiAIService _ai;
         private static string pathImageReview = "wwwroot/HinhAnh/Reviews";
-        private static string filterStatusOrder = "Đã nhận"; // Trạng thái để lọc việc get danh sách đánh giá
+        private static string[] filterStatusOrder = ["đã nhận", "đã thanh toán"]; // Trạng thái để lọc việc get danh sách đánh giá
 
-        public ReviewRepository(EcommerceShopContext db) : base(db)
+        public ReviewRepository(EcommerceShopContext db, IGeminiAIService ai) : base(db)
         {
             _db = db;
+            _ai = ai;
         }
 
         // #region [REVIEW METHODS FOR PRODUCTS AND COMBOS ONLY FOR CUSTOMERS]
@@ -149,46 +150,56 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         {
             var response = new ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>();
             response.Data = new Dictionary<string, List<ReviewResponseDTO>>();
+
             try
             {
                 DateTime today = DateTime.UtcNow;
                 DateTime sevenDaysAgo = today.AddDays(-7);
 
-                // Lấy tất cả cthoadon của user trong các hóa đơn đã nhận hàng trong 7 ngày gần nhất
-                /*  && ct.MaHdNavigation.NgayNhan != null
-                    && ct.MaHdNavigation.NgayNhan >= sevenDaysAgo */
-
-                var cthoadons = await _db.Cthoadons
-                    .Include(ct => ct.MaHdNavigation)
-                    .Include(ct => ct.DanhGia)
-                        .ThenInclude(dg => dg.KhachHang)
-                    .Include(ct => ct.MaCtspNavigation)
-                        .ThenInclude(ctsp => ctsp.MaSpNavigation)
-                    .Include(ct => ct.MaCtspNavigation)
-                        .ThenInclude(ctsp => ctsp.Hinhanhs)
-                    .Include(ct => ct.MaComboNavigation)
-                    // .ThenInclude(cbo => cbo.Hinh)
-                    .Where(ct => (ct.MaHdNavigation.MaKh == userId && ct.MaHdNavigation.TinhTrang == filterStatusOrder) || ct.DanhGia != null)
+                // Lấy tất cả các hóa đơn người dùng trong vòng 7 ngày gần nhất đã nhận hàng
+                var hoaDons = await _db.Hoadons
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.DanhGia)
+                            .ThenInclude(dg => dg.KhachHang)
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.MaSpNavigation)
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.MaCtspNavigation)
+                            .ThenInclude(ctsp => ctsp.Hinhanhs)
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.MaComboNavigation)
+                    // Tùy nhu cầu: lọc các hóa đơn của người dùng trong 7 ngày gần nhất
+                    .Where(hd =>
+                        hd.MaKh == userId &&
+                        filterStatusOrder.Contains(hd.TinhTrang.ToLower())
+                    )
                     .AsNoTracking()
                     .ToListAsync();
 
                 var notReviewIn7days = new List<ReviewResponseDTO>();
                 var listReviewed = new List<ReviewResponseDTO>();
 
-                foreach (var ct in cthoadons)
+                foreach (var hd in hoaDons)
                 {
-                    if (ct.DanhGia != null)
+                    foreach (var ct in hd.Cthoadons)
                     {
-                        bool isProduct = ct.DanhGia.MaSp != null && ct.DanhGia.MaSp != 0;
-                        // Đã đánh giá
-                        listReviewed.Add(ct.DanhGia.ToReviewResponseDTO(isProduct));
-                    }
-                    else if (ct.DanhGia != null && ct.DanhGia?.Cthoadon?.MaHdNavigation.NgayNhan != null && ct.DanhGia.Cthoadon.MaHdNavigation.NgayNhan >= sevenDaysAgo)
-                    {
-                        bool isProduct = ct.MaCtsp != null && ct.MaCtsp != 0;
-                        // Chưa đánh giá, tạo ReviewResponseDTO với thông tin cơ bản
-                        var dto = ReviewResponseDTO.MakeEmptyReview(ct, isProduct);
-                        notReviewIn7days.Add(dto);
+                        if (ct.DanhGia != null)
+                        {
+                            // Đã có đánh giá
+                            bool isProduct = ct.DanhGia.MaSp != null && ct.DanhGia.MaSp != 0;
+                            listReviewed.Add(ct.DanhGia.ToReviewResponseDTO(isProduct));
+                        }
+                        else
+                        {
+                            // Chưa đánh giá, chỉ xét những đơn hàng nhận trong 7 ngày
+                            if (hd.NgayNhan != null && hd.NgayNhan >= sevenDaysAgo)
+                            {
+                                bool isProduct = ct.MaCtsp != null && ct.MaCtsp != 0;
+                                var dto = ReviewResponseDTO.MakeEmptyReview(ct, isProduct);
+                                notReviewIn7days.Add(dto);
+                            }
+                        }
                     }
                 }
 
@@ -202,6 +213,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
+
+
         #endregion
 
         #region [Thêm đánh giá cho sản phẩm hoặc combo]
@@ -218,12 +231,22 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 ValidateReviewRequest(entity);
 
-                // Internal AI review analysis placeholder
-                var aiAnalysisResult = await _ai.AnalyzeReviewContent(entity.NoiDung);
-                if (!aiAnalysisResult.Success)
+                // Internal AI review analysis placeholder - Make it optional to prevent blocking
+                try
                 {
-                    response.SetErrorResponse(aiAnalysisResult.Message);
-                    return response;
+                    var aiAnalysisResult = await _ai.AnalyzeReviewContent(entity.NoiDung);
+                    if (!aiAnalysisResult.Success)
+                    {
+                        // Log the AI error but don't block the review process
+                        Console.WriteLine($"AI Analysis Warning: {aiAnalysisResult.Message}");
+                        // Continue with review process instead of blocking
+                    }
+                }
+                catch (Exception aiEx)
+                {
+                    // Log AI service error but don't block the review process
+                    Console.WriteLine($"AI Service Error: {aiEx.Message}");
+                    // Continue with review process
                 }
 
                 // Kiểm tra trạng thái đơn hàng
@@ -237,9 +260,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     return response;
                 }
 
-                if (orderDetail.MaHdNavigation.TinhTrang != filterStatusOrder)
+                if (!filterStatusOrder.Contains(orderDetail.MaHdNavigation.TinhTrang.ToLower()))
                 {
-                    response.SetErrorResponse($"Bạn chỉ có thể đánh giá sản phẩm/combo sau khi đơn hàng đã '{filterStatusOrder}'. Trạng thái hiện tại là '{orderDetail.MaHdNavigation.TinhTrang}'.");
+                    response.SetErrorResponse($"Bạn chỉ có thể đánh giá sản phẩm/combo sau khi đơn hàng đã '{string.Join(" hoặc ", filterStatusOrder)}'. Trạng thái hiện tại là '{orderDetail.MaHdNavigation.TinhTrang}'.");
                     return response;
                 }
 
@@ -271,13 +294,22 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 // Thêm đánh giá vào cơ sở dữ liệu
                 var reviewTransform = entity.ToDanhGia();
 
+                if (reviewTransform == null)
+                {
+                    response.SetErrorResponse("Không thể tạo đánh giá từ dữ liệu đầu vào");
+                    return response;
+                }
+
                 // Lưu hình ảnh
                 if (entity.HinhAnhs != null && entity.HinhAnhs.Length > 0)
                 {
                     try
                     {
                         string[] listNameImgs = await SaveImagesReview(entity.HinhAnhs);
-                        reviewTransform.CombineNameImg(listNameImgs);
+                        if (listNameImgs != null && listNameImgs.Length > 0)
+                        {
+                            reviewTransform.CombineNameImg(listNameImgs);
+                        }
                     }
                     catch (ArgumentException ex)
                     {
@@ -311,11 +343,22 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 ValidateReviewRequest(entity);
 
-                var aiAnalysisResult = await _ai.AnalyzeReviewContent(entity.NoiDung);
-                if (!aiAnalysisResult.Success)
+                // Internal AI review analysis placeholder - Make it optional to prevent blocking
+                try
                 {
-                    response.SetErrorResponse(aiAnalysisResult.Message);
-                    return response;
+                    var aiAnalysisResult = await _ai.AnalyzeReviewContent(entity.NoiDung);
+                    if (!aiAnalysisResult.Success)
+                    {
+                        // Log the AI error but don't block the review process
+                        Console.WriteLine($"AI Analysis Warning: {aiAnalysisResult.Message}");
+                        // Continue with review process instead of blocking
+                    }
+                }
+                catch (Exception aiEx)
+                {
+                    // Log AI service error but don't block the review process
+                    Console.WriteLine($"AI Service Error: {aiEx.Message}");
+                    // Continue with review process
                 }
                 DanhGia? existingReview = new();
                 if (isProduct)

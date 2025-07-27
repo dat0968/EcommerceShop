@@ -67,7 +67,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_Dot"));
 });
 
 // Add services to the container.
@@ -121,7 +121,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyOrigin()
               .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
-              //.AllowCredentials();
+        //.AllowCredentials();
         //ops.WithOrigins("http://localhost:8080", "http://192.168.1.150:8080", "http://localhost:5173") // Thêm IP nội bộ
         //   .AllowAnyHeader()
         //   .AllowAnyMethod()
@@ -165,6 +165,7 @@ builder.Services.AddScoped<ITokenServices, TokenServices>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
+builder.Services.AddScoped<IGeminiAIService, GeminiAIService>();
 
 // Email Service
 builder.Services.AddScoped<GoogleSenderService>();
