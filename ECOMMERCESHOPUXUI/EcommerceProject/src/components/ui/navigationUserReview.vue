@@ -1,6 +1,6 @@
 <template>
   <RouterLink to="/review" class="position-relative text-decoration-none">
-    <span class="icon_star"></span>
+    <i class="fa fa-star"></i>
     <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalReviewNeedSubmit }}</div>
   </RouterLink>
 </template>

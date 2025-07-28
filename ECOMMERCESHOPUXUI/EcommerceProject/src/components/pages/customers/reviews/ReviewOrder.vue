@@ -65,13 +65,7 @@
           <div class="mb-3">
             <label class="form-label fw-bold">Đánh giá của bạn:</label>
             <div class="d-flex align-items-center">
-              <select v-model.number="item.rating" class="form-select w-auto me-3">
-                <option v-for="n in 5" :key="n" :value="n">{{ n }} Sao</option>
-              </select>
-              <div class="fs-4">
-                <span v-for="n in item.rating" :key="`filled-${n}`" class="text-warning">★</span>
-                <span v-for="n in 5 - item.rating" :key="`empty-${n}`" class="text-muted">☆</span>
-              </div>
+              <StarRating :rating="item.rating" :read-only="false" @update:rating="item.rating = $event" />
             </div>
           </div>
 
@@ -151,6 +145,7 @@ import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 import ResponseAPI from '@/models/ResponseAPI'
 import pathReplaceImg from '@/utils/processPathImg'
+import StarRating from '@/components/common/StarRating.vue';
 import { formatDate } from '@/constants/formatDatetime'
 
 const props = defineProps({

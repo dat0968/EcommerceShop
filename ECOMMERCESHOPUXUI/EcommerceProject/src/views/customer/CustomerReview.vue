@@ -99,16 +99,7 @@
 
                         <div class="mb-3">
                           <label class="form-label fw-bold">Đánh giá của bạn:</label>
-                          <div class="star-rating mb-2">
-                            <span
-                              v-for="n in 5"
-                              :key="n"
-                              class="star"
-                              :class="{ filled: n <= item._editSoSao }"
-                              @click="item._editSoSao = n"
-                              >★</span
-                            >
-                          </div>
+                          <StarRating :rating="item._editSoSao" :read-only="false" @update:rating="item._editSoSao = $event" />
                           <textarea
                             v-model.trim="item._editNoiDung"
                             class="form-control"
@@ -204,18 +195,7 @@
                       />
                       <div class="flex-grow-1">
                         <h6 class="mb-1">{{ item.tenDoiTuong }}</h6>
-                        <div class="star-rating mb-2">
-                          <span
-                            v-for="n in 5"
-                            :key="n"
-                            class="star"
-                            :class="{ filled: n <= item.soSao }"
-                            >★</span
-                          >
-                          <span class="ms-2 text-muted small">{{
-                            new Date(item.ngayDanhGia).toLocaleDateString('vi-VN')
-                          }}</span>
-                        </div>
+                        <StarRating :rating="item.soSao" />
                         <p class="mb-2">{{ item.noiDung }}</p>
                         <div
                           v-if="item.hinhAnhs && item.hinhAnhs.length"
@@ -250,16 +230,7 @@
                           <h6 class="mb-3">Chỉnh sửa đánh giá</h6>
                           <div class="mb-3">
                             <label class="form-label fw-bold">Số sao:</label>
-                            <div class="star-rating mb-2">
-                              <span
-                                v-for="n in 5"
-                                :key="n"
-                                class="star"
-                                :class="{ filled: n <= item._editSoSao }"
-                                @click="item._editSoSao = n"
-                                >★</span
-                              >
-                            </div>
+                            <StarRating :rating="item._editSoSao" :read-only="false" @update:rating="item._editSoSao = $event" />
                           </div>
                           <div class="mb-3">
                             <label class="form-label fw-bold">Nội dung:</label>
@@ -354,10 +325,11 @@ import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
 
 import Swal from 'sweetalert2'
 import VueEasyLightbox from 'vue-easy-lightbox'
+import StarRating from '@/components/common/StarRating.vue'
 
 export default {
   name: 'CustomerReview',
-  components: { EmptySuggestBox, VueEasyLightbox },
+  components: { EmptySuggestBox, VueEasyLightbox, StarRating },
   data() {
     return {
       activeTab: 'notReviewed',
