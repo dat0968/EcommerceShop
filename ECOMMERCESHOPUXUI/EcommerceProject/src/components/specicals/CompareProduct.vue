@@ -413,10 +413,6 @@
                   </div>
                 </div>
               </div>
-              <!-- Khu vực drop để tạo group mới -->
-              <!-- <div class="drop-new-group" @dragover.prevent @drop="onDropToNewGroup($event)">
-                <span>Kéo sản phẩm vào đây để tạo nhóm so sánh mới</span>
-              </div> -->
             </div>
           </div>
         </div>
@@ -482,54 +478,6 @@
           <div class="api-settings-modal">
             <h3>Cài đặt API Key</h3>
             <div class="form-group">
-              <label for="cloudinaryApiKey" class="d-flex align-items-center">
-                Cloudinary API Key
-                <i
-                  class="bi bi-info-circle ms-2"
-                  style="cursor: pointer"
-                  @click="showApiKeyHelp('cloudinary')"
-                  title="Làm thế nào để lấy thông tin API Cloudinary?"
-                ></i>
-              </label>
-              <input
-                type="text"
-                id="cloudinaryApiKey"
-                v-model="apiKeys.cloudinaryApiKey"
-                class="form-control"
-                placeholder="Nhập Cloudinary API Key"
-              />
-            </div>
-            <div class="form-group">
-              <label for="cloudinaryApiSecret">Cloudinary API Secret</label>
-              <input
-                type="text"
-                id="cloudinaryApiSecret"
-                v-model="apiKeys.cloudinaryApiSecret"
-                class="form-control"
-                placeholder="Nhập Cloudinary API Secret"
-              />
-            </div>
-            <div class="form-group">
-              <label for="cloudinaryCloudName">Cloudinary Cloud Name</label>
-              <input
-                type="text"
-                id="cloudinaryCloudName"
-                v-model="apiKeys.cloudinaryCloudName"
-                class="form-control"
-                placeholder="Nhập Cloudinary Cloud Name"
-              />
-            </div>
-            <div class="form-group">
-              <label for="cloudinaryUploadPreset">Cloudinary Upload Preset</label>
-              <input
-                type="text"
-                id="cloudinaryUploadPreset"
-                v-model="apiKeys.cloudinaryUploadPreset"
-                class="form-control"
-                placeholder="Nhập tên Upload Preset không dấu"
-              />
-            </div>
-            <div class="form-group">
               <label for="lightxApiKey" class="d-flex align-items-center">
                 LightX API Key
                 <i
@@ -545,24 +493,6 @@
                 v-model="apiKeys.lightxApiKey"
                 class="form-control"
                 placeholder="Nhập LightX API Key"
-              />
-            </div>
-            <div class="form-group">
-              <label for="geminiApiKey" class="d-flex align-items-center">
-                Gemini API Key
-                <i
-                  class="bi bi-info-circle ms-2"
-                  style="cursor: pointer"
-                  @click="showApiKeyHelp('gemini')"
-                  title="Làm thế nào để lấy API Key?"
-                ></i>
-              </label>
-              <input
-                type="text"
-                id="geminiApiKey"
-                v-model="apiKeys.geminiApiKey"
-                class="form-control"
-                placeholder="Nhập Gemini API Key"
               />
             </div>
             <div class="api-settings-actions">
@@ -701,38 +631,7 @@ export default {
       this.selectedProducts = CompareStorageHelper.getCompareList()
     },
     showApiKeyHelp(keyType) {
-      if (keyType === 'cloudinary') {
-        Swal.fire({
-          title: 'Cách lấy thông tin API Cloudinary',
-          html: `
-            <div style="text-align: left; padding: 1em;">
-              <p>Để lấy thông tin API của Cloudinary, bạn cần thực hiện các bước sau:</p>
-              <ol>
-                <li><strong>Đăng nhập vào Cloudinary:</strong> Truy cập <a href="https://cloudinary.com/users/login" target="_blank">trang đăng nhập Cloudinary</a> và vào tài khoản của bạn.</li>
-                <li><strong>Truy cập Dashboard:</strong> Sau khi đăng nhập, bạn sẽ được chuyển đến trang Dashboard chính.</li>
-                <li><strong>Tìm API Keys:</strong>
-                  <ul>
-                    <li><b>Cloud Name:</b> Thường được hiển thị nổi bật ở đầu trang Dashboard.</li>
-                    <li><b>API Key & API Secret:</b> Bạn có thể tìm thấy các thông tin này trong phần <b>"Account Details"</b> hoặc điều hướng đến <b>Settings > Account</b>.</li>
-                  </ul>
-                </li>
-                <li><strong>Tạo Upload Preset:</strong>
-                  <ul>
-                    <li>Đi đến <b>Settings > Upload</b>.</li>
-                    <li>Cuộn xuống phần <b>"Upload presets"</b> và nhấp vào <b>"Add upload preset"</b>.</li>
-                    <li>Đặt một tên cho preset (ví dụ: <i>unsigned_upload</i>).</li>
-                    <li>Chọn chế độ <b>"Signing Mode"</b> là <b>"Unsigned"</b>. Điều này rất quan trọng để cho phép tải lên không cần chữ ký từ phía client.</li>
-                    <li>Lưu lại preset và sao chép tên của nó vào ô "Cloudinary Upload Preset".</li>
-                  </ul>
-                </li>
-              </ol>
-              <p>Sau khi có đủ các thông tin trên, hãy điền chúng vào các ô tương ứng để hoàn tất cài đặt.</p>
-            </div>
-          `,
-          icon: 'info',
-          confirmButtonText: 'Đã hiểu'
-        });
-      } else if (keyType === 'lightx') {
+      if (keyType === 'lightx') {
         Swal.fire({
           title: 'Cách lấy LightX API Key',
           html: `
@@ -742,22 +641,6 @@ export default {
                 <li>Điều hướng đến phần API hoặc cài đặt tài khoản của bạn.</li>
                 <li>Tạo một API Key mới hoặc sao chép một API Key hiện có.</li>
                 <li>Dán API Key của bạn vào đây.</li>
-              </ol>
-            </div>
-          `,
-          icon: 'info',
-          confirmButtonText: 'Đã hiểu'
-        });
-      } else if (keyType === 'gemini') {
-        Swal.fire({
-          title: 'Cách lấy Gemini API Key',
-          html: `
-            <div style="text-align: left; padding: 1em;">
-              <ol>
-                <li>Truy cập Google AI Studio tại <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</li>
-                <li>Đăng nhập bằng tài khoản Google của bạn.</li>
-                <li>Tạo một API Key mới bằng cách nhấp vào nút "Create API key".</li>
-                <li>Sao chép (copy) API Key của bạn và dán vào đây.</li>
               </ol>
             </div>
           `,
@@ -1038,53 +921,42 @@ export default {
           return
         }
 
-        // Load all product images
-        const productImages = []
-        for (const item of group.products) {
-          let imgUrl = item.image || (item.products && item.products[0]?.image)
-          if (imgUrl) {
-            try {
-              const prodImg = await this.loadImage(imgUrl)
-              productImages.push(prodImg)
-            } catch (error) {
-              console.error('Error loading product image:', imgUrl, error)
-              Swal.fire({
-                icon: 'error',
-                title: 'Lỗi tải ảnh',
-                text:
-                  'Không thể tải ảnh sản phẩm: ' +
-                  (item.name || '') +
-                  '. Vui lòng kiểm tra URL và cài đặt CORS.',
-              })
-              return
-            }
-          }
-        }
-
         // Use the selected or uploaded model image for the try-on process
         let modelImageForAI = modelInfo.url;
         if (!modelImageForAI.startsWith('data:')) {
             const loadedModelImage = await this.loadImage(modelImageForAI);
             modelImageForAI = imageToDataURL(loadedModelImage);
         }
+
+        const productImages = [];
+            for (const item of group.products) {
+              let imgUrl = item.image || (item.products && item.products[0]?.image);
+              if (imgUrl) {
+                const prodImg = await this.loadImage(imgUrl);
+                productImages.push(prodImg);
+              }
+            }
+
         const tryOnImageResultUrl = await this.processWithLightX(modelImageForAI, productImages.map(img => imageToDataURL(img)));
 
-        const cloudinaryUrl = await this.uploadToCloudinary(tryOnImageResultUrl, 'try-on-result');
+        // Directly use the LightX URL for display for debugging purposes
+        // const cloudinaryUrl = await this.uploadToCloudinary(tryOnImageResultUrl, 'try-on-result');
+        const finalImageUrl = tryOnImageResultUrl;
 
         // Combine the try-on image with the original product images for Gemini analysis
         const combinedImageForGemini = await this.combineImagesOnCanvas([
-          await this.loadImage(cloudinaryUrl),
+          await this.loadImage(finalImageUrl),
           ...productImages,
         ])
 
-        const geminiRatings = await this.analyzeImageWithGemini(combinedImageForGemini, group.products)
+        const result = await this.analyzeImageWithGemini(combinedImageForGemini, group.products)
 
         this.tryOnResults[groupIdx] = {
           model: modelInfo,
-          image: cloudinaryUrl,
-          score: geminiRatings.aesthetic_score,
-          style: geminiRatings.style,
-          gender_suitability: geminiRatings.gender_suitability,
+          image: finalImageUrl,
+          score: result.aesthetic_score,
+          style: result.style,
+          gender_suitability: result.gender_suitability,
           products: group.products,
           time: new Date().toISOString(),
         }
@@ -1092,7 +964,11 @@ export default {
         this.groupFlipped[groupIdx] = true // Flip the card to show the result
       } catch (error) {
         console.error('Error during try-on process:', error)
-        // The alert is already shown in simulateChangeClothesAI
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi xử lý',
+          text: error.message || 'Có lỗi xảy ra trong quá trình xử lý.',
+        })
       } finally {
         this.loadingGroup = null // Reset loading state
         this.cancelModelSelection() // Reset state
@@ -1154,6 +1030,7 @@ export default {
         }),
       })
       const data = await response.json()
+      console.log('LightX getUploadUrl response:', data)
       if (data.statusCode !== 2000) {
         console.error('LightX getUploadUrl failed. Full response:', data)
         throw new Error('Failed to get LightX upload URL: ' + data.message)
@@ -1172,6 +1049,7 @@ export default {
         console.error('LightX image upload failed. Full response:', errorText)
         throw new Error('Failed to upload image to LightX.')
       }
+      console.log('LightX image upload successful.')
     },
 
     async startLightXJob(apiKey, imageUrl, styleImageUrl) {
@@ -1184,6 +1062,7 @@ export default {
         body: JSON.stringify({ imageUrl, styleImageUrl }),
       })
       const data = await response.json()
+      console.log('LightX startJob response:', data)
       if (data.statusCode !== 2000) {
         console.error('LightX startJob failed. Full response:', data)
         throw new Error('Failed to start LightX job: ' + data.message)
@@ -1205,6 +1084,7 @@ export default {
           body: JSON.stringify({ orderId }),
         })
         const data = await response.json()
+        console.log('LightX pollJob response:', data)
         if (data.body.status === 'active') {
           return data.body.output
         }
@@ -1257,45 +1137,7 @@ export default {
         throw new Error('Failed to upload image to Cloudinary: ' + error.message)
       }
     },
-    loadImage(url) {
-      return new Promise((resolve, reject) => {
-        const img = new window.Image()
-        img.crossOrigin = 'Anonymous' // Request CORS. Server must also send Access-Control-Allow-Origin header.
-        img.onload = () => resolve(img)
-        img.onerror = (e) => {
-          console.error('Error loading image:', url, e)
-          reject(new Error(`Failed to load image from ${url}. Check URL and CORS settings.`))
-        }
-        img.src = url
-      })
-    },
 
-    async combineImagesOnCanvas(images) {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-
-      let totalWidth = 0
-      let maxHeight = 0
-
-      // Calculate total width and max height
-      for (const img of images) {
-        totalWidth += img.naturalWidth
-        if (img.naturalHeight > maxHeight) {
-          maxHeight = img.naturalHeight
-        }
-      }
-
-      canvas.width = totalWidth
-      canvas.height = maxHeight
-
-      let currentX = 0
-      for (const img of images) {
-        ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
-        currentX += img.naturalWidth
-      }
-
-      return canvas.toDataURL('image/jpeg')
-    },
     async analyzeImageWithGemini(imageDataUrl, productsData) {
       try {
         const API_KEY = this.apiKeys.geminiApiKey
@@ -1345,6 +1187,7 @@ export default {
         }
 
         const data = await response.json()
+        console.log('Gemini API response:', data)
         const textResponse = data.candidates[0].content.parts[0].text
 
         // Attempt to parse the JSON string from the text response
@@ -1374,6 +1217,47 @@ export default {
         throw new Error('Failed to analyze image with Gemini API.')
       }
     },
+
+    loadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new window.Image()
+        img.crossOrigin = 'Anonymous' // Request CORS. Server must also send Access-Control-Allow-Origin header.
+        img.onload = () => resolve(img)
+        img.onerror = (e) => {
+          console.error('Error loading image:', url, e)
+          reject(new Error(`Failed to load image from ${url}. Check URL and CORS settings.`))
+        }
+        img.src = url
+      })
+    },
+
+    async combineImagesOnCanvas(images) {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+
+      let totalWidth = 0
+      let maxHeight = 0
+
+      // Calculate total width and max height
+      for (const img of images) {
+        totalWidth += img.naturalWidth
+        if (img.naturalHeight > maxHeight) {
+          maxHeight = img.naturalHeight
+        }
+      }
+
+      canvas.width = totalWidth
+      canvas.height = maxHeight
+
+      let currentX = 0
+      for (const img of images) {
+        ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
+        currentX += img.naturalWidth
+      }
+
+      return canvas.toDataURL('image/jpeg')
+    },
+
     checkCategoryConflict(item, groupIdx) {
       const group = this.compareGroups[groupIdx]
       if (group.products.length === 0) return false
@@ -1415,6 +1299,7 @@ export default {
       a.click()
       URL.revokeObjectURL(url)
     },
+
     removeFromSidebar(item) {
       // Use the provided CompareStorageHelper.removeProductFromCompare method
       if (item.type === 'single') {
@@ -1429,6 +1314,8 @@ export default {
       }
       this.loadSelectedProducts() // Refresh the sidebar list
     },
+
+    
   },
 }
 </script>
