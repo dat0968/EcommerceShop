@@ -46,8 +46,6 @@
     <DatatableStatistic
       :data="datatableStatisticsResponse"
       :is-loading="datatableIsLoading"
-      :coupon-data="couponStatisticData"
-      :coupon-loading="couponIsLoading"
       :category-data="categoryStatisticData"
       :category-loading="categoryIsLoading"
       :inventory-loading="inventoryIsLoading"
@@ -89,7 +87,6 @@ export default {
       employeeStatisticsData: {},
       revenueStatisticData: {},
       datatableStatisticsResponse: {},
-      couponStatisticData: {},
       categoryStatisticData: {},
       reviewAnalysisData: {},
       isLoading: false,
@@ -99,7 +96,6 @@ export default {
       employeeIsLoading: true,
       orderSummaryIsLoading: true,
       datatableIsLoading: true,
-      couponIsLoading: true,
       categoryIsLoading: true,
       inventoryIsLoading: true,
       reviewIsLoading: true,
@@ -123,7 +119,6 @@ export default {
         this.loadEmployeeStatisticsData(),
         this.loadRevenueStatisticsData(),
         this.loadDatatableData(),
-        this.loadCouponStatisticsData(),
         this.loadCategoryStatisticsData(),
         this.loadReviewAnalysisData(),
       ]
@@ -215,16 +210,6 @@ export default {
       this.datatableStatisticsResponse = response.data || {}
       await this.$nextTick()
       this.datatableIsLoading = false
-    },
-    async loadCouponStatisticsData() {
-      this.couponIsLoading = true
-      const response = await axiosConfig.getFromApi(
-        '/Statistics/GetCouponStatistics',
-        ConfigsRequest.takeAuth(),
-      )
-      this.couponStatisticData = response.data || {}
-      await this.$nextTick()
-      this.couponIsLoading = false
     },
     async loadCategoryStatisticsData() {
       this.categoryIsLoading = true

@@ -47,7 +47,6 @@
           <h5 class="card-title text-black mb-0 col-6">Thống kê bổ sung</h5>
           <div class="mb-3 col-auto">
             <select id="statsSelect" class="form-select" v-model="selectedStats">
-              <option :disabled="!couponData" value="coupons">Mã giảm giá</option>
               <option :disabled="!categoryData" value="categories">Danh mục</option>
               <option :disabled="!reviewData" value="reviews">Đánh giá</option>
             </select>
@@ -55,7 +54,6 @@
         </div>
         <div class="card-body" style="overflow-y: auto">
           <div v-if="selectedStats === 'coupons'">
-            <CouponStatistic :data="couponData" :is-loading="couponLoading" />
           </div>
           <div v-if="selectedStats === 'categories'">
             <CategoryStatistic :data="categoryData" :is-loading="categoryLoading" />
@@ -77,7 +75,6 @@ import ProductTable from '@/components/pages/admin/statistics/datatables/Product
 import CustomerTable from '@/components/pages/admin/statistics/datatables/CustomerTable.vue'
 import EmployeeTable from '@/components/pages/admin/statistics/datatables/EmployeeTable.vue'
 import ComboTable from '@/components/pages/admin/statistics/datatables/ComboTable.vue'
-import CouponStatistic from '@/components/pages/admin/statistics/CouponStatistic.vue'
 import CategoryStatistic from '@/components/pages/admin/statistics/CategoryStatistic.vue'
 import ReviewAnalysis from '@/components/pages/admin/statistics/ReviewAnalysis.vue'
 
@@ -88,7 +85,6 @@ export default {
     CustomerTable,
     EmployeeTable,
     ComboTable,
-    CouponStatistic,
     CategoryStatistic,
     ReviewAnalysis,
     LoadingSpinner,
@@ -101,9 +97,6 @@ export default {
     isLoading: {
       type: Boolean,
       default: true,
-    },
-    couponData: {
-      default: () => ({}),
     },
     couponLoading: {
       type: Boolean,
@@ -134,11 +127,6 @@ export default {
     }
   },
   computed: {
-    hasCouponData() {
-      return this.couponData?.totalCoupons > 0 &&
-        Array.isArray(this.couponData.topCoupons) &&
-        this.couponData.topCoupons.length > 0
-    },
     hasCategoryData() {
       return this.categoryData?.totalCategories > 0 &&
         Array.isArray(this.categoryData.topCategories) &&
@@ -175,8 +163,7 @@ export default {
   },
   methods: {
     setDefaultSelectedStats() {
-      if (this.hasCouponData) this.selectedStats = 'coupons'
-      else if (this.hasCategoryData) this.selectedStats = 'categories'
+      if (this.hasCategoryData) this.selectedStats = 'categories'
       else if (this.hasReviewData) this.selectedStats = 'reviews'
       else this.selectedStats = null
     },
