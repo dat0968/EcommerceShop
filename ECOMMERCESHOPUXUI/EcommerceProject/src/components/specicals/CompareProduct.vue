@@ -512,11 +512,14 @@
   />
 </template>
 
+
 <script>
 import { formatCurrency } from '@/constants/formatCurrency'
 import VueEasyLight from 'vue-easy-lightbox'
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import Swal from 'sweetalert2'
+
+import * as axiosConfig from '@/utils/axiosClient'
 
 /**
  * Converts a dataURL to a Blob object.
@@ -581,18 +584,13 @@ export default {
       showApiSettings: false,
       loadingGroup: null, // Index of the group currently being processed by AI
       apiKeys: {
-        cloudinaryApiKey: localStorage.getItem('cloudinaryApiKey') || '',
-        cloudinaryApiSecret: localStorage.getItem('cloudinaryApiSecret') || '',
-        cloudinaryCloudName: localStorage.getItem('cloudinaryCloudName') || '',
-        cloudinaryUploadPreset: localStorage.getItem('cloudinaryUploadPreset') || 'unsigned_upload',
         lightxApiKey: localStorage.getItem('lightxApiKey') || '',
-        geminiApiKey: localStorage.getItem('geminiApiKey') || '',
       },
       compareGroups: [
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
       ],
-      groupFlipped: [false, false], // Trạng thái lật mặt của từng group
+      groupFlipped: [false, false],
       dragItem: null,
       isLightboxOpen: false,
       lightboxImages: [],
@@ -680,7 +678,6 @@ export default {
         })
         return
       }
-
       this.userModelFile = file
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -849,17 +846,11 @@ export default {
       this.isLightboxOpen = false
     },
     async tryOnModel(groupIdx) {
-      if (
-        !this.apiKeys.cloudinaryApiKey ||
-        !this.apiKeys.cloudinaryApiSecret ||
-        !this.apiKeys.cloudinaryCloudName ||
-        !this.apiKeys.lightxApiKey ||
-        !this.apiKeys.geminiApiKey
-      ) {
+      if (!this.apiKeys.lightxApiKey) {
         Swal.fire({
           icon: 'warning',
-          title: 'Thiếu API Keys',
-          text: 'API Keys chưa được cài đặt đầy đủ. Bạn có muốn cài đặt ngay bây giờ không?',
+          title: 'Thiếu API Key',
+          text: 'Vui lòng cài đặt LightX API Key trước khi thử đồ.',
           showCancelButton: true,
           confirmButtonText: 'Cài đặt ngay',
           cancelButtonText: 'Để sau',
@@ -877,17 +868,12 @@ export default {
       this.showApiSettings = false
     },
     saveApiSettings() {
-      localStorage.setItem('cloudinaryApiKey', this.apiKeys.cloudinaryApiKey)
-      localStorage.setItem('cloudinaryApiSecret', this.apiKeys.cloudinaryApiSecret)
-      localStorage.setItem('cloudinaryCloudName', this.apiKeys.cloudinaryCloudName)
-      localStorage.setItem('cloudinaryUploadPreset', this.apiKeys.cloudinaryUploadPreset)
       localStorage.setItem('lightxApiKey', this.apiKeys.lightxApiKey)
-      localStorage.setItem('geminiApiKey', this.apiKeys.geminiApiKey)
       this.showApiSettings = false
       Swal.fire({
         icon: 'success',
         title: 'Thành công',
-        text: 'API Keys đã được lưu.',
+        text: 'API Key đã được lưu.',
         timer: 1500,
         showConfirmButton: false,
       })
@@ -903,8 +889,8 @@ export default {
       }
 
       const groupIdx = this.currentTryOnGroupIdx
-      this.loadingGroup = groupIdx // Set loading state for the group
-      this.showModelSelection = false // Close the model selection immediately
+      this.loadingGroup = groupIdx
+      this.showModelSelection = false
 
       const modelInfo = this.selectedTryOnModel
         ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
@@ -921,35 +907,77 @@ export default {
           return
         }
 
-        // Use the selected or uploaded model image for the try-on process
-        let modelImageForAI = modelInfo.url;
+        let modelImageForAI = modelInfo.url
         if (!modelImageForAI.startsWith('data:')) {
-            const loadedModelImage = await this.loadImage(modelImageForAI);
-            modelImageForAI = imageToDataURL(loadedModelImage);
+          const loadedModelImage = await this.loadImage(modelImageForAI)
+          modelImageForAI = imageToDataURL(loadedModelImage)
         }
 
-        const productImages = [];
-            for (const item of group.products) {
-              let imgUrl = item.image || (item.products && item.products[0]?.image);
-              if (imgUrl) {
-                const prodImg = await this.loadImage(imgUrl);
-                productImages.push(prodImg);
-              }
+        const productImages = []
+        for (const item of group.products) {
+          let imgUrl = item.image || (item.products && item.products[0]?.image)
+          if (imgUrl) {
+            try {
+              const prodImg = await this.loadImage(imgUrl)
+              productImages.push(prodImg)
+            } catch (error) {
+              console.error(`Failed to load product image: ${imgUrl}`, error)
+              continue
             }
+          }
+        }
 
-        const tryOnImageResultUrl = await this.processWithLightX(modelImageForAI, productImages.map(img => imageToDataURL(img)));
+        if (productImages.length === 0) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi',
+            text: 'Không có hình ảnh sản phẩm hợp lệ để xử lý.',
+          })
+          return
+        }
 
-        // Directly use the LightX URL for display for debugging purposes
-        // const cloudinaryUrl = await this.uploadToCloudinary(tryOnImageResultUrl, 'try-on-result');
-        const finalImageUrl = tryOnImageResultUrl;
+        const tryOnImageResultUrl = await this.processWithLightX(modelImageForAI, productImages.map(img => imageToDataURL(img)))
 
-        // Combine the try-on image with the original product images for Gemini analysis
-        const combinedImageForGemini = await this.combineImagesOnCanvas([
+        // Gửi yêu cầu tới WebAPI để tải lên Cloudinary
+        const formData = new FormData()
+        if (tryOnImageResultUrl.startsWith('data:')) {
+          const blob = dataURLtoBlob(tryOnImageResultUrl)
+          formData.append('file', blob, `try-on-result_${Date.now()}.jpg`)
+        } else {
+          formData.append('file', tryOnImageResultUrl)
+        }
+        formData.append('tag', 'try-on-result')
+
+        const cloudinaryResponse = await axiosConfig.postToApi('/Cloudinary/Upload', {
+           formData
+        })
+
+        if (!cloudinaryResponse.ok) {
+          const errorText = await cloudinaryResponse.text()
+          throw new Error(`Cloudinary upload failed: ${errorText}`)
+        }
+
+        const cloudinaryData = await cloudinaryResponse.json()
+        const finalImageUrl = cloudinaryData.secure_url
+
+        // Ghép hình ảnh để gửi tới Gemini API
+        const combinedImage = await this.combineImagesOnCanvas([
           await this.loadImage(finalImageUrl),
           ...productImages,
         ])
 
-        const result = await this.analyzeImageWithGemini(combinedImageForGemini, group.products)
+        // Gửi yêu cầu tới WebAPI Gemini
+        const geminiResponse = await axiosConfig.postToApi('/Gemini/Analyze', {
+            imageDataUrl: combinedImage,
+            productsData: group.products,
+        })
+
+        if (!geminiResponse.ok) {
+          const errorData = await geminiResponse.json()
+          throw new Error(`Gemini API request failed: ${errorData.error?.message || geminiResponse.statusText}`)
+        }
+
+        const result = await geminiResponse.json()
 
         this.tryOnResults[groupIdx] = {
           model: modelInfo,
@@ -961,7 +989,7 @@ export default {
           time: new Date().toISOString(),
         }
         this.tryOnResults = { ...this.tryOnResults }
-        this.groupFlipped[groupIdx] = true // Flip the card to show the result
+        this.groupFlipped[groupIdx] = true
       } catch (error) {
         console.error('Error during try-on process:', error)
         Swal.fire({
@@ -970,8 +998,8 @@ export default {
           text: error.message || 'Có lỗi xảy ra trong quá trình xử lý.',
         })
       } finally {
-        this.loadingGroup = null // Reset loading state
-        this.cancelModelSelection() // Reset state
+        this.loadingGroup = null
+        this.cancelModelSelection()
       }
     },
     cancelModelSelection() {
@@ -981,41 +1009,32 @@ export default {
       this.userModelPreviewUrl = ''
       this.selectedTryOnModel = null
     },
-    
     async processWithLightX(modelDataUrl, productDataUrls) {
       try {
-        const apiKey = this.apiKeys.lightxApiKey;
+        const apiKey = this.apiKeys.lightxApiKey
+        const modelBlob = dataURLtoBlob(modelDataUrl)
+        const modelUploadData = await this.getLightXUploadUrl(apiKey, modelBlob.size)
+        await this.uploadToLightX(modelUploadData.uploadImage, modelBlob)
+        const modelImageUrl = modelUploadData.imageUrl
 
-        // Step 1 & 2: Upload model image
-        const modelBlob = dataURLtoBlob(modelDataUrl);
-        const modelUploadData = await this.getLightXUploadUrl(apiKey, modelBlob.size);
-        await this.uploadToLightX(modelUploadData.uploadImage, modelBlob);
-        const modelImageUrl = modelUploadData.imageUrl;
+        const productBlob = dataURLtoBlob(productDataUrls[0])
+        const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size)
+        await this.uploadToLightX(productUploadData.uploadImage, productBlob)
+        const styleImageUrl = productUploadData.imageUrl
 
-        // Step 1 & 2: Upload product image (assuming one for now)
-        const productBlob = dataURLtoBlob(productDataUrls[0]);
-        const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size);
-        await this.uploadToLightX(productUploadData.uploadImage, productBlob);
-        const styleImageUrl = productUploadData.imageUrl;
-
-        // Step 3: Start the job
-        const orderId = await this.startLightXJob(apiKey, modelImageUrl, styleImageUrl);
-
-        // Step 4: Poll for the result
-        const resultUrl = await this.pollLightXJob(apiKey, orderId);
-        return resultUrl;
-
+        const orderId = await this.startLightXJob(apiKey, modelImageUrl, styleImageUrl)
+        const resultUrl = await this.pollLightXJob(apiKey, orderId)
+        return resultUrl
       } catch (error) {
-        console.error('Error processing with LightX API:', error);
+        console.error('Error processing with LightX API:', error)
         Swal.fire({
           icon: 'error',
           title: 'Lỗi LightX API',
           text: error.message,
-        });
-        throw error; // Re-throw to be caught by the calling function
+        })
+        throw error
       }
     },
-
     async getLightXUploadUrl(apiKey, size) {
       const response = await fetch('https://api.lightxeditor.com/external/api/v2/uploadImageUrl', {
         method: 'POST',
@@ -1030,14 +1049,11 @@ export default {
         }),
       })
       const data = await response.json()
-      console.log('LightX getUploadUrl response:', data)
       if (data.statusCode !== 2000) {
-        console.error('LightX getUploadUrl failed. Full response:', data)
         throw new Error('Failed to get LightX upload URL: ' + data.message)
       }
       return data.body
     },
-
     async uploadToLightX(uploadUrl, blob) {
       const response = await fetch(uploadUrl, {
         method: 'PUT',
@@ -1045,13 +1061,9 @@ export default {
         body: blob,
       })
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('LightX image upload failed. Full response:', errorText)
         throw new Error('Failed to upload image to LightX.')
       }
-      console.log('LightX image upload successful.')
     },
-
     async startLightXJob(apiKey, imageUrl, styleImageUrl) {
       const response = await fetch('https://api.lightxeditor.com/external/api/v2/aivirtualtryon', {
         method: 'POST',
@@ -1062,17 +1074,14 @@ export default {
         body: JSON.stringify({ imageUrl, styleImageUrl }),
       })
       const data = await response.json()
-      console.log('LightX startJob response:', data)
       if (data.statusCode !== 2000) {
-        console.error('LightX startJob failed. Full response:', data)
         throw new Error('Failed to start LightX job: ' + data.message)
       }
       return data.body.orderId
     },
-
     async pollLightXJob(apiKey, orderId) {
       const maxRetries = 5
-      const delay = 3000 // 3 seconds
+      const delay = 3000
       for (let i = 0; i < maxRetries; i++) {
         await new Promise((resolve) => setTimeout(resolve, delay))
         const response = await fetch('https://api.lightxeditor.com/external/api/v2/order-status', {
@@ -1084,144 +1093,19 @@ export default {
           body: JSON.stringify({ orderId }),
         })
         const data = await response.json()
-        console.log('LightX pollJob response:', data)
         if (data.body.status === 'active') {
           return data.body.output
         }
         if (data.body.status === 'failed') {
-          console.error('LightX job failed. Full response:', data)
           throw new Error('LightX job failed.')
         }
       }
       throw new Error('LightX job timed out.')
     },
-
-    async uploadToCloudinary(urlOrDataUrl, tag) {
-      // Upload image to Cloudinary using direct API call
-      try {
-        if (!urlOrDataUrl) {
-          throw new Error('Invalid image data provided for upload.')
-        }
-
-        const formData = new FormData()
-        // If it's a data URL, convert to blob. If it's a regular URL, Cloudinary can fetch it directly.
-        if (urlOrDataUrl.startsWith('data:')) {
-          const blob = dataURLtoBlob(urlOrDataUrl)
-          formData.append('file', blob, `${tag}_${Date.now()}.jpg`)
-        } else {
-          formData.append('file', urlOrDataUrl)
-        }
-
-        formData.append('upload_preset', this.apiKeys.cloudinaryUploadPreset) // Use the configured preset
-        formData.append('cloud_name', this.apiKeys.cloudinaryCloudName)
-        formData.append('tags', tag)
-
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${this.apiKeys.cloudinaryCloudName}/image/upload`,
-          {
-            method: 'POST',
-            body: formData,
-          },
-        )
-
-        if (!response.ok) {
-          const errorText = await response.text()
-          console.error('Cloudinary upload error:', errorText)
-          throw new Error(`Cloudinary upload failed: ${response.statusText}`)
-        }
-
-        const data = await response.json()
-        return data.secure_url
-      } catch (error) {
-        console.error('Error uploading to Cloudinary:', error)
-        throw new Error('Failed to upload image to Cloudinary: ' + error.message)
-      }
-    },
-
-    async analyzeImageWithGemini(imageDataUrl, productsData) {
-      try {
-        const API_KEY = this.apiKeys.geminiApiKey
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`
-
-        const base64Image = imageDataUrl.split(',')[1]
-
-        let promptText = 'Phân tích tính thẩm mỹ, phong cách và sự phù hợp giới tính của trang phục trong hình ảnh này. Cung cấp điểm thẩm mỹ trên thang điểm 10, và mô tả phong cách cũng như sự phù hợp giới tính. Định dạng phản hồi dưới dạng đối tượng JSON với các khóa: aesthetic_score (float), style (string), gender_suitability (string).'
-
-        if (productsData && productsData.length > 0) {
-            const productDetails = productsData.map(item => {
-                if (item.type === 'combo') {
-                    const comboItems = item.products.map(prod => `  - ${prod.name} (${prod.variant.color}, ${prod.variant.size})`).join('\n')
-                    return `Combo: ${item.comboName}\nMô tả: ${item.description}\nCác sản phẩm:\n${comboItems}`
-                } else {
-                    return `Sản phẩm: ${item.name}\nDanh mục: ${item.category}\nMô tả: ${item.description}\nMàu sắc: ${item.variant.color}\nKích thước: ${item.variant.size}`
-                }
-            }).join('\n\n')
-            promptText = `Dựa trên thông tin sản phẩm gốc sau:\n\n${productDetails}\n\nPhân tích tính thẩm mỹ, phong cách và sự phù hợp giới tính của trang phục được người mẫu mặc trong hình ảnh đã cung cấp. Xem xét mức độ phù hợp của trang phục với người mẫu và tổng thể hình ảnh. Cung cấp điểm thẩm mỹ trên thang điểm 10, và mô tả phong cách cũng như sự phù hợp giới tính. Định dạng phản hồi dưới dạng đối tượng JSON với các khóa: aesthetic_score (float), style (string), gender_suitability (string).`
-        }
-
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: promptText,
-                  },
-                  { inline_data: { mime_type: 'image/jpeg', data: base64Image } },
-                ],
-              },
-            ],
-          }),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          console.error('Error from Gemini API:', errorData)
-          throw new Error(
-            `Gemini API request failed: ${errorData.error.message || response.statusText}`,
-          )
-        }
-
-        const data = await response.json()
-        console.log('Gemini API response:', data)
-        const textResponse = data.candidates[0].content.parts[0].text
-
-        // Attempt to parse the JSON string from the text response
-        try {
-          // Extract JSON from the potentially markdown-formatted string
-          const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-          if (!jsonMatch) {
-            throw new Error('No JSON object found in Gemini response');
-          }
-          const parsedResponse = JSON.parse(jsonMatch[0]);
-          return parsedResponse;
-        } catch (jsonError) {
-          console.error('Error parsing Gemini JSON response:', textResponse, jsonError)
-          // Fallback if JSON parsing fails, try to extract information heuristically
-          const aestheticMatch = textResponse.match(/aesthetic_score":\s*([\d.]+)/i)
-          const styleMatch = textResponse.match(/style":\s*"([^"]+)"/i)
-          const genderMatch = textResponse.match(/gender_suitability":\s*"([^"]+)"/i)
-
-          return {
-            aesthetic_score: aestheticMatch ? parseFloat(aestheticMatch[1]) : 0,
-            style: styleMatch ? styleMatch[1] : 'N/A',
-            gender_suitability: genderMatch ? genderMatch[1] : 'N/A',
-          }
-        }
-      } catch (error) {
-        console.error('Error analyzing image with Gemini API:', error)
-        throw new Error('Failed to analyze image with Gemini API.')
-      }
-    },
-
-    loadImage(url) {
+    async loadImage(url) {
       return new Promise((resolve, reject) => {
         const img = new window.Image()
-        img.crossOrigin = 'Anonymous' // Request CORS. Server must also send Access-Control-Allow-Origin header.
+        img.crossOrigin = 'Anonymous'
         img.onload = () => resolve(img)
         img.onerror = (e) => {
           console.error('Error loading image:', url, e)
@@ -1230,7 +1114,6 @@ export default {
         img.src = url
       })
     },
-
     async combineImagesOnCanvas(images) {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
@@ -1238,8 +1121,12 @@ export default {
       let totalWidth = 0
       let maxHeight = 0
 
-      // Calculate total width and max height
+      // Kiểm tra và tính toán kích thước canvas
       for (const img of images) {
+        if (!(img instanceof HTMLImageElement)) {
+          console.error('Invalid image type:', img)
+          throw new Error('All inputs to combineImagesOnCanvas must be HTMLImageElement.')
+        }
         totalWidth += img.naturalWidth
         if (img.naturalHeight > maxHeight) {
           maxHeight = img.naturalHeight
@@ -1251,18 +1138,20 @@ export default {
 
       let currentX = 0
       for (const img of images) {
-        ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
-        currentX += img.naturalWidth
+        try {
+          ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
+          currentX += img.naturalWidth
+        } catch (e) {
+          console.error('Error drawing image on canvas:', e, img)
+          throw new Error('Failed to draw image on canvas.')
+        }
       }
 
       return canvas.toDataURL('image/jpeg')
     },
-
     checkCategoryConflict(item, groupIdx) {
       const group = this.compareGroups[groupIdx]
       if (group.products.length === 0) return false
-
-      // Get categories in the group
       const groupCategories = group.products
         .map((p) => {
           if (p.type === 'combo' && p.products && p.products.length > 0) {
@@ -1271,8 +1160,6 @@ export default {
           return p.category || 'unknown'
         })
         .flat()
-
-      // Get category of the item to add
       let itemCategories = []
       if (item.type === 'combo' && item.products && item.products.length > 0) {
         itemCategories = item.products.map((prod) => prod.category || 'unknown')
@@ -1283,13 +1170,12 @@ export default {
       // Check if any category of the item matches any category in the group
       return itemCategories.some((cat) => groupCategories.includes(cat) && cat !== 'unknown')
     },
-
     downloadTryOnResult(groupIdx) {
       const result = this.tryOnResults[groupIdx]
       if (!result) return
       const data = {
         ...result,
-        image: undefined, // Không nhúng base64 vào JSON
+        image: undefined,
       }
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
@@ -1299,7 +1185,6 @@ export default {
       a.click()
       URL.revokeObjectURL(url)
     },
-
     removeFromSidebar(item) {
       // Use the provided CompareStorageHelper.removeProductFromCompare method
       if (item.type === 'single') {
@@ -1314,12 +1199,9 @@ export default {
       }
       this.loadSelectedProducts() // Refresh the sidebar list
     },
-
-    
   },
 }
 </script>
-
 <style scoped>
 .loading-overlay-group {
   position: absolute;
