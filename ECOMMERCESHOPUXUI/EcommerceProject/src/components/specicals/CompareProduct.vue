@@ -36,7 +36,7 @@
                   <div style="font-size: 1.2rem; color: #888; margin: 12px 0">
                     Chưa có sản phẩm nào trong danh sách so sánh.<br />
                     <router-link
-                      to="/"
+                      to="/shop"
                       style="color: #1976d2; text-decoration: underline; font-weight: 500"
                       >Khám phá sản phẩm ngay!</router-link
                     >
