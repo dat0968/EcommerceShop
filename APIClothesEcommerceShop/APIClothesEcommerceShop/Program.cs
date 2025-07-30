@@ -167,6 +167,7 @@ builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
 builder.Services.AddScoped<IGeminiAIService, GeminiAIService>();
 builder.Services.AddScoped<APIClothesEcommerceShop.Services.CloudinaryService.ICloudinaryService, APIClothesEcommerceShop.Services.CloudinaryService.CloudinaryService>();
+builder.Services.AddScoped<APIClothesEcommerceShop.Services.LightXService.ILightXService, APIClothesEcommerceShop.Services.LightXService.LightXService>();
 
 // Email Service
 builder.Services.AddScoped<GoogleSenderService>();

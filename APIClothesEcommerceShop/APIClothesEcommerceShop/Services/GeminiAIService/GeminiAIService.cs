@@ -5,6 +5,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using APIClothesEcommerceShop.DTO;
 using Microsoft.Extensions.Configuration;
+
+
+using System.Text.Json;
 using Mscc.GenerativeAI;
 
 namespace APIClothesEcommerceShop.Services
@@ -57,7 +60,7 @@ namespace APIClothesEcommerceShop.Services
                         if (match.Success)
                         {
                             var jsonContent = match.Groups[1].Value;
-                            var aiResult = Newtonsoft.Json.JsonConvert.DeserializeObject<AiReviewResponse>(jsonContent);
+                            var aiResult = JsonSerializer.Deserialize<AiReviewResponse>(jsonContent);
                             if (aiResult != null)
                             {
                                 if (aiResult.IsAppropriate)
@@ -175,7 +178,7 @@ namespace APIClothesEcommerceShop.Services
                                         }
                                     }
 
-                                    var analysisResult = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                                    var analysisResult = JsonSerializer.Deserialize<dynamic>(jsonContent);
 
                                     results.Add(new
                                     {
@@ -245,7 +248,12 @@ namespace APIClothesEcommerceShop.Services
                 var model = googleAI.GenerativeModel(model: Model.Gemini15Flash);
 
                 // Convert base64 to Part for Gemini
-                var imageBytes = Convert.FromBase64String(imageBase64.Split(',')[1]); // Remove data:image/jpeg;base64, prefix
+                string base64Data = imageBase64;
+                if (imageBase64.Contains(","))
+                {
+                    base64Data = imageBase64.Split(',')[1]; // Remove data:image/jpeg;base64, prefix
+                }
+                var imageBytes = Convert.FromBase64String(base64Data);
 
                 // Build prompt with product information
                 var productDetails = "";
@@ -254,8 +262,7 @@ namespace APIClothesEcommerceShop.Services
                     productDetails = "Thông tin sản phẩm gốc:\n";
                     foreach (var product in productsData)
                     {
-                        var productJson = Newtonsoft.Json.JsonConvert.SerializeObject(product);
-                        var productObj = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(productJson);
+                        var productObj = JsonSerializer.Deserialize<dynamic>(JsonSerializer.Serialize(product));
 
                         if (productObj?.type == "combo")
                         {
@@ -330,13 +337,14 @@ namespace APIClothesEcommerceShop.Services
                             }
                         }
 
-                        var analysisResult = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                        using var doc = JsonDocument.Parse(jsonContent);
+                        var analysisResult = doc.RootElement;
 
                         var result = new
                         {
-                            aesthetic_score = (float)(analysisResult?.aesthetic_score ?? 0),
-                            style = (string)(analysisResult?.style ?? "N/A"),
-                            gender_suitability = (string)(analysisResult?.gender_suitability ?? "N/A")
+                            aesthetic_score = analysisResult.TryGetProperty("aesthetic_score", out JsonElement aestheticScoreElement) ? aestheticScoreElement.GetSingle() : 0f,
+                            style = analysisResult.TryGetProperty("style", out JsonElement styleElement) ? styleElement.GetString() : "N/A",
+                            gender_suitability = analysisResult.TryGetProperty("gender_suitability", out JsonElement genderSuitabilityElement) ? genderSuitabilityElement.GetString() : "N/A"
                         };
 
                         response.SetSuccessResponse(data: result, message: "Phân tích hình ảnh thử đồ hoàn tất.");
