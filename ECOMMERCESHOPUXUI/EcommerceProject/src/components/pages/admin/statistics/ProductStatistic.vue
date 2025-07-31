@@ -22,10 +22,16 @@
         <div v-if="isLoading" class="text-center my-4">
           <LoadingSpinner />
         </div>
-        <div v-else>
-          <canvas id="salesQuantityChartByDay" v-show="selectedTimePeriod === 'date'"></canvas>
-          <canvas id="salesQuantityChartByMonth" v-show="selectedTimePeriod === 'month'"></canvas>
-          <canvas id="salesQuantityChartByYear" v-show="selectedTimePeriod === 'year'"></canvas>
+        <div class="flex align-items-center" v-else>
+          <div class="" v-show="selectedTimePeriod === 'date'">
+            <canvas id="salesQuantityChartByDay" ></canvas>
+          </div>
+          <div class="" v-show="selectedTimePeriod === 'month'">
+            <canvas id="salesQuantityChartByMonth" ></canvas>
+          </div>
+          <div class="" v-show="selectedTimePeriod === 'year'">
+            <canvas id="salesQuantityChartByYear" ></canvas>
+          </div>
         </div>
       </div>
     </div>

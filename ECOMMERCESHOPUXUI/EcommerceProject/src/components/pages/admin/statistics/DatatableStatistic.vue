@@ -123,7 +123,7 @@ export default {
   data() {
     return {
       selectedTable: 'products', // Giá trị mặc định là sản phẩm
-      selectedStats: 'coupons', // Giá trị mặc định cho thống kê bổ sung
+      selectedStats: 'categories', // Giá trị mặc định cho thống kê bổ sung
     }
   },
   computed: {
