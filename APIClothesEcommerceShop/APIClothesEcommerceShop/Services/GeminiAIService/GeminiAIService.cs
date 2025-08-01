@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 
 using System.Text.Json;
 using Mscc.GenerativeAI;
+using APIClothesEcommerceShop.DTO.TryOn;
 
 namespace APIClothesEcommerceShop.Services
 {
@@ -232,7 +233,7 @@ namespace APIClothesEcommerceShop.Services
             return response;
         }
 
-        public async Task<ResponseAPI<object>> AnalyzeTryOnImageAsync(string imageBase64, List<object> productsData)
+        public async Task<ResponseAPI<object>> AnalyzeTryOnImageAsync(string imageBase64, List<ProductData> productsData)
         {
             var response = new ResponseAPI<object>();
             try
@@ -262,28 +263,26 @@ namespace APIClothesEcommerceShop.Services
                     productDetails = "Thông tin sản phẩm gốc:\n";
                     foreach (var product in productsData)
                     {
-                        var productObj = JsonSerializer.Deserialize<dynamic>(JsonSerializer.Serialize(product));
-
-                        if (productObj?.type == "combo")
+                        if (product.Type == "combo")
                         {
-                            productDetails += $"Combo: {productObj?.comboName}\n";
-                            productDetails += $"Mô tả: {productObj?.description}\n";
-                            if (productObj?.products != null)
+                            productDetails += $"Combo: {product.ComboName}\n";
+                            productDetails += $"Mô tả: {product.Description}\n";
+                            if (product.Products != null)
                             {
                                 productDetails += "Các sản phẩm:\n";
-                                foreach (var prod in productObj.products)
+                                foreach (var prod in product.Products)
                                 {
-                                    productDetails += $"  - {prod?.name} ({prod?.variant?.color}, {prod?.variant?.size})\n";
+                                    productDetails += $"  - {prod.Name} ({prod.Variant?.Color}, {prod.Variant?.Size})\n";
                                 }
                             }
                         }
                         else
                         {
-                            productDetails += $"Sản phẩm: {productObj?.name}\n";
-                            productDetails += $"Danh mục: {productObj?.category}\n";
-                            productDetails += $"Mô tả: {productObj?.description}\n";
-                            productDetails += $"Màu sắc: {productObj?.variant?.color}\n";
-                            productDetails += $"Kích thước: {productObj?.variant?.size}\n";
+                            productDetails += $"Sản phẩm: {product.Name}\n";
+                            productDetails += $"Danh mục: {product.Category}\n";
+                            productDetails += $"Mô tả: {product.Description}\n";
+                            productDetails += $"Màu sắc: {product.Variant?.Color}\n";
+                            productDetails += $"Kích thước: {product.Variant?.Size}\n";
                         }
                         productDetails += "\n";
                     }
@@ -340,11 +339,30 @@ namespace APIClothesEcommerceShop.Services
                         using var doc = JsonDocument.Parse(jsonContent);
                         var analysisResult = doc.RootElement;
 
+                        float aestheticScore = 0f;
+                        string style = "N/A";
+                        string genderSuitability = "N/A";
+
+                        if (analysisResult.TryGetProperty("aesthetic_score", out JsonElement aestheticScoreElement))
+                        {
+                            aestheticScore = aestheticScoreElement.GetSingle();
+                        }
+
+                        if (analysisResult.TryGetProperty("style", out JsonElement styleElement))
+                        {
+                            style = styleElement.GetString();
+                        }
+
+                        if (analysisResult.TryGetProperty("gender_suitability", out JsonElement genderSuitabilityElement))
+                        {
+                            genderSuitability = genderSuitabilityElement.GetString();
+                        }
+
                         var result = new
                         {
-                            aesthetic_score = analysisResult.TryGetProperty("aesthetic_score", out JsonElement aestheticScoreElement) ? aestheticScoreElement.GetSingle() : 0f,
-                            style = analysisResult.TryGetProperty("style", out JsonElement styleElement) ? styleElement.GetString() : "N/A",
-                            gender_suitability = analysisResult.TryGetProperty("gender_suitability", out JsonElement genderSuitabilityElement) ? genderSuitabilityElement.GetString() : "N/A"
+                            aesthetic_score = aestheticScore,
+                            style = style,
+                            gender_suitability = genderSuitability
                         };
 
                         response.SetSuccessResponse(data: result, message: "Phân tích hình ảnh thử đồ hoàn tất.");
@@ -352,9 +370,9 @@ namespace APIClothesEcommerceShop.Services
                     catch (Exception parseEx)
                     {
                         // Fallback: extract information heuristically
-                        var aestheticMatch = Regex.Match(responseText, @"aesthetic_score[""']?\s*:\s*([\d.]+)", RegexOptions.IgnoreCase);
-                        var styleMatch = Regex.Match(responseText, @"style[""']?\s*:\s*[""']([^""']+)[""']", RegexOptions.IgnoreCase);
-                        var genderMatch = Regex.Match(responseText, @"gender_suitability[""']?\s*:\s*[""']([^""']+)[""']", RegexOptions.IgnoreCase);
+                        var aestheticMatch = Regex.Match(responseText, @"aesthetic_score['""]?\s*:\s*([\d.]+)", RegexOptions.IgnoreCase);
+                        var styleMatch = Regex.Match(responseText, @"style['""]?\s*:\s*['""]([^'']+)['""]", RegexOptions.IgnoreCase);
+                        var genderMatch = Regex.Match(responseText, @"gender_suitability['""]?\s*:\s*['""]([^'']+)['""]", RegexOptions.IgnoreCase);
 
                         var fallbackResult = new
                         {
