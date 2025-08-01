@@ -46,7 +46,7 @@
               <template v-else>
                 <div
                   v-for="(item, idx) in selectedProducts"
-                  :key="idx"
+                  :key="item.id || idx"
                   :draggable="true"
                   @dragstart="onDragStart($event, item)"
                   class="sidebar-draggable"
@@ -150,7 +150,7 @@
                           class="draggable-item mb-2"
                           :class="[
                             item.type === 'combo' ? 'col-12' : 'col-6',
-                            group.selectedProductIdx === idx ? 'selected' : '',
+                            group.selectedProductIdx === idx ? 'selected-product' : '',
                           ]"
                           @click="selectProduct(groupIdx, idx)"
                         >
@@ -518,6 +518,7 @@ import { formatCurrency } from '@/constants/formatCurrency'
 import VueEasyLight from 'vue-easy-lightbox'
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import Swal from 'sweetalert2'
+import axios from 'axios'
 
 import * as axiosConfig from '@/utils/axiosClient'
 
@@ -584,7 +585,12 @@ export default {
       showApiSettings: false,
       loadingGroup: null, // Index of the group currently being processed by AI
       apiKeys: {
+        cloudinaryApiKey: localStorage.getItem('cloudinaryApiKey') || '',
+        cloudinaryApiSecret: localStorage.getItem('cloudinaryApiSecret') || '',
+        cloudinaryCloudName: localStorage.getItem('cloudinaryCloudName') || '',
+        cloudinaryUploadPreset: localStorage.getItem('cloudinaryUploadPreset') || 'unsigned_upload',
         lightxApiKey: localStorage.getItem('lightxApiKey') || '',
+        geminiApiKey: localStorage.getItem('geminiApiKey') || '', 
       },
       compareGroups: [
         { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
@@ -948,17 +954,17 @@ export default {
         }
         formData.append('tag', 'try-on-result')
 
-        const cloudinaryResponse = await axiosConfig.postToApi('/Cloudinary/Upload', {
+        const cloudinaryResponse = await axiosConfig.postToApi('/TryOn/UploadImage', {
            formData
         })
 
-        if (!cloudinaryResponse.ok) {
-          const errorText = await cloudinaryResponse.text()
+        if (!cloudinaryResponse.success) {
+          const errorText = cloudinaryResponse.message
           throw new Error(`Cloudinary upload failed: ${errorText}`)
         }
 
         const cloudinaryData = await cloudinaryResponse.json()
-        const finalImageUrl = cloudinaryData.secure_url
+        const finalImageUrl = cloudinaryData.data.imageUrl
 
         // Ghép hình ảnh để gửi tới Gemini API
         const combinedImage = await this.combineImagesOnCanvas([
@@ -967,8 +973,8 @@ export default {
         ])
 
         // Gửi yêu cầu tới WebAPI Gemini
-        const geminiResponse = await axiosConfig.postToApi('/Gemini/Analyze', {
-            imageDataUrl: combinedImage,
+        const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
+            resultImageUrl: combinedImage,
             productsData: group.products,
         })
 
@@ -1050,10 +1056,12 @@ export default {
       })
       const data = await response.json()
       if (data.statusCode !== 2000) {
+        console.error('LightX getUploadUrl failed. Full response:', data)
         throw new Error('Failed to get LightX upload URL: ' + data.message)
       }
       return data.body
     },
+
     async uploadToLightX(uploadUrl, blob) {
       const response = await fetch(uploadUrl, {
         method: 'PUT',
@@ -1061,9 +1069,12 @@ export default {
         body: blob,
       })
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('LightX image upload failed. Full response:', errorText)
         throw new Error('Failed to upload image to LightX.')
       }
     },
+
     async startLightXJob(apiKey, imageUrl, styleImageUrl) {
       const response = await fetch('https://api.lightxeditor.com/external/api/v2/aivirtualtryon', {
         method: 'POST',
@@ -1075,13 +1086,15 @@ export default {
       })
       const data = await response.json()
       if (data.statusCode !== 2000) {
+        console.error('LightX startJob failed. Full response:', data)
         throw new Error('Failed to start LightX job: ' + data.message)
       }
       return data.body.orderId
     },
+
     async pollLightXJob(apiKey, orderId) {
       const maxRetries = 5
-      const delay = 3000
+      const delay = 3000 // 3 seconds
       for (let i = 0; i < maxRetries; i++) {
         await new Promise((resolve) => setTimeout(resolve, delay))
         const response = await fetch('https://api.lightxeditor.com/external/api/v2/order-status', {
@@ -1097,6 +1110,7 @@ export default {
           return data.body.output
         }
         if (data.body.status === 'failed') {
+          console.error('LightX job failed. Full response:', data)
           throw new Error('LightX job failed.')
         }
       }
@@ -1105,7 +1119,7 @@ export default {
     async loadImage(url) {
       return new Promise((resolve, reject) => {
         const img = new window.Image()
-        img.crossOrigin = 'Anonymous'
+        img.crossOrigin = 'Anonymous' // Request CORS. Server must also send Access-Control-Allow-Origin header.
         img.onload = () => resolve(img)
         img.onerror = (e) => {
           console.error('Error loading image:', url, e)
@@ -1114,6 +1128,7 @@ export default {
         img.src = url
       })
     },
+
     async combineImagesOnCanvas(images) {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
@@ -1121,7 +1136,7 @@ export default {
       let totalWidth = 0
       let maxHeight = 0
 
-      // Kiểm tra và tính toán kích thước canvas
+      // Calculate total width and max height
       for (const img of images) {
         if (!(img instanceof HTMLImageElement)) {
           console.error('Invalid image type:', img)
@@ -1139,8 +1154,8 @@ export default {
       let currentX = 0
       for (const img of images) {
         try {
-          ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
-          currentX += img.naturalWidth
+        ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
+        currentX += img.naturalWidth
         } catch (e) {
           console.error('Error drawing image on canvas:', e, img)
           throw new Error('Failed to draw image on canvas.')
@@ -1163,7 +1178,7 @@ export default {
       let itemCategories = []
       if (item.type === 'combo' && item.products && item.products.length > 0) {
         itemCategories = item.products.map((prod) => prod.category || 'unknown')
-      } else {
+            } else {
         itemCategories = [item.category || 'unknown']
       }
 
@@ -1202,6 +1217,7 @@ export default {
   },
 }
 </script>
+
 <style scoped>
 .loading-overlay-group {
   position: absolute;
@@ -1693,6 +1709,12 @@ export default {
 .delete-sidebar-btn:hover {
   opacity: 1;
   background: #c62828;
+}
+
+.product-card.selected, .combo-card.selected {
+  border: 2px solid #1976d2;
+  box-shadow: 0 0 12px rgba(25, 118, 210, 0.5);
+  transform: scale(1.03);
 }
 
 .combo-card.sidebar .combo-header {
