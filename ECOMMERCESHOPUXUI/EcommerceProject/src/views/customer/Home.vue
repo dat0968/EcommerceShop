@@ -1072,7 +1072,7 @@ onMounted(() => {
     </section>
     <!-- Trend Section End -->
   </div>
-  <CompareProduct />
+  
 </template>
 
 <style>

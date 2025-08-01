@@ -30,7 +30,7 @@ import CompareProduct from '@/components/specicals/CompareProduct.vue'
     <HeaderComponent />
     <router-view :key="$route.fullPath" />
     <chatbot></chatbot>
-    <CompareProduct/>
+    <compare-product/>
     <FooterComponent />
   </div>
 </template>
