@@ -1,8 +1,13 @@
 <template>
-  <!-- Icon to trigger the modal -->
+  <!-- Icon to trigger the wheel modal -->
   <a href="#" @click.prevent="showModal = true" class="position-relative text-decoration-none">
     <span class="icon_ribbon_alt"></span>
     <div v-if="maxSpins > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ maxSpins - spinCount }}</div>
+  </a>
+
+  <!-- Icon to trigger the streak modal -->
+  <a href="#" @click.prevent="showStreakModal = true" class="position-relative text-decoration-none ms-3">
+    <span class="icon_calendar"></span>
   </a>
 
   <!-- Modal for the wheel -->
@@ -99,6 +104,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Streak Animation Modal -->
+  <StreakAnimationModal v-if="showStreakModal" :show="showStreakModal" :streakData="streakData" @close="showStreakModal = false" />
 </template>
 
 <script setup>
@@ -108,9 +116,12 @@ import { getFromApi, postToApi, patchToApi } from '@/utils/axiosClient'
 import Swal from 'sweetalert2'
 import { formatCurrency } from '@/constants/formatCurrency'
 import confetti from 'canvas-confetti'
+import StreakAnimationModal from './StreakAnimationModal.vue'
 
 // --- Component State ---
 const showModal = ref(false)
+const showStreakModal = ref(false) // New state for streak modal
+const streakData = ref({ streak: 0, lastLogin: null, isNewStreak: false }) // New state for streak data, initialized with default values
 const prizes = ref([])
 const colors = ['#FFB300', '#FF7043', '#66BB6A', '#42A5F5', '#AB47BC', '#EC407A', '#26C6DA']
 const rotation = ref(0)
@@ -179,11 +190,20 @@ const initializeWheel = async () => {
 
   if (lastSpinDate !== today) {
     try {
-      await patchToApi(
+      const res = await patchToApi(
         '/WheelCoupon/update-last-login-streak',
         '',
         ConfigsRequest.getSkipAuthConfig(),
       )
+      if (res && res.success) {
+        const lastLoginDateStr = res.data.truyCapLlanCuoi || null;
+        streakData.value = {
+          streak: res.data.streak,
+          lastLogin: lastLoginDateStr,
+          isNewStreak: res.data.streak === 1 && lastLoginDateStr && lastLoginDateStr.slice(0, 10) === today,
+        };
+        showStreakModal.value = true
+      }
       localStorage.setItem('wheel_last_spin_date', today)
     } catch (error) {
       console.error('Failed to update login streak:', error)
