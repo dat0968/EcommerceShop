@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.Reviews;
+using APIClothesEcommerceShop.DTO.WheelCoupon;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Repository;
 using APIClothesEcommerceShop.Repositories.WheelCoupon;
@@ -74,91 +75,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
-        public async Task<ResponseAPI<dynamic>> IsInWeekSteak(int? userId)
+        public async Task<ResponseAPI<WheelCouponCustomerStreakResponse>> UpdateLastLoginAndStreak(int? userId)
         {
-            ResponseAPI<dynamic> response = new();
-            try
-            {
-                if (!userId.HasValue || userId == 0)
-                {
-                    throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
-                }
-                var customer = await _db.Khachhangs.FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
-                if (customer == null)
-                {
-                    throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
-                }
-
-                bool isInWeekSteak = customer.Streak > 0 && customer.Streak % 7 == 0;
-
-                response.SetSuccessResponse(data: isInWeekSteak);
-            }
-            catch (Exception ex)
-            {
-                ExceptionHandler.HandleException(ex, response);
-            }
-            return response;
-        }
-
-        public async Task<ResponseAPI<dynamic>> Over2MillionUse(int? userId)
-        {
-            ResponseAPI<dynamic> response = new();
-            try
-            {
-                if (userId == 0)
-                {
-                    throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
-                }
-                var customer = await _db.Khachhangs.Include(kh => kh.Hoadons)
-                                                    .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
-                if (customer == null)
-                {
-                    throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
-                }
-
-                int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
-                decimal totalCompleted = customer.Hoadons
-                    .Where(x => x.TinhTrang == CompletelyStatus)
-                    .Sum(x => x.TienGoc - x.PhiVanChuyen);
-                int times = (int)(totalCompleted / 2000000);
-                bool isOver2MillionUse = numPrivateCoupon < times;
-                response.SetSuccessResponse(data: isOver2MillionUse);
-            }
-            catch (Exception ex)
-            {
-                ExceptionHandler.HandleException(ex, response);
-            }
-            return response;
-        }
-
-        private async Task<bool> CanSpin(int? userId)
-        {
-            if (!userId.HasValue || userId == 0)
-            {
-                return false;
-            }
-            var customer = await _db.Khachhangs
-                    .Include(kh => kh.Hoadons)
-                    .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
-            if (customer == null)
-            {
-                return false;
-            }
-            bool isInWeekSteak = customer.Streak > 0 && customer.Streak % 7 == 0;
-
-            int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
-            decimal totalCompleted = customer.Hoadons
-                .Where(x => x.TinhTrang == CompletelyStatus)
-                .Sum(x => x.TienGoc - x.PhiVanChuyen);
-            int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
-
-            int spinsLeft = totalSpin - numPrivateCoupon;
-            return spinsLeft > 0;
-        }
-
-        public async Task<ResponseAPI<Khachhang>> UpdateLastLoginAndStreak(int? userId)
-        {
-            var response = new ResponseAPI<Khachhang>();
+            var response = new ResponseAPI<WheelCouponCustomerStreakResponse>();
             try
             {
                 if (userId == 0 || userId == null)
@@ -171,7 +90,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
                 }
                 var now = DateTime.Now;
-                var lastLogin = customer.TruyCapLlanCuoi.Date;
+                var lastLogin = customer.TruyCapLanCuoi.Date;
                 var today = now.Date;
                 if (lastLogin == today)
                 {
@@ -185,9 +104,9 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     customer.Streak = 1;
                 }
-                customer.TruyCapLlanCuoi = now;
+                customer.TruyCapLanCuoi = now;
                 await _db.SaveChangesAsync();
-                response.SetSuccessResponse(data: customer);
+                response.SetSuccessResponse(data: customer.ToWheelCouponCustomerStreakResponse());
             }
             catch (Exception ex)
             {
@@ -196,7 +115,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return response;
         }
 
-        #region 
+        #region [PRIVATE METHOD]
 
         private async Task<ResponseAPI<dynamic>> CreatePrivateCoupon(int? userId)
         {
@@ -315,6 +234,30 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 .Select(s => s[random.Next(s.Length)]).ToArray());
             }
             return newCode;
+        }
+        private async Task<bool> CanSpin(int? userId)
+        {
+            if (!userId.HasValue || userId == 0)
+            {
+                return false;
+            }
+            var customer = await _db.Khachhangs
+                    .Include(kh => kh.Hoadons)
+                    .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+            if (customer == null)
+            {
+                return false;
+            }
+            bool isInWeekSteak = customer.Streak > 0 && customer.Streak % 7 == 0;
+
+            int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
+            decimal totalCompleted = customer.Hoadons
+                .Where(x => x.TinhTrang == CompletelyStatus)
+                .Sum(x => x.TienGoc - x.PhiVanChuyen);
+            int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
+
+            int spinsLeft = totalSpin - numPrivateCoupon;
+            return spinsLeft > 0;
         }
         #endregion
 

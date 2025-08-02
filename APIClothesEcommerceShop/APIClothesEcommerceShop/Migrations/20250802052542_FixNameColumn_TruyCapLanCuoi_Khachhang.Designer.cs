@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250802052542_FixNameColumn_TruyCapLanCuoi_Khachhang")]
+    partial class FixNameColumn_TruyCapLanCuoi_Khachhang
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

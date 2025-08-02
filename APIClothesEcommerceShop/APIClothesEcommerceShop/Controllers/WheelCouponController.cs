@@ -40,28 +40,6 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         /// <summary>
-        /// Over2MillionUse (GET): Kiểm tra người dùng đã sử dụng trên 2 triệu cho coupon riêng. Lấy userId từ token.
-        /// </summary>
-        [HttpGet("over-2-million-use")]
-        public async Task<IActionResult> Over2MillionUse()
-        {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.Over2MillionUse(userId);
-            return Ok(response);
-        }
-
-        /// <summary>
-        /// IsInWeekSteak (GET): Kiểm tra người dùng có đang ở chuỗi tuần thưởng không. Lấy userId từ token.
-        /// </summary>
-        [HttpGet("week-streak")]
-        public async Task<IActionResult> IsInWeekSteak()
-        {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.IsInWeekSteak(userId);
-            return Ok(response);
-        }
-
-        /// <summary>
         /// UpdateLastLoginAndStreak (PATCH): Cập nhật lần đăng nhập cuối và streak cho người dùng. Lấy userId từ token.
         /// </summary>
         [HttpPatch("update-last-login-streak")]
