@@ -266,9 +266,7 @@ const spin = async () => {
   selectedPrize.value = null
   copied.value = false
 
-  // Determine if it's a blank spin (10% chance)
   const blankIndex = prizes.value.findIndex((p) => p.isBlank)
-  const willBeBlank = Math.random() < 0.9 // ? 90% chance of landing on blank
 
   let targetIndex
   let couponData = null
@@ -288,41 +286,30 @@ const spin = async () => {
   animateSpin()
 
   try {
-    if (!willBeBlank) {
-      // If not blank, call API to get a coupon
-      const res = await postToApi('/WheelCoupon/private-coupon')
-      if (res && res.success && res.data) {
+    const res = await postToApi('/WheelCoupon/spin')
+    if (res && res.success) {
+      spinConsumed = true // Spin is consumed if API call is successful
+
+      if (res.data && res.data.maCode && res.data.maCode !== 'BLANK') {
+        // User won a coupon
         couponData = res.data
         // Find a random unrevealed non-blank slot to stop at
         const availableIndexes = prizes.value
           .map((p, idx) => (!p.isBlank && !p.revealed ? idx : -1))
           .filter((idx) => idx !== -1)
         targetIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)]
-        spinConsumed = true // Coupon successfully received, spin consumed
       } else {
-        // If API call succeeds but returns no data or success: false
-        targetIndex = blankIndex // Default to blank prize
-        Swal.fire({
-          title: 'Lỗi!',
-          text: res?.message || 'Không thể nhận kết quả từ máy chủ. Vui lòng thử lại.',
-          icon: 'error',
-        })
-        // spinConsumed remains false, as the spin was not successfully completed due to API response
+        // User got a blank coupon or no coupon (BLANK code from backend)
+        targetIndex = blankIndex
       }
     } else {
-      // If it's a blank spin, target the blank slot and call API to create blank coupon
-      targetIndex = blankIndex
-      const blankCouponRes = await postToApi('/WheelCoupon/blank-coupon')
-      if (blankCouponRes && blankCouponRes.success) {
-        spinConsumed = true // Blank coupon successfully created, spin consumed
-      } else {
-        console.error('Failed to create blank coupon:', blankCouponRes?.message)
-        Swal.fire({
-          title: 'Lỗi!',
-          text: blankCouponRes?.message || 'Không thể ghi nhận lượt quay trống. Vui lòng thử lại.',
-          icon: 'error',
-        })
-      }
+      // API call failed or returned success: false
+      targetIndex = blankIndex // Default to blank prize on error
+      Swal.fire({
+        title: 'Lỗi!',
+        text: res?.message || 'Không thể nhận kết quả từ máy chủ. Vui lòng thử lại.',
+        icon: 'error',
+      })
     }
   } catch (error) {
     console.error('Failed to get coupon from API:', error)
@@ -333,7 +320,6 @@ const spin = async () => {
       text: 'Đã xảy ra lỗi khi nhận kết quả từ máy chủ. Vui lòng thử lại.',
       icon: 'error',
     })
-    // spinConsumed remains false, as the spin was not successfully completed due to network error
   } finally {
     running = false
     cancelAnimationFrame(frameId)
