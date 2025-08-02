@@ -156,17 +156,54 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             return spinsLeft > 0;
         }
 
-        public async Task<ResponseAPI<dynamic>> CreatePrivateCoupon(int? userId)
+        public async Task<ResponseAPI<Khachhang>> UpdateLastLoginAndStreak(int? userId)
+        {
+            var response = new ResponseAPI<Khachhang>();
+            try
+            {
+                if (userId == 0 || userId == null)
+                {
+                    throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
+                }
+                var customer = await _db.Khachhangs.FirstOrDefaultAsync(x => x.MaKh == userId.Value);
+                if (customer == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
+                }
+                var now = DateTime.Now;
+                var lastLogin = customer.TruyCapLlanCuoi.Date;
+                var today = now.Date;
+                if (lastLogin == today)
+                {
+                    throw new Exception("Đã đăng nhập hôm nay, không tăng streak");
+                }
+                else if (lastLogin == today.AddDays(-1))
+                {
+                    customer.Streak += 1;
+                }
+                else
+                {
+                    customer.Streak = 1;
+                }
+                customer.TruyCapLlanCuoi = now;
+                await _db.SaveChangesAsync();
+                response.SetSuccessResponse(data: customer);
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+
+        #region 
+
+        private async Task<ResponseAPI<dynamic>> CreatePrivateCoupon(int? userId)
         {
 
             ResponseAPI<dynamic> response = new();
             try
             {
-                if (!await CanSpin(userId))
-                {
-                    throw new Exception("Không đủ điều kiện để tạo coupon.");
-                }
-
                 if (userId == 0)
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
@@ -216,67 +253,11 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             return response;
         }
-        public async Task<ResponseAPI<Khachhang>> UpdateLastLoginAndStreak(int? userId)
-        {
-            var response = new ResponseAPI<Khachhang>();
-            try
-            {
-                if (userId == 0 || userId == null)
-                {
-                    throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
-                }
-                var customer = await _db.Khachhangs.FirstOrDefaultAsync(x => x.MaKh == userId.Value);
-                if (customer == null)
-                {
-                    throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
-                }
-                var now = DateTime.Now;
-                var lastLogin = customer.TruyCapLlanCuoi.Date;
-                var today = now.Date;
-                if (lastLogin == today)
-                {
-                    throw new Exception("Đã đăng nhập hôm nay, không tăng streak");
-                }
-                else if (lastLogin == today.AddDays(-1))
-                {
-                    customer.Streak += 1;
-                }
-                else
-                {
-                    customer.Streak = 1;
-                }
-                customer.TruyCapLlanCuoi = now;
-                await _db.SaveChangesAsync();
-                response.SetSuccessResponse(data: customer);
-            }
-            catch (Exception ex)
-            {
-                ExceptionHandler.HandleException(ex, response);
-            }
-            return response;
-        }
-
-        #region 
-
-        private string GenerateRandomCouponCode(int length = 8)
-        {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            var random = new Random();
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
-        #endregion
-
-        public async Task<ResponseAPI<dynamic>> CreateBlankCoupon(int? userId)
+        private async Task<ResponseAPI<dynamic>> CreateBlankCoupon(int? userId)
         {
             ResponseAPI<dynamic> response = new();
             try
             {
-                if (!await CanSpin(userId))
-                {
-                    throw new Exception("Không đủ điều kiện để tạo coupon.");
-                }
-
                 if (userId == 0)
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
@@ -289,7 +270,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 var blankCoupon = new Models.Macoupon()
                 {
-                    MaCode = "BLANK", // A special code for blank coupons
+                    MaCode = GenerateRandomCouponCode(15, "BNK"), // A special code for blank coupons
                     MoTa = $"Mã coupon rỗng cho khách hàng {customer.HoTen} (không trúng giải)",
                     DonHangToiThieu = 0,
                     NgayBatDau = DateTime.Now,
@@ -306,6 +287,60 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 await _db.SaveChangesAsync();
 
                 response.SetSuccessResponse(data: new { message = "Blank coupon created successfully" });
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+        private static string GenerateRandomCouponCode(int length = 8, string? headCode = null)
+        {
+            if (length > 20)
+            {
+                length = 20; // Limit to 20 characters
+            }
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            var random = new Random();
+            string newCode = string.Empty;
+            if (string.IsNullOrEmpty(headCode))
+            {
+                newCode = new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
+            else
+            {
+                newCode = headCode + new string(Enumerable.Repeat(chars, length - headCode.Length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
+            return newCode;
+        }
+        #endregion
+
+
+        public async Task<ResponseAPI<dynamic>> SpinWheelAndGenerateCoupon(int? userId)
+        {
+            ResponseAPI<dynamic> response = new();
+            try
+            {
+                if (!await CanSpin(userId))
+                {
+                    throw new Exception("Không đủ điều kiện để quay vòng quay.");
+                }
+
+                Random random = new Random();
+                // 90% chance to lose, 10% chance to win 
+                bool isWin = random.Next(1, 101) <= 10;
+
+                if (isWin)
+                {
+                    response = await CreatePrivateCoupon(userId);
+                }
+                else
+                {
+                    response = await CreateBlankCoupon(userId);
+                }
             }
             catch (Exception ex)
             {

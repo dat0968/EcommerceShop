@@ -62,16 +62,6 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         /// <summary>
-        /// CreatePrivateCoupon (POST): Tạo coupon riêng cho người dùng. Lấy userId từ token.
-        /// </summary>
-        [HttpPost("private-coupon")]
-        public async Task<IActionResult> CreatePrivateCoupon()
-        {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.CreatePrivateCoupon(userId);
-            return Ok(response);
-        }
-        /// <summary>
         /// UpdateLastLoginAndStreak (PATCH): Cập nhật lần đăng nhập cuối và streak cho người dùng. Lấy userId từ token.
         /// </summary>
         [HttpPatch("update-last-login-streak")]
@@ -83,13 +73,13 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         /// <summary>
-        /// CreateBlankCoupon (POST): Tạo coupon rỗng cho người dùng khi quay vào ô "Chúc bạn may mắn lần sau". Lấy userId từ token.
+        /// SpinWheel (POST): Thực hiện quay vòng quay may mắn và tạo coupon (hoặc không). Lấy userId từ token.
         /// </summary>
-        [HttpPost("blank-coupon")]
-        public async Task<IActionResult> CreateBlankCoupon()
+        [HttpPost("spin")]
+        public async Task<IActionResult> SpinWheel()
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.CreateBlankCoupon(userId);
+            var response = await _unit.WheelCoupon.SpinWheelAndGenerateCoupon(userId);
             return Ok(response);
         }
     }
