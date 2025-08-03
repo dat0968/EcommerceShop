@@ -2,6 +2,7 @@ using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.TryOn;
 using APIClothesEcommerceShop.Services;
 using APIClothesEcommerceShop.Services.CloudinaryService;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -16,11 +17,13 @@ namespace APIClothesEcommerceShop.Controllers
     {
         private readonly IGeminiAIService _geminiAIService;
         private readonly ICloudinaryService _cloudinaryService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public TryOnController(IGeminiAIService geminiAIService, ICloudinaryService cloudinaryService)
+        public TryOnController(IGeminiAIService geminiAIService, ICloudinaryService cloudinaryService, IWebHostEnvironment webHostEnvironment)
         {
             _geminiAIService = geminiAIService;
             _cloudinaryService = cloudinaryService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         /// <summary>
@@ -60,6 +63,7 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpPost("AnalyzeImage")]
         public async Task<IActionResult> AnalyzeImage([FromBody] AnalyzeRequest request)
         {
+            ResponseAPI<object> response = new();
             if (string.IsNullOrEmpty(request.ResultImageUrl))
             {
                 return BadRequest(new { message = "URL hình ảnh kết quả không được rỗng." });
@@ -81,12 +85,53 @@ namespace APIClothesEcommerceShop.Controllers
                 {
                     return StatusCode(500, new { message = analysisResult.Message });
                 }
+                response.SetSuccessResponse(data: analysisResult.Data);
 
-                return Ok(new AnalysisResponse { GeminiAnalysis = analysisResult.Data });
+                return Ok(response);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = $"Lỗi khi phân tích ảnh: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Tải lên một hình ảnh từ URL (ví dụ: localhost) lên Cloudinary để có URL công khai.
+        /// </summary>
+        /// <param name="request">Đối tượng chứa URL của hình ảnh cần tải lên.</param>
+        /// <returns>URL công khai mới của hình ảnh trên Cloudinary.</returns>
+        [HttpPost("UploadFromUrl")]
+        public async Task<IActionResult> UploadFromUrl([FromBody] UploadFromUrlRequest request)
+        {
+            ResponseAPI<UploadImageResponse> res = new();
+            if (string.IsNullOrEmpty(request.ImageUrl))
+            {
+                return BadRequest(new { message = "URL hình ảnh không được rỗng." });
+            }
+
+            try
+            {
+                // Convert localhost URL to physical path
+                var uri = new Uri(request.ImageUrl);
+                var relativePath = uri.AbsolutePath.TrimStart('/');
+                var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, relativePath.Replace('/', '\\'));
+
+                if (!System.IO.File.Exists(physicalPath))
+                {
+                    return NotFound(new { message = $"Không tìm thấy file tại: {physicalPath}" });
+                }
+
+                // Read file and upload as Base64
+                var imageBytes = await System.IO.File.ReadAllBytesAsync(physicalPath);
+                var base64Image = Convert.ToBase64String(imageBytes);
+
+                var imageUrl = await _cloudinaryService.UploadImageFromBase64Async(base64Image, "product-images");
+                res.SetSuccessResponse(data: new UploadImageResponse { ImageUrl = imageUrl });
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Lỗi khi tải ảnh từ URL nội bộ: {ex.Message}" });
             }
         }
     }
