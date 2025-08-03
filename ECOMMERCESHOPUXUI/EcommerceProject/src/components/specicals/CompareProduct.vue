@@ -70,12 +70,21 @@
                         <div v-if="pidx < item.products.length - 1" class="combo-divider"></div>
                       </div>
                     </div>
-                    <button class="add-btn" @click="addComboToCompare(item)">
-                      Thêm vào so sánh
-                    </button>
+                    <div class="mt-2 d-flex justify-content-between w-100 align-items-center">
+                      <button class="btn btn-sm btn-primary" @click="addComboToCompare(item)">
+                        <i class="bi bi-plus-circle"></i> Thêm vào so sánh
+                      </button>
+                      <RouterLink
+                        :to="'/combo/' + item.id"
+                        class="btn btn-sm btn-outline-info"
+                        title="Xem chi tiết combo"
+                      >
+                        <i class="bi bi-box-arrow-up-right"></i>
+                      </RouterLink>
+                    </div>
                   </div>
                   <div v-else class="product-card sidebar">
-                    <div class="row p-2">
+                    <div class="row justify-content-evenly p-2">
                       <div
                         class="col-4 d-flex justify-content-center align-items-center border-end"
                       >
@@ -88,9 +97,18 @@
                         </div>
                         <div class="price">Giá: {{ formatCurrency(item.variant.price) }}</div>
                       </div>
-                      <button class="add-btn col-12" @click="addToCompare(item)">
-                        Thêm vào so sánh
-                      </button>
+                      <div class="mt-2 d-flex justify-content-between w-100 align-items-center">
+                        <button class="btn btn-sm btn-primary" @click="addToCompare(item)">
+                          <i class="bi bi-plus-circle"></i> Thêm vào so sánh
+                        </button>
+                        <RouterLink
+                          :to="'/product/' + item.id"
+                          class="btn btn-sm btn-outline-info"
+                          title="Xem chi tiết sản phẩm"
+                        >
+                          <i class="bi bi-box-arrow-up-right"></i>
+                        </RouterLink>
+                      </div>
                     </div>
                     <button class="delete-sidebar-btn" @click="removeFromSidebar(item)">×</button>
                   </div>
@@ -518,7 +536,6 @@ import { formatCurrency } from '@/constants/formatCurrency'
 import VueEasyLight from 'vue-easy-lightbox'
 import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import Swal from 'sweetalert2'
-import axios from 'axios'
 
 import * as axiosConfig from '@/utils/axiosClient'
 
@@ -561,16 +578,6 @@ function dataURLtoBlob(dataurl) {
     u8arr[i] = bstr.charCodeAt(i)
   }
   return new Blob([u8arr], { type: mime })
-}
-
-// Helper to convert a loaded image object to a data URL
-function imageToDataURL(img) {
-  const canvas = document.createElement('canvas')
-  canvas.width = img.naturalWidth
-  canvas.height = img.naturalHeight
-  const ctx = canvas.getContext('2d')
-  ctx.drawImage(img, 0, 0)
-  return canvas.toDataURL('image/jpeg')
 }
 
 export default {
