@@ -740,7 +740,7 @@ export default {
       group.products[comboIdx].selectedComboProductIdx = prodIdx
     },
     addToCompare(item, groupIdx = 0) {
-      if (this.compareGroups[groupIdx].products.length < 10) {
+      if (this.compareGroups[groupIdx].products.length < 4) {
         // Check for category conflict before adding
         if (this.checkCategoryConflict(item, groupIdx)) {
           Swal.fire({
@@ -751,11 +751,18 @@ export default {
           return
         }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
-      }
+      } else {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Bạn không thể thêm nhiều hơn!',
+            text: `Bạn không thể thêm hơn 3 sản phẩm/combo trong group.`,
+          })
+          return
+        }
       this.loadSelectedProducts()
     },
     addComboToCompare(combo, groupIdx = 0) {
-      if (this.compareGroups[groupIdx].products.length < 10) {
+      if (this.compareGroups[groupIdx].products.length < 4) {
         // Check for category conflict before adding combo
         if (this.checkCategoryConflict(combo, groupIdx)) {
           Swal.fire({
@@ -766,7 +773,14 @@ export default {
           return
         }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(combo))
-      }
+      } else {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Bạn không thể thêm nhiều hơn!',
+            text: `Bạn không thể thêm hơn 3 sản phẩm/combo trong group.`,
+          })
+          return
+        }
       this.loadSelectedProducts()
     },
     cloneProduct(item) {
