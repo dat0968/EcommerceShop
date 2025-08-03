@@ -242,8 +242,6 @@ const initializeWheel = async () => {
       }
       localStorage.setItem('wheel_swal_date', today)
     })
-  } else if (maxSpins.value > 0) { // Show modal directly if spins available and no Swal needed
-    showModal.value = true;
   }
 }
 
