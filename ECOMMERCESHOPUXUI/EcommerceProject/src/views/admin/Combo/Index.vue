@@ -49,7 +49,7 @@ const checkToken = () => {
 async function fetchCombo() {
   try {
     let url = `${getUrlAPI.value}/api/Combos?page=${CurrentPage.value}&search=${encodeURIComponent(valueSearch.value)}`;
-    
+
     console.log('Đang lấy danh sách combo với URL:', url);
     console.log('Access token:', accesstoken);
     const response = await fetch(url, {
@@ -59,24 +59,24 @@ async function fetchCombo() {
         'Authorization': `Bearer ${accesstoken}`,
       },
     });
-    
+
     console.log('Trạng thái phản hồi:', response.status);
     if (!response.ok) {
       throw new Error(`Lỗi khi lấy dữ liệu: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     console.log('Phản hồi API:', data);
-    
+
     if (!data || !data.data) {
       throw new Error('Dữ liệu API không hợp lệ hoặc không có danh sách combo');
     }
-    
+
     listCombo.value = data.data || [];
     TotalPages.value = data.totalPages || 1;
     CurrentPage.value = data.currentPage || 1;
     console.log('Danh sách combo:', listCombo.value);
-    
+
     // Áp dụng bộ lọc và sắp xếp
     applyFilter();
   } catch (error) {
@@ -141,7 +141,7 @@ function applyFilter() {
   // Sắp xếp theo maCombo (giảm dần để combo mới lên đầu) rồi theo tenCombo (A-Z hoặc Z-A)
   combos.sort((a, b) => {
     // Sắp xếp theo maCombo giảm dần (combo mới có maCombo lớn hơn)
-    
+
     // Sắp xếp theo tenCombo dựa trên sortOrder
     return sortOrder.value === 'asc'
       ? a.tenCombo.localeCompare(b.tenCombo, 'vi', { sensitivity: 'base' })
@@ -184,7 +184,7 @@ async function removeCombo(id) {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const response = await fetch(`${getUrlAPI.value}/api/Combos/${id}/Cancel`, {
-method: 'PUT',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accesstoken}`,
@@ -228,20 +228,11 @@ onMounted(() => {
     <!-- Thanh tìm kiếm, bộ lọc và sắp xếp -->
     <div class="row g-3 mb-3 align-items-center">
       <div class="col-md-3">
-        <input
-          type="text"
-          class="form-control shadow-sm border-primary bg-white"
-          placeholder="🔍 Nhập tên combo..."
-          v-model="valueSearch"
-          @input="ReturnCombo()"
-        />
+        <input type="text" class="form-control shadow-sm border-primary bg-white" placeholder="🔍 Nhập tên combo..."
+          v-model="valueSearch" @input="ReturnCombo()" />
       </div>
       <div class="col-md-3">
-        <select
-          class="form-select shadow-sm border-primary"
-          v-model="discountFilter"
-          @change="ReturnCombo()"
-        >
+        <select class="form-select shadow-sm border-primary" v-model="discountFilter" @change="ReturnCombo()">
           <option value="all">Tất cả mức giảm</option>
           <option value="percent">Giảm theo phần trăm</option>
           <option value="fixed">Giảm theo số tiền</option>
@@ -249,11 +240,7 @@ onMounted(() => {
         </select>
       </div>
       <div class="col-md-3">
-        <select
-          class="form-select shadow-sm border-primary"
-          v-model="sortOrder"
-          @change="ReturnCombo()"
-        >
+        <select class="form-select shadow-sm border-primary" v-model="sortOrder" @change="ReturnCombo()">
           <option value="asc">Sắp xếp: A đến Z</option>
           <option value="desc">Sắp xếp: Z đến A</option>
         </select>
@@ -262,17 +249,12 @@ onMounted(() => {
 
     <!-- Nút thêm combo -->
     <div class="mb-4">
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#exampleModal"
-      >
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
         ➕ Thêm combo
       </button>
     </div>
     <CreateCombo />
-    
+
     <!-- Bảng dữ liệu -->
     <div class="table-responsive">
       <table class="table table-bordered table-hover" style="text-align: center">
@@ -290,17 +272,12 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-<tr v-for="combo in filteredCombos" :key="combo.maCombo">
+          <tr v-for="combo in filteredCombos" :key="combo.maCombo">
             <td class="text-center">{{ combo.maCombo }}</td>
             <td class="text-center">{{ combo.tenCombo }}</td>
             <td class="text-center">
-              <img
-                :src="getApiUrl + '/HinhAnh/AnhCombo/' + combo.hinh"
-                alt="Combo Image"
-                width="50"
-                height="50"
-                style="object-fit: cover; border-radius: 5px"
-              />
+              <img :src="getApiUrl + '/HinhAnh/AnhCombo/' + combo.hinh" alt="Combo Image" width="50" height="50"
+                style="object-fit: cover; border-radius: 5px" />
             </td>
             <td class="text-center">{{ combo.soLuong }}</td>
             <td class="text-center">
@@ -313,34 +290,23 @@ onMounted(() => {
             <td class="text-center">{{ formatDate(combo.ngayBatDau) }}</td>
             <td class="text-center">{{ formatDate(combo.ngayKetThuc) }}</td>
             <td class="text-center">
-              {{ new Date(combo.ngayKetThuc) < new Date() ? 'Hết hạn' : 'Đang hoạt động' }}
-            </td>
+              {{ new Date(combo.ngayKetThuc) < new Date() ? 'Hết hạn' : 'Đang hoạt động' }} </td>
             <td class="text-center">
-              <div class="action-buttons">
-                <div v-if="combo.ngayKetThuc && new Date(combo.ngayKetThuc) >= new Date()">
-                  <button
-                    type="button"
-                    data-bs-toggle="modal"
-                    :data-bs-target="`#comboEditModal_${combo.maCombo}`"
-                    class="btn btn-sm btn-warning me-1 mb-2"
-                  >
+              <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
+                <template v-if="combo.ngayKetThuc && new Date(combo.ngayKetThuc) >= new Date()">
+                  <button type="button" data-bs-toggle="modal" :data-bs-target="`#comboEditModal_${combo.maCombo}`"
+                    class="btn btn-sm btn-warning">
                     Sửa
                   </button>
                   <EditCombo :Combo="combo" :ListProduct="ListProduct" />
-                  <button
-                    @click="removeCombo(combo.maCombo)"
-                    class="btn btn-danger btn-sm me-1"
-                  >
+
+                  <button @click="removeCombo(combo.maCombo)" class="btn btn-danger btn-sm">
                     Xóa
                   </button>
-                </div>
-                <button
-                  type="button"
-                  data-bs-toggle="modal"
-                  :data-bs-target="`#comboDetailModal_${combo.maCombo}`"
-                  class="btn btn-sm btn-info me-1"
-                      style="width: 100px;"
-                >
+                </template>
+
+                <button type="button" data-bs-toggle="modal" :data-bs-target="`#comboDetailModal_${combo.maCombo}`"
+                  class="btn btn-sm btn-info text-white">
                   Chi tiết
                 </button>
                 <DetailCombo :Combo="combo" :ListProduct="ListProduct" />
@@ -358,15 +324,10 @@ onMounted(() => {
           <li class="page-item" :class="{ disabled: CurrentPage === 1 }">
             <a class="page-link" @click="ChangePage(CurrentPage - 1)" tabindex="-1">«</a>
           </li>
-          <li
-            v-for="page in TotalPages"
-            :key="page"
-            :class="{ active: page === CurrentPage }"
-            class="page-item"
-          >
+          <li v-for="page in TotalPages" :key="page" :class="{ active: page === CurrentPage }" class="page-item">
             <a class="page-link" @click="ChangePage(page)"> {{ page }} </a>
           </li>
-<li class="page-item" :class="{ disabled: CurrentPage === TotalPages }">
+          <li class="page-item" :class="{ disabled: CurrentPage === TotalPages }">
             <a class="page-link" @click="ChangePage(CurrentPage + 1)">»</a>
           </li>
         </ul>
@@ -380,9 +341,11 @@ onMounted(() => {
   cursor: pointer;
   user-select: none;
 }
+
 .sortable:hover {
   color: #f8d210;
 }
+
 /* CSS cho cột Thao tác */
 .action-buttons {
   display: flex;
@@ -397,17 +360,23 @@ onMounted(() => {
 
 /* Thêm hiệu ứng hover cho tất cả các nút */
 .btn-warning:hover {
-  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
-  background-color: #be9629 !important; /* Đổi màu nền sáng hơn */
+  color: #fff !important;
+  /* Đổi màu chữ thành trắng khi hover */
+  background-color: #be9629 !important;
+  /* Đổi màu nền sáng hơn */
 }
 
 .btn-danger:hover {
-  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
-  background-color: #dc3545 !important; /* Đổi màu nền đậm hơn */
+  color: #fff !important;
+  /* Đổi màu chữ thành trắng khi hover */
+  background-color: #dc3545 !important;
+  /* Đổi màu nền đậm hơn */
 }
 
 .btn-info:hover {
-  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
-  background-color: #17a2b8 !important; /* Đổi màu nền đậm hơn */
+  color: #fff !important;
+  /* Đổi màu chữ thành trắng khi hover */
+  background-color: #17a2b8 !important;
+  /* Đổi màu nền đậm hơn */
 }
 </style>

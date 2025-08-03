@@ -466,7 +466,7 @@ const result = await response.json();
                   <td>{{ product.tenSanPham }}</td>
                   <td>
                     <img
-                       :src="`https://localhost:7217/HinhAnh/Products/HinhAnh/Products/${
+                       :src="`https://localhost:7217/HinhAnh/Products/${
                           product.hinh
                         }`"
                       alt="Product Image" width="50" height="50" style="object-fit: cover; border-radius: 5px" />
