@@ -1,8 +1,11 @@
 <template>
   <li>
-    <a href="#" @click.prevent="showModal = true" class="dropdown-item">
-      <span class="icon_ribbon_alt me-2"></span>Vòng quay
-      <div v-if="maxSpins > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ maxSpins - spinCount }}</div>
+    <a href="#" @click.prevent="showModal = true" class="dropdown-item d-flex">
+      <div class="position-relative">
+        <span class="icon_ribbon_alt me-2"></span>
+        <div v-if="maxSpins - spinCount > 0" class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger">{{ maxSpins - spinCount }}</div>
+      </div>
+      Vòng quay
     </a>
   </li>
 

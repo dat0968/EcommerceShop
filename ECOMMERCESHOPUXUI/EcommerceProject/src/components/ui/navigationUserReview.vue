@@ -1,7 +1,10 @@
 <template>
-  <RouterLink to="/review" class="position-relative text-decoration-none">
-    <i class="fa fa-star"></i>
-    <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ totalReviewNeedSubmit }}</div>
+  <RouterLink to="/review" class="dropdown-item d-flex">
+    <div class="position-relative">
+      <i class="fa fa-star me-2"></i>
+      <div class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger" v-if="totalReviewNeedSubmit > 0">{{ totalReviewNeedSubmit }}</div>
+    </div>
+    Đánh giá
   </RouterLink>
 </template>
 
