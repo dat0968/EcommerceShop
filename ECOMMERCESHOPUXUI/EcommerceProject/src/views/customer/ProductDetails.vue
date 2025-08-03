@@ -681,7 +681,7 @@ watch(
             <!-- Middle Column - Product Info -->
             <div class="col-md-4">
                 <!-- Product Title -->
-                <h1 class="h2 fw-bold mb-3">{{ product.tenSanPham }}</h1>
+                <h1 class="h2 fw-bold mb-3" style="color: black;">{{ product.tenSanPham }}</h1>
 
                 <!-- Product Status and Brand -->
                 <div class="mb-3">
@@ -753,7 +753,7 @@ watch(
                         <i class="fas fa-shopping-cart me-2"></i>THÊM VÀO GIỎ
                     </button>
        
-                    <button style="background-color: #FBE3D7;"
+                    <button 
                         @click="toggleFavoriteProduct"
                         :class="['btn', 'btn-sm', isFavorited ? 'btn-outline-danger' : 'btn-outline-danger']">
                         <i :class="['fas', isFavorited ? 'fa-heart' : 'fa-heart']"></i>

@@ -26,7 +26,7 @@ import CompareProduct from '@/components/specicals/CompareProduct.vue'
 // import 'owl.carousel/dist/assets/owl.carousel.min.css'
 </script>
 <template>
-  <div style="background-color:#F5F3EA ;">
+  <div style="background-color:#fcece3;">
     <HeaderComponent />
     <router-view :key="$route.fullPath" />
     <chatbot></chatbot>

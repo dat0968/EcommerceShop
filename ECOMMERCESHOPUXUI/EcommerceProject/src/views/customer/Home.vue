@@ -1,5 +1,4 @@
 <script setup>
-
 import { ref, onMounted, computed, watch } from 'vue'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
@@ -86,7 +85,6 @@ function ReadToken(token) {
 const token = Cookies.get('accessToken');
 const decodedToken = ReadToken(token);
 const idKhachHang = decodedToken ? decodedToken.IdUser : null;
-const isFavorited = ref(false)
 // Countdown timer state
 const countdown = ref({
   days: 3,
@@ -121,7 +119,6 @@ onMounted(() => {
   // ... các code khác
   startCountdown()
 })
-console.log(isFavorited.value)
 const checkFavoriteProduct = async (maSp) => {
   if (!idKhachHang) return
   try {
@@ -136,7 +133,7 @@ const checkFavoriteProduct = async (maSp) => {
       })
     })
     const data = await response.json()
-    isFavorited.value = data
+    favoriteStatus.value[maSp] = data
   } catch (error) {
     console.error('Lỗi khi kiểm tra sản phẩm yêu thích:', error)
   }
@@ -156,9 +153,7 @@ const toggleFavoriteProduct = async (maSp) => {
   }
 
   try {
-
-
-    if (isFavorited.value == true) {
+    if (favoriteStatus.value[maSp] == true) {
       const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
         method: 'DELETE',
         headers: {
@@ -173,7 +168,7 @@ const toggleFavoriteProduct = async (maSp) => {
       })
       const data = await response.json()
       if (response.ok) {
-        isFavorited.value = !isFavorited.value
+        favoriteStatus.value[maSp] = !favoriteStatus.value[maSp]
 
         Swal.fire({
           title: 'Đã xóa khỏi danh sách yêu thích!',
@@ -192,7 +187,7 @@ const toggleFavoriteProduct = async (maSp) => {
         })
       }
     }
-    else if (isFavorited.value == false) {
+    else if (favoriteStatus.value[maSp] == false) {
       const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
         method: 'POST',
         headers: {
@@ -206,7 +201,7 @@ const toggleFavoriteProduct = async (maSp) => {
 
       const data = await response.json()
       if (response.ok) {
-        isFavorited.value = !isFavorited.value
+        favoriteStatus.value[maSp] = !favoriteStatus.value[maSp]
 
         Swal.fire({
           title: 'Đã thêm vào danh sách yêu thích!',
@@ -372,85 +367,96 @@ onMounted(() => {
   setTimeout(() => {
     ListNewProducts.value.forEach(item => {
       calculatePriceInfo(parsePrice(item.khoangGia), item.maSp)
+      checkFavoriteProduct(item.maSp)
+    })
+    ListBestHotProducts.value.forEach(item => {
+      checkFavoriteProduct(item.maSp)
+    })
+    ListBestSellerProducts.value.forEach(item => {
+      checkFavoriteProduct(item.maSp)
     })
   }, 100)
-  //checkFavoriteProduct()
 })
 </script>
 <template>
   <div>
     <!-- Categories Section Begin -->
-    <section class="categories">
+    <section class="categories" style="font-family: Arial, Helvetica, sans-serif;">
       <div class="container-fluid">
         <div class="row">
           <div class="col-lg-6 p-0">
             <div
-              class="categories__item categories__large__item set-bg"
+              class="categories__item categories__large__item set-bg animated-category"
               data-setbg="../../assets/img/categories/category-1.jpg"
             >
               <div class="categories__text">
-                <h1>Thời trang nữ</h1>
-                <p>Khám phá phong cách thời trang dành riêng cho phái đẹp.</p>
+                <h1 style="font-family: Arial, Helvetica, sans-serif;">Thời trang nữ</h1>
+                <p style="color: #000;">Khám phá phong cách thời trang dành riêng cho phái đẹp.</p>
                 <router-link style="text-decoration-line: none" to="/Shop">Mua ngay</router-link>
               </div>
+              <div class="category-icon"><i class="fas fa-female fa-3x"></i></div>
             </div>
           </div>
           <div class="col-lg-6">
             <div class="row">
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
                 <div
-                  class="categories__item set-bg"
+                  class="categories__item set-bg animated-category"
                   data-setbg="../../assets/img/categories/category-2.jpg"
                 >
                   <div class="categories__text">
                     <h4>Thời trang nam</h4>
-                    <p>Đậm chất nam tính, phong cách lịch lãm</p>
+                
                     <router-link style="text-decoration-line: none" to="/Shop"
                       >Mua ngay</router-link
                     >
                   </div>
+                  <div class="category-icon"><i class="fas fa-male fa-3x"></i></div>
                 </div>
               </div>
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
                 <div
-                  class="categories__item set-bg"
+                  class="categories__item set-bg animated-category"
                   data-setbg="../../assets/img/categories/category-3.jpg"
                 >
                   <div class="categories__text">
                     <h4>Thời trang trẻ em</h4>
-                    <p>Phong cách năng động, dễ thương cho bé yêu</p>
+                    <!-- <p>Phong cách năng động, dễ thương cho bé yêu</p> -->
                     <router-link style="text-decoration-line: none" to="/Shop"
                       >Mua ngay</router-link
                     >
                   </div>
+                  <div class="category-icon"><i class="fas fa-child fa-3x"></i></div>
                 </div>
               </div>
               <div class="col-lg-6 col-md-6 col-sm-6 p-0" style="height: 327px">
                 <div
-                  class="categories__item set-bg"
+                  class="categories__item set-bg animated-category"
                   data-setbg="../../assets/img/categories/category-4.jpg"
                 >
-                  <div class="categories__text">
+                  <div class="categories__text" style="margin-top: 100px;">
                     <h4>Giày dép</h4>
-                    <p>Bước đi phong cách, vững vàng mỗi ngày</p>
+                    <!-- <p>Bước đi phong cách, vững vàng mỗi ngày</p> -->
                     <router-link style="text-decoration-line: none" to="/Shop"
                       >Mua ngay</router-link
                     >
                   </div>
+                  <div class="category-icon"><i class="fas fa-shoe-prints fa-3x"></i></div>
                 </div>
               </div>
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
                 <div
-                  class="categories__item set-bg"
+                  class="categories__item set-bg animated-category"
                   data-setbg="../../assets/img/categories/category-5.jpg"
                 >
                   <div class="categories__text">
                     <h4>Phụ kiện</h4>
-                    <p>Hoàn thiện phong cách với hàng trăm phụ kiện hot</p>
+                    <!-- <p>Hoàn thiện phong cách với hàng trăm phụ kiện hot</p> -->
                     <router-link style="text-decoration-line: none" to="/Shop"
                       >Mua ngay</router-link
                     >
                   </div>
+                  <div class="category-icon"><i class="fas fa-glasses fa-3x"></i></div>
                 </div>
               </div>
             </div>
@@ -522,10 +528,20 @@ onMounted(() => {
               <div class="product-slide flex-shrink-0 me-3" v-for="item in ListNewProducts" :key="item.maSp"
                 style="width: 280px;">
                 <div class="product__item">
-                  <div class="product__item__pic" style="height: 320px;">
+                  <div class="product__item__pic position-relative animated-product" style="height: 320px;">
                     <img
                       :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                       :alt="item.tenSanPham" class="w-100 h-100" style="object-fit: cover; border-radius: 12px;" />
+
+                    <!-- Discount Badge on Image -->
+                    <div class="discount-badge position-absolute top-0 start-0 m-2">
+                      <div class="bg-danger text-white px-2 py-1 rounded-2 d-flex align-items-center shadow-sm">
+                        <i class="fas fa-bolt me-1 animated-icon" style="font-size: 12px;"></i>
+                        <small class="fw-bold" style="font-size: 11px;">
+                          -{{ calculatePriceInfo(parsePrice(item.khoangGia), item.maSp).discountPercentage }}%
+                        </small>
+                      </div>
+                    </div>
 
                     <!-- Hover Icons -->
                     <ul class="product__hover">
@@ -572,7 +588,6 @@ onMounted(() => {
                       </small>
                     </div>
 
-
                   </div>
                 </div>
               </div>
@@ -587,8 +602,9 @@ onMounted(() => {
     <!-- Product Section End -->
 
     <!-- Banner Section Begin -->
-    <section class="banner set-bg" style="position: relative;">
-      <img src="../../assets/Customer/img/banner/banner-1.jpg" style="width: 100%; height:400px;">
+    <section class=" set-bg" style="position: relative; margin-bottom: 50px;">
+      <img src="../../assets/Customer/img/banner/banner-1.jpg" class="animated-banner" style="width: 100%; height:400px;">
+      <div class="banner-icon"><i class="fas fa-tags fa-3x"></i></div>
       <div class="container"
         style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white;">
         <div class="row">
@@ -690,9 +706,10 @@ onMounted(() => {
           <div class="row">
             <!-- Left Side - Advertisement Banner -->
             <div class="col-md-2">
-              <div class="position-relative overflow-hidden rounded-3 h-100">
-                <img src="https://i.pinimg.com/736x/21/2e/89/212e89b52f75614326c39f92297030a7.jpg" alt="Fashion Banner"
+              <div class="position-relative overflow-hidden rounded-3 h-100 animated-banner">
+                <img src="/src/assets/images/Beige Minimalist Fashion Business Banner (1).png" alt="Fashion Banner"
                   class="w-100 h-100 object-fit-cover" style="min-height: 580px;">
+                <div class="banner-icon"><i class="fas fa-ad fa-3x"></i></div>
               </div>
             </div>
 
@@ -704,12 +721,14 @@ onMounted(() => {
                   <div class="hot-product-item">
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative"
+                      <div class="product__item__pic position-relative animated-product"
                         style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-                          :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
-
+  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+  :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
+<div class="product-icon position-absolute top-0 start-0 m-2">
+  <i class="fas fa-fire text-danger fa-2x"></i>
+</div>
                         <!-- Hover Icons -->
                         <ul class="product__hover">
                           <li>
@@ -744,7 +763,7 @@ onMounted(() => {
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center"
+                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
                           style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
                           @click="toggleFavoriteProduct(item.maSp)">
                           <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
@@ -766,11 +785,14 @@ onMounted(() => {
                   <div class="hot-product-item">
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative"
+                      <div class="product__item__pic position-relative animated-product"
                         style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-                          :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
+  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+  :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
+<div class="product-icon position-absolute top-0 start-0 m-2">
+  <i class="fas fa-fire text-danger fa-2x"></i>
+</div>
 
                         <!-- Hover Icons -->
                         <ul class="product__hover">
@@ -806,7 +828,7 @@ onMounted(() => {
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center"
+                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
                           style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
                           @click="toggleFavoriteProduct(item.maSp)">
                           <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
@@ -826,19 +848,19 @@ onMounted(() => {
             <div class="row g-4">
               <!-- Left Banner -->
               <div class="col-md-6">
-                <div class="position-relative overflow-hidden rounded-4 angel-banner">
-                  <img src="https://i.pinimg.com/736x/1e/6b/26/1e6b26db806e77ae28f29ea52310746d.jpg"
+                <div class="position-relative overflow-hidden rounded-4 angel-banner animated-banner">
+                  <img src="/src/assets/images/banner ngang2.jpg"
                     alt="Angel Fashion Banner" class="w-100" style="height: 350px; object-fit: cover; ">
-
+                  <div class="banner-icon"><i class="fas fa-female fa-3x"></i></div>
                 </div>
               </div>
 
               <!-- Right Banner -->
               <div class="col-md-6">
-                <div class="position-relative overflow-hidden rounded-4 angel-banner">
-                  <img src="https://i.pinimg.com/1200x/39/4b/4f/394b4f714fada2935ce2d63d867aca8d.jpg"
+                <div class="position-relative overflow-hidden rounded-4 angel-banner animated-banner">
+                  <img src="/src/assets/images/banner ngang.jpg"
                     alt="Angel Fashion Trends" class="w-100" style="height: 350px; object-fit: cover;">
-
+                  <div class="banner-icon"><i class="fas fa-star fa-3x"></i></div>
                 </div>
               </div>
             </div>
@@ -850,16 +872,17 @@ onMounted(() => {
         <div class="mb-5">
           <div class="row align-items-center mb-4">
             <div class="col">
-              <h3 class="fw-bold mb-0 angel-text-gradient"><i class="fa fa-shopping-basket"></i> Sản phẩm bán chạy</h3>
+              <h3 class="fw-bold mb-0 angel-text-gradient"><i class="fas fa-trophy text-warning "></i> Sản phẩm bán chạy</h3>
             </div>
           </div>
 
           <div class="row">
             <!-- Left Side - Advertisement Banner -->
             <div class="col-md-2">
-              <div class="position-relative overflow-hidden rounded-3 h-100">
+              <div class="position-relative overflow-hidden rounded-3 h-100 animated-banner">
                 <img src="https://i.pinimg.com/1200x/17/12/e0/1712e06978a02432d83d400d6bded81a.jpg"
                   alt="Best Seller Banner" class="w-100 h-100 object-fit-cover" style="min-height: 580px;">
+                <div class="banner-icon"><i class="fas fa-ad fa-3x"></i></div>
               </div>
             </div>
 
@@ -871,11 +894,14 @@ onMounted(() => {
                   <div class="hot-product-item">
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative"
+                      <div class="product__item__pic position-relative animated-product"
                         style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-                          :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
+  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+  :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
+<div class="product-icon position-absolute top-0 start-0 m-2">
+  <i class="fas fa-trophy text-warning fa-2x"></i>
+</div>
 
                         <!-- Hover Icons -->
                         <ul class="product__hover">
@@ -911,7 +937,7 @@ onMounted(() => {
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center"
+                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
                           style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
                           @click="toggleFavoriteProduct(item.maSp)">
                           <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
@@ -933,11 +959,14 @@ onMounted(() => {
                   <div class="hot-product-item">
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative"
+                      <div class="product__item__pic position-relative animated-product"
                         style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <img
                           :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                           :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                        <div class="product-icon position-absolute bottom-0 end-0 m-2">
+                          <i class="fas fa-trophy text-warning fa-2x"></i>
+                        </div>
 
                         <!-- Hover Icons -->
                         <ul class="product__hover">
@@ -973,7 +1002,7 @@ onMounted(() => {
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center"
+                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
                           style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
                           @click="toggleFavoriteProduct(item.maSp)">
                           <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
@@ -1089,6 +1118,11 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product__item__pic:hover img {
+  transform: scale(1.05);
 }
 
 .categories__item {
@@ -1098,6 +1132,11 @@ onMounted(() => {
   height: 100%;
   min-height: 300px;
   position: relative;
+  transition: opacity 0.3s ease;
+}
+
+.categories__item:hover {
+  opacity: 0.9;
 }
 
 .categories__large__item {
@@ -1111,6 +1150,14 @@ onMounted(() => {
   height: 100%;
   min-height: 500px;
   position: relative;
+}
+
+.banner img {
+  transition: transform 0.5s ease;
+}
+
+.banner:hover img {
+  transform: rotate(2deg) scale(1.02);
 }
 
 .instagram__item {
@@ -1163,6 +1210,11 @@ onMounted(() => {
   object-fit: contain;
   display: block;
   margin: 0 auto;
+  transition: transform 0.3s ease;
+}
+
+.trend__item__pic:hover img {
+  transform: scale(1.1);
 }
 
 .trend__item__text {
@@ -1208,4 +1260,80 @@ onMounted(() => {
   border-color: #EC4E79;
   color: white;
 }
+
+/* New Styles for Icons and Animations */
+.animated-category {
+  position: relative;
+}
+
+.category-icon {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  color: white;
+  opacity: 0.7;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.categories__item:hover .category-icon {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.animated-product img {
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.animated-product:hover img {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.animated-banner img {
+  transition: transform 0.5s ease;
+}
+
+.animated-banner:hover img {
+  transform: scale(1.03);
+}
+
+.animated-icon {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.banner-icon {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  color: white;
+  opacity: 0.7;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.position-relative:hover .banner-icon {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.product-icon {
+  opacity: 0.8;
+  transition: transform 0.3s ease;
+}
+
+.product__item__pic:hover .product-icon {
+  transform: scale(1.2);
+}
+
 </style>
