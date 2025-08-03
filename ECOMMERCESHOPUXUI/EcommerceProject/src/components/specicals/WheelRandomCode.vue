@@ -1,112 +1,115 @@
 <template>
-  <!-- Icon to trigger the wheel modal -->
-  <a href="#" @click.prevent="showModal = true" class="position-relative text-decoration-none">
-    <span class="icon_ribbon_alt"></span>
-    <div v-if="maxSpins > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ maxSpins - spinCount }}</div>
-  </a>
+  <li>
+    <a href="#" @click.prevent="showModal = true" class="dropdown-item">
+      <span class="icon_ribbon_alt me-2"></span>Vòng quay
+      <div v-if="maxSpins > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ maxSpins - spinCount }}</div>
+    </a>
+  </li>
 
-  <!-- Icon to trigger the streak modal -->
-  <a href="#" @click.prevent="showStreakModal = true" class="position-relative text-decoration-none ms-3">
-    <span class="icon_calendar"></span>
-  </a>
-
-  <!-- Modal for the wheel -->
-  <div
-    v-if="showModal"
-    class="modal fade show d-block"
-    tabindex="-1"
-    style="background: rgba(0, 0, 0, 0.45)"
-    @click.self="closeModal"
-  >
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content p-4 position-relative">
-        <div class="modal-header text-center border-0 pb-0">
-          <h5 class="modal-title w-100 fs-4">Vòng Quay May Mắn</h5>
-          <button
-            type="button"
-            class="btn-close position-absolute end-0 top-0 m-3"
-            @click="closeModal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body d-flex flex-column align-items-center">
-          <!-- Responsive Wheel Container -->
-          <div class="wheel-container">
-            <svg
-              class="wheel-svg"
-              viewBox="0 0 100 100"
-              :style="{ transform: `rotate(${rotation}deg)` }"
-            >
-              <g v-for="(item, idx) in prizes" :key="idx">
-                <path
-                  :d="describeArc(50, 50, 48, idx * arc, (idx + 1) * arc)"
-                  :fill="item.isBlank ? '#BDBDBD' : colors[idx % colors.length]"
-                  stroke="#fff"
-                  stroke-width="0.5"
-                />
-                <text
-                  class="wheel-text"
-                  :x="getTextPos(idx).x"
-                  :y="getTextPos(idx).y"
-                  :transform="getTextTransform(idx)"
-                >
-                  {{ item.isBlank ? item.name : item.revealed ? item.name : '?' }}
-                </text>
-              </g>
-            </svg>
-            <div class="wheel-pointer">▼</div>
+  <teleport to="body">
+    <!-- Modal for the wheel -->
+    <div
+      v-if="showModal"
+      class="modal fade show d-block"
+      tabindex="-1"
+      style="background: rgba(0, 0, 0, 0.45)"
+      @click.self="closeModal"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-4 position-relative">
+          <div class="modal-header text-center border-0 pb-0">
+            <h5 class="modal-title w-100 fs-4">Vòng Quay May Mắn
+              <!-- Icon to trigger the streak modal -->
+              <a href="#" @click.prevent="showStreakModal = true" class="position-relative text-decoration-none ms-3">
+                <span class="icon_calendar"></span>
+              </a>
+            </h5>
+            <button
+              type="button"
+              class="btn-close position-absolute end-0 top-0 m-3"
+              @click="closeModal"
+              aria-label="Close"
+            ></button>
           </div>
-
-          <!-- Spin Button -->
-          <button
-            class="btn btn-primary mt-4 px-4 py-2 fs-5"
-            :disabled="spinning || spinCount >= maxSpins"
-            @click="spin"
-          >
-            <span v-if="spinning">Đang quay...</span>
-            <span v-else>Quay ({{ maxSpins - spinCount }} lượt)</span>
-          </button>
-
-          <button
-            class="btn btn-info mt-3 px-4 py-2 fs-5 text-white"
-            :disabled="checkingCoupon"
-            @click="checkSpinCount"
-          >
-            <span v-if="checkingCoupon">Đang kiểm tra...</span>
-            <span v-else>Kiểm tra lượt quay</span>
-          </button>
-
-          <!-- Result Display -->
-          <div
-            v-if="selectedPrize"
-            :class="[
-              'alert',
-              selectedPrize.isBlank ? 'alert-secondary' : 'alert-success',
-              'mt-4',
-              'text-center',
-              'w-100',
-            ]"
-            role="alert"
-          >
-            <h5 v-if="!selectedPrize.isBlank" class="mb-2">Chúc mừng bạn đã trúng!</h5>
-            <div class="fw-bold fs-5">{{ selectedPrize.name }}</div>
-            <div v-if="!selectedPrize.isBlank && selectedPrize.revealed" class="mt-2">
-              Mã code:
-              <code class="coupon-code" @click="copyCode(selectedPrize.code)">{{
-                selectedPrize.code
-              }}</code>
+          <div class="modal-body d-flex flex-column align-items-center">
+            <!-- Responsive Wheel Container -->
+            <div class="wheel-container">
+              <svg
+                class="wheel-svg"
+                viewBox="0 0 100 100"
+                :style="{ transform: `rotate(${rotation}deg)` }"
+              >
+                <g v-for="(item, idx) in prizes" :key="idx">
+                  <path
+                    :d="describeArc(50, 50, 48, idx * arc, (idx + 1) * arc)"
+                    :fill="item.isBlank ? '#BDBDBD' : colors[idx % colors.length]"
+                    stroke="#fff"
+                    stroke-width="0.5"
+                  />
+                  <text
+                    class="wheel-text"
+                    :x="getTextPos(idx).x"
+                    :y="getTextPos(idx).y"
+                    :transform="getTextTransform(idx)"
+                  >
+                    {{ item.isBlank ? item.name : item.revealed ? item.name : '?' }}
+                  </text>
+                </g>
+              </svg>
+              <div class="wheel-pointer">▼</div>
             </div>
-            <transition name="fade">
-              <div v-if="copied" class="text-success mt-2">Đã sao chép!</div>
-            </transition>
+
+            <!-- Spin Button -->
+            <button
+              class="btn btn-primary mt-4 px-4 py-2 fs-5"
+              :disabled="spinning || spinCount >= maxSpins"
+              @click="spin"
+            >
+              <span v-if="spinning">Đang quay...</span>
+              <span v-else>Quay ({{ maxSpins - spinCount }} lượt)</span>
+            </button>
+
+            <button
+              class="btn btn-info mt-3 px-4 py-2 fs-5 text-white"
+              :disabled="checkingCoupon"
+              @click="checkSpinCount"
+            >
+              <span v-if="checkingCoupon">Đang kiểm tra...</span>
+              <span v-else>Kiểm tra lượt quay</span>
+            </button>
+
+            <!-- Result Display -->
+            <div
+              v-if="selectedPrize"
+              :class="[
+                'alert',
+                selectedPrize.isBlank ? 'alert-secondary' : 'alert-success',
+                'mt-4',
+                'text-center',
+                'w-100',
+              ]"
+              role="alert"
+            >
+              <h5 v-if="!selectedPrize.isBlank" class="mb-2">Chúc mừng bạn đã trúng!</h5>
+              <div class="fw-bold fs-5">{{ selectedPrize.name }}</div>
+              <div v-if="!selectedPrize.isBlank && selectedPrize.revealed" class="mt-2">
+                Mã code:
+                <code class="coupon-code" @click="copyCode(selectedPrize.code)">{{
+                  selectedPrize.code
+                }}</code>
+              </div>
+              <transition name="fade">
+                <div v-if="copied" class="text-success mt-2">Đã sao chép!</div>
+              </transition>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Streak Animation Modal -->
-  <StreakAnimationModal v-if="showStreakModal" :show="showStreakModal" :streakData="streakData" @close="showStreakModal = false" />
+    <!-- Streak Animation Modal -->
+    <StreakAnimationModal v-if="showStreakModal" :show="showStreakModal" :streakData="streakData" @close="showStreakModal = false" />
+  </teleport>
 </template>
 
 <script setup>
@@ -236,6 +239,8 @@ const initializeWheel = async () => {
       }
       localStorage.setItem('wheel_swal_date', today)
     })
+  } else if (maxSpins.value > 0) { // Show modal directly if spins available and no Swal needed
+    showModal.value = true;
   }
 }
 
