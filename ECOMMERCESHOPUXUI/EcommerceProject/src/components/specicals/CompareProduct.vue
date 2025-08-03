@@ -867,12 +867,79 @@ export default {
         })
         return
       }
-      this.showModelSelection = true
-      this.currentTryOnGroupIdx = groupIdx
+
+      const savedUrl = localStorage.getItem(`lightx_result_url_${groupIdx}`)
+      if (savedUrl) {
+        Swal.fire({
+          title: 'Phân tích chưa hoàn tất',
+          text: 'Đã tìm thấy kết quả thử đồ chưa được phân tích. Bạn có muốn tiếp tục phân tích ảnh này không?',
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Tiếp tục phân tích',
+          cancelButtonText: 'Bắt đầu lại',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.resumeAnalysis(groupIdx, savedUrl)
+          } else {
+            localStorage.removeItem(`lightx_result_url_${groupIdx}`)
+            this.showModelSelection = true
+            this.currentTryOnGroupIdx = groupIdx
+          }
+        })
+      } else {
+        this.showModelSelection = true
+        this.currentTryOnGroupIdx = groupIdx
+      }
     },
+
+    async resumeAnalysis(groupIdx, imageUrl) {
+      this.loadingGroup = groupIdx
+      const group = this.compareGroups[groupIdx]
+      const modelInfo = { name: 'Người mẫu đã lưu', url: '' } // Model info is lost, but not critical
+
+      try {
+        const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
+          resultImageUrl: imageUrl,
+          productsData: group.products,
+        })
+
+        if (!geminiResponse.success) {
+          const errorData =  geminiResponse
+          throw new Error(`Gemini API request failed: ${errorData.error?.message || geminiResponse.statusText}`)
+        }
+
+        const result =  geminiResponse
+
+        this.tryOnResults[groupIdx] = {
+          model: modelInfo,
+          image: imageUrl, // Use the saved image URL
+          score: result.data.aesthetic_score,
+          style: result.data.style,
+          gender_suitability: result.data.gender_suitability,
+          products: group.products,
+          time: new Date().toISOString(),
+        }
+        this.tryOnResults = { ...this.tryOnResults }
+        this.groupFlipped[groupIdx] = true
+
+        // Clean up on success
+        localStorage.removeItem(`lightx_result_url_${groupIdx}`)
+      } catch (error) {
+        console.error('Error during resumed analysis:', error)
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi phân tích',
+          text: `Không thể hoàn tất phân tích. Vui lòng thử lại. Lỗi: ${error.message}`,
+        })
+      } finally {
+        this.loadingGroup = null
+      }
+    },
+
     cancelApiSettings() {
       this.showApiSettings = false
     },
+
     saveApiSettings() {
       localStorage.setItem('lightxApiKey', this.apiKeys.lightxApiKey)
       this.showApiSettings = false
@@ -884,6 +951,7 @@ export default {
         showConfirmButton: false,
       })
     },
+
     async confirmModelSelection() {
       if (!this.selectedTryOnModel && !this.userModelFile) {
         Swal.fire({
@@ -902,106 +970,92 @@ export default {
         ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
         : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl }
 
+      const lightXResultUrlKey = `lightx_result_url_${groupIdx}`
+
       try {
         const group = this.compareGroups[groupIdx]
         if (!group || !group.products || group.products.length === 0) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Không có sản phẩm',
-            text: 'Nhóm này chưa có sản phẩm để thử đồ.',
-          })
+          Swal.fire({ icon: 'warning', title: 'Không có sản phẩm', text: 'Nhóm này chưa có sản phẩm để thử đồ.' })
           return
         }
 
-        let modelImageForAI = modelInfo.url
-        if (!modelImageForAI.startsWith('data:')) {
-          const loadedModelImage = await this.loadImage(modelImageForAI)
-          modelImageForAI = imageToDataURL(loadedModelImage)
+        // Step 1: Get public URLs for all images
+        let modelImageUrl = modelInfo.url;
+        if (this.userModelFile) {
+            const formData = new FormData();
+            formData.append('file', this.userModelFile);
+            const response = await axiosConfig.postToApi('/TryOn/UploadImage', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            if (!response.success) throw new Error('Không thể tải ảnh người mẫu của bạn lên máy chủ.');
+            modelImageUrl = response.data.imageUrl;
+        } else if (modelImageUrl.includes('localhost')) {
+            const response = await axiosConfig.postToApi('/TryOn/UploadFromUrl', { imageUrl: modelImageUrl });
+            if (!response.success) throw new Error('Không thể tải ảnh người mẫu có sẵn lên máy chủ.');
+            modelImageUrl = response.data.imageUrl;
         }
 
-        const productImages = []
+        const productPublicUrls = [];
         for (const item of group.products) {
-          let imgUrl = item.image || (item.products && item.products[0]?.image)
+          let imgUrl = item.image || (item.products && item.products[0]?.image);
           if (imgUrl) {
-            try {
-              const prodImg = await this.loadImage(imgUrl)
-              productImages.push(prodImg)
-            } catch (error) {
-              console.error(`Failed to load product image: ${imgUrl}`, error)
-              continue
+            if (imgUrl.includes('localhost')) {
+              const response = await axiosConfig.postToApi('/TryOn/UploadFromUrl', { imageUrl: imgUrl });
+              if (!response.success) throw new Error(`Không thể tải ảnh sản phẩm "${item.name || ''}" lên máy chủ.`);
+              productPublicUrls.push(response.data.imageUrl);
+            } else {
+              productPublicUrls.push(imgUrl);
             }
           }
         }
 
-        if (productImages.length === 0) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Lỗi',
-            text: 'Không có hình ảnh sản phẩm hợp lệ để xử lý.',
-          })
-          return
+        if (productPublicUrls.length === 0) {
+          Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không có hình ảnh sản phẩm hợp lệ để xử lý.' });
+          return;
         }
 
-        const tryOnImageResultUrl = await this.processWithLightX(modelImageForAI, productImages.map(img => imageToDataURL(img)))
-
-        // Gửi yêu cầu tới WebAPI để tải lên Cloudinary
-        const formData = new FormData()
-        if (tryOnImageResultUrl.startsWith('data:')) {
-          const blob = dataURLtoBlob(tryOnImageResultUrl)
-          formData.append('file', blob, `try-on-result_${Date.now()}.jpg`)
-        } else {
-          formData.append('file', tryOnImageResultUrl)
-        }
-        formData.append('tag', 'try-on-result')
-
-        const cloudinaryResponse = await axiosConfig.postToApi('/TryOn/UploadImage', {
-           formData
-        })
-
-        if (!cloudinaryResponse.success) {
-          const errorText = cloudinaryResponse.message
-          throw new Error(`Cloudinary upload failed: ${errorText}`)
+        // Step 2: Load all images as data URLs to be sent to LightX
+        const modelDataUrl = await this.loadImageAsDataUrl(modelImageUrl);
+        const productDataUrls = [];
+        for(const url of productPublicUrls) {
+            productDataUrls.push(await this.loadImageAsDataUrl(url));
         }
 
-        const cloudinaryData = await cloudinaryResponse.json()
-        const finalImageUrl = cloudinaryData.data.imageUrl
+        // Step 3: Process with LightX using the reliable blob upload method
+        const tryOnImageResultUrl = await this.processWithLightX(modelDataUrl, productDataUrls);
+        localStorage.setItem(lightXResultUrlKey, tryOnImageResultUrl);
 
-        // Ghép hình ảnh để gửi tới Gemini API
-        const combinedImage = await this.combineImagesOnCanvas([
-          await this.loadImage(finalImageUrl),
-          ...productImages,
-        ])
-
-        // Gửi yêu cầu tới WebAPI Gemini
+        // Step 4: Send to Gemini for analysis
         const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
-            resultImageUrl: combinedImage,
-            productsData: group.products,
+          resultImageUrl: tryOnImageResultUrl,
+          productsData: group.products,
         })
 
-        if (!geminiResponse.ok) {
-          const errorData = await geminiResponse.json()
-          throw new Error(`Gemini API request failed: ${errorData.error?.message || geminiResponse.statusText}`)
+        if (!geminiResponse.success) {
+          const errorData = geminiResponse
+          throw new Error(`Gemini API request failed: ${errorData.error?.message || geminiResponse.data.message}`)
         }
 
-        const result = await geminiResponse.json()
+        const result = geminiResponse
 
         this.tryOnResults[groupIdx] = {
           model: modelInfo,
-          image: finalImageUrl,
-          score: result.aesthetic_score,
-          style: result.style,
-          gender_suitability: result.gender_suitability,
+          image: tryOnImageResultUrl,
+          score: result.data.aesthetic_score,
+          style: result.data.style,
+          gender_suitability: result.data.gender_suitability,
           products: group.products,
           time: new Date().toISOString(),
         }
         this.tryOnResults = { ...this.tryOnResults }
         this.groupFlipped[groupIdx] = true
+
+        localStorage.removeItem(lightXResultUrlKey)
+
       } catch (error) {
         console.error('Error during try-on process:', error)
         Swal.fire({
           icon: 'error',
           title: 'Lỗi xử lý',
-          text: error.message || 'Có lỗi xảy ra trong quá trình xử lý.',
+          text: error.message || 'Có lỗi xảy ra trong quá trình xử lý. Kết quả trung gian đã được lưu, bạn có thể thử lại.',
         })
       } finally {
         this.loadingGroup = null
@@ -1017,28 +1071,49 @@ export default {
     },
     async processWithLightX(modelDataUrl, productDataUrls) {
       try {
-        const apiKey = this.apiKeys.lightxApiKey
-        const modelBlob = dataURLtoBlob(modelDataUrl)
-        const modelUploadData = await this.getLightXUploadUrl(apiKey, modelBlob.size)
-        await this.uploadToLightX(modelUploadData.uploadImage, modelBlob)
-        const modelImageUrl = modelUploadData.imageUrl
+        const apiKey = this.apiKeys.lightxApiKey;
 
-        const productBlob = dataURLtoBlob(productDataUrls[0])
-        const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size)
-        await this.uploadToLightX(productUploadData.uploadImage, productBlob)
-        const styleImageUrl = productUploadData.imageUrl
+        // Step 1 & 2: Upload model image
+        const modelBlob = dataURLtoBlob(modelDataUrl);
+        if (!modelBlob) {
+          throw new Error('Không thể chuyển đổi ảnh người mẫu sang định dạng có thể xử lý. Ảnh có thể bị hỏng.');
+        }
+        const modelUploadData = await this.getLightXUploadUrl(apiKey, modelBlob.size);
+        await this.uploadToLightX(modelUploadData.uploadImage, modelBlob);
+        const modelImageUrl = modelUploadData.imageUrl;
 
-        const orderId = await this.startLightXJob(apiKey, modelImageUrl, styleImageUrl)
-        const resultUrl = await this.pollLightXJob(apiKey, orderId)
-        return resultUrl
+        // Step 1 & 2: Upload product image (we use the first one for the style)
+        const productBlob = dataURLtoBlob(productDataUrls[0]);
+        if (!productBlob) {
+          throw new Error('Không thể chuyển đổi ảnh sản phẩm sang định dạng có thể xử lý. Ảnh có thể bị hỏng.');
+        }
+        const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size);
+        await this.uploadToLightX(productUploadData.uploadImage, productBlob);
+        const styleImageUrl = productUploadData.imageUrl;
+
+        // Step 3: Start the job
+        const orderId = await this.startLightXJob(apiKey, modelImageUrl, styleImageUrl);
+
+        // Step 4: Poll for the result
+        const resultUrl = await this.pollLightXJob(apiKey, orderId);
+        return resultUrl;
+
       } catch (error) {
-        console.error('Error processing with LightX API:', error)
+        console.error('Error processing with LightX API:', error);
+        let userMessage = error.message; // Default message
+        if (error.message && error.message.includes('5044')) {
+          userMessage =
+            'Không thể xử lý ảnh bằng AI. Điều này có thể do ảnh người mẫu hoặc ảnh sản phẩm không phù hợp (ví dụ: độ phân giải thấp, khuôn mặt không rõ ràng, hoặc định dạng không được hỗ trợ). Vui lòng thử sử dụng một ảnh khác.'
+        } else if (error.message && error.message.includes('timed out')) {
+          userMessage = 'Quá trình xử lý mất quá nhiều thời gian. Vui lòng thử lại sau.'
+        }
+
         Swal.fire({
           icon: 'error',
-          title: 'Lỗi LightX API',
-          text: error.message,
-        })
-        throw error
+          title: 'Lỗi xử lý ảnh từ LightX',
+          text: userMessage,
+        });
+        throw error; // Re-throw to be caught by the calling function
       }
     },
     async getLightXUploadUrl(apiKey, size) {
@@ -1093,8 +1168,9 @@ export default {
     },
 
     async pollLightXJob(apiKey, orderId) {
-      const maxRetries = 5
-      const delay = 3000 // 3 seconds
+      const maxRetries = 10 // Tăng số lần thử lại
+      const delay = 5000 // Tăng thời gian chờ lên 5 giây
+
       for (let i = 0; i < maxRetries; i++) {
         await new Promise((resolve) => setTimeout(resolve, delay))
         const response = await fetch('https://api.lightxeditor.com/external/api/v2/order-status', {
@@ -1106,6 +1182,13 @@ export default {
           body: JSON.stringify({ orderId }),
         })
         const data = await response.json()
+
+        // **FIX: Thêm kiểm tra chặt chẽ cho phản hồi từ API**
+        if (data.statusCode !== 2000 || !data.body) {
+          console.error('LightX pollJob failed or returned unexpected data. Full response:', data)
+          throw new Error(`LightX job status check failed: ${data.message || 'No response body'}`)
+        }
+
         if (data.body.status === 'active') {
           return data.body.output
         }
@@ -1113,13 +1196,23 @@ export default {
           console.error('LightX job failed. Full response:', data)
           throw new Error('LightX job failed.')
         }
+        // Nếu trạng thái là 'pending' hoặc khác, vòng lặp sẽ tiếp tục
       }
-      throw new Error('LightX job timed out.')
+      throw new Error('LightX job timed out after several retries.')
     },
-    async loadImage(url) {
+    async loadImageAsDataUrl(url) {
+      const img = await this.loadImage(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      return canvas.toDataURL('image/jpeg');
+    },
+    loadImage(url) {
       return new Promise((resolve, reject) => {
         const img = new window.Image()
-        img.crossOrigin = 'Anonymous' // Request CORS. Server must also send Access-Control-Allow-Origin header.
+        img.crossOrigin = 'Anonymous' // Request CORS
         img.onload = () => resolve(img)
         img.onerror = (e) => {
           console.error('Error loading image:', url, e)
@@ -1129,41 +1222,8 @@ export default {
       })
     },
 
-    async combineImagesOnCanvas(images) {
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
+    // --- End of Re-added Helper Functions ---
 
-      let totalWidth = 0
-      let maxHeight = 0
-
-      // Calculate total width and max height
-      for (const img of images) {
-        if (!(img instanceof HTMLImageElement)) {
-          console.error('Invalid image type:', img)
-          throw new Error('All inputs to combineImagesOnCanvas must be HTMLImageElement.')
-        }
-        totalWidth += img.naturalWidth
-        if (img.naturalHeight > maxHeight) {
-          maxHeight = img.naturalHeight
-        }
-      }
-
-      canvas.width = totalWidth
-      canvas.height = maxHeight
-
-      let currentX = 0
-      for (const img of images) {
-        try {
-        ctx.drawImage(img, currentX, 0, img.naturalWidth, img.naturalHeight)
-        currentX += img.naturalWidth
-        } catch (e) {
-          console.error('Error drawing image on canvas:', e, img)
-          throw new Error('Failed to draw image on canvas.')
-        }
-      }
-
-      return canvas.toDataURL('image/jpeg')
-    },
     checkCategoryConflict(item, groupIdx) {
       const group = this.compareGroups[groupIdx]
       if (group.products.length === 0) return false
