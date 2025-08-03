@@ -88,7 +88,9 @@
                       </div>
                       <div class="col-md-10">
                         <h5 class="mb-1">
-                          {{ item.tenDoiTuong }}
+                          <RouterLink :to="item.maSp ? '/product/' + item.maSp : '/combo/' + item.maCombo">
+                            {{ item.tenDoiTuong }}
+                          </RouterLink>
                         </h5>
                         <p class="text-muted small mb-2">
                           <strong>{{ item.maSp ? 'Sản phẩm' : 'Combo' }}:</strong>
@@ -194,7 +196,11 @@
                         @click="openLightbox([item.hinhAnhUrl], 0)"
                       />
                       <div class="flex-grow-1">
-                        <h6 class="mb-1">{{ item.tenDoiTuong }}</h6>
+                        <h6 class="mb-1">
+                          <RouterLink :to="item.maSp ? '/product/' + item.maSp : '/combo/' + item.maCombo">
+                            {{ item.tenDoiTuong }}
+                          </RouterLink>
+                        </h6>
                         <StarRating :rating="item.soSao" />
                         <p class="mb-2">{{ item.noiDung }}</p>
                         <div
