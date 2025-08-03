@@ -112,6 +112,20 @@
                       <li>
                         <router-link to="/Register" class="dropdown-item">Đăng ký</router-link>
                       </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <router-link to="/favoriteproduct" class="dropdown-item">
+                          <i class="fa fa-heart me-2"></i>Yêu thích
+                        </router-link>
+                      </li>
+                      <li>
+                        <router-link to="/Cart" class="dropdown-item">
+                          <i class="fa fa-shopping-bag me-2"></i>Giỏ hàng
+                        </router-link>
+                      </li>
+                      <li>
+                        <WheelRandomCode class="dropdown-item" />
+                      </li>
                     </ul>
                   </div>
                 </template>
@@ -133,50 +147,38 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
                       <li>
-                        <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"
-                          >Đăng xuất</a
+                        <router-link to="/profile" class="dropdown-item"
+                          >Cập nhật thông tin</router-link
                         >
                       </li>
+                      <li><hr class="dropdown-divider"></li>
                       <li>
-                        <router-link to="/profile" class="dropdown-item text-danger"
-                          >Cập nhật thông tin</router-link
+                        <router-link to="/favoriteproduct" class="dropdown-item">
+                          <i class="fa fa-heart me-2"></i>Yêu thích
+                        </router-link>
+                      </li>
+                      <li>
+                        <router-link to="/Cart" class="dropdown-item">
+                          <i class="fa fa-shopping-bag me-2"></i>Giỏ hàng
+                        </router-link>
+                      </li>
+                      <li>
+                        <NavigationUserReview class="dropdown-item" />
+                      </li>
+                      <li>
+                        <WheelRandomCode class="dropdown-item" />
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"
+                          >Đăng xuất</a
                         >
                       </li>
                     </ul>
                   </div>
                 </template>
               </div>
-              <ul class="header__right__widget">
-                <li>
-                  <router-link to="/favoriteproduct" class="position-relative">
-                    <i class="fa fa-heart fs-5"></i>
-                    <span
-                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    >
-                      2
-                      <span class="visually-hidden">sản phẩm yêu thích</span>
-                    </span>
-                  </router-link>
-                </li>
-                <li>
-                  <router-link to="/Cart" class="position-relative">
-                    <i class="fa fa-shopping-bag fs-5"></i>
-                    <span
-                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    >
-                      2
-                      <span class="visually-hidden">sản phẩm trong giỏ hàng</span>
-                    </span>
-                  </router-link>
-                </li>
-                <li v-if="isLoggedIn">
-                  <NavigationUserReview />
-                </li>
-                <li>
-                  <WheelRandomCode />
-                </li>
-              </ul>
-            </div>
+              </div>
           </div>
         </div>
         <div id="mobile-menu-wrap"></div>
@@ -191,8 +193,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
 import { validateToken } from '@/utils/auth'
-import NavigationUserReview from './ui/NavigationUserReview.vue'
-import WheelRandomCode from './specicals/WheelRandomCode.vue'
+import NavigationUserReview from '@/components/ui/NavigationUserReview.vue'
+import WheelRandomCode from '@/components/specicals/WheelRandomCode.vue'
 
 import Swal from 'sweetalert2'
 const router = useRouter()
@@ -245,7 +247,7 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
+<style>
 .header__menu {
   display: flex;
   justify-content: center;
@@ -299,32 +301,7 @@ onMounted(() => {
   background-color: #f8f9fa;
 }
 
-.header__right__widget {
-  display: flex;
-  align-items: center;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
 
-.header__right__widget li {
-  margin-left: 15px;
-  position: relative;
-}
-
-.header__right__widget .tip {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ec4e79;
-  color: #fff;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  line-height: 16px;
-  text-align: center;
-  font-size: 12px;
-}
 
 .avatar-img {
   vertical-align: middle;
