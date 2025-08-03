@@ -36,6 +36,7 @@ import { decodeToken, validateToken } from '@/utils/auth'
 import CustomerChat from '../views/customer/CustomerChat.vue'
 import StaffChat from '../views/admin/chat/StaffChat.vue'
 import Profile from '../views/accounts/Profile.vue'
+import MyAddresses from '../views/customer/Addresses.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -57,6 +58,7 @@ const router = createRouter({
         {path: 'chat', name: 'CustomerChat', component: CustomerChat},
         {path: 'chat/:id', name: 'CustomerChatDetail', component: CustomerChat}, 
         { path: 'Profile', name: 'Profile', component: Profile },
+        { path: 'MyAddresses', name: 'MyAddresses', component: MyAddresses },
       ],
     },
     {

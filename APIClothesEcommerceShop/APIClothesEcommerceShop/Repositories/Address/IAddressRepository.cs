@@ -1,10 +1,14 @@
-﻿using APIClothesEcommerceShop.Models;
+﻿using APIClothesEcommerceShop.DTO.Addresses;
+using APIClothesEcommerceShop.Models;
 
 namespace APIClothesEcommerceShop.Repositories.Address
 {
     public interface IAddressRepository
     {
-        Task<List<Diachi>> GetAll(int MaKh);
-        Task Delete(int id);
+        Task<Diachi?> UpdateDefaultAddress(int? id, bool defaultAddress);
+        Task<IEnumerable<AddressesResponseDTO>> GetByCustomerAsync(int maKh);
+        Task<Diachi> AddAsync(Diachi diachi);
+        Task<Diachi?> UpdateAsync(Diachi diachi);
+        Task<bool> DeleteAsync(int id);
     }
 }

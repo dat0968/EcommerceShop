@@ -93,7 +93,7 @@
             </nav>
           </div>
           <div class="col-lg-3">
-            <div class="header__right" style="margin-top: 10px;">
+            <div class="header__right" style="margin-top: 10px">
               <div class="header__right__auth">
                 <template v-if="!isLoggedIn">
                   <div class="dropdown">
@@ -137,10 +137,24 @@
                           >Đăng xuất</a
                         >
                       </li>
-                      <li>
-                        <router-link to="/profile" class="dropdown-item text-danger"
-                          >Cập nhật thông tin</router-link
+                      <li class="dropdown-submenu position-relative">
+                        <a
+                          class="dropdown-item text-danger"
                         >
+                          Tài khoản của tôi
+                        </a>
+                        <ul class="dropdown-menu">
+                          <li>
+                            <router-link to="/profile" class="dropdown-item"
+                              >Cập nhật thông tin</router-link
+                            >
+                          </li>
+                          <li>
+                            <router-link to="/MyAddresses" class="dropdown-item"
+                              >Địa chỉ</router-link
+                            >
+                          </li>
+                        </ul>
                       </li>
                     </ul>
                   </div>
@@ -333,6 +347,24 @@ onMounted(() => {
 .header__right {
   display: flex;
   align-items: center;
-  justify-content:space-evenly;
+  justify-content: space-evenly;
+}
+/* Cho phép dropdown con hiện ra bên phải */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -0.1rem;
+  display: none;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+}
+.dropdown-item::after {
+  content: none !important;
 }
 </style>
