@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import Swal from 'sweetalert2'
 import { GetApiUrl } from '../../../../src/constants/api.js'
 import * as bootstrap from 'bootstrap'
@@ -13,17 +13,19 @@ const props = defineProps({
   Combo: Object,
 })
 
-// State cho modal chọn sản phẩm
-const showProductModal = ref(false)
-const selectedDetailIndex = ref(null)
-const productCurrentPage = ref(1)
-const productTotalPages = ref(1)
-const toTalPages = ref(1)
-const pageSelected = ref(1)
-const productList = ref([])
-const productMap = ref({})
 
 const initialCombo = ref(null)
+// Trạng thái modal chọn sản phẩm
+const showProductModal = ref(false);
+const selectedDetailIndex = ref(null);
+const productCurrentPage = ref(1);
+const productTotalPages = ref(1);
+const toTalPages = ref(1);
+const pageSelected = ref(1);
+const productList = ref([]);
+const productMap = ref({});
+const search = ref('');
+const token = Cookies.get('accessToken');
 const comboEdit = ref({
   tenCombo: '',
   hinh: null,
@@ -44,18 +46,31 @@ const comboEdit = ref({
 
 // Watch hiển thị modal sản phẩm
 watch(showProductModal, (newValue) => {
+  console.log('showProductModal thay đổi:', newValue);
   nextTick(() => {
-    const modalElement = document.getElementById('productModal')
+    const modalElement = document.getElementById('productModal');
     if (modalElement) {
-      const modal = bootstrap.Modal.getOrCreateInstance(modalElement)
+      const modal = bootstrap.Modal.getOrCreateInstance(modalElement, { backdrop: true });
       if (newValue) {
-        modal.show()
+        console.log('Mở #productModal');
+        modal.show();
+        setTimeout(() => {
+          const searchInput = document.querySelector('.modal-body input[type="text"]');
+          if (searchInput) searchInput.focus();
+        }, 500);
       } else {
-        modal.hide()
+        console.log('Đóng #productModal');
+        modal.hide();
       }
     }
-  })
-})
+  });
+});
+onUnmounted(() => {
+  const modalElement = document.getElementById('productModal');
+  if (modalElement) {
+    modalElement.removeEventListener('hidden.bs.modal', () => {});
+  }
+});
 
 // Khởi tạo dữ liệu
 onMounted(() => {
@@ -113,7 +128,7 @@ async function fetchProducts(page) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          //'Authorization': `Bearer ${Cookies.get('accessToken') || ''}`, // Thêm token
+          'Authorization': `Bearer ${token}`, // Thêm token
         },
       }
     )
