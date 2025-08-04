@@ -1,22 +1,22 @@
 <template>
   <div>
     <!-- Nút thử đồ -->
-    <button class="btn btn-primary" @click="showModal = true" title="Thử đồ với AI">
+    <button class="btn btn-primary" @click="showModalTryOn = true" title="Thử đồ với AI">
       <i class="bi bi-magic"></i> Thử đồ
     </button>
 
     <!-- Modal thử đồ -->
-    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+    <div v-show="showModalTryOn" class="modal-overlay" @click.self="showModalTryOn = false">
       <div class="tryon-modal">
         <div class="modal-header">
           <div class="header-center">
             <h2>Thử đồ với AI</h2>
           </div>
           <div class="header-right">
-            <button class="btn" @click="showApiSettings = true" title="Cài đặt API Keys">
+            <button class="btn" @click="showApiSettings = true; showModelSelection = false;" title="Cài đặt API Keys">
               <i class="bi bi-gear"></i>
             </button>
-            <button class="close-btn" @click="showModal = false">×</button>
+            <button class="close-btn" @click="showModalTryOn = false">×</button>
           </div>
         </div>
         <div class="modal-body overflow-auto">
@@ -161,12 +161,11 @@
             <div class="api-settings-actions">
               <button class="btn btn-secondary" @click="cancelApiSettings">Hủy</button>
               <button class="btn btn-primary" @click="saveApiSettings">Lưu</button>
-            }
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
@@ -185,7 +184,7 @@ export default {
   },
   data() {
     return {
-      showModal: false,
+      showModalTryOn: false,
       showApiSettings: false,
       loading: false,
       apiKeys: {
@@ -278,6 +277,7 @@ export default {
     },
     cancelApiSettings() {
       this.showApiSettings = false
+      this.showModelSelection = false; // Ensure model selection modal is closed
     },
     saveApiSettings() {
       localStorage.setItem('lightxApiKey', this.apiKeys.lightxApiKey)
@@ -292,6 +292,7 @@ export default {
     },
     cancelModelSelection() {
       this.showModelSelection = false
+      this.showApiSettings = false; // Ensure API settings modal is closed
       this.userModelFile = null
       this.userModelPreviewUrl = ''
       this.selectedTryOnModel = null
@@ -332,6 +333,7 @@ export default {
         })
       } else {
         this.showModelSelection = true
+        this.showApiSettings = false; // Ensure API settings modal is closed
       }
     },
 
@@ -532,21 +534,24 @@ export default {
 .tryon-modal {
   background: #fff;
   border-radius: 16px;
-  width: 90vw;
-  max-width: 900px;
-  min-height: 500px;
-  max-height: 90vh;
-  box-shadow: 0 4px 32px #0003;
+  width: 95vw; /* Tăng chiều rộng trên màn hình lớn */
+  max-width: 1000px; /* Tăng max-width */
+  min-height: 550px; /* Tăng min-height */
+  max-height: 95vh; /* Tăng max-height */
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2); /* Shadow mạnh hơn */
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden; /* Đảm bảo nội dung không tràn ra ngoài */
 }
+
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px 8px 32px;
-  border-bottom: 1px solid #eee;
+  padding: 15px 25px; /* Điều chỉnh padding */
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f8f8; /* Màu nền cho header */
 }
 
 .header-center {
@@ -554,27 +559,40 @@ export default {
   text-align: center;
 }
 
+.header-center h2 {
+  margin: 0;
+  font-size: 1.8rem; /* Kích thước tiêu đề */
+  color: #333;
+}
+
 .header-right {
   justify-content: flex-end;
 }
+
 .close-btn {
-  font-size: 2rem;
+  font-size: 2.2rem; /* Kích thước nút đóng */
   background: none;
   border: none;
   color: #888;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
+
+.close-btn:hover {
+  color: #333;
+}
+
 .modal-body {
   display: flex;
   flex: 1;
-  padding: 16px 32px;
-  gap: 32px;
+  padding: 20px; /* Điều chỉnh padding */
+  gap: 20px; /* Điều chỉnh khoảng cách giữa các cột */
   min-height: 0;
-  max-height: 70vh;
+  max-height: calc(95vh - 70px); /* Tính toán lại max-height */
+  overflow-y: auto; /* Chỉ cuộn theo chiều dọc */
+  overflow-x: hidden; /* Ẩn thanh cuộn ngang */
 }
-.overflow-auto {
-  overflow: auto;
-}
+
 .tryon-main {
   flex: 1;
   display: flex;
@@ -582,6 +600,45 @@ export default {
   align-items: center;
   justify-content: center;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tryon-modal {
+    width: 98vw;
+    max-width: 98vw;
+    min-height: unset;
+    max-height: 98vh;
+  }
+  .modal-body {
+    flex-direction: column; /* Stack columns on smaller screens */
+    padding: 15px;
+    gap: 15px;
+    max-height: calc(98vh - 60px);
+  }
+  .header-center h2 {
+    font-size: 1.5rem;
+  }
+  .close-btn {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header {
+    padding: 10px 15px;
+  }
+  .header-center h2 {
+    font-size: 1.3rem;
+  }
+  .close-btn {
+    font-size: 1.5rem;
+  }
+  .modal-body {
+    padding: 10px;
+    gap: 10px;
+  }
+}
+
 
 .loading-overlay {
   position: absolute;
@@ -598,20 +655,84 @@ export default {
 }
 
 .product-display-card, .result-display-card {
-  border: 1px solid #eee;
-  border-radius: 8px;
-  padding: 15px;
+  background: #f8f9fa; /* Light background */
+  border: 1px solid #e0e0e0;
+  border-radius: 12px; /* More rounded corners */
+  padding: 20px; /* Increased padding */
   text-align: center;
   margin-bottom: 20px;
   width: 100%;
-  max-width: 300px;
+  max-width: 350px; /* Slightly wider cards */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* Subtle shadow */
+  transition: all 0.3s ease;
+}
+
+.product-display-card:hover, .result-display-card:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
 .product-display-card img, .result-display-card img {
   max-width: 100%;
   height: auto;
-  border-radius: 4px;
+  max-height: 250px; /* Max height for images */
+  object-fit: contain; /* Ensure image fits */
+  border-radius: 8px; /* Rounded image corners */
+  margin-bottom: 15px; /* Increased margin */
+  border: 1px solid #f0f0f0;
+}
+
+.product-display-card h4, .result-display-card h4 {
+  font-size: 1.4rem;
+  color: #333;
   margin-bottom: 10px;
+}
+
+.product-display-card h5 {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.product-display-card p {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.result-display-card .mt-2 {
+  margin-top: 10px; /* Adjust margin for result details */
+}
+
+.result-display-card b {
+  color: #444;
+}
+
+.result-display-card span {
+  font-weight: 600;
+}
+
+/* Responsive adjustments for cards */
+@media (max-width: 768px) {
+  .product-display-card, .result-display-card {
+    max-width: 90%; /* Adjust width on smaller screens */
+    padding: 15px;
+  }
+  .product-display-card img, .result-display-card img {
+    max-height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-display-card, .result-display-card {
+    max-width: 100%;
+    margin-bottom: 15px;
+  }
+  .product-display-card h4, .result-display-card h4 {
+    font-size: 1.2rem;
+  }
+  .product-display-card h5 {
+    font-size: 1rem;
+  }
 }
 
 .model-selection-overlay {
@@ -620,7 +741,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6); /* Darker overlay */
   z-index: 1003;
   display: flex;
   align-items: center;
@@ -629,87 +750,100 @@ export default {
 
 .model-selection-modal {
   background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 16px; /* More rounded corners */
+  padding: 30px; /* Increased padding */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); /* Stronger shadow */
   width: 90%;
-  max-width: 500px;
+  max-width: 550px; /* Slightly wider modal */
   text-align: center;
+  animation: fadeInScale 0.3s ease-out; /* Add animation */
 }
 
-.model-selection-modal h3 {
-  margin-bottom: 20px;
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.model-selection-modal h4 {
+  margin-bottom: 25px; /* Adjusted margin */
   color: #333;
+  font-size: 1.6rem;
 }
 
 .model-list {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 25px; /* Increased gap */
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 30px; /* Increased margin */
 }
 
 .model-item {
   cursor: pointer;
-  padding: 10px;
-  border: 2px solid #eee;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  padding: 12px; /* Increased padding */
+  border: 2px solid #e0e0e0;
+  border-radius: 12px; /* More rounded corners */
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #fdfdfd;
 }
 
 .model-item:hover {
-  border-color: #42a5f5;
-  box-shadow: 0 0 8px rgba(66, 165, 245, 0.3);
+  border-color: #667eea; /* Highlight color */
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.2); /* Subtle hover shadow */
+  transform: translateY(-3px); /* Slight lift on hover */
 }
 
 .model-item.selected {
   border-color: #1976d2;
   background-color: #e3f2fd;
-  box-shadow: 0 0 10px rgba(25, 118, 210, 0.5);
+  box-shadow: 0 0 15px rgba(25, 118, 210, 0.6); /* Stronger selected shadow */
+  transform: scale(1.05); /* Slightly larger when selected */
 }
 
 .user-model-preview {
-  transform: scale(1.15);
   border-width: 3px;
   border-color: #1976d2;
   box-shadow: 0 4px 15px rgba(25, 118, 210, 0.4);
 }
 
 .model-thumbnail {
-  width: 100px;
-  height: 150px;
+  width: 120px; /* Larger thumbnails */
+  height: 180px; /* Larger thumbnails */
   object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 8px;
+  border-radius: 8px; /* More rounded image corners */
+  margin-bottom: 10px;
 }
 
 .model-selection-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 15px; /* Increased gap */
+  margin-top: 20px;
 }
 
-.model-selection-actions .btn {
-  padding: 8px 20px;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
+.model-selection-actions .btn-primary:hover {
+  background-color: #1565c0;
+  transform: translateY(-2px);
 }
 
-.model-selection-actions .btn-primary {
-  background-color: #1976d2;
+.model-selection-actions .btn-secondary {
+  background-color: #9e9e9e;
   color: #fff;
   border: none;
 }
 
-.model-selection-actions .btn-secondary {
-  background-color: #ccc;
-  color: #333;
-  border: none;
+.model-selection-actions .btn-secondary:hover {
+  background-color: #757575;
+  transform: translateY(-2px);
 }
 
 .api-settings-overlay {
@@ -718,7 +852,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1003;
   display: flex;
   align-items: center;
@@ -727,50 +861,61 @@ export default {
 
 .api-settings-modal {
   background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   width: 90%;
   max-width: 500px;
   text-align: center;
+  animation: fadeInScale 0.3s ease-out;
 }
 
 .api-settings-modal h3 {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   color: #333;
+  font-size: 1.6rem;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Increased margin */
   text-align: left;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px; /* Increased margin */
   font-weight: bold;
+  color: #555;
 }
 
 .form-control {
   width: 100%;
-  padding: 8px;
+  padding: 10px 15px; /* Increased padding */
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px; /* More rounded corners */
   font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+  outline: none;
 }
 
 .api-settings-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 15px;
+  margin-top: 30px; /* Increased margin */
 }
 
 .api-settings-actions .btn {
-  padding: 8px 20px;
-  border-radius: 6px;
-  font-size: 1rem;
+  padding: 10px 25px;
+  border-radius: 8px;
+  font-size: 1.05rem;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .api-settings-actions .btn-primary {
@@ -779,9 +924,42 @@ export default {
   border: none;
 }
 
+.api-settings-actions .btn-primary:hover {
+  background-color: #1565c0;
+  transform: translateY(-2px);
+}
+
 .api-settings-actions .btn-secondary {
-  background-color: #ccc;
-  color: #333;
+  background-color: #9e9e9e;
+  color: #fff;
   border: none;
+}
+
+.api-settings-actions .btn-secondary:hover {
+  background-color: #757575;
+  transform: translateY(-2px);
+}
+
+.btn-primary:hover {
+  background-color: #1565c0;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3);
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
 }
 </style>
