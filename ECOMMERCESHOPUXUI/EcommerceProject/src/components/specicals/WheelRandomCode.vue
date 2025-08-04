@@ -22,9 +22,9 @@
         <div class="modal-content p-4 position-relative">
           <div class="modal-header text-center border-0 pb-0">
             <h5 class="modal-title w-100 fs-4">Vòng Quay May Mắn
-              <!-- Icon to trigger the streak modal -->
-              <a href="#" @click.prevent="showStreakModal = true" class="position-relative text-decoration-none ms-3">
-                <span class="icon_calendar"></span>
+              <!-- Icon to trigger the info modal -->
+              <a href="#" @click.prevent="openInfoModal" class="position-relative text-decoration-none ms-3">
+                <span class="icon_info_alt"></span>
               </a>
             </h5>
             <button
@@ -110,330 +110,270 @@
       </div>
     </div>
 
-    <!-- Streak Animation Modal -->
-    <StreakAnimationModal v-if="showStreakModal" :show="showStreakModal" :streakData="streakData" @close="showStreakModal = false" />
+    <!-- Info Modal -->
+    <WheelInfoModal v-if="showInfoModal" :show="showInfoModal" :wheelInfo="wheelInfo" @close="showInfoModal = false" />
   </teleport>
 </template>
 
-<script setup>
-import { ref, computed, onMounted } from 'vue'
-import ConfigsRequest from '@/models/ConfigsRequest'
-import { getFromApi, postToApi, patchToApi } from '@/utils/axiosClient'
-import Swal from 'sweetalert2'
-import { formatCurrency } from '@/constants/formatCurrency'
-import confetti from 'canvas-confetti'
-import StreakAnimationModal from './StreakAnimationModal.vue'
+<script>
+import ConfigsRequest from '@/models/ConfigsRequest';
+import { getFromApi, postToApi, patchToApi } from '@/utils/axiosClient';
+import Swal from 'sweetalert2';
+import { formatCurrency } from '@/constants/formatCurrency';
+import confetti from 'canvas-confetti';
+import WheelInfoModal from './WheelInfoModal.vue';
 
-// --- Component State ---
-const showModal = ref(false)
-const showStreakModal = ref(false) // New state for streak modal
-const streakData = ref({ streak: 0, lastLogin: null, isNewStreak: false }) // New state for streak data, initialized with default values
-const prizes = ref([])
-const colors = ['#FFB300', '#FF7043', '#66BB6A', '#42A5F5', '#AB47BC', '#EC407A', '#26C6DA']
-const rotation = ref(0)
-const spinning = ref(false)
-const selectedPrize = ref(null)
-const maxSpins = ref(0)
-const spinCount = ref(0)
-const copied = ref(false)
-const checkingCoupon = ref(false) // New state for loading button
+export default {
+  name: 'WheelRandomCode',
+  components: {
+    WheelInfoModal,
+  },
+  data() {
+    return {
+      showModal: false,
+      showInfoModal: false,
+      wheelInfo: {},
+      prizes: [],
+      colors: ['#FFB300', '#FF7043', '#66BB6A', '#42A5F5', '#AB47BC', '#EC407A', '#26C6DA'],
+      rotation: 0,
+      spinning: false,
+      selectedPrize: null,
+      maxSpins: 0,
+      spinCount: 0,
+      copied: false,
+      checkingCoupon: false,
+    };
+  },
+  computed: {
+    arc() {
+      return this.prizes.length > 0 ? 360 / this.prizes.length : 0;
+    },
+  },
+  mounted() {
+    this.initializeWheel();
+  },
+  methods: {
+    // WHEEL DRAWING UTILITIES
+    polarToCartesian(cx, cy, r, angle) {
+      const a = ((angle - 90) * Math.PI) / 180.0;
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+    },
+    describeArc(cx, cy, r, startAngle, endAngle) {
+      const start = this.polarToCartesian(cx, cy, r, endAngle);
+      const end = this.polarToCartesian(cx, cy, r, startAngle);
+      const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+      return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
+    },
+    getTextPos(idx) {
+      const angle = (idx + 0.5) * this.arc;
+      return this.polarToCartesian(50, 50, 28, angle);
+    },
+    getTextTransform(idx) {
+      const angle = (idx + 0.5) * this.arc;
+      const pos = this.getTextPos(idx);
+      return `rotate(${angle + 90} ${pos.x} ${pos.y})`;
+    },
 
-// --- Computed Properties ---
-const arc = computed(() => (prizes.value.length > 0 ? 360 / prizes.value.length : 0))
-
-// --- Wheel Drawing Utilities (using viewBox coordinates) ---
-const polarToCartesian = (cx, cy, r, angle) => {
-  const a = ((angle - 90) * Math.PI) / 180.0
-  return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }
-}
-
-const describeArc = (cx, cy, r, startAngle, endAngle) => {
-  const start = polarToCartesian(cx, cy, r, endAngle)
-  const end = polarToCartesian(cx, cy, r, startAngle)
-  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
-  // Path: Move to center, Line to arc start, Arc to arc end, Close path
-  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`
-}
-
-const getTextPos = (idx) => {
-  // Đặt text gần tâm hơn để không tràn viền (radius = 28)
-  const angle = (idx + 0.5) * arc.value
-  return polarToCartesian(50, 50, 28, angle)
-}
-
-const getTextTransform = (idx) => {
-  const angle = (idx + 0.5) * arc.value
-  const pos = getTextPos(idx)
-  // Rotate text to be upright relative to the wheel's edge
-  return `rotate(${angle + 90} ${pos.x} ${pos.y})`
-}
-
-// --- API & Data Logic ---
-const fetchPrizeList = () => {
-  // 9 slots are hidden ("?"), 1 slot is blank
-  const generatedPrizes = Array(9)
-    .fill(null)
-    .map(() => ({
-      name: '?',
-      code: '',
-      isBlank: false,
-      revealed: false,
-    }))
-  // Only 1 blank slot
-  const blankPrize = { name: 'Chúc bạn may mắn lần sau', isBlank: true }
-  const allPrizes = [...generatedPrizes, blankPrize]
-  // Shuffle all 10 prizes for a random layout
-  for (let i = allPrizes.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[allPrizes[i], allPrizes[j]] = [allPrizes[j], allPrizes[i]]
-  }
-  prizes.value = allPrizes
-}
-
-const initializeWheel = async () => {
-  const today = new Date().toISOString().slice(0, 10)
-  const lastSpinDate = localStorage.getItem('wheel_last_spin_date') || ''
-
-  if (lastSpinDate !== today) {
-    try {
-      const res = await patchToApi(
-        '/WheelCoupon/update-last-login-streak',
-        '',
-        ConfigsRequest.getSkipAuthConfig(),
-      )
-      if (res && res.success) {
-        const lastLoginDateStr = res.data.truyCapLlanCuoi || null;
-        streakData.value = {
-          streak: res.data.streak,
-          lastLogin: lastLoginDateStr,
-          isNewStreak: res.data.streak === 1 && lastLoginDateStr && lastLoginDateStr.slice(0, 10) === today,
-        };
-        showStreakModal.value = true
+    // API & DATA LOGIC
+    fetchPrizeList() {
+      const generatedPrizes = Array(9).fill(null).map(() => ({ name: '?', code: '', isBlank: false, revealed: false }));
+      const blankPrize = { name: 'Chúc bạn may mắn lần sau', isBlank: true };
+      const allPrizes = [...generatedPrizes, blankPrize];
+      for (let i = allPrizes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allPrizes[i], allPrizes[j]] = [allPrizes[j], allPrizes[i]];
       }
-      localStorage.setItem('wheel_last_spin_date', today)
-    } catch (error) {
-      console.error('Failed to update login streak:', error)
-    }
-  }
-
-  try {
-    const res = await getFromApi('/WheelCoupon/time-spin-wheel-coupon')
-    maxSpins.value = res?.success ? Number(res.data) || 0 : 0
-  } catch (error) {
-    maxSpins.value = 0
-    console.error('Failed to get spin count:', error)
-  }
-
-  fetchPrizeList()
-
-  const wheelSwalDate = localStorage.getItem('wheel_swal_date') || ''
-  if (maxSpins.value > 0 && today !== wheelSwalDate) {
-    Swal.fire({
-      title: 'Vòng Quay May Mắn!',
-      text: 'Bạn có lượt quay miễn phí hôm nay, muốn thử vận may không?',
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'Quay ngay!',
-      cancelButtonText: 'Để sau',
-      allowOutsideClick: false,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        showModal.value = true
-      }
-      localStorage.setItem('wheel_swal_date', today)
-    })
-  }
-}
-
-onMounted(initializeWheel)
-
-// --- Component Methods ---
-const closeModal = () => {
-  if (!spinning.value) {
-    showModal.value = false
-  }
-}
-
-const triggerFireworks = () => {
-  const duration = 5 * 1000 // 5 seconds
-  const animationEnd = Date.now() + duration
-  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1051 }
-
-  function randomInRange(min, max) {
-    return Math.random() * (max - min) + min
-  }
-
-  const interval = setInterval(function () {
-    const timeLeft = animationEnd - Date.now()
-
-    if (timeLeft <= 0) {
-      return clearInterval(interval)
-    }
-
-    const particleCount = 50 * (timeLeft / duration)
-    // since particles fall down, start a bit higher than random
-    confetti({
-      ...defaults,
-      particleCount,
-      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-    })
-    confetti({
-      ...defaults,
-      particleCount,
-      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-    })
-  }, 250)
-}
-
-const spin = async () => {
-  if (spinning.value || spinCount.value >= maxSpins.value) return
-
-  spinning.value = true
-  selectedPrize.value = null
-  copied.value = false
-
-  const blankIndex = prizes.value.findIndex((p) => p.isBlank)
-
-  let targetIndex
-  let couponData = null
-  let spinConsumed = false // New flag to track if spin was consumed
-
-  // Start continuous spin animation
-  let running = true
-  let currentRotation = rotation.value
-  let frameId
-  const speed = 15 // degrees per frame
-  function animateSpin() {
-    if (!running) return
-    currentRotation += speed
-    rotation.value = currentRotation
-    frameId = requestAnimationFrame(animateSpin)
-  }
-  animateSpin()
-
-  try {
-    const res = await postToApi('/WheelCoupon/spin')
-    if (res && res.success) {
-      spinConsumed = true // Spin is consumed if API call is successful
-
-      if (res.data && res.data.maCode && res.data.maCode !== 'BLANK') {
-        // User won a coupon
-        couponData = res.data
-        // Find a random unrevealed non-blank slot to stop at
-        const availableIndexes = prizes.value
-          .map((p, idx) => (!p.isBlank && !p.revealed ? idx : -1))
-          .filter((idx) => idx !== -1)
-        targetIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)]
-      } else {
-        // User got a blank coupon or no coupon (BLANK code from backend)
-        targetIndex = blankIndex
-      }
-    } else {
-      // API call failed or returned success: false
-      targetIndex = blankIndex // Default to blank prize on error
-      Swal.fire({
-        title: 'Lỗi!',
-        text: res?.message || 'Không thể nhận kết quả từ máy chủ. Vui lòng thử lại.',
-        icon: 'error',
-      })
-    }
-  } catch (error) {
-    console.error('Failed to get coupon from API:', error)
-    // If API call fails, default to blank
-    targetIndex = blankIndex
-    Swal.fire({
-      title: 'Lỗi!',
-      text: 'Đã xảy ra lỗi khi nhận kết quả từ máy chủ. Vui lòng thử lại.',
-      icon: 'error',
-    })
-  } finally {
-    running = false
-    cancelAnimationFrame(frameId)
-
-    // Calculate final rotation to stop at targetIndex
-    const finalAngle = 360 - (targetIndex * arc.value + arc.value / 2)
-    const currentDeg = rotation.value % 360
-    let delta = finalAngle - currentDeg
-    if (delta < 0) delta += 360
-    const smoothRotation = currentRotation + delta + 360 * 2 // 2 extra rounds for effect
-    rotation.value = smoothRotation
-
-    setTimeout(() => {
-      if (couponData) {
-        const winningPrize = {
-          name: couponData.isPercent
-            ? `Giảm ${couponData.phanTramGiam}%`
-            : `Giảm ${formatCurrency(couponData.soTienGiam)}`,
-          code: couponData.maCode,
-          isPercent: couponData.isPercent,
-          revealed: true,
-          isBlank: false,
+      this.prizes = allPrizes;
+    },
+    async fetchWheelInfo() {
+      try {
+        const res = await getFromApi('/WheelCoupon/private-coupon', ConfigsRequest.takeAuth());
+        if (res && res.success) {
+          this.wheelInfo = res.data;
         }
-        prizes.value.splice(targetIndex, 1, winningPrize)
-        selectedPrize.value = winningPrize
-        triggerFireworks() // Trigger fireworks on win
-      } else {
-        selectedPrize.value = prizes.value[targetIndex] // This will be the blank prize or error blank
+      } catch (error) {
+        console.error('Failed to fetch wheel info:', error);
+        this.wheelInfo = { streak: 0, totalOrderValue: 0, privateCoupons: [] };
       }
-      spinning.value = false
-      if (spinConsumed) {
-        // Only increment if the spin was successfully consumed
-        spinCount.value++
+    },
+    async checkSpinCount() {
+      this.checkingCoupon = true;
+      try {
+        const res = await getFromApi('/WheelCoupon/time-spin-wheel-coupon', ConfigsRequest.takeAuth());
+        if (res && res.success) {
+          const spins = Number(res.data) || 0;
+          this.maxSpins = spins;
+          this.spinCount = 0;
+          this.selectedPrize = null;
+          this.fetchPrizeList();
+          Swal.fire({
+            title: 'Lượt quay của bạn',
+            text: `Bạn hiện có ${spins} lượt quay.`,
+            icon: 'info',
+            confirmButtonText: 'Đã hiểu',
+          });
+        } else {
+          Swal.fire({ title: 'Lỗi', text: res?.message || 'Không thể kiểm tra lượt quay.', icon: 'error' });
+        }
+      } catch (error) {
+        console.error('Failed to check spin count:', error);
+        Swal.fire({ title: 'Lỗi', text: 'Đã xảy ra lỗi khi kiểm tra lượt quay.', icon: 'error' });
+      } finally {
+        this.checkingCoupon = false;
       }
-    }, 2000) // Adjust timeout as needed for animation
-  }
-}
+    },
 
-const copyCode = (code) => {
-  if (!code || !navigator.clipboard) return
-  navigator.clipboard
-    .writeText(code)
-    .then(() => {
-      copied.value = true
-      setTimeout(() => {
-        copied.value = false
-      }, 1500)
-    })
-    .catch((err) => {
-      console.error('Failed to copy code:', err)
-      Swal.fire({ title: 'Lỗi', text: 'Không thể sao chép mã.', icon: 'error' })
-    })
-}
+    // COMPONENT METHODS
+    openInfoModal() {
+      this.fetchWheelInfo();
+      this.showInfoModal = true;
+    },
+    closeModal() {
+      if (!this.spinning) {
+        this.showModal = false;
+      }
+    },
+    triggerFireworks() {
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1051 };
+      function randomInRange(min, max) { return Math.random() * (max - min) + min; }
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) return clearInterval(interval);
+        const particleCount = 50 * (timeLeft / duration);
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+      }, 250);
+    },
+    async spin() {
+      if (this.spinning || this.spinCount >= this.maxSpins) return;
 
-const checkSpinCount = async () => {
-  checkingCoupon.value = true
-  try {
-    const res = await getFromApi('/WheelCoupon/time-spin-wheel-coupon')
-    if (res && res.success) {
-      const spins = Number(res.data) || 0
-      maxSpins.value = spins // Update maxSpins with the fetched value
-      spinCount.value = 0 // Reset spin count as we are getting the fresh data
-      selectedPrize.value = null // Clear previous prize
-      fetchPrizeList() // Regenerate the prize list
-      Swal.fire({
-        title: 'Lượt quay của bạn',
-        text: `Bạn hiện có ${spins} lượt quay.`,
-        icon: 'info',
-        confirmButtonText: 'Đã hiểu',
-      })
-    } else {
-      Swal.fire({
-        title: 'Lỗi',
-        text: res?.message || 'Không thể kiểm tra lượt quay. Vui lòng thử lại.',
-        icon: 'error',
-      })
-    }
-  } catch (error) {
-    console.error('Failed to check spin count:', error)
-    Swal.fire({
-      title: 'Lỗi',
-      text: 'Đã xảy ra lỗi khi kiểm tra lượt quay. Vui lòng thử lại.',
-      icon: 'error',
-    })
-  } finally {
-    checkingCoupon.value = false
-  }
-}
+      this.spinning = true;
+      this.selectedPrize = null;
+      this.copied = false;
+
+      const blankIndex = this.prizes.findIndex((p) => p.isBlank);
+      let targetIndex;
+      let couponData = null;
+      let spinConsumed = false;
+
+      let running = true;
+      let currentRotation = this.rotation;
+      let frameId;
+      const speed = 15;
+      const animateSpin = () => {
+        if (!running) return;
+        currentRotation += speed;
+        this.rotation = currentRotation;
+        frameId = requestAnimationFrame(animateSpin);
+      }
+      animateSpin();
+
+      try {
+        const res = await postToApi('/WheelCoupon/spin', ConfigsRequest.takeAuth());
+        if (res && res.success) {
+          spinConsumed = true;
+          if (res.data && res.data.maCode && res.data.maCode !== 'BLANK') {
+            couponData = res.data;
+            const availableIndexes = this.prizes.map((p, idx) => (!p.isBlank && !p.revealed ? idx : -1)).filter((idx) => idx !== -1);
+            targetIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+          } else {
+            targetIndex = blankIndex;
+          }
+        } else {
+          targetIndex = blankIndex;
+          Swal.fire({ title: 'Lỗi!', text: res?.message || 'Không thể nhận kết quả.', icon: 'error' });
+        }
+      } catch (error) {
+        console.error('Failed to get coupon from API:', error);
+        targetIndex = blankIndex;
+        Swal.fire({ title: 'Lỗi!', text: 'Lỗi kết nối máy chủ.', icon: 'error' });
+      } finally {
+        running = false;
+        cancelAnimationFrame(frameId);
+
+        const finalAngle = 360 - (targetIndex * this.arc + this.arc / 2);
+        const currentDeg = this.rotation % 360;
+        let delta = finalAngle - currentDeg;
+        if (delta < 0) delta += 360;
+        const smoothRotation = currentRotation + delta + 360 * 2;
+        this.rotation = smoothRotation;
+
+        setTimeout(() => {
+          if (couponData) {
+            const winningPrize = {
+              name: couponData.isPercent ? `Giảm ${couponData.phanTramGiam}%` : `Giảm ${formatCurrency(couponData.soTienGiam)}`,
+              code: couponData.maCode,
+              isPercent: couponData.isPercent,
+              revealed: true,
+              isBlank: false,
+            };
+            this.prizes.splice(targetIndex, 1, winningPrize);
+            this.selectedPrize = winningPrize;
+            this.triggerFireworks();
+          } else {
+            this.selectedPrize = this.prizes[targetIndex];
+          }
+          this.spinning = false;
+          if (spinConsumed) {
+            this.spinCount++;
+          }
+        }, 2000);
+      }
+    },
+    copyCode(code) {
+      if (!code || !navigator.clipboard) return;
+      navigator.clipboard.writeText(code).then(() => {
+        this.copied = true;
+        setTimeout(() => { this.copied = false; }, 1500);
+      }).catch((err) => {
+        console.error('Failed to copy code:', err);
+        Swal.fire({ title: 'Lỗi', text: 'Không thể sao chép mã.', icon: 'error' });
+      });
+    },
+
+    // LIFECYCLE HOOKS
+    async initializeWheel() {
+      const today = new Date().toISOString().slice(0, 10);
+      const lastLoginUpdate = localStorage.getItem('wheel_last_login_update') || '';
+
+      if (lastLoginUpdate !== today) {
+        try {
+          const res = await patchToApi('/WheelCoupon/update-last-login-streak', '', ConfigsRequest.takeAuth());
+          if (res && res.success) {
+            await this.fetchWheelInfo(); 
+            this.showInfoModal = true;
+          }
+          localStorage.setItem('wheel_last_login_update', today);
+        } catch (error) {
+          console.error('Failed to update login streak:', error);
+        }
+      }
+
+      await this.checkSpinCount();
+      this.fetchPrizeList();
+
+      const wheelSwalDate = localStorage.getItem('wheel_swal_date') || '';
+      if (this.maxSpins > 0 && today !== wheelSwalDate) {
+        Swal.fire({
+          title: 'Vòng Quay May Mắn!',
+          text: 'Bạn có lượt quay miễn phí hôm nay, muốn thử vận may không?',
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Quay ngay!',
+          cancelButtonText: 'Để sau',
+          allowOutsideClick: false,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.showModal = true;
+          }
+          localStorage.setItem('wheel_swal_date', today);
+        });
+      }
+    },
+  },
+};
 </script>
 
 <style scoped>
