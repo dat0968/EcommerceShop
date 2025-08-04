@@ -325,6 +325,8 @@ export default {
       isEndpointActive: axiosConfig.isEndpointAvailable(), // Biến để kiểm tra kết nối API
       isSubmittingParent: false,
       isSubmittingChild: false,
+      blockedCategories: new Map(), // Stores blocked categories and their unblock time
+      pendingStatusUpdates: new Map(), // Stores pending debounce timeouts
     }
   },
   computed: {
@@ -669,15 +671,16 @@ export default {
               data: 'isActive',
               className: 'text-center',
               title: 'Trạng thái',
-              render: function (data) {
-                return data
-                  ? '<span class="badge bg-success">Hoạt động</span>'
-                  : '<span class="badge bg-secondary">Không hoạt động</span>'
+              render: function (data, type, row) {
+                const statusText = data ? 'Hoạt động' : 'Không hoạt động';
+                const badgeClass = data ? 'bg-success' : 'bg-secondary';
+                return `<span class="badge ${badgeClass} status-toggle" data-id="${row.maDanhMucCha}" data-type="parent" data-status="${data}">${statusText}</span>`;
               },
             },
             {
               data: null,
               title: 'Hành động',
+              className: "text-center",
               orderable: false,
               render: function () {
                 return `
@@ -690,12 +693,12 @@ export default {
           destroy: true,
           language: configsDt.defaultLanguageDatatable,
           initComplete: () => {
-            configsDt.attachSearchDebounce('#datatableParent', this.datatableParent)
+            configsDt.attachSearchDebounce('#datatableParent', this.datatableParent);
           },
         })
 
         $('#datatableParent tbody')
-          .off('click')
+          .off('click', 'button') // Giữ lại off('click', 'button') để tránh xung đột
           .on('click', 'button', function () {
             const rowData = vm.datatableParent.row($(this).parents('tr')).data()
             if ($(this).hasClass('btn-edit-parent')) {
@@ -704,6 +707,13 @@ export default {
               vm.onDeleteParent(rowData)
             }
           })
+          .off('click', '.status-toggle') // Tắt sự kiện cũ trên .status-toggle
+          .on('click', '.status-toggle', function () {
+            const id = $(this).data('id');
+            const type = $(this).data('type');
+            const status = $(this).data('status');
+            vm.toggleStatus(id, type, status);
+          });
       })
     },
     reloadDataTableParent() {
@@ -731,16 +741,17 @@ export default {
               data: 'isActive',
               className: 'text-center',
               title: 'Trạng thái',
-              render: function (data) {
-                return data
-                  ? '<span class="badge bg-success">Hoạt động</span>'
-                  : '<span class="badge bg-secondary">Không hoạt động</span>'
+              render: function (data, type, row) {
+                const statusText = data ? 'Hoạt động' : 'Không hoạt động';
+                const badgeClass = data ? 'bg-success' : 'bg-secondary';
+                return `<span class="badge ${badgeClass} status-toggle" data-id="${row.maDanhMucCon}" data-type="child" data-status="${data}">${statusText}</span>`;
               },
             },
             {
               data: null,
               title: 'Hành động',
               orderable: false,
+              className: "text-center",
               render: function () {
                 return `
                   <button class="btn btn-sm btn-warning me-1 btn-edit-child">Sửa</button>
@@ -752,12 +763,12 @@ export default {
           destroy: true,
           language: configsDt.defaultLanguageDatatable,
           initComplete: () => {
-            configsDt.attachSearchDebounce('#datatableChild', this.datatableChild)
+            configsDt.attachSearchDebounce('#datatableChild', this.datatableChild);
           },
         })
 
         $('#datatableChild tbody')
-          .off('click')
+          .off('click', 'button') // Giữ lại off('click', 'button') để tránh xung đột
           .on('click', 'button', function () {
             const rowData = vm.datatableChild.row($(this).parents('tr')).data()
             if ($(this).hasClass('btn-edit-child')) {
@@ -766,6 +777,13 @@ export default {
               vm.onDeleteChild(rowData)
             }
           })
+          .off('click', '.status-toggle') // Tắt sự kiện cũ trên .status-toggle
+          .on('click', '.status-toggle', function () {
+            const id = $(this).data('id');
+            const type = $(this).data('type');
+            const status = $(this).data('status');
+            vm.toggleStatus(id, type, status);
+          });
       })
     },
     reloadDataTableChild() {
@@ -780,6 +798,100 @@ export default {
     resetFilters() {
       this.selectedMaDanhMucCha = []
       this.selectedMaDanhMucCon = []
+    },
+    async toggleStatus(id, type, currentStatus) {
+      const key = `${id}_${type}`;
+      const unblockTime = this.blockedCategories.get(key);
+      const now = Date.now();
+
+      if (unblockTime && now < unblockTime) {
+        const timeLeft = Math.ceil((unblockTime - now) / 1000);
+        Swal.fire({
+          icon: 'warning',
+          title: 'Thao tác quá nhanh!',
+          text: `Vui lòng chờ ${timeLeft} giây trước khi thử lại.`, 
+          confirmButtonText: 'Đóng',
+        });
+        return;
+      }
+
+      // Store original status for potential rollback
+      let originalStatus = currentStatus;
+
+      // Update UI immediately
+      let targetArray = type === 'parent' ? this.optionsParentCategory : this.optionsChildCategory;
+      let targetItem = targetArray.find(item => (type === 'parent' ? item.maDanhMucCha : item.maDanhMucCon) === id);
+      if (targetItem) {
+        targetItem.isActive = !currentStatus; // Toggle status immediately
+        if (type === 'parent') {
+          this.reloadDataTableParent();
+        } else {
+          this.reloadDataTableChild();
+        }
+      }
+
+      // Clear any pending update for this item
+      if (this.pendingStatusUpdates.has(key)) {
+        clearTimeout(this.pendingStatusUpdates.get(key));
+        this.pendingStatusUpdates.delete(key);
+      }
+
+      // Set a new debounced API call
+      const timeoutId = setTimeout(async () => {
+        try {
+          const endpoint = type === 'parent' ? `/categories/parent/${id}/change-status` : `/categories/child/${id}/change-status`;
+          const res = await axiosConfig.patchToApi(endpoint, {}, ConfigsRequest.takeAuth());
+
+          if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
+            // API call failed, revert UI and block
+            if (targetItem) {
+              targetItem.isActive = originalStatus; // Revert to original status
+              if (type === 'parent') {
+                this.reloadDataTableParent();
+              } else {
+                this.reloadDataTableChild();
+              }
+            }
+            this.blockedCategories.set(key, now + 120 * 1000); // Block for 2 minutes
+            Swal.fire({
+              icon: 'error',
+              title: 'Lỗi cập nhật!',
+              text: res?.message || 'Không thể cập nhật trạng thái. Vui lòng thử lại sau.',
+              confirmButtonText: 'Đóng',
+            });
+          } else {
+            // API call successful, no need to do anything as UI is already updated
+            Swal.fire({
+              icon: 'success',
+              title: 'Cập nhật thành công!',
+              text: `Trạng thái danh mục ${targetItem.tenDanhMucCha || targetItem.tenDanhMucCon} đã được cập nhật.`, 
+              showConfirmButton: false,
+              timer: 1500
+            });
+          }
+        } catch (error) {
+          console.error('Error updating status:', error);
+          if (targetItem) {
+            targetItem.isActive = originalStatus; // Revert to original status on network error
+            if (type === 'parent') {
+              this.reloadDataTableParent();
+            } else {
+              this.reloadDataTableChild();
+            }
+          }
+          this.blockedCategories.set(key, now + 120 * 1000); // Block for 2 minutes
+          Swal.fire({
+            icon: 'error',
+            title: 'Lỗi kết nối!',
+            text: 'Không thể kết nối tới máy chủ. Vui lòng kiểm tra lại kết nối mạng.',
+            confirmButtonText: 'Đóng',
+          });
+        } finally {
+          this.pendingStatusUpdates.delete(key);
+        }
+      }, 10000); // 10 seconds debounce
+
+      this.pendingStatusUpdates.set(key, timeoutId);
     },
   },
   watch: {
