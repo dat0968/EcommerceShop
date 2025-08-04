@@ -351,7 +351,6 @@ export default {
         }
       }
 
-      await this.checkSpinCount();
       this.fetchPrizeList();
 
       const wheelSwalDate = localStorage.getItem('wheel_swal_date') || '';
