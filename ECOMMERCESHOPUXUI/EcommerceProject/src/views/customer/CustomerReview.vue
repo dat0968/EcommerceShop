@@ -381,7 +381,7 @@ export default {
         ...orderGroup,
         items: orderGroup.items.map((item) => ({
           ...item,
-          hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/SanPham', item.tenHinhAnh),
+          hinhAnhUrl: pathReplaceImg(undefined, 'HinhAnh/Products', item.tenHinhAnh),
           _editSoSao: 5,
           _editNoiDung: '',
           _selectedFiles: [],
