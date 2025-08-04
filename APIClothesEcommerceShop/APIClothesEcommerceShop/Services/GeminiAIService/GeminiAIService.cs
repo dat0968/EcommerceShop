@@ -246,7 +246,7 @@ namespace APIClothesEcommerceShop.Services
                 }
 
                 var googleAI = new GoogleAI(apiKey: apiKey);
-                var model = googleAI.GenerativeModel(model: Model.Gemini15Flash);
+                var model = googleAI.GenerativeModel(model: Model.Gemini20FlashLitePreview0205);
 
                 // Convert base64 to Part for Gemini
                 string base64Data = imageBase64;
