@@ -1341,25 +1341,31 @@ export default {
     // --- End of Re-added Helper Functions ---
 
     checkCategoryConflict(item, groupIdx) {
-      const group = this.compareGroups[groupIdx]
-      if (group.products.length === 0) return false
-      const groupCategories = group.products
-        .map((p) => {
+      const group = this.compareGroups[groupIdx];
+      if (group.products.length === 0) return false;
+
+      // Get all clothing types ('top', 'bottom') from the existing group products
+      const groupClothingTypes = group.products
+        .flatMap(p => {
           if (p.type === 'combo' && p.products && p.products.length > 0) {
-            return p.products.map((prod) => prod.category || 'unknown')
+            return p.products.map(prod => this.getClothingCategory(prod.category));
           }
-          return p.category || 'unknown'
-        })
-        .flat()
-      let itemCategories = []
+          return [this.getClothingCategory(p.category)];
+        });
+
+      // Get all clothing types from the new item to be added
+      let itemClothingTypes = [];
       if (item.type === 'combo' && item.products && item.products.length > 0) {
-        itemCategories = item.products.map((prod) => prod.category || 'unknown')
-            } else {
-        itemCategories = [item.category || 'unknown']
+        itemClothingTypes = item.products.map(prod => this.getClothingCategory(prod.category));
+      } else {
+        itemClothingTypes = [this.getClothingCategory(item.category)];
       }
 
-      // Check if any category of the item matches any category in the group
-      return itemCategories.some((cat) => groupCategories.includes(cat) && cat !== 'unknown')
+      // Check for conflict: if any clothing type from the new item already exists in the group
+      // We ignore 'unknown' types in this check.
+      return itemClothingTypes.some(
+        type => type !== 'unknown' && groupClothingTypes.includes(type)
+      );
     },
     downloadTryOnResult(groupIdx) {
       const result = this.tryOnResults[groupIdx]
