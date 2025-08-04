@@ -279,15 +279,15 @@
                       </div>
                     </template>
 
-                    <div class="mt-3 text-center">
-                      <button
-                        class="btn btn-primary"
-                        @click="tryOnModel(groupIdx)"
-                        :disabled="loadingGroup === groupIdx"
-                      >
-                        Thử đồ trên người mẫu
-                      </button>
-                    </div>
+                    <button
+                      class="btn btn-primary btn-sm position-absolute"
+                      style="bottom: 8px; right: 8px; z-index: 2; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
+                      @click="tryOnModel(groupIdx)"
+                      :disabled="loadingGroup === groupIdx"
+                      title="Thử đồ trên người mẫu"
+                    >
+                      <i class="bi bi-magic"></i>
+                    </button>
                   </div>
                   <!-- Mặt sau: hình ảnh thử đồ nếu có -->
                   <template v-else>
@@ -327,103 +327,30 @@
                   <div class="compare-sum">
                     Giá tổng: <b>{{ formatCurrency(getGroupTotal(group)) }}</b>
                   </div>
-                  <div class="compare-tabs">
-                    <button
-                      v-for="tab in infoTabs"
-                      :key="tab"
-                      :class="{ active: group.activeTab === tab }"
-                      @click="group.activeTab = tab"
-                    >
-                      {{ tab }}
-                    </button>
-                  </div>
-                  <div class="compare-tab-content">
+                  <div class="compare-info-section">
                     <div v-if="group.selectedProductIdx != null">
-                      <div
-                        v-if="
-                          group.products[group.selectedProductIdx] &&
-                          group.products[group.selectedProductIdx].type === 'combo' &&
-                          group.products[group.selectedProductIdx].selectedComboProductIdx != null
-                        "
-                      >
+                      <template v-if="group.products[group.selectedProductIdx] && group.products[group.selectedProductIdx].type === 'combo' && group.products[group.selectedProductIdx].selectedComboProductIdx != null">
                         <!-- Focus vào sản phẩm trong combo -->
-                        <div v-if="group.activeTab === 'Mô tả'">
-                          <b
-                            >{{
-                              group.products[group.selectedProductIdx]?.products?.[
-                                group.products[group.selectedProductIdx]?.selectedComboProductIdx
-                              ]?.name || ''
-                            }}:</b
-                          >
-                          {{
-                            group.products[group.selectedProductIdx]?.products?.[
-                              group.products[group.selectedProductIdx]?.selectedComboProductIdx
-                            ]?.description || ''
-                          }}
-                        </div>
-                        <div v-else-if="group.activeTab === 'Đánh giá'">
-                          <b
-                            >{{
-                              group.products[group.selectedProductIdx]?.products?.[
-                                group.products[group.selectedProductIdx]?.selectedComboProductIdx
-                              ]?.name || ''
-                            }}:</b
-                          >
-                          {{
-                            group.products[group.selectedProductIdx]?.products?.[
-                              group.products[group.selectedProductIdx]?.selectedComboProductIdx
-                            ]?.rating || ''
-                          }}
-                          ★
-                        </div>
-                        <div v-else-if="group.activeTab === 'Thông tin'">
-                          <b
-                            >{{
-                              group.products[group.selectedProductIdx]?.products?.[
-                                group.products[group.selectedProductIdx]?.selectedComboProductIdx
-                              ]?.name || ''
-                            }}:</b
-                          >
-                          {{
-                            group.products[group.selectedProductIdx]?.products?.[
-                              group.products[group.selectedProductIdx]?.selectedComboProductIdx
-                            ]?.info || ''
-                          }}
-                        </div>
-                      </div>
-                      <div v-else>
+                        <h5 class="info-title">Mô tả:</h5>
+                        <p>{{ group.products[group.selectedProductIdx]?.products?.[group.products[group.selectedProductIdx]?.selectedComboProductIdx]?.description || 'Không có mô tả' }}</p>
+                        
+                        <h5 class="info-title">Đánh giá:</h5>
+                        <p>{{ group.products[group.selectedProductIdx]?.products?.[group.products[group.selectedProductIdx]?.selectedComboProductIdx]?.rating || 'Chưa có đánh giá' }} ★</p>
+                        
+                        <h5 class="info-title">Thông tin:</h5>
+                        <p>{{ group.products[group.selectedProductIdx]?.products?.[group.products[group.selectedProductIdx]?.selectedComboProductIdx]?.info || 'Không có thông tin' }}</p>
+                      </template>
+                      <template v-else>
                         <!-- Focus vào sản phẩm lẻ hoặc combo -->
-                        <div v-if="group.activeTab === 'Mô tả'">
-                          <b
-                            >{{
-                              group.products[group.selectedProductIdx].name ||
-                              group.products[group.selectedProductIdx].comboName ||
-                              ''
-                            }}:</b
-                          >
-                          {{ group.products[group.selectedProductIdx].description }}
-                        </div>
-                        <div v-else-if="group.activeTab === 'Đánh giá'">
-                          <b
-                            >{{
-                              group.products[group.selectedProductIdx].name ||
-                              group.products[group.selectedProductIdx].comboName ||
-                              ''
-                            }}:</b
-                          >
-                          {{ group.products[group.selectedProductIdx].rating }} ★
-                        </div>
-                        <div v-else-if="group.activeTab === 'Thông tin'">
-                          <b
-                            >{{
-                              group.products[group.selectedProductIdx].name ||
-                              group.products[group.selectedProductIdx].comboName ||
-                              ''
-                            }}:</b
-                          >
-                          {{ group.products[group.selectedProductIdx].info }}
-                        </div>
-                      </div>
+                        <h5 class="info-title">Mô tả:</h5>
+                        <p>{{ group.products[group.selectedProductIdx].description || 'Không có mô tả' }}</p>
+                        
+                        <h5 class="info-title">Đánh giá:</h5>
+                        <p>{{ group.products[group.selectedProductIdx].rating || 'Chưa có đánh giá' }} ★</p>
+                        
+                        <h5 class="info-title">Thông tin:</h5>
+                        <p>{{ group.products[group.selectedProductIdx].info || 'Không có thông tin' }}</p>
+                      </template>
                     </div>
                     <div v-else>
                       <span style="color: #888">Bấm vào sản phẩm để xem chi tiết</span>
@@ -547,7 +474,6 @@ export default {
     return {
       showModal: false,
       showSidebarModal: true,
-      infoTabs: ['Mô tả', 'Đánh giá', 'Thông tin'],
       selectedProducts: [],
       showApiSettings: false,
       loadingGroup: null, // Index of the group currently being processed by AI
@@ -555,8 +481,8 @@ export default {
         lightxApiKey: localStorage.getItem('lightxApiKey') || '',
       },
       compareGroups: [
-        { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
-        { products: [], activeTab: 'Mô tả', selectedProductIdx: null },
+        { products: [], selectedProductIdx: null },
+        { products: [], selectedProductIdx: null },
       ],
       groupFlipped: [false, false],
       dragItem: null,
@@ -1201,21 +1127,24 @@ export default {
 .compare-modal {
   background: #fff;
   border-radius: 16px;
-  width: 90vw;
-  max-width: 1200px;
+  width: 95vw; /* Tăng chiều rộng trên màn hình lớn */
+  max-width: 1400px; /* Tăng max-width */
   min-height: 600px;
-  max-height: 90vh;
-  box-shadow: 0 4px 32px #0003;
+  max-height: 95vh; /* Tăng max-height */
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2); /* Shadow mạnh hơn */
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden; /* Đảm bảo nội dung không tràn ra ngoài */
 }
+
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 32px 8px 32px;
-  border-bottom: 1px solid #eee;
+  padding: 15px 25px; /* Điều chỉnh padding */
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f8f8; /* Màu nền cho header */
 }
 
 .header-left, .header-right {
@@ -1229,31 +1158,93 @@ export default {
   text-align: center;
 }
 
+.header-center h2 {
+  margin: 0;
+  font-size: 1.8rem; /* Kích thước tiêu đề */
+  color: #333;
+}
+
 .header-right {
   justify-content: flex-end;
 }
+
 .close-btn {
-  font-size: 2rem;
+  font-size: 2.2rem; /* Kích thước nút đóng */
   background: none;
   border: none;
   color: #888;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
+
+.close-btn:hover {
+  color: #333;
+}
+
 .modal-body {
   display: flex;
   flex: 1;
-  padding: 16px 32px;
-  gap: 32px;
+  padding: 20px; /* Điều chỉnh padding */
+  gap: 20px; /* Điều chỉnh khoảng cách giữa các cột */
   min-height: 0;
-  max-height: 70vh;
+  max-height: calc(95vh - 70px); /* Tính toán lại max-height */
+  overflow-y: auto; /* Chỉ cuộn theo chiều dọc */
+  overflow-x: hidden; /* Ẩn thanh cuộn ngang */
 }
-.overflow-auto {
-  overflow: auto;
-}
+
 .compare-main {
   flex: 2;
-  overflow-x: auto;
+  overflow-x: hidden; /* Ẩn thanh cuộn ngang */
+  display: flex;
+  flex-direction: column;
 }
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .compare-modal {
+    width: 98vw;
+    max-width: 98vw;
+    min-height: unset;
+    max-height: 98vh;
+  }
+  .modal-body {
+    flex-direction: column; /* Stack columns on smaller screens */
+    padding: 15px;
+    gap: 15px;
+    max-height: calc(98vh - 60px);
+  }
+  .compare-sidebar {
+    min-width: unset;
+    width: 100%;
+    max-height: 300px; /* Giới hạn chiều cao sidebar trên mobile */
+  }
+  .compare-main {
+    width: 100%;
+  }
+  .header-center h2 {
+    font-size: 1.5rem;
+  }
+  .close-btn {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-header {
+    padding: 10px 15px;
+  }
+  .header-center h2 {
+    font-size: 1.3rem;
+  }
+  .close-btn {
+    font-size: 1.5rem;
+  }
+  .modal-body {
+    padding: 10px;
+    gap: 10px;
+  }
+}
+
 .compare-list {
   display: flex;
   flex-direction: column;
@@ -1365,31 +1356,25 @@ export default {
   font-size: 1.1rem;
   color: #1976d2;
 }
-.compare-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.compare-tabs button {
-  background: #e3f2fd;
-  border: none;
-  border-radius: 6px;
-  padding: 4px 16px;
-  font-size: 1rem;
-  cursor: pointer;
-  color: #1976d2;
-  transition: background 0.2s;
-}
-.compare-tabs button.active {
-  background: #1976d2;
-  color: #fff;
-}
-.compare-tab-content {
+.compare-info-section {
   background: #fff;
   border-radius: 6px;
   padding: 8px 12px;
   min-height: 40px;
   font-size: 1.05rem;
+}
+
+.info-title {
+  font-weight: bold;
+  color: #1976d2;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.info-title:first-of-type {
+  margin-top: 0;
 }
 .compare-sidebar {
   flex: 1;
