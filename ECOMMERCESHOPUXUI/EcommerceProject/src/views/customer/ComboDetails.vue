@@ -8,6 +8,7 @@ import Cookies from 'js-cookie'
 import RecomendationProduct from '@/components/RecommendationProduct/RecomendationProduct.vue'
 import Swal from 'sweetalert2'
 import ReviewProductCombo from '@/components/pages/customers/reviews/ReviewProductCombo.vue'
+import TryOnProduct from '@/components/specicals/TryOnProduct.vue' // Import TryOnProduct
 
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
@@ -31,7 +32,7 @@ const fetchCombo = async () => {
     readToken.value = decodeToken(accessToken.value)
   }
   const maKhachHang = readToken.value?.IdUser ?? null
-  let url = `${getUrlAPI.value}/api/shop/Combo/${id}`
+  let url = `${getUrlAPI.value}/api/Shop/Combo/${id}`
   if (maKhachHang != null) {
     url += `?maKh=${maKhachHang}`
   }
@@ -64,6 +65,7 @@ const fetchCombo = async () => {
       variants: ct.sanPhamCTs,
       colors: [...new Set(ct.sanPhamCTs.map((pd) => pd.mauSac).filter(Boolean))],
       sizes: [...new Set(ct.sanPhamCTs.map((pd) => pd.kichThuoc).filter(Boolean))],
+      category: ct.tenLoai, // Add category for each product in combo
     })),
   }
   combo.value.chitietcombos.forEach((product, index) => {
@@ -225,6 +227,38 @@ function addComboToCompare() {
     timerProgressBar: true,
   })
 }
+
+const tryOnProductData = computed(() => {
+  if (!combo.value || !combo.value.id) return null;
+
+  // Construct the products array for LightXService and Gemini AI
+  const productsForAI = combo.value.chitietcombos.map((ct, index) => {
+    const selectedVariant = ct.variants.find(v =>
+      v.mauSac === (selectedVariants.value[index]?.color || ct.colors[0]) &&
+      v.kichThuoc === (selectedVariants.value[index]?.size || availableSizes.value[index]?.[0])
+    );
+    const imageUrl = selectedVariant?.images[0]?.tenHinhAnh
+      ? `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${selectedVariant.images[0].tenHinhAnh}`
+      : '';
+    return {
+      image: imageUrl,
+      category: ct.category, // Category of the individual product within the combo
+    };
+  });
+
+  return {
+    id: combo.value.id,
+    name: combo.value.name,
+    image: `${getUrlAPI.value.replace('/api', '')}/HinhAnh/AnhCombo/${combo.value.hinh}`, // Main combo image
+    type: 'combo',
+    category: 'combo', // Generic category for the combo itself
+    description: combo.value.description,
+    rating: 0, // Combos don't have a direct rating
+    info: null, // No direct info
+    variant: null, // Not applicable for a combo
+    products: productsForAI, // This is the array that LightXService and backend AI will use
+  };
+});
 </script>
 <template>
   <div>
@@ -300,6 +334,7 @@ function addComboToCompare() {
                       ><span class="icon_adjust-horiz"></span
                     ></a>
                   </div>
+                  <TryOnProduct :product="tryOnProductData" v-if="tryOnProductData" />
                 </div>
               </div>
               <div class="product__details__widget">

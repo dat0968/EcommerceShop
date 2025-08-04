@@ -10,6 +10,7 @@ import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import { jwtDecode } from 'jwt-decode'
+import TryOnProduct from '@/components/specicals/TryOnProduct.vue' // Import TryOnProduct
 
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
@@ -375,7 +376,7 @@ onMounted(async () => {
 
   // Initialize carousel
   nextTick(() => {
-    const $carousel = $('.product__details__pic__slider')
+    const $carousel = $(".product__details__pic__slider")
 
     if ($carousel.length === 0) {
       console.warn('Carousel element not found in DOM')
@@ -617,6 +618,43 @@ const addToCartRecommendation = (productId) => {
   // Add your logic here
 }
 
+const tryOnProductData = computed(() => {
+  if (!product.value || !product.value.maSp) return null;
+
+  const selectedProductDetail = product.value.productDetails.find(
+    (p) =>
+      (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
+      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
+  );
+
+  let imageUrl = '';
+  if (selectedProductDetail && selectedProductDetail.images && selectedProductDetail.images.length > 0) {
+    imageUrl = `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${selectedProductDetail.images[0]?.tenHinhAnh}`;
+  } else if (allImages.value.length > 0) {
+    imageUrl = `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${allImages.value[currentImage.value - 1]?.tenHinhAnh}`;
+  }
+
+  return {
+    id: product.value.maSp,
+    name: product.value.tenSanPham,
+    image: imageUrl,
+    type: 'single',
+    category: product.value.tenLoai,
+    description: product.value.moTa,
+    rating: product.value.danhGia,
+    info: product.value.thongTin,
+    variant: {
+      color: selectedColor.value,
+      size: selectedSize.value,
+      price: originalPrice.value,
+    },
+    products: selectedProductDetail ? [{
+      image: imageUrl,
+      category: product.value.tenLoai,
+    }] : [],
+  };
+});
+
 watch(
   () => route.params.id,
   async () => {
@@ -736,7 +774,7 @@ watch(
                             <button class="btn btn-outline-secondary" type="button" @click="quantity = Math.max(1, parseInt(quantity) - 1).toString()">-</button>
                             <input 
                                 type="number" 
-                                class="form-control text-center" 
+                                class="form-control text-center"
                                 v-model="quantity" 
                                 @input="validateQuantity"
                                 min="1" 
@@ -762,7 +800,7 @@ watch(
                     <button class="btn btn-outline-danger btn-sm" @click="addToCompare">
                         <i class="bi bi-arrow-left-right"></i> Thêm vào so sánh
                     </button>
-             
+                    <TryOnProduct :product="tryOnProductData" v-if="tryOnProductData" />
                 </div>
 
                 <!-- Product Features -->
