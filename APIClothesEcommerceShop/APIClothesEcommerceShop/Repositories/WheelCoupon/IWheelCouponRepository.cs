@@ -12,7 +12,7 @@ namespace APIClothesEcommerceShop.Repositories.WheelCoupon
     public interface IWheelCouponRepository : IRepository<Models.Macoupon>
     {
         public Task<ResponseAPI<dynamic>> TimeCanSpinWheelCoupon(int? userId);
-        public Task<ResponseAPI<dynamic>> HavePrivateCoupon(int? userId);
+        public Task<ResponseAPI<PrivateCouponInfoDTO>> HavePrivateCoupon(int? userId);
         /// <summary>
         /// Cập nhật lần đăng nhập cuối và streak cho khách hàng
         /// </summary>

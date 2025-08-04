@@ -20,17 +20,56 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     {
         private readonly EcommerceShopContext _db = db;
         private static string[] filterStatusOrder = ["đã nhận", "đã thanh toán"]; // Trạng thái để lọc việc get danh sách đánh giá
-        public async Task<ResponseAPI<dynamic>> HavePrivateCoupon(int? userId)
+        public async Task<ResponseAPI<PrivateCouponInfoDTO>> HavePrivateCoupon(int? userId)
         {
-            ResponseAPI<dynamic> response = new();
+            var response = new ResponseAPI<PrivateCouponInfoDTO>();
             try
             {
-                if (userId == 0)
+                if (!userId.HasValue || userId == 0)
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
                 }
-                bool havePrivateCoupon = await base.ExistsAsync(x => x.MaKhachHang == userId && x.TrangThai == true && x.SoLuong > 0);
-                response.SetSuccessResponse(data: havePrivateCoupon);
+
+                var customer = await _db.Khachhangs
+                                        .Include(kh => kh.Hoadons)
+                                        .Include(kh => kh.MaCoupons)
+                                        .FirstOrDefaultAsync(kh => kh.MaKh == userId.Value);
+
+                if (customer == null)
+                {
+                    throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
+                }
+
+                var totalOrderValue = customer.Hoadons
+                    .Where(hd => hd.TinhTrang != null && filterStatusOrder.Contains(hd.TinhTrang.ToLower()))
+                    .Sum(hd => hd.TienGoc - hd.PhiVanChuyen);
+
+                var allUserCoupons = customer.MaCoupons.Where(mc => mc.MaKhachHang == userId.Value).ToList();
+
+                var wonSpins = allUserCoupons.Count(mc => mc.SoTienGiam > 0 || mc.PhanTramGiam > 0);
+                var blankSpins = allUserCoupons.Count(mc => (mc.SoTienGiam == 0 || mc.SoTienGiam == null) && (mc.PhanTramGiam == 0 || mc.PhanTramGiam == null));
+
+                var privateCoupons = allUserCoupons
+                    .Where(mc => mc.TrangThai == true && mc.SoLuong > 0)
+                    .Select(mc => new CouponInfoDTO
+                    {
+                        MaCode = mc.MaCode,
+                        MoTa = mc.MoTa ?? "Coupon này không có mô tả",
+                        SoTienGiam = mc.SoTienGiam,
+                        PhanTramGiam = mc.PhanTramGiam,
+                        NgayKetThuc = mc.NgayKetThuc
+                    }).ToList();
+
+                var result = new PrivateCouponInfoDTO
+                {
+                    Streak = customer.Streak,
+                    TotalOrderValue = totalOrderValue,
+                    WonSpins = wonSpins,
+                    BlankSpins = blankSpins,
+                    PrivateCoupons = privateCoupons
+                };
+
+                response.SetSuccessResponse(data: result);
             }
             catch (Exception ex)
             {
