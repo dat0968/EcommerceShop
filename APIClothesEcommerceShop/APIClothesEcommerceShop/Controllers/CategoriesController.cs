@@ -223,10 +223,37 @@ namespace APIClothesEcommerceShop.Controllers
         /// <param name="maSp">Mã sản phẩm</param>
         [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
         [Authorize(Roles = "Admin,Nhân viên")]
+
         [HttpDelete("detail")]
         public async Task<IActionResult> DeleteCategoryDetail([FromQuery] int maDanhMucCha, [FromQuery] int maDanhMucCon, [FromQuery] int maSp)
         {
             var result = await _unit.Category.DeleteCategoryDetailAsync(maDanhMucCha, maDanhMucCon, maSp);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Thay đổi trạng thái hoạt động của danh mục cha.
+        /// </summary>
+        /// <param name="id">Mã danh mục cha</param>
+        [HttpPatch("parent/{id}/change-status")]
+        [Authorize(Roles = "Admin,Nhân viên")]
+        [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ChangeStatusCategory(int id)
+        {
+            var result = await _unit.Category.ChangeStatusCategoryAsync(id);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Thay đổi trạng thái hoạt động của danh mục con.
+        /// </summary>
+        /// <param name="id">Mã danh mục con</param>
+        [HttpPatch("child/{id}/change-status")]
+        [Authorize(Roles = "Admin,Nhân viên")]
+        [ProducesResponseType(typeof(ResponseAPI<dynamic>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ChangeStatusSubCategory(int id)
+        {
+            var result = await _unit.Category.ChangeStatusSubCategoryAsync(id);
             return Ok(result);
         }
     }

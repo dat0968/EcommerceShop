@@ -224,6 +224,29 @@ namespace APIClothesEcommerceShop.Repositories.Category
             }
             return response;
         }
+        // Chỉ cập nhập trạng thái danh mục cha
+        public async Task<ResponseAPI<dynamic>> ChangeStatusCategoryAsync(int id)
+        {
+            ResponseAPI<dynamic> response = new();
+            try
+            {
+                var category = await _db.Danhmucchas.FindAsync(id);
+                if (category == null)
+                {
+                    response.SetErrorResponse("Không tìm thấy danh mục cha.");
+                    return response;
+                }
+                category.IsActive = !category.IsActive;
+                _db.Danhmucchas.Update(category);
+                await _db.SaveChangesAsync();
+                response.SetSuccessResponse(data: category.IsActive, message: "Cập nhập danh mục cha thành công.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
         #endregion
 
         #region [Danh mục con]
@@ -341,6 +364,29 @@ namespace APIClothesEcommerceShop.Repositories.Category
                 _db.Danhmuccons.Remove(subCategory);
                 await _db.SaveChangesAsync();
                 response.SetSuccessResponse(data: true, message: "Xóa danh mục con thành công.");
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, response);
+            }
+            return response;
+        }
+        // Chỉ cập nhập trạng thái danh mục con
+        public async Task<ResponseAPI<dynamic>> ChangeStatusSubCategoryAsync(int id)
+        {
+            ResponseAPI<dynamic> response = new();
+            try
+            {
+                var category = await _db.Danhmuccons.FindAsync(id);
+                if (category == null)
+                {
+                    response.SetErrorResponse("Không tìm thấy danh mục con.");
+                    return response;
+                }
+                category.IsActive = !category.IsActive;
+                _db.Danhmuccons.Update(category);
+                await _db.SaveChangesAsync();
+                response.SetSuccessResponse(data: category.IsActive, message: "Cập nhập danh mục con thành công.");
             }
             catch (Exception ex)
             {
