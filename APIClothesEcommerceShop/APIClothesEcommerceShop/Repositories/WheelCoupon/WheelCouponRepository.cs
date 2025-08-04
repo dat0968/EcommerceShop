@@ -19,7 +19,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     public class WheelCouponRepository(EcommerceShopContext db) : Repository<Models.Macoupon>(db), IWheelCouponRepository
     {
         private readonly EcommerceShopContext _db = db;
-        private string CompletelyStatus = "Đã nhận";
+        private static string[] filterStatusOrder = ["đã nhận", "đã thanh toán"]; // Trạng thái để lọc việc get danh sách đánh giá
         public async Task<ResponseAPI<dynamic>> HavePrivateCoupon(int? userId)
         {
             ResponseAPI<dynamic> response = new();
@@ -58,7 +58,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
                 decimal totalCompleted = customer.Hoadons
-                    .Where(x => x.TinhTrang == CompletelyStatus)
+                    .Where(x => filterStatusOrder.Contains(x.TinhTrang.ToLower()))
                     .Sum(x => x.TienGoc - x.PhiVanChuyen);
                 int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
 
@@ -252,7 +252,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
             int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
             decimal totalCompleted = customer.Hoadons
-                .Where(x => x.TinhTrang == CompletelyStatus)
+                .Where(x => filterStatusOrder.Contains(x.TinhTrang.ToLower()))
                 .Sum(x => x.TienGoc - x.PhiVanChuyen);
             int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
 
