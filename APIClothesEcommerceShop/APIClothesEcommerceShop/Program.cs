@@ -144,7 +144,6 @@ builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<MLRecommendationSystem>();
 builder.Services.AddScoped<ComboService>();
 builder.Services.AddScoped<CheckoutService>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IVnpay, Vnpay>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();
