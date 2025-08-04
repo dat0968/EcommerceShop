@@ -301,16 +301,16 @@
                         <div class="mt-2">
                           <b>Điểm thẩm mỹ:</b>
                           <span style="font-size: 1.3rem; color: #e67e22"
-                            >{{ tryOnResults[groupIdx].score }}/10</span
+                            > {{ tryOnResults[groupIdx].score }}/10</span
                           >
                         </div>
                         <div class="mt-2">
                           <b>Phong cách:</b>
-                          <span>{{ tryOnResults[groupIdx].style }}</span>
+                          <span> {{ tryOnResults[groupIdx].style }}</span>
                         </div>
                         <div class="mt-2">
                           <b>Giới tính phù hợp:</b>
-                          <span>{{ tryOnResults[groupIdx].gender_suitability }}</span>
+                          <span> {{ tryOnResults[groupIdx].gender_suitability }}</span>
                         </div>
                         <button class="btn btn-success mt-2" @click="downloadTryOnResult(groupIdx)">
                           Tải về kết quả thử đồ
@@ -918,41 +918,54 @@ export default {
       const group = this.compareGroups[groupIdx]
       const modelInfo = { name: 'Người mẫu đã lưu', url: '' } // Model info is lost, but not critical
 
+      let analysisResult = {
+          score: 'N/A',
+          style: 'Không thể phân tích',
+          gender_suitability: 'Không thể phân tích'
+      };
+
       try {
         const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
           resultImageUrl: imageUrl,
           productsData: group.products,
         })
 
-        if (!geminiResponse.success) {
-          const errorData =  geminiResponse
-          throw new Error(`Gemini API request failed: ${errorData.error?.message || geminiResponse.statusText}`)
+        if (geminiResponse.success) {
+            const result = geminiResponse.data;
+            analysisResult = {
+                score: result.aesthetic_score,
+                style: result.style,
+                gender_suitability: result.gender_suitability,
+            };
+        } else {
+            throw new Error(geminiResponse.message || 'Phân tích lại hình ảnh thất bại.');
         }
-
-        const result =  geminiResponse
-
+      } catch (error) {
+        console.error('Error during resumed analysis:', error)
+        let errorMessage = 'Không thể hoàn tất phân tích. Vui lòng thử lại.';
+        const errorText = error.message || '';
+        if (errorText.includes('429') || errorText.includes('RESOURCE_EXHAUSTED')) {
+            errorMessage = 'Lỗi phân tích: Bạn đã sử dụng hết hạn ngạch API miễn phí cho hôm nay. Vui lòng thử lại sau hoặc nâng cấp gói dịch vụ.';
+        }
+        Swal.fire({
+          icon: 'warning',
+          title: 'Phân tích thất bại',
+          text: errorMessage,
+        })
+      } finally {
+        // Always show the image and update results
         this.tryOnResults[groupIdx] = {
           model: modelInfo,
           image: imageUrl, // Use the saved image URL
-          score: result.data.aesthetic_score,
-          style: result.data.style,
-          gender_suitability: result.data.gender_suitability,
+          ...analysisResult,
           products: group.products,
           time: new Date().toISOString(),
         }
         this.tryOnResults = { ...this.tryOnResults }
         this.groupFlipped[groupIdx] = true
 
-        // Clean up on success
+        // Clean up on success or failure of analysis
         localStorage.removeItem(`lightx_result_url_${groupIdx}`)
-      } catch (error) {
-        console.error('Error during resumed analysis:', error)
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi phân tích',
-          text: `Không thể hoàn tất phân tích. Vui lòng thử lại. Lỗi: ${error.message}`,
-        })
-      } finally {
         this.loadingGroup = null
       }
     },
@@ -1041,35 +1054,60 @@ export default {
         }
 
         // Step 3: Process with LightX using the reliable blob upload method
-        const tryOnImageResultUrl = await this.processWithLightX(modelDataUrl, productDataUrls);
+        const tryOnImageResultUrl = await this.processWithLightX(modelDataUrl, group.products);
         localStorage.setItem(lightXResultUrlKey, tryOnImageResultUrl);
 
         // Step 4: Send to Gemini for analysis
-        const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
-          resultImageUrl: tryOnImageResultUrl,
-          productsData: group.products,
-        })
+        let analysisResult = {
+            score: 'N/A',
+            style: 'Không thể phân tích',
+            gender_suitability: 'Không thể phân tích'
+        };
 
-        if (!geminiResponse.success) {
-          const errorData = geminiResponse
-          throw new Error(`Gemini API request failed: ${errorData.error?.message || geminiResponse.data.message}`)
+        try {
+            const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
+                resultImageUrl: tryOnImageResultUrl,
+                productsData: group.products,
+            });
+
+            if (geminiResponse.success) {
+                const result = geminiResponse.data;
+                analysisResult = {
+                    score: result.aesthetic_score,
+                    style: result.style,
+                    gender_suitability: result.gender_suitability,
+                };
+            } else {
+                // This will be caught by the catch block below
+                throw new Error(geminiResponse.message || 'Phân tích hình ảnh thất bại.');
+            }
+        } catch (error) {
+            console.error('Gemini analysis failed:', error);
+            let errorMessage = 'Không thể phân tích hình ảnh do lỗi không xác định.';
+            const errorText = error.message || '';
+            if (errorText.includes('429') || errorText.includes('RESOURCE_EXHAUSTED')) {
+                errorMessage = 'Lỗi phân tích: Bạn đã sử dụng hết hạn ngạch API miễn phí cho hôm nay. Vui lòng thử lại sau hoặc nâng cấp gói dịch vụ.';
+            }
+            Swal.fire({
+                icon: 'warning',
+                title: 'Phân tích thất bại',
+                text: errorMessage,
+            });
         }
 
-        const result = geminiResponse
-
+        // Always show the generated image, even if analysis fails
         this.tryOnResults[groupIdx] = {
-          model: modelInfo,
-          image: tryOnImageResultUrl,
-          score: result.data.aesthetic_score,
-          style: result.data.style,
-          gender_suitability: result.data.gender_suitability,
-          products: group.products,
-          time: new Date().toISOString(),
-        }
-        this.tryOnResults = { ...this.tryOnResults }
-        this.groupFlipped[groupIdx] = true
+            model: modelInfo,
+            image: tryOnImageResultUrl,
+            ...analysisResult,
+            products: group.products,
+            time: new Date().toISOString(),
+        };
+        this.tryOnResults = { ...this.tryOnResults };
+        this.groupFlipped[groupIdx] = true;
 
-        localStorage.removeItem(lightXResultUrlKey)
+        // Clean up the saved URL regardless of analysis success
+        localStorage.removeItem(lightXResultUrlKey);
 
       } catch (error) {
         console.error('Error during try-on process:', error)
@@ -1090,11 +1128,11 @@ export default {
       this.userModelPreviewUrl = ''
       this.selectedTryOnModel = null
     },
-    async processWithLightX(modelDataUrl, productDataUrls) {
+    async processWithLightX(modelDataUrl, products) {
       try {
         const apiKey = this.apiKeys.lightxApiKey;
 
-        // Step 1 & 2: Upload model image
+        // Step 1: Upload model image
         const modelBlob = dataURLtoBlob(modelDataUrl);
         if (!modelBlob) {
           throw new Error('Không thể chuyển đổi ảnh người mẫu sang định dạng có thể xử lý. Ảnh có thể bị hỏng.');
@@ -1103,17 +1141,32 @@ export default {
         await this.uploadToLightX(modelUploadData.uploadImage, modelBlob);
         const modelImageUrl = modelUploadData.imageUrl;
 
-        // Step 1 & 2: Upload product image (we use the first one for the style)
-        const productBlob = dataURLtoBlob(productDataUrls[0]);
-        if (!productBlob) {
-          throw new Error('Không thể chuyển đổi ảnh sản phẩm sang định dạng có thể xử lý. Ảnh có thể bị hỏng.');
+        // Step 2: Upload all product images and categorize them
+        const productUrls = [];
+        for (const product of products) {
+            const productDataUrl = await this.loadImageAsDataUrl(product.image);
+            const productBlob = dataURLtoBlob(productDataUrl);
+            if (!productBlob) {
+                console.warn(`Could not process product image for ${product.name}, skipping.`);
+                continue;
+            }
+            const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size);
+            await this.uploadToLightX(productUploadData.uploadImage, productBlob);
+            productUrls.push({
+                url: productUploadData.imageUrl,
+                category: this.getClothingCategory(product.name) // 'top' or 'bottom'
+            });
         }
-        const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size);
-        await this.uploadToLightX(productUploadData.uploadImage, productBlob);
-        const styleImageUrl = productUploadData.imageUrl;
 
-        // Step 3: Start the job
-        const orderId = await this.startLightXJob(apiKey, modelImageUrl, styleImageUrl);
+        const topImageUrl = productUrls.find(p => p.category === 'top')?.url;
+        const bottomImageUrl = productUrls.find(p => p.category === 'bottom')?.url;
+
+        if (!topImageUrl && !bottomImageUrl) {
+            throw new Error('Không có sản phẩm nào phù hợp (áo hoặc quần) để thử đồ.');
+        }
+
+        // Step 3: Start the job with appropriate parameters
+        const orderId = await this.startLightXJob(apiKey, modelImageUrl, topImageUrl, bottomImageUrl);
 
         // Step 4: Poll for the result
         const resultUrl = await this.pollLightXJob(apiKey, orderId);
@@ -1121,11 +1174,20 @@ export default {
 
       } catch (error) {
         console.error('Error processing with LightX API:', error);
-        let userMessage = error.message; // Default message
-        if (error.message && error.message.includes('5044')) {
+        let userMessage = 'Đã có lỗi không xác định xảy ra.'; // Default generic message
+
+        if (error instanceof Error) {
+            userMessage = error.message;
+        } else if (typeof error === 'string') {
+            userMessage = error;
+        } else if (error && error.message) {
+            userMessage = error.message;
+        }
+
+        if (userMessage.includes('5044')) {
           userMessage =
             'Không thể xử lý ảnh bằng AI. Điều này có thể do ảnh người mẫu hoặc ảnh sản phẩm không phù hợp (ví dụ: độ phân giải thấp, khuôn mặt không rõ ràng, hoặc định dạng không được hỗ trợ). Vui lòng thử sử dụng một ảnh khác.'
-        } else if (error.message && error.message.includes('timed out')) {
+        } else if (userMessage.includes('timed out')) {
           userMessage = 'Quá trình xử lý mất quá nhiều thời gian. Vui lòng thử lại sau.'
         }
 
@@ -1136,6 +1198,18 @@ export default {
         });
         throw error; // Re-throw to be caught by the calling function
       }
+    },
+
+    getClothingCategory(categoryName) {
+        if (!categoryName) return 'unknown'; // Guard against null/undefined
+        const name = categoryName.toLowerCase();
+        if (name.includes('áo') || name.includes('top')) {
+            return 'top';
+        }
+        if (name.includes('quần') || name.includes('bottom') || name.includes('pants') || name.includes('jeans')) {
+            return 'bottom';
+        }
+        return 'unknown';
     },
     async getLightXUploadUrl(apiKey, size) {
       const response = await fetch('https://api.lightxeditor.com/external/api/v2/uploadImageUrl', {
@@ -1171,14 +1245,35 @@ export default {
       }
     },
 
-    async startLightXJob(apiKey, imageUrl, styleImageUrl) {
+    async startLightXJob(apiKey, imageUrl, topImageUrl, bottomImageUrl) {
+        const payload = {
+            imageUrl,
+            category: "fashion", // Assuming fashion category for virtual try-on
+        };
+
+        if (topImageUrl) {
+            payload.styleImageUrl = topImageUrl;
+            payload.clothCategory = "top";
+        }
+
+        if (bottomImageUrl) {
+            // If there's also a top, this becomes a sticker
+            if (topImageUrl) {
+                payload.stickerImageUrl = bottomImageUrl;
+                payload.stickerCategory = "bottom";
+            } else { // Otherwise, it's the main style
+                payload.styleImageUrl = bottomImageUrl;
+                payload.clothCategory = "bottom";
+            }
+        }
+
       const response = await fetch('https://api.lightxeditor.com/external/api/v2/aivirtualtryon', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': apiKey,
         },
-        body: JSON.stringify({ imageUrl, styleImageUrl }),
+        body: JSON.stringify(payload),
       })
       const data = await response.json()
       if (data.statusCode !== 2000) {
