@@ -24,13 +24,18 @@ import '../../assets/Customer/js/main.js'
 import chatbot from '@/components/chatbot/chatbot.vue'
 import CompareProduct from '@/components/specicals/CompareProduct.vue'
 // import 'owl.carousel/dist/assets/owl.carousel.min.css'
+
+import { useModalVisibility } from '@/composables/useModalVisibility'
+const { isModalVisible } = useModalVisibility({
+  exclude: ["Profile", "Login"]
+})
 </script>
 <template>
   <div style="background-color:#F5F3EA ;">
     <HeaderComponent />
     <router-view :key="$route.fullPath" />
     <chatbot></chatbot>
-    <compare-product/>
+    <compare-product v-if="isModalVisible"/>
     <FooterComponent />
   </div>
 </template>
