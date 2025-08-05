@@ -61,5 +61,26 @@ namespace APIClothesEcommerceShop.Controllers
             var response = await _unit.WheelCoupon.SpinWheelAndGenerateCoupon(userId, request);
             return Ok(response);
         }
+
+        /// <summary>
+        /// GenerateCouponPreset (GET): Tạo một danh sách các giá trị coupon được mã hóa để hiển thị trên vòng quay.
+        /// </summary>
+        [HttpGet("generate-preset")]
+        public async Task<IActionResult> GenerateCouponPreset()
+        {
+            var response = await _unit.WheelCoupon.GenerateCouponPreset();
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// ClaimPresetCoupon (POST): Xác thực token và tạo coupon thật dựa trên vị trí trúng thưởng.
+        /// </summary>
+        [HttpPost("claim-preset")]
+        public async Task<IActionResult> ClaimPresetCoupon(ClaimPresetCouponRequest request)
+        {
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var response = await _unit.WheelCoupon.ClaimPresetCoupon(userId, request);
+            return Ok(response);
+        }
     }
 }
