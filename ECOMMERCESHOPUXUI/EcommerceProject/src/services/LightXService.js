@@ -1,4 +1,5 @@
 import Swal from 'sweetalert2'
+import * as axiosConfig from '@/utils/axiosClient'
 
 // Helper function to convert dataURL to Blob
 function dataURLtoBlob(dataurl) {
@@ -182,56 +183,61 @@ class LightXService {
     throw new Error('LightX job timed out after several retries.')
   }
 
+  async uploadImageToCloudinary(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await axiosConfig.postToApi('/TryOn/UploadImage', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+    if (!response.success) throw new Error(response.message || 'Không thể tải ảnh lên Cloudinary.');
+    return response.data.imageUrl;
+  }
+
+  async uploadImageFromUrlToCloudinary(imageUrl) {
+    const response = await axiosConfig.postToApi('/TryOn/UploadFromUrl', { imageUrl });
+    if (!response.success) throw new Error(response.message || 'Không thể tải ảnh từ URL lên Cloudinary.');
+    return response.data.imageUrl;
+  }
+
+  async analyzeImageWithGemini(resultImageUrl, productsData) {
+    const response = await axiosConfig.postToApi('/TryOn/AnalyzeImage', { resultImageUrl, productsData });
+    if (!response.success) throw new Error(response.message || 'Phân tích hình ảnh bằng Gemini AI thất bại.');
+    return response.data;
+  }
+
   async processWithLightX(apiKey, modelImageUrl, products) {
     try {
-      // Step 1: Load all images as data URLs to be sent to LightX
-      const modelDataUrl = await loadImageAsDataUrl(modelImageUrl);
-      const productDataUrls = [];
-      for(const product of products) {
-          const imgUrl = product.image || (product.products && product.products[0]?.image);
-          if (imgUrl) {
-            productDataUrls.push(await loadImageAsDataUrl(imgUrl));
+      // Step 1: Ensure model image is publicly accessible
+      let finalModelImageUrl = modelImageUrl;
+      if (modelImageUrl.startsWith('data:')) { // If it's a data URL (user uploaded)
+        const blob = dataURLtoBlob(modelImageUrl);
+        if (!blob) throw new Error('Không thể chuyển đổi ảnh người mẫu sang định dạng có thể xử lý.');
+        finalModelImageUrl = await this.uploadImageToCloudinary(blob);
+      } else if (modelImageUrl.includes('localhost')) { // If it's a localhost URL
+        finalModelImageUrl = await this.uploadImageFromUrlToCloudinary(modelImageUrl);
+      }
+
+      // Step 2: Ensure product images are publicly accessible
+      const productPublicUrls = [];
+      for (const item of products) {
+        let imgUrl = item.image || (item.products && item.products[0]?.image);
+        if (imgUrl) {
+          if (imgUrl.includes('localhost')) {
+            imgUrl = await this.uploadImageFromUrlToCloudinary(imgUrl);
           }
+          productPublicUrls.push({ url: imgUrl, category: this.getClothingCategory(item.name) });
+        }
       }
 
-      // Step 2: Upload model image
-      const modelBlob = dataURLtoBlob(modelDataUrl);
-      if (!modelBlob) {
-        throw new Error('Không thể chuyển đổi ảnh người mẫu sang định dạng có thể xử lý. Ảnh có thể bị hỏng.');
-      }
-      const modelUploadData = await this.getLightXUploadUrl(apiKey, modelBlob.size);
-      await this.uploadToLightX(modelUploadData.uploadImage, modelBlob);
-      const finalModelImageUrl = modelUploadData.imageUrl;
-
-      // Step 3: Upload all product images and categorize them
-      const productUrls = [];
-      for (let i = 0; i < productDataUrls.length; i++) {
-          const productDataUrl = productDataUrls[i];
-          const productBlob = dataURLtoBlob(productDataUrl);
-          if (!productBlob) {
-              console.warn(`Could not process product image, skipping.`);
-              continue;
-          }
-          const productUploadData = await this.getLightXUploadUrl(apiKey, productBlob.size);
-          await this.uploadToLightX(productUploadData.uploadImage, productBlob);
-          const originalProduct = products[i]; // Get the original product to access its category
-          productUrls.push({
-              url: productUploadData.imageUrl,
-              category: this.getClothingCategory(originalProduct.name) // 'top' or 'bottom'
-          });
-      }
-
-      const topImageUrl = productUrls.find(p => p.category === 'top')?.url;
-      const bottomImageUrl = productUrls.find(p => p.category === 'bottom')?.url;
+      const topImageUrl = productPublicUrls.find(p => p.category === 'top')?.url;
+      const bottomImageUrl = productPublicUrls.find(p => p.category === 'bottom')?.url;
 
       if (!topImageUrl && !bottomImageUrl) {
-          throw new Error('Không có sản phẩm nào phù hợp (áo hoặc quần) để thử đồ.');
+        throw new Error('Không có sản phẩm nào phù hợp (áo hoặc quần) để thử đồ.');
       }
 
-      // Step 4: Start the job with appropriate parameters
+      // Step 3: Start the job with appropriate parameters
       const orderId = await this.startLightXJob(apiKey, finalModelImageUrl, topImageUrl, bottomImageUrl);
 
-      // Step 5: Poll for the result
+      // Step 4: Poll for the result
       const resultUrl = await this.pollLightXJob(apiKey, orderId);
       return resultUrl;
 
@@ -240,18 +246,18 @@ class LightXService {
       let userMessage = 'Đã có lỗi không xác định xảy ra.'; // Default generic message
 
       if (error instanceof Error) {
-          userMessage = error.message;
+        userMessage = error.message;
       } else if (typeof error === 'string') {
-          userMessage = error;
+        userMessage = error;
       } else if (error && error.message) {
-          userMessage = error.message;
+        userMessage = error.message;
       }
 
       if (userMessage.includes('5044')) {
         userMessage =
-          'Không thể xử lý ảnh bằng AI. Điều này có thể do ảnh người mẫu hoặc ảnh sản phẩm không phù hợp (ví dụ: độ phân giải thấp, khuôn mặt không rõ ràng, hoặc định dạng không được hỗ trợ). Vui lòng thử sử dụng một ảnh khác.'
+          'Không thể xử lý ảnh bằng AI. Điều này có thể do ảnh người mẫu hoặc ảnh sản phẩm không phù hợp (ví dụ: độ phân giải thấp, khuôn mặt không rõ ràng, hoặc định dạng không được hỗ trợ). Vui lòng thử sử dụng một ảnh khác.';
       } else if (userMessage.includes('timed out')) {
-        userMessage = 'Quá trình xử lý mất quá nhiều thời gian. Vui lòng thử lại sau.'
+        userMessage = 'Quá trình xử lý mất quá nhiều thời gian. Vui lòng thử lại sau.';
       }
 
       Swal.fire({
@@ -259,6 +265,21 @@ class LightXService {
         title: 'Lỗi xử lý ảnh từ LightX',
         text: userMessage,
       });
+      throw error; // Re-throw to be caught by the calling function
+    }
+  }
+
+  async performTryOnAndAnalysis(apiKey, modelImageUrl, productsData) {
+    try {
+      // Step 1: Process with LightX to get the try-on image URL
+      const tryOnImageUrl = await this.processWithLightX(apiKey, modelImageUrl, productsData);
+
+      // Step 2: Analyze the try-on image with Gemini AI
+      const analysisResult = await this.analyzeImageWithGemini(tryOnImageUrl, productsData);
+
+      return { tryOnImageUrl, analysisResult };
+    } catch (error) {
+      console.error('Error in performTryOnAndAnalysis:', error);
       throw error; // Re-throw to be caught by the calling function
     }
   }

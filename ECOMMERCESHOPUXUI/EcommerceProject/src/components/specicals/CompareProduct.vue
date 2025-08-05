@@ -465,7 +465,6 @@ import CompareStorageHelper from '@/models/dtos/expansionModels/compareObject'
 import Swal from 'sweetalert2'
 import LightXService from '@/services/LightXService' // Import LightXService
 
-import * as axiosConfig from '@/utils/axiosClient'
 
 export default {
   name: 'CompareProduct',
@@ -754,7 +753,8 @@ export default {
       this.isLightboxOpen = false
     },
     async tryOnModel(groupIdx) {
-      if (!this.apiKeys.lightxApiKey) {
+      const lightxApiKey = localStorage.getItem('lightxApiKey');
+      if (!lightxApiKey) {
         Swal.fire({
           icon: 'warning',
           title: 'Thiếu API Key',
@@ -764,13 +764,13 @@ export default {
           cancelButtonText: 'Để sau',
         }).then((result) => {
           if (result.isConfirmed) {
-            this.showApiSettings = true
+            this.showApiSettings = true;
           }
-        })
-        return
+        });
+        return;
       }
 
-      const savedUrl = localStorage.getItem(`lightx_result_url_${groupIdx}`)
+      const savedUrl = localStorage.getItem(`lightx_result_url_${groupIdx}`);
       if (savedUrl) {
         Swal.fire({
           title: 'Phân tích chưa hoàn tất',
@@ -781,50 +781,45 @@ export default {
           cancelButtonText: 'Bắt đầu lại',
         }).then((result) => {
           if (result.isConfirmed) {
-            this.resumeAnalysis(groupIdx, savedUrl)
+            this.resumeAnalysis(groupIdx, savedUrl);
           } else {
-            localStorage.removeItem(`lightx_result_url_${groupIdx}`)
-            this.showModelSelection = true
-            this.currentTryOnGroupIdx = groupIdx
+            localStorage.removeItem(`lightx_result_url_${groupIdx}`);
+            this.showModelSelection = true;
+            this.currentTryOnGroupIdx = groupIdx;
           }
-        })
+        });
       } else {
-        this.showModelSelection = true
-        this.currentTryOnGroupIdx = groupIdx
+        this.showModelSelection = true;
+        this.currentTryOnGroupIdx = groupIdx;
       }
     },
 
     async resumeAnalysis(groupIdx, imageUrl) {
-      this.loadingGroup = groupIdx
-      const group = this.compareGroups[groupIdx]
-      const modelInfo = { name: 'Người mẫu đã lưu', url: '' } // Model info is lost, but not critical
-
-      let analysisResult = {
-          score: 'N/A',
-          style: 'Không thể phân tích',
-          gender_suitability: 'Không thể phân tích'
-      };
+      this.loadingGroup = groupIdx;
+      const group = this.compareGroups[groupIdx];
+      const lightxApiKey = localStorage.getItem('lightxApiKey');
 
       try {
-        const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
-          resultImageUrl: imageUrl,
-          productsData: group.products,
-        })
+        const { tryOnImageUrl, analysisResult } = await LightXService.performTryOnAndAnalysis(
+          lightxApiKey,
+          imageUrl, // Use the saved imageUrl as the model image for resuming
+          group.products
+        );
 
-        console.log(geminiResponse)
+        this.tryOnResults[groupIdx] = {
+          model: { name: 'Người mẫu đã lưu', url: imageUrl }, // Model info is lost, but not critical
+          image: tryOnImageUrl,
+          score: analysisResult.aesthetic_score,
+          style: analysisResult.style,
+          gender_suitability: analysisResult.gender_suitability,
+          products: group.products,
+          time: new Date().toISOString(),
+        };
+        this.tryOnResults = { ...this.tryOnResults };
+        this.groupFlipped[groupIdx] = true;
 
-        if (geminiResponse.success) {
-            const result = geminiResponse.data;
-            analysisResult = {
-                score: result.aesthetic_score,
-                style: result.style,
-                gender_suitability: result.gender_suitability,
-            };
-        } else {
-            throw new Error(geminiResponse.message || 'Phân tích lại hình ảnh thất bại.');
-        }
       } catch (error) {
-        console.error('Error during resumed analysis:', error)
+        console.error('Error during resumed analysis:', error);
         let errorMessage = 'Không thể hoàn tất phân tích. Vui lòng thử lại.';
         const errorText = error.message || '';
         if (errorText.includes('429') || errorText.includes('RESOURCE_EXHAUSTED')) {
@@ -834,39 +829,27 @@ export default {
           icon: 'warning',
           title: 'Phân tích thất bại',
           text: errorMessage,
-        })
+        });
       } finally {
-        // Always show the image and update results
-        this.tryOnResults[groupIdx] = {
-          model: modelInfo,
-          image: imageUrl, // Use the saved image URL
-          ...analysisResult,
-          products: group.products,
-          time: new Date().toISOString(),
-        }
-        this.tryOnResults = { ...this.tryOnResults }
-        this.groupFlipped[groupIdx] = true
-
-        // Clean up on success or failure of analysis
-        localStorage.removeItem(`lightx_result_url_${groupIdx}`)
-        this.loadingGroup = null
+        localStorage.removeItem(`lightx_result_url_${groupIdx}`);
+        this.loadingGroup = null;
       }
     },
 
     cancelApiSettings() {
-      this.showApiSettings = false
+      this.showApiSettings = false;
     },
 
     saveApiSettings() {
-      localStorage.setItem('lightxApiKey', this.apiKeys.lightxApiKey)
-      this.showApiSettings = false
+      localStorage.setItem('lightxApiKey', this.apiKeys.lightxApiKey);
+      this.showApiSettings = false;
       Swal.fire({
         icon: 'success',
         title: 'Thành công',
         text: 'API Key đã được lưu.',
         timer: 1500,
         showConfirmButton: false,
-      })
+      });
     },
 
     async confirmModelSelection() {
@@ -875,130 +858,57 @@ export default {
           icon: 'warning',
           title: 'Chưa chọn mẫu',
           text: 'Vui lòng chọn một mẫu có sẵn hoặc tải lên ảnh của bạn.',
-        })
-        return
+        });
+        return;
       }
 
-      const groupIdx = this.currentTryOnGroupIdx
-      this.loadingGroup = groupIdx
-      this.showModelSelection = false
+      const groupIdx = this.currentTryOnGroupIdx;
+      this.loadingGroup = groupIdx;
+      this.showModelSelection = false;
 
-      const modelInfo = this.selectedTryOnModel
-        ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
-        : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl }
+      const modelImageUrl = this.selectedTryOnModel
+        ? this.selectedTryOnModel.url
+        : this.userModelPreviewUrl;
 
-      const lightXResultUrlKey = `lightx_result_url_${groupIdx}`
+      const lightxApiKey = localStorage.getItem('lightxApiKey');
 
       try {
-        const group = this.compareGroups[groupIdx]
+        const group = this.compareGroups[groupIdx];
         if (!group || !group.products || group.products.length === 0) {
-          Swal.fire({ icon: 'warning', title: 'Không có sản phẩm', text: 'Nhóm này chưa có sản phẩm để thử đồ.' })
-          return
-        }
-
-        // Step 1: Get public URLs for all images
-        let modelImageUrl = modelInfo.url;
-        if (this.userModelFile) {
-            const formData = new FormData();
-            formData.append('file', this.userModelFile);
-            const response = await axiosConfig.postToApi('/TryOn/UploadImage', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-            if (!response.success) throw new Error('Không thể tải ảnh người mẫu của bạn lên máy chủ.');
-            modelImageUrl = response.data.imageUrl;
-        } else if (modelImageUrl.includes('localhost')) {
-            const response = await axiosConfig.postToApi('/TryOn/UploadFromUrl', { imageUrl: modelImageUrl });
-            if (!response.success) throw new Error('Không thể tải ảnh người mẫu có sẵn lên máy chủ.');
-            modelImageUrl = response.data.imageUrl;
-        }
-
-        const productPublicUrls = [];
-        for (const item of group.products) {
-          let imgUrl = item.image || (item.products && item.products[0]?.image);
-          if (imgUrl) {
-            if (imgUrl.includes('localhost')) {
-              const response = await axiosConfig.postToApi('/TryOn/UploadFromUrl', { imageUrl: imgUrl });
-              if (!response.success) throw new Error(`Không thể tải ảnh sản phẩm "${item.name || ''}" lên máy chủ.`);
-              productPublicUrls.push(response.data.imageUrl);
-            } else {
-              productPublicUrls.push(imgUrl);
-            }
-          }
-        }
-
-        if (productPublicUrls.length === 0) {
-          Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không có hình ảnh sản phẩm hợp lệ để xử lý.' });
+          Swal.fire({ icon: 'warning', title: 'Không có sản phẩm', text: 'Nhóm này chưa có sản phẩm để thử đồ.' });
           return;
         }
 
-        // Step 2: Process with LightX using the service
-        const tryOnImageResultUrl = await LightXService.processWithLightX(
-          this.apiKeys.lightxApiKey,
+        const { tryOnImageUrl, analysisResult } = await LightXService.performTryOnAndAnalysis(
+          lightxApiKey,
           modelImageUrl,
           group.products
         );
-        localStorage.setItem(lightXResultUrlKey, tryOnImageResultUrl);
 
-        // Step 3: Send to Gemini for analysis
-        let analysisResult = {
-            score: 'N/A',
-            style: 'Không thể phân tích',
-            gender_suitability: 'Không thể phân tích'
-        };
-
-        try {
-            const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
-                resultImageUrl: tryOnImageResultUrl,
-                productsData: group.products,
-            });
-
-            if (geminiResponse.success) {
-                const result = geminiResponse.data;
-                analysisResult = {
-                    score: result.aesthetic_score,
-                    style: result.style,
-                    gender_suitability: result.gender_suitability,
-                };
-            } else {
-                // This will be caught by the catch block below
-                throw new Error(geminiResponse.message || 'Phân tích hình ảnh thất bại.');
-            }
-        } catch (error) {
-            console.error('Gemini analysis failed:', error);
-            let errorMessage = 'Không thể phân tích hình ảnh do lỗi không xác định.';
-            const errorText = error.message || '';
-            if (errorText.includes('429') || errorText.includes('RESOURCE_EXHAUSTED')) {
-                errorMessage = 'Lỗi phân tích: Bạn đã sử dụng hết hạn ngạch API miễn phí cho hôm nay. Vui lòng thử lại sau hoặc nâng cấp gói dịch vụ.';
-            }
-            Swal.fire({
-                icon: 'warning',
-                title: 'Phân tích thất bại',
-                text: errorMessage,
-            });
-        }
-
-        // Always show the generated image, even if analysis fails
         this.tryOnResults[groupIdx] = {
-            model: modelInfo,
-            image: tryOnImageResultUrl,
-            ...analysisResult,
-            products: group.products,
-            time: new Date().toISOString(),
+          model: this.selectedTryOnModel
+            ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
+            : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl },
+          image: tryOnImageUrl,
+          score: analysisResult.aesthetic_score,
+          style: analysisResult.style,
+          gender_suitability: analysisResult.gender_suitability,
+          products: group.products,
+          time: new Date().toISOString(),
         };
         this.tryOnResults = { ...this.tryOnResults };
         this.groupFlipped[groupIdx] = true;
 
-        // Clean up the saved URL regardless of analysis success
-        localStorage.removeItem(lightXResultUrlKey);
-
       } catch (error) {
-        console.error('Error during try-on process:', error)
+        console.error('Error during try-on process:', error);
         Swal.fire({
           icon: 'error',
           title: 'Lỗi xử lý',
-          text: error.message || 'Có lỗi xảy ra trong quá trình xử lý. Kết quả trung gian đã được lưu, bạn có thể thử lại.',
-        })
+          text: error.message || 'Có lỗi xảy ra trong quá trình xử lý.',
+        });
       } finally {
-        this.loadingGroup = null
-        this.cancelModelSelection()
+        this.loadingGroup = null;
+        this.cancelModelSelection();
       }
     },
     cancelModelSelection() {
@@ -1551,12 +1461,6 @@ export default {
 .form-group {
   margin-bottom: 15px;
   text-align: left;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
 }
 
 .form-control {
