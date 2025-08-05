@@ -161,7 +161,7 @@
                       </div>
                     </div>
                     <template v-else>
-                      <div class="row">
+                      <div class="row g-2">
                         <div
                           v-for="(item, idx) in group.products"
                           :key="idx"
@@ -631,6 +631,8 @@ export default {
           return
         }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
+        this.compareGroups[groupIdx].selectedProductIdx = this.compareGroups[groupIdx].products.length - 1;
+        
       } else {
           Swal.fire({
             icon: 'warning',
@@ -653,6 +655,8 @@ export default {
           return
         }
         this.compareGroups[groupIdx].products.push(this.cloneProduct(combo))
+        this.compareGroups[groupIdx].selectedProductIdx = this.compareGroups[groupIdx].products.length - 1;
+        
       } else {
           Swal.fire({
             icon: 'warning',
@@ -727,6 +731,8 @@ export default {
         return
       }
       this.compareGroups[groupIdx].products.push(this.cloneProduct(item))
+      this.compareGroups[groupIdx].selectedProductIdx = this.compareGroups[groupIdx].products.length - 1;
+      
       this.dragItem = null
       this.loadSelectedProducts()
     },
@@ -1177,14 +1183,16 @@ export default {
 .product-card {
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 1px 4px #0001;
-  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: 12px;
   min-width: 140px;
   text-align: center;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between; /* Distribute space evenly */
+  height: 100%; /* Ensure cards in a row have equal height */
 }
 .product-card img {
   width: 60px;
@@ -1218,31 +1226,46 @@ export default {
 .product-card.sidebar {
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 12px; /* Increased gap for better spacing */
   min-width: 220px;
   margin-bottom: 8px;
   padding: 8px 10px;
+  text-align: left; /* Align text to left for better readability in row layout */
 }
 .product-card.mini {
-  min-width: 100px;
+  min-width: 90px; /* Slightly reduced min-width */
   padding: 6px 8px;
-  font-size: 0.95rem;
+  font-size: 0.9rem; /* Slightly smaller font size */
+  flex-grow: 1; /* Allow mini cards to grow */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+.product-card.mini img {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 4px;
 }
 .combo-card {
   background: #fffbe7;
   border: 1px dashed #fbc02d;
   border-radius: 8px;
-  padding: 8px 12px;
-  margin-right: 8px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center; /* Center content horizontally */
+  justify-content: space-between; /* Distribute space evenly */
   min-width: 180px;
   position: relative;
+  height: 100%; /* Ensure cards in a row have equal height */
 }
 .combo-card.sidebar {
   margin-bottom: 8px;
   min-width: 220px;
+  padding: 8px 12px; /* Adjusted padding */
+  align-items: flex-start; /* Align content to start */
 }
 .combo-title {
   font-weight: bold;
@@ -1252,14 +1275,17 @@ export default {
 }
 .combo-products {
   display: flex;
-  align-items: center;
-  gap: 0;
+  flex-wrap: wrap; /* Allow items to wrap to the next line */
+  justify-content: center; /* Center items horizontally */
+  align-items: flex-start; /* Align items to the top */
+  gap: 8px; /* Add some gap between mini product cards */
+  width: 100%; /* Ensure it takes full width */
 }
 .combo-divider {
-  width: 18px;
-  height: 2px;
-  border-bottom: 2px dashed #fbc02d;
-  margin: 0 4px;
+  width: 100%; /* Ensure divider spans full width */
+  height: 1px;
+  border-bottom: 1px dashed #fbc02d;
+  margin: 8px 0; /* Adjust margin for better spacing */
 }
 .compare-sum {
   margin-bottom: 8px;
@@ -1358,6 +1384,9 @@ export default {
   width: 90%;
   max-width: 500px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Add gap between sections */
 }
 
 .model-list {
@@ -1365,7 +1394,7 @@ export default {
   justify-content: center;
   gap: 20px;
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: 0; /* Remove bottom margin as gap is handled by parent */
 }
 
 .model-item {
@@ -1377,6 +1406,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center; /* Center content vertically */
 }
 
 .model-item:hover {
