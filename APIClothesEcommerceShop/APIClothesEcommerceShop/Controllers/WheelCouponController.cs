@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using APIClothesEcommerceShop.DTO.WheelCoupon;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 
@@ -54,10 +55,10 @@ namespace APIClothesEcommerceShop.Controllers
         /// SpinWheel (POST): Thực hiện quay vòng quay may mắn và tạo coupon (hoặc không). Lấy userId từ token.
         /// </summary>
         [HttpPost("spin")]
-        public async Task<IActionResult> SpinWheel()
+        public async Task<IActionResult> SpinWheel(WheelCouponCreateRequest? request)
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.SpinWheelAndGenerateCoupon(userId);
+            var response = await _unit.WheelCoupon.SpinWheelAndGenerateCoupon(userId, request);
             return Ok(response);
         }
     }

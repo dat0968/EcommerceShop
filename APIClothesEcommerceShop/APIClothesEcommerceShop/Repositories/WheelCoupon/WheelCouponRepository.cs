@@ -19,6 +19,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
     public class WheelCouponRepository(EcommerceShopContext db) : Repository<Models.Macoupon>(db), IWheelCouponRepository
     {
         private readonly EcommerceShopContext _db = db;
+        private static readonly Random _random = new();
         private static string[] filterStatusOrder = ["đã nhận", "đã thanh toán"]; // Trạng thái để lọc việc get danh sách đánh giá
         public async Task<ResponseAPI<PrivateCouponInfoDTO>> HavePrivateCoupon(int? userId)
         {
@@ -156,10 +157,11 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
         #region [PRIVATE METHOD]
 
-        private async Task<ResponseAPI<dynamic>> CreatePrivateCoupon(int? userId)
+        private async Task<ResponseAPI<dynamic>> CreatePrivateCoupon(int? userId, WheelCouponCreateRequest? request = null)
         {
 
             ResponseAPI<dynamic> response = new();
+            bool isRequestCreateNull = request == null;
             try
             {
                 if (userId == 0)
@@ -172,7 +174,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
                 }
-                bool isPercent = new Random().NextDouble() > 0.5;
+                bool isPercent = isRequestCreateNull ? _random.NextDouble() > 0.5 : request!.IsPercent!.Value;
+
                 var coupon = new Models.Macoupon()
                 {
                     MaCode = GenerateRandomCouponCode(),
@@ -187,11 +190,11 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 };
                 if (isPercent)
                 {
-                    coupon.PhanTramGiam = (new Random().Next(10, 30));
+                    coupon.PhanTramGiam = isRequestCreateNull ? (_random.Next(10, 30)) : request!.DecreaseValue!.Value;
                 }
                 else
                 {
-                    coupon.SoTienGiam = new Random().Next(10, 15) * 10000;
+                    coupon.SoTienGiam = isRequestCreateNull ? _random.Next(10, 15) * 10000 : (int)request!.DecreaseValue!.Value;
                 }
                 await _db.AddAsync(coupon);
                 await _db.SaveChangesAsync();
@@ -260,17 +263,16 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             }
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-            var random = new Random();
             string newCode = string.Empty;
             if (string.IsNullOrEmpty(headCode))
             {
                 newCode = new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+                .Select(s => s[_random.Next(s.Length)]).ToArray());
             }
             else
             {
                 newCode = headCode + new string(Enumerable.Repeat(chars, length - headCode.Length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+                .Select(s => s[_random.Next(s.Length)]).ToArray());
             }
             return newCode;
         }
@@ -301,7 +303,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         #endregion
 
 
-        public async Task<ResponseAPI<dynamic>> SpinWheelAndGenerateCoupon(int? userId)
+        public async Task<ResponseAPI<dynamic>> SpinWheelAndGenerateCoupon(int? userId, WheelCouponCreateRequest? request)
         {
             ResponseAPI<dynamic> response = new();
             try
@@ -311,13 +313,12 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     throw new Exception("Không đủ điều kiện để quay vòng quay.");
                 }
 
-                Random random = new Random();
-                // 90% chance to lose, 10% chance to win 
-                bool isWin = random.Next(1, 101) <= 10;
+                // 10% chance to lose, 90% chance to win
+                bool isWin = _random.Next(1, 101) <= 90;
 
                 if (isWin)
                 {
-                    response = await CreatePrivateCoupon(userId);
+                    response = await CreatePrivateCoupon(userId, request);
                 }
                 else
                 {
