@@ -234,7 +234,7 @@ export default {
             console.error('Claiming prize failed:', error);
         } finally {
             this.isSpinning = false;
-            await this.initializeWheel();
+            this.spinsLeft--; // Manually decrement spin count
         }
     },
 
