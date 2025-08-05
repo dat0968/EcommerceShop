@@ -6,7 +6,7 @@
     </button>
 
     <!-- Modal thử đồ -->
-    <div v-show="showModalTryOn" class="modal-overlay" @click.self="showModalTryOn = false">
+    <div v-if="showModalTryOn" class="modal-overlay" @click.self="showModalTryOn = false">
       <div class="tryon-modal">
         <div class="modal-header">
           <h2>Thử đồ với AI</h2>
@@ -20,100 +20,105 @@
           </div>
         </div>
         <div class="modal-body">
-          <div class="tryon-main position-relative">
-            <div v-if="loading" class="loading-overlay">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <span class="mt-2">Đang xử lý...</span>
+          <div v-if="loading" class="loading-overlay">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
             </div>
-
-            <div class="content-grid">
-              <!-- Sản phẩm -->
-              <div class="content-section">
-                <h4>Sản phẩm</h4>
-                <div class="display-card">
-                  <img
-                    :src="product.image || (product.products && product.products[0]?.image)"
-                    alt="Sản phẩm"
-                    class="img-fluid"
-                  />
-                  <h5>{{ product.name || product.comboName }}</h5>
-                  <p v-if="product.variant">{{ product.variant.color }} / {{ product.variant.size }}</p>
-                </div>
-              </div>
-
-              <!-- Kết quả thử đồ -->
-              <div class="content-section">
-                <h4>Kết quả thử đồ</h4>
-                <div v-if="tryOnResult" class="display-card">
-                  <img :src="tryOnResult.image" alt="Kết quả thử đồ" class="img-fluid" />
-                  <div class="result-info">
-                    <div>
-                      <b>Điểm thẩm mỹ:</b>
-                      <span class="score">{{ tryOnResult.score }}/10</span>
-                    </div>
-                    <div>
-                      <b>Phong cách:</b> {{ tryOnResult.style }}
-                    </div>
-                    <div>
-                      <b>Giới tính:</b> {{ tryOnResult.gender_suitability }}
-                    </div>
-                    <button class="btn btn-success mt-2" @click="downloadTryOnResult">
-                      <i class="bi bi-download"></i> Tải kết quả
-                    </button>
+            <span class="mt-2">AI đang xử lý...</span>
+          </div>
+          <div class="tryon-container">
+            <!-- Sidebar for selections -->
+            <div class="tryon-sidebar">
+              <!-- Model Selection -->
+              <div class="selection-section">
+                <h5>1. Chọn người mẫu</h5>
+                <div class="model-list">
+                  <div
+                    v-for="(model, index) in models"
+                    :key="index"
+                    class="item-card model-card"
+                    :class="{ selected: selectedTryOnModel === model }"
+                    @click="selectPredefinedModel(model)"
+                  >
+                    <img :src="model.url" :alt="model.name" class="item-thumbnail" />
+                    <span>{{ model.name }}</span>
+                  </div>
+                  <div v-if="userModelPreviewUrl" class="item-card model-card user-model-preview selected">
+                    <img :src="userModelPreviewUrl" alt="Mẫu của bạn" class="item-thumbnail" />
+                    <span>Mẫu của bạn</span>
                   </div>
                 </div>
-                <div v-else class="placeholder">
-                  <i class="bi bi-image"></i>
-                  <span>Chưa có kết quả thử đồ</span>
+                <div class="upload-area">
+                  <input
+                    type="file"
+                    @change="handleModelUpload"
+                    accept="image/*"
+                    id="modelUploadInput"
+                    style="display: none"
+                  />
+                  <label for="modelUploadInput" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-upload"></i> Tải ảnh của bạn
+                  </label>
                 </div>
               </div>
-            </div>
 
-            <!-- Chọn người mẫu -->
-            <div class="model-selection-section">
-              <h4>Chọn người mẫu</h4>
-              <div class="model-list">
-                <div
-                  v-for="(model, index) in models"
-                  :key="index"
-                  class="model-item"
-                  :class="{ selected: selectedTryOnModel === model }"
-                  @click="selectPredefinedModel(model)"
-                >
-                  <img :src="model.url" :alt="model.name" class="model-thumbnail" />
-                  <span>{{ model.name }}</span>
-                </div>
-                <div v-if="userModelPreviewUrl" class="model-item user-model-preview selected">
-                  <img :src="userModelPreviewUrl" alt="Mẫu của bạn" class="model-thumbnail" />
-                  <span>Mẫu của bạn</span>
+              <!-- Product Image Selection -->
+              <div class="selection-section">
+                <h5>2. Chọn ảnh sản phẩm</h5>
+                <div class="product-image-list">
+                   <div
+                    v-for="(image, index) in productImages"
+                    :key="index"
+                    class="item-card product-image-card"
+                    :class="{ selected: selectedProductImage === image }"
+                    @click="selectProductImage(image)"
+                  >
+                    <img :src="image" alt="Ảnh sản phẩm" class="item-thumbnail" />
+                  </div>
                 </div>
               </div>
-              <div class="model-upload-area">
-                <input
-                  type="file"
-                  @change="handleModelUpload"
-                  accept="image/*"
-                  id="modelUploadInput"
-                  style="display: none"
-                />
-                <label for="modelUploadInput" class="btn btn-outline-info">
-                  <i class="bi bi-upload"></i> Tải ảnh người mẫu
-                </label>
-              </div>
-              <button
-                class="btn btn-primary try-on-action"
+                 <button
+                class="btn btn-primary try-on-action w-100 mt-3"
                 @click="confirmModelSelection"
-                :disabled="!userModelFile && !selectedTryOnModel || loading"
+                :disabled="!selectedProductImage || (!userModelFile && !selectedTryOnModel) || loading"
               >
                 <i class="bi bi-magic"></i> Thử đồ ngay
               </button>
             </div>
+
+            <!-- Main content for result -->
+            <div class="tryon-main-content">
+              <h4>Kết quả</h4>
+              <div v-if="tryOnResult" class="display-card result-card">
+                <img :src="tryOnResult.image" alt="Kết quả thử đồ" class="img-fluid result-image" />
+                <div class="result-info">
+                  <div v-if="tryOnResult.score && tryOnResult.score !== 'N/A'">
+                    <b>Điểm thẩm mỹ:</b>
+                    <span class="score">{{ tryOnResult.score }}/10</span>
+                  </div>
+                   <div v-if="tryOnResult.style && tryOnResult.style !== 'N/A'">
+                    <b>Phong cách:</b> {{ tryOnResult.style }}
+                  </div>
+                  <div v-if="tryOnResult.gender_suitability && tryOnResult.gender_suitability !== 'N/A'">
+                    <b>Giới tính:</b> {{ tryOnResult.gender_suitability }}
+                  </div>
+                  <div v-if="analysisError" class="alert alert-warning mt-2 small">
+                    {{ analysisError }}
+                  </div>
+                  <button class="btn btn-success mt-2" @click="downloadTryOnResult">
+                    <i class="bi bi-download"></i> Tải kết quả
+                  </button>
+                </div>
+              </div>
+              <div v-else class="placeholder">
+                <i class="bi bi-image-fill"></i>
+                <span>Kết quả thử đồ sẽ xuất hiện ở đây</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Modal cài đặt API -->
+        <!-- API Settings Modal -->
         <div v-if="showApiSettings" class="api-settings-overlay">
           <div class="api-settings-modal">
             <h3>Cài đặt API Key</h3>
@@ -148,7 +153,6 @@
 <script>
 import Swal from 'sweetalert2'
 import LightXService from '@/services/LightXService'
-import * as axiosConfig from '@/utils/axiosClient'
 
 export default {
   name: 'TryOnProduct',
@@ -167,6 +171,7 @@ export default {
         lightxApiKey: localStorage.getItem('lightxApiKey') || '',
       },
       selectedTryOnModel: null,
+      selectedProductImage: null,
       models: [
         {
           name: 'Nam đứng',
@@ -180,22 +185,43 @@ export default {
       userModelFile: null,
       userModelPreviewUrl: '',
       tryOnResult: null,
+      analysisError: null,
+    }
+  },
+   computed: {
+    productImages() {
+      if (!this.product) return [];
+      if (this.product.type === 'combo' && this.product.products) {
+        return this.product.products.map(p => p.image).flat();
+      }
+      if (this.product.images && this.product.images.length > 0) {
+        return this.product.images;
+      }
+      if (this.product.image) {
+        return [this.product.image];
+      }
+      return [];
     }
   },
   watch: {
     showModalTryOn(val) {
       if (val) {
+        this.tryOnResult = null;
+        this.analysisError = null;
+        this.selectedProductImage = this.productImages[0] || null;
+        this.cancelModelSelection();
+        
         const savedResult = localStorage.getItem(`tryon_result_${this.product.id}`);
         if (savedResult) {
           this.tryOnResult = JSON.parse(savedResult);
         }
-      } else {
-        this.tryOnResult = null;
-        this.cancelModelSelection();
       }
     },
   },
   methods: {
+    selectProductImage(image) {
+        this.selectedProductImage = image;
+    },
     showApiKeyHelp(keyType) {
       if (keyType === 'lightx') {
         Swal.fire({
@@ -219,35 +245,27 @@ export default {
       this.selectedTryOnModel = model;
       this.userModelFile = null;
       this.userModelPreviewUrl = '';
-      document.getElementById('modelUploadInput').value = '';
+      if (document.getElementById('modelUploadInput')) {
+        document.getElementById('modelUploadInput').value = '';
+      }
     },
     handleModelUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       if (!file.type.startsWith('image/')) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi',
-          text: 'Vui lòng chọn file hình ảnh.',
-        });
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Vui lòng chọn file hình ảnh.' });
         return;
       }
 
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Lỗi',
-          text: 'Kích thước file không được vượt quá 5MB.',
-        });
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Kích thước file không được vượt quá 5MB.' });
         return;
       }
       this.userModelFile = file;
       const reader = new FileReader();
-      reader.onload = (e) => {
-        this.userModelPreviewUrl = e.target.result;
-      };
+      reader.onload = (e) => { this.userModelPreviewUrl = e.target.result; };
       reader.readAsDataURL(file);
       this.selectedTryOnModel = null;
     },
@@ -257,19 +275,15 @@ export default {
     saveApiSettings() {
       localStorage.setItem('lightxApiKey', this.apiKeys.lightxApiKey);
       this.showApiSettings = false;
-      Swal.fire({
-        icon: 'success',
-        title: 'Thành công',
-        text: 'API Key đã được lưu.',
-        timer: 1500,
-        showConfirmButton: false,
-      });
+      Swal.fire({ icon: 'success', title: 'Thành công', text: 'API Key đã được lưu.', timer: 1500, showConfirmButton: false });
     },
     cancelModelSelection() {
       this.userModelFile = null;
       this.userModelPreviewUrl = '';
       this.selectedTryOnModel = null;
-      document.getElementById('modelUploadInput').value = '';
+       if (document.getElementById('modelUploadInput')) {
+        document.getElementById('modelUploadInput').value = '';
+      }
     },
     async confirmModelSelection() {
       if (!this.apiKeys.lightxApiKey) {
@@ -280,129 +294,81 @@ export default {
           showCancelButton: true,
           confirmButtonText: 'Cài đặt ngay',
           cancelButtonText: 'Để sau',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            this.showApiSettings = true;
-          }
-        });
+        }).then((result) => { if (result.isConfirmed) { this.showApiSettings = true; } });
         return;
       }
-
       if (!this.selectedTryOnModel && !this.userModelFile) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Chưa chọn mẫu',
-          text: 'Vui lòng chọn một mẫu có sẵn hoặc tải lên ảnh của bạn.',
-        });
+        Swal.fire({ icon: 'warning', title: 'Chưa chọn mẫu', text: 'Vui lòng chọn một mẫu có sẵn hoặc tải lên ảnh của bạn.' });
+        return;
+      }
+       if (!this.selectedProductImage) {
+        Swal.fire({ icon: 'warning', title: 'Chưa chọn ảnh', text: 'Vui lòng chọn một ảnh sản phẩm để thử.' });
         return;
       }
 
       this.loading = true;
+      this.tryOnResult = null;
+      this.analysisError = null;
 
       const modelInfo = this.selectedTryOnModel
         ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
         : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl };
 
-      const lightXResultUrlKey = `lightx_result_url_${this.product.id}`;
+      let tryOnImageUrl = '';
 
       try {
-        let modelImageUrl = modelInfo.url;
-        if (this.userModelFile) {
-          const formData = new FormData();
-          formData.append('file', this.userModelFile);
-          const response = await axiosConfig.postToApi('/TryOn/UploadImage', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-          if (!response.success) throw new Error('Không thể tải ảnh người mẫu của bạn lên máy chủ.');
-          modelImageUrl = response.data.imageUrl;
-        } else if (modelImageUrl.includes('localhost')) {
-          const response = await axiosConfig.postToApi('/TryOn/UploadFromUrl', { imageUrl: modelImageUrl });
-          if (!response.success) throw new Error('Không thể tải ảnh người mẫu có sẵn lên máy chủ.');
-          modelImageUrl = response.data.imageUrl;
-        }
-
-        let productImageUrl = this.product.image || (this.product.products && this.product.products[0]?.image);
-        if (!productImageUrl) {
-          Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không có hình ảnh sản phẩm hợp lệ để xử lý.' });
-          return;
-        }
-
-        if (productImageUrl.includes('localhost')) {
-          const response = await axiosConfig.postToApi('/TryOn/UploadFromUrl', { imageUrl: productImageUrl });
-          if (!response.success) throw new Error(`Không thể tải ảnh sản phẩm "${this.product.name || ''}" lên máy chủ.`);
-          productImageUrl = response.data.imageUrl;
-        }
-
-        const tryOnImageResultUrl = await LightXService.processWithLightX(
+        const productForTryOn = { ...this.product, image: this.selectedProductImage };
+        
+        // Step 1: Generate the try-on image
+        tryOnImageUrl = await LightXService.generateTryOnImage(
           this.apiKeys.lightxApiKey,
-          modelImageUrl,
-          [this.product]
+          modelInfo.url,
+          [productForTryOn],
+          this.userModelFile
         );
-        localStorage.setItem(lightXResultUrlKey, tryOnImageResultUrl);
 
-        let analysisResult = {
-          score: 'N/A',
-          style: 'Không thể phân tích',
-          gender_suitability: 'Không thể phân tích',
-        };
-
-        try {
-          const geminiResponse = await axiosConfig.postToApi('/TryOn/AnalyzeImage', {
-            resultImageUrl: tryOnImageResultUrl,
-            productsData: [this.product],
-          });
-
-          if (geminiResponse.success) {
-            const result = geminiResponse.data;
-            analysisResult = {
-              score: result.aesthetic_score,
-              style: result.style,
-              gender_suitability: result.gender_suitability,
-            };
-          } else {
-            throw new Error(geminiResponse.message || 'Phân tích hình ảnh thất bại.');
-          }
-        } catch (error) {
-          console.error('Gemini analysis failed:', error);
-          let errorMessage = 'Không thể phân tích hình ảnh do lỗi không xác định.';
-          const errorText = error.message || '';
-          if (errorText.includes('429') || errorText.includes('RESOURCE_EXHAUSTED')) {
-            errorMessage = 'Lỗi phân tích: Hạn ngạch API miễn phí đã hết. Vui lòng thử lại sau hoặc nâng cấp gói dịch vụ.';
-          }
-          Swal.fire({
-            icon: 'warning',
-            title: 'Phân tích thất bại',
-            text: errorMessage,
-          });
-        }
-
+        // Show the image immediately
         this.tryOnResult = {
           model: modelInfo,
-          image: tryOnImageResultUrl,
-          ...analysisResult,
+          image: tryOnImageUrl,
+          score: 'Đang phân tích...',
+          style: 'Đang phân tích...',
+          gender_suitability: 'Đang phân tích...',
           products: [this.product],
           time: new Date().toISOString(),
         };
+
+        // Step 2: Analyze the image
+        try {
+          const analysisResult = await LightXService.analyzeTryOnImage(tryOnImageUrl, [productForTryOn]);
+          this.tryOnResult.score = analysisResult.aesthetic_score;
+          this.tryOnResult.style = analysisResult.style;
+          this.tryOnResult.gender_suitability = analysisResult.gender_suitability;
+
+        } catch (analysisError) {
+            console.error('Image analysis failed:', analysisError);
+            this.analysisError = 'Không thể phân tích hình ảnh. Dịch vụ AI có thể đang gặp sự cố.';
+            this.tryOnResult.score = 'N/A';
+            this.tryOnResult.style = 'N/A';
+            this.tryOnResult.gender_suitability = 'N/A';
+        }
+
         localStorage.setItem(`tryon_result_${this.product.id}`, JSON.stringify(this.tryOnResult));
-        localStorage.removeItem(lightXResultUrlKey);
+
       } catch (error) {
         console.error('Error during try-on process:', error);
         Swal.fire({
           icon: 'error',
-          title: 'Lỗi xử lý',
-          text: error.message || 'Có lỗi xảy ra trong quá trình xử lý. Vui lòng thử lại.',
+          title: 'Lỗi xử lý ảnh',
+          text: error.message || 'Có lỗi xảy ra trong quá trình ghép ảnh. Vui lòng thử lại.',
         });
       } finally {
         this.loading = false;
-        this.cancelModelSelection();
       }
     },
     downloadTryOnResult() {
       if (!this.tryOnResult) return;
-      const data = {
-        ...this.tryOnResult,
-        image: undefined,
-      };
+      const data = { ...this.tryOnResult, image: undefined };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -416,14 +382,14 @@ export default {
 </script>
 
 <style scoped>
-/* General styles */
+/* General Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -432,21 +398,20 @@ export default {
 }
 
 .tryon-modal {
-  background: #ffffff;
-  border-radius: 12px;
-  width: 90vw;
-  max-width: 900px;
-  min-height: 600px;
-  max-height: 95vh;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: #f4f7fc;
+  border-radius: 16px;
+  width: 95vw;
+  max-width: 1200px;
+  height: 90vh;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Header */
@@ -456,34 +421,16 @@ export default {
   justify-content: space-between;
   padding: 16px 24px;
   border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  background: #ffffff;
 }
-
 .modal-header h2 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
   color: #1f2a44;
 }
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: #6b7280;
-  font-size: 1.2rem;
-  transition: color 0.2s ease;
-}
-
-.icon-btn:hover {
-  color: #1f2a44;
-}
-
-.close-btn {
+.header-actions { display: flex; gap: 8px; }
+.icon-btn, .close-btn {
   background: none;
   border: none;
   color: #6b7280;
@@ -491,93 +438,121 @@ export default {
   cursor: pointer;
   transition: color 0.2s ease;
 }
+.icon-btn:hover, .close-btn:hover { color: #1f2a44; }
 
-.close-btn:hover {
-  color: #dc2626;
-}
-
-/* Modal Body */
+/* Body */
 .modal-body {
-  padding: 24px;
-  overflow-y: auto;
+  padding: 0;
+  overflow: hidden;
   flex: 1;
 }
 
-.tryon-main {
+.tryon-container {
+  display: flex;
+  height: 100%;
+}
+
+/* Sidebar */
+.tryon-sidebar {
+  width: 320px;
+  background: #ffffff;
+  padding: 20px;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
+.selection-section h5 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
 }
 
-.content-section {
+/* Item Lists (Model & Product) */
+.model-list, .product-image-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+.item-card {
+  cursor: pointer;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  padding: 8px;
+  text-align: center;
 }
+.item-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+.item-card.selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.3);
+  transform: scale(1.05);
+}
+.item-thumbnail {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.item-card span {
+  font-size: 0.85rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+.upload-area { margin-top: 12px; text-align: center; }
 
-.content-section h4 {
-  font-size: 1.25rem;
+/* Main Content */
+.tryon-main-content {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+.tryon-main-content h4 {
+  font-size: 1.5rem;
   font-weight: 600;
   color: #1f2a44;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
-
-/* Display Cards */
-.display-card {
-  background: #f9fafb;
+.display-card.result-card {
+  background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 16px;
+  padding: 20px;
   width: 100%;
-  max-width: 300px;
+  max-width: 500px;
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
-.display-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-}
-
-.display-card img {
+.result-image {
   max-width: 100%;
-  max-height: 200px;
-  object-fit: contain;
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-
-.display-card h5 {
-  font-size: 1.1rem;
-  color: #1f2a44;
-  margin-bottom: 8px;
-}
-
-.display-card p {
-  font-size: 0.9rem;
-  color: #6b7280;
-  margin-bottom: 8px;
-}
-
 .result-info {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 0.9rem;
+  gap: 10px;
+  font-size: 1rem;
   color: #374151;
 }
-
-.result-info .score {
-  color: #d97706;
-  font-weight: 600;
-}
+.result-info .score { color: #d97706; font-weight: 700; font-size: 1.1rem; }
 
 /* Placeholder */
 .placeholder {
@@ -586,153 +561,34 @@ export default {
   align-items: center;
   justify-content: center;
   height: 100%;
+  width: 100%;
   color: #9ca3af;
-  font-size: 0.9rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #e5e7eb;
 }
+.placeholder i { font-size: 4rem; margin-bottom: 16px; }
+.placeholder span { font-size: 1.1rem; font-weight: 500; }
 
-.placeholder i {
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-
-/* Model Selection */
-.model-selection-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 0;
-}
-
-.model-selection-section h4 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2a44;
-}
-
-.model-list {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.model-item {
-  cursor: pointer;
-  padding: 8px;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  transition: all 0.3s ease;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 140px;
-}
-
-.model-item:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
-}
-
-.model-item.selected {
-  border-color: #2563eb;
-  background: #eff6ff;
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.3);
-}
-
-.user-model-preview {
-  border-color: #2563eb;
-}
-
-.model-thumbnail {
-  width: 100px;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
-.model-upload-area {
-  margin: 16px 0;
-}
-
-.btn-outline-info {
-  border: 1px solid #22d3ee;
-  color: #22d3ee;
-  transition: all 0.3s ease;
-}
-
-.btn-outline-info:hover {
-  background: #22d3ee;
-  color: #ffffff;
-}
-
-/* Buttons */
-.btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-
-.btn-primary {
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-}
-
-.btn-primary:hover {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-}
-
-.btn-success {
-  background: #16a34a;
-  color: #ffffff;
-  border: none;
-}
-
-.btn-success:hover {
-  background: #15803d;
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  background: #6b7280;
-  color: #ffffff;
-  border: none;
-}
-
-.btn-secondary:hover {
-  background: #4b5563;
-  transform: translateY(-2px);
-}
-
-.try-on-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-
+/* Buttons & Actions */
 .try-on-action {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
   font-size: 1rem;
   font-weight: 500;
+  padding: 12px 24px;
+}
+.btn-primary:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
 }
 
-/* Loading Overlay */
+/* Loading & API Settings */
 .loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.9);
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -740,21 +596,15 @@ export default {
   justify-content: center;
   color: #1f2a44;
 }
-
-/* API Settings Modal */
 .api-settings-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1001;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .api-settings-modal {
   background: #ffffff;
   border-radius: 12px;
@@ -762,98 +612,6 @@ export default {
   width: 90%;
   max-width: 450px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-out;
 }
-
-.api-settings-modal h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2a44;
-  margin-bottom: 16px;
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-group label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.form-group i {
-  cursor: pointer;
-  color: #6b7280;
-}
-
-.form-group i:hover {
-  color: #2563eb;
-}
-
-.form-control {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
-.form-control:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-  outline: none;
-}
-
-.api-settings-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .tryon-modal {
-    width: 95vw;
-    min-height: unset;
-  }
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-  .display-card {
-    max-width: 100%;
-  }
-  .model-list {
-    gap: 12px;
-  }
-  .model-item {
-    width: 120px;
-  }
-  .model-thumbnail {
-    width: 80px;
-    height: 120px;
-  }
-}
-
-@media (max-width: 480px) {
-  .modal-header {
-    padding: 12px 16px;
-  }
-  .modal-header h2 {
-    font-size: 1.25rem;
-  }
-  .modal-body {
-    padding: 16px;
-  }
-  .content-section h4 {
-    font-size: 1.1rem;
-  }
-  .display-card img {
-    max-height: 150px;
-  }
-}
+/* Other utility styles as needed */
 </style>

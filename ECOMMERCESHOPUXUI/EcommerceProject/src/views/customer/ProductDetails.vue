@@ -618,40 +618,22 @@ const addToCartRecommendation = (productId) => {
   // Add your logic here
 }
 
-const tryOnProductData = computed(() => {
+const productForTryOn = computed(() => {
   if (!product.value || !product.value.maSp) return null;
 
-  const selectedProductDetail = product.value.productDetails.find(
-    (p) =>
-      (p?.mauSac || '').toLowerCase() === (selectedColor.value || '').toLowerCase() &&
-      (p?.kichThuoc || '').toLowerCase() === (selectedSize.value || '').toLowerCase()
-  );
-
-  let imageUrl = '';
-  if (selectedProductDetail && selectedProductDetail.images && selectedProductDetail.images.length > 0) {
-    imageUrl = `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${selectedProductDetail.images[0]?.tenHinhAnh}`;
-  } else if (allImages.value.length > 0) {
-    imageUrl = `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${allImages.value[currentImage.value - 1]?.tenHinhAnh}`;
-  }
+  const imageUrls = allImages.value.map(img => `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${img.tenHinhAnh}`);
 
   return {
+    ...product.value,
+    images: imageUrls,
     id: product.value.maSp,
     name: product.value.tenSanPham,
-    image: imageUrl,
     type: 'single',
     category: product.value.tenLoai,
-    description: product.value.moTa,
-    rating: product.value.danhGia,
-    info: product.value.thongTin,
-    variant: {
-      color: selectedColor.value,
-      size: selectedSize.value,
-      price: originalPrice.value,
-    },
-    products: selectedProductDetail ? [{
-      image: imageUrl,
-      category: product.value.tenLoai,
-    }] : [],
+    products: product.value.productDetails.map(detail => ({
+        ...detail,
+        image: detail.images.length > 0 ? `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${detail.images[0].tenHinhAnh}` : ''
+    }))
   };
 });
 
@@ -800,7 +782,7 @@ watch(
                     <button class="btn btn-outline-danger btn-sm" @click="addToCompare">
                         <i class="bi bi-arrow-left-right"></i> Thêm vào so sánh
                     </button>
-                    <TryOnProduct :product="tryOnProductData" v-if="tryOnProductData" />
+                    <TryOnProduct :product="productForTryOn" v-if="productForTryOn" />
                 </div>
 
                 <!-- Product Features -->
@@ -827,7 +809,7 @@ watch(
                     </div>
                     <div class="d-flex align-items-center mb-2">
                         <i class="fas fa-clock text-success me-2"></i>
-                        <small>Đổi/trả trong 7 ngày</small>
+                        <small>Đổi/trả trong 3 ngày</small>
                     </div>
                  
                 </div>
