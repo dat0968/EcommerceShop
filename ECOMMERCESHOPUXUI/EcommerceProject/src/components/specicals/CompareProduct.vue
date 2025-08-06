@@ -141,6 +141,15 @@
                   class="border rounded p-3 min-vh-50 mb-3 bg-light d-flex flex-column align-items-center justify-content-center flex-grow-1 h-100 position-relative"
                   style="min-height: 300px; height: 100%"
                 >
+                  <button
+                    class="btn btn-primary btn-sm position-absolute"
+                    style="bottom: 8px; right: 8px; z-index: 2; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
+                    @click="tryOnModel(groupIdx)"
+                    :disabled="loadingGroup === groupIdx"
+                    title="Thử đồ trên người mẫu"
+                  >
+                    <i class="bi bi-magic"></i>
+                  </button>
                   <!-- Nút lật mặt ở góc phải trên -->
                   <button
                     class="btn btn-outline-secondary btn-sm position-absolute"
@@ -279,15 +288,6 @@
                       </div>
                     </template>
 
-                    <button
-                      class="btn btn-primary btn-sm position-absolute"
-                      style="bottom: 8px; right: 8px; z-index: 2; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;"
-                      @click="tryOnModel(groupIdx)"
-                      :disabled="loadingGroup === groupIdx"
-                      title="Thử đồ trên người mẫu"
-                    >
-                      <i class="bi bi-magic"></i>
-                    </button>
                   </div>
                   <!-- Mặt sau: hình ảnh thử đồ nếu có -->
                   <template v-else>
@@ -343,13 +343,13 @@
                       <template v-else>
                         <!-- Focus vào sản phẩm lẻ hoặc combo -->
                         <h5 class="info-title">Mô tả:</h5>
-                        <p>{{ group.products[group.selectedProductIdx].description || 'Không có mô tả' }}</p>
+                        <p>{{ group.products[group.selectedProductIdx]?.description || 'Không có mô tả' }}</p>
                         
                         <h5 class="info-title">Đánh giá:</h5>
-                        <p>{{ group.products[group.selectedProductIdx].rating || 'Chưa có đánh giá' }} ★</p>
+                        <p>{{ group.products[group.selectedProductIdx]?.rating || 'Chưa có đánh giá' }} ★</p>
                         
                         <h5 class="info-title">Thông tin:</h5>
-                        <p>{{ group.products[group.selectedProductIdx].info || 'Không có thông tin' }}</p>
+                        <p>{{ group.products[group.selectedProductIdx]?.info || 'Không có thông tin' }}</p>
                       </template>
                     </div>
                     <div v-else>
