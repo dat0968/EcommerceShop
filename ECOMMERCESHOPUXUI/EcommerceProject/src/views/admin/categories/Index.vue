@@ -861,13 +861,14 @@ export default {
             });
           } else {
             // API call successful, no need to do anything as UI is already updated
-            Swal.fire({
+            /* Swal.fire({
               icon: 'success',
               title: 'Cập nhật thành công!',
               text: `Trạng thái danh mục ${targetItem.tenDanhMucCha || targetItem.tenDanhMucCon} đã được cập nhật.`, 
               showConfirmButton: false,
               timer: 1500
-            });
+            }); */
+            console.log(`Trạng thái danh mục ${targetItem.tenDanhMucCha || targetItem.tenDanhMucCon} đã được cập nhật.`);
           }
         } catch (error) {
           console.error('Error updating status:', error);
