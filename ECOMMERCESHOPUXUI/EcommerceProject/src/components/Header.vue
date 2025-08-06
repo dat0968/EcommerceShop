@@ -163,6 +163,11 @@
                         </router-link>
                       </li>
                       <li>
+                        <router-link to="/Order" class="dropdown-item">
+                          <i class="fa fa-box me-2"></i>Đơn hàng
+                        </router-link>
+                      </li>
+                      <li>
                         <NavigationUserReview class="dropdown-item" />
                       </li>
                       <li>
