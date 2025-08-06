@@ -1,105 +1,161 @@
 [Tiếng Việt](./README.vi.md) | [English](./README.md) | [中文](./README.zh.md)
 
-# Dự án Cửa hàng Thương mại Điện tử
-![Trạng thái Build](https://img.shields.io/badge/build-passing-brightgreen)
-![Giấy phép](https://img.shields.io/badge/license-MIT-blue)
+# EcommerceShop - Cửa Hàng Quần Áo Trực Tuyến Hiện Đại
 
-> Một nền tảng thương mại điện tử toàn diện với API backend .NET 8.0 và ứng dụng frontend Vue.js.
+Nền tảng thương mại điện tử toàn diện dành cho việc bán quần áo trực tuyến, xây dựng theo kiến trúc hiện đại, tách rời. Dự án có API phần backend mở rộng và giao diện người dùng linh hoạt, mang đến trải nghiệm mua sắm hấp dẫn.
 
-## Bảng mục lục
-- [Tính năng](#🚀-tính-năng)
-- [Cài đặt](#🛠️-cài-đặt)
-- [Sử dụng](#🎯-sử-dụng)
-- [Cấu hình](#⚙️-cấu-hình)
-- [Kiến trúc](#🏗️-kiến-trúc)
-- [Tác giả](#👥-tác-giả)
-- [Giấy phép](#📜-giấy-phép)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-## 🚀 Tính năng
-- 🛒 **Danh mục sản phẩm**: Duyệt và tìm kiếm sản phẩm với mô tả chi tiết và hình ảnh.
-- 🔐 **Xác thực người dùng**: Đăng ký và đăng nhập người dùng an toàn bằng JWT và Xác thực Google.
-- 🛍️ **Giỏ hàng & Quản lý đơn hàng**: Thêm, cập nhật, xóa các mặt hàng khỏi giỏ hàng, đặt hàng, xem lịch sử và theo dõi trạng thái.
-- 💳 **Tích hợp thanh toán**: Xử lý thanh toán an toàn qua VNPAY.
-- 📊 **Bảng điều khiển quản trị**: Quản lý sản phẩm, danh mục, người dùng và đơn hàng (chi tiết sẽ được thêm nếu xác nhận).
-- 💡 **Hệ thống đề xuất**: Có khả năng cung cấp các đề xuất sản phẩm.
-- 📧 **Dịch vụ Email**: Tích hợp để gửi email (ví dụ: xác nhận đơn hàng).
+## Mục Lục
 
-## 🛠️ Cài đặt
-Phần này cung cấp hướng dẫn để bạn có thể thiết lập và chạy dự án trên máy cục bộ cho mục đích phát triển và thử nghiệm.
+- [Tính Năng](#🚀-tính-năng)
+- [Cài Đặt](#🛠️-cài-đặt)
+- [Sử Dụng](#🎯-sử-dụng)
+- [Cấu Hình](#⚙️-cấu-hình)
+- [Kiến Trúc](#🏗️-kiến-trúc)
+- [Cấu Trúc Dự Án](#📂-cấu-trúc-dự-án)
+- [Tác Giả](#👥-tác-giả)
+- [Giấy Phép](#📜-giấy-phép)
+
+---
+
+## 🚀 Tính Năng
+
+- 🛒 **Thư Viện Sản Phẩm:** Duyệt sản phẩm theo danh mục, xem chi tiết mô tả, hình ảnh rõ nét.
+- 🔐 **Xác Thực Khách Hàng:** Đăng nhập, đăng ký an toàn qua JWT và xác thực Google.
+- 🛍️ **Giỏ Hàng & Quản Lý Đơn Hàng:** Thêm, sửa, xóa sản phẩm, đặt hàng, xem lịch sử mua, theo dõi trạng thái.
+- 💳 **Thanh Toán An Toàn:** Tích hợp thanh toán qua VNPAY.
+- 📊 **Bảng Điều Khiển Quản Trị:** Quản lý sản phẩm, danh mục, khách hàng, đơn hàng.
+- 💡 **Hệ Thống Gợi Ý:** Đề xuất sản phẩm cá nhân hoá dựa trên ML.NET.
+- 📧 **Dịch Vụ Gửi Email:** Tự động gửi xác nhận đơn hàng, thông báo, mã giảm giá.
+- 🌟 **Các Tính Năng Nâng Cao Khác:**
+  - So sánh sản phẩm (có API AI thử thử ảo)
+  - Vòng quay may mắn giảm giá
+  - Chatbot hỗ trợ và tư vấn khách hàng
+  - Xem lịch sử duyệt gần nhất
+
+---
+
+## 🛠️ Cài Đặt
 
 **Yêu cầu hệ thống**:
 - Windows 10/11
 - PowerShell 5.1 trở lên
-- .NET 8.0 SDK
-- Node.js (khuyến nghị phiên bản LTS)
-- Vue CLI (Cài đặt toàn cục: `npm install -g @vue/cli`)
-- SQL Server (hoặc SQL Server Express/LocalDB)
-- SQL Server Management Studio (SSMS) (Tùy chọn, để quản lý cơ sở dữ liệu)
+- .NET 8 SDK
+- Node.js (phiên bản LTS khuyên dùng)
+- Vue CLI (`npm install -g @vue/cli`)
+- SQL Server hoặc SQL Server Express/LocalDB
 
 **Các bước thực hiện**:
+
 ```powershell
-# Bước 1: Clone kho lưu trữ
-git clone <repository_url> # Thay thế <repository_url> bằng URL thực tế
+# 1. Clone kho chứa mã nguồn
+git clone <url_kh_oọdọ>  # Thay thế bằng URL repo của bạn
 cd EcommerceShop
 
-# Bước 2: Thiết lập Backend (APIClothesEcommerceShop)
-# Điều hướng đến thư mục dự án backend
+# Backend - API
 cd APIClothesEcommerceShop/APIClothesEcommerceShop
+# Cấu hình kết nối Database:
+# Mở file appsettings.json chỉnh sửa chuỗi kết nối SQL Server của bạn
+# Ví dụ:
+# "EcommerceShopConnect_Dot": "Server=.;Database=EcommerceShopDb;Trusted_Connection=True;TrustServerCertificate=True;"
+# Lưu file
 
-# Cấu hình kết nối cơ sở dữ liệu:
-# Mở appsettings.json (và appsettings.Development.json) và cập nhật phần ConnectionStrings.
-# Ví dụ: "EcommerceShopConnect_Dot": "Server=.;Database=EcommerceShopDb;Trusted_Connection=True;TrustServerCertificate=True;"
-# Thay thế '.' bằng tên phiên bản SQL Server của bạn nếu khác.
-
-# Áp dụng Migrations và Dữ liệu mẫu
+# Khôi phục thư viện và cập nhật database
+dotnet restore
 dotnet ef database update
 
-# Chạy API Backend
+# Chạy API backend
 dotnet run
+# API sẽ có thể truy cập tại https://localhost:7217/swagger hoặc http://localhost:7218/swagger
 
-# Bước 3: Thiết lập Frontend (ECOMMERCESHOPUXUI)
-# Điều hướng đến thư mục dự án frontend
+# Frontend - Giao diện người dùng
 cd ../../ECOMMERCESHOPUXUI/EcommerceProject
-
-# Cài đặt các phụ thuộc
 npm install
-
-# Chạy ứng dụng Vue.js
-npm run serve
+npm run dev
+# Truy cập tại http://localhost:5173
 ```
 
-## 🎯 Sử dụng
-## 🎯 Sử dụng
+---
 
-Sau khi thiết lập thành công backend và frontend, bạn có thể truy cập ứng dụng thông qua trình duyệt web của mình. Ứng dụng frontend cung cấp giao diện người dùng để duyệt sản phẩm, thêm mặt hàng vào giỏ hàng, quản lý đơn hàng và thực hiện thanh toán.
+## 🎯 Sử Dụng
 
-### Truy cập ứng dụng
-*   **Frontend**: Mở trình duyệt web của bạn và điều hướng đến `http://localhost:8080/` (hoặc địa chỉ hiển thị trong console frontend sau khi chạy `npm run serve`).
-*   **Tài liệu API Backend**: Để biết chi tiết các điểm cuối API và thử nghiệm, hãy truy cập `https://localhost:7217/swagger/index.html` hoặc `http://localhost:7218/swagger/index.html` trong trình duyệt của bạn.
+Sau khi cả hai dịch vụ backend và frontend đều hoạt động:
 
-### Sử dụng các tính năng chính
-*   **Duyệt sản phẩm**: Điều hướng qua các danh mục hoặc sử dụng thanh tìm kiếm để tìm sản phẩm.
-*   **Mua sắm & Thanh toán**: Thêm mặt hàng vào giỏ hàng, tiến hành thanh toán và hoàn tất thanh toán qua VNPAY.
-*   **Tài khoản người dùng**: Đăng ký, đăng nhập, quản lý hồ sơ và xem lịch sử đơn hàng.
-*   **So sánh sản phẩm (có hỗ trợ AI)**: Sử dụng tính năng `CompareProduct` để so sánh các mặt hàng, bao gồm thử đồ ảo (đảm bảo các khóa API AI đã được cấu hình).
-*   **Vòng quay may mắn**: Tham gia tính năng `WheelCoupon` để giành mã giảm giá.
-*   **Trò chuyện/Chatbot**: Tương tác với hệ thống qua trò chuyện hoặc chatbot để được hỗ trợ hoặc giải đáp thắc mắc.
-*   **Lịch sử xem**: Theo dõi các sản phẩm đã xem gần đây.
-*   **Tính năng quản trị**: (Dành cho nhân viên/quản trị viên) Quản lý sản phẩm, danh mục, người dùng, đơn hàng, nhân viên, xem số liệu thống kê và tải lên hình ảnh.
+- Mở trình duyệt truy cập [http://localhost:5173](http://localhost:5173)
+- Sử dụng giao diện thân thiện để duyệt sản phẩm, đăng ký/đăng nhập, thêm sản phẩm vào giỏ, thanh toán qua VNPAY.
 
-Hướng dẫn sử dụng chi tiết cho các tính năng cụ thể sẽ được thêm vào đây.
+**Các chức năng chính:**
 
-## ⚙️ Cấu hình
-(Thông tin về cấu hình ứng dụng, ví dụ: khóa API, biến môi trường, sẽ được đặt ở đây.)
+- Duyệt và tìm kiếm sản phẩm
+- Quản lý giỏ hàng và thanh toán
+- Đăng ký, đăng nhập, quản lý hồ sơ cá nhân
+- So sánh sản phẩm với thử ảo AI
+- Vòng quay may mắn mã giảm giá
+- Chatbot hỗ trợ trực tuyến
+- Xem lịch sử đơn hàng và hoạt động gần nhất
+- Quản trị sản phẩm, đơn hàng, người dùng, phân tích dữ liệu
 
-## 🏗️ Kiến trúc
-(Tổng quan về kiến trúc của dự án, ví dụ: sơ đồ, phân tích thành phần, sẽ được đặt ở đây.)
+---
 
-## 👥 Tác giả
+## ⚙️ Cấu Hình
 
-*   [Tên của bạn/Tên nhóm] - Công việc ban đầu
+- Cấu hình API keys cho dịch vụ như Cloudinary, Gemini AI, Firebase, VNPAY trong các biến môi trường (`.env`)
+- Cập nhật chuỗi kết nối database trong `appsettings.json`
+- Cấu hình API của bên thứ ba cho AI, thanh toán, email, gửi thông báo
 
-Hãy thêm tên hoặc tên nhóm của bạn vào đây!
+---
 
-## 📜 Giấy phép
-Dự án này được cấp phép theo Giấy phép MIT - xem tệp [LICENSE.md](LICENSE.md) để biết chi tiết.
+## 🏗️ Kiến Trúc Hệ Thống
+
+Hệ thống theo kiến trúc tách biệt, client-server:
+
+- **API Backend:** Viết bằng .NET 8 Web API, quản lý logic nghiệp vụ, dữ liệu, tích hợp dịch vụ thứ ba và cung cấp API RESTful.
+- **Giao diện Frontend:** Phát triển bằng Vue.js 3, dùng Vite làm công cụ build, Pinia quản lý trạng thái, Vue Router điều hướng, Bootstrap 5 UI. Tạo trải nghiệm tương tác nhanh, mượt mà.
+
+---
+
+## 📂 Cấu Trúc Dự Án
+
+```
+/
+├── APIClothesEcommerceShop/                # API Backend
+│   ├── Controllers/                        # Các điểm cuối API
+│   ├── DTO/                                # Data Transfer Objects
+│   ├── Data/                               # DbContext, Migration
+│   ├── Models/                             # Mô hình dữ liệu
+│   ├── Repositories/                       # Lớp tiếp cận dữ liệu
+│   └── Services/                           # Logic nghiệp vụ
+└── ECOMMERCESHOPUXUI/                        # Frontend Vue.js
+    └── EcommerceProject/
+        ├── src/
+        │   ├── assets/                     # Hình ảnh, tài nguyên
+        │   ├── components/                 # Components dùng chung
+        │   ├── views/                      # Các trang view
+        │   ├── router/                     # Cấu hình định tuyến
+        │   ├── stores/                     # Quản lý trạng thái
+        │   └── services/                   # Call API
+        └── package.json
+```
+
+---
+
+
+## Tác giả
+
+- **Nhóm đóng góp chính**: Silent Stack Team
+
+- **Người đóng góp**:
+<p align="center">
+    <a href="https://github.com/dat0968/EcommerceShop/graphs/contributors">
+      <img src="https://contrib.rocks/image?repo=dat0968/EcommerceShop" style="max-width: 400px;" />
+    </a>
+</p>
+
+
+---
+
+## 📜 Giấy Phép
+
+Dự án được cấp phép theo Giấy phép MIT. Xem chi tiết tại [LICENSE.md](LICENSE.md).

@@ -1,103 +1,160 @@
 [Tiếng Việt](./README.vi.md) | [English](./README.md) | [中文](./README.zh.md)
 
-# 电子商务商店项目
-![构建状态](https://img.shields.io/badge/build-passing-brightgreen)
-![许可证](https://img.shields.io/badge/license-MIT-blue)
+# EcommerceShop - 现代在线服装店铺
 
-> 一个全面的电子商务平台，具有.NET 8.0后端API和Vue.js前端应用程序。
+一个全面的电子商务平台，专为在线销售服装而设计，采用现代化、解耦的架构。该项目具有可扩展的后端API和动态前端，带来极佳的购物体验。
+
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 ## 目录
-- [功能](#🚀-功能)
-- [安装](#🛠️-安装)
-- [使用](#🎯-使用)
-- [配置](#⚙️-配置)
-- [架构](#🏗️-架构)
-- [作者](#👥-作者)
+
+- [功能特点](#🚀-功能特点)
+- [安装指南](#🛠️-安装指南)
+- [使用说明](#🎯-使用说明)
+- [配置方式](#⚙️-配置方式)
+- [架构设计](#🏗️-架构设计)
+- [项目结构](#📂-项目结构)
+- [作者信息](#👥-作者信息)
 - [许可证](#📜-许可证)
 
-## 🚀 功能
-- 🛒 **产品目录**：浏览和搜索带有详细描述和图片的产品。
-- 🔐 **用户认证**：使用JWT和Google认证进行安全的用户注册和登录。
-- 🛍️ **购物车和订单管理**：添加、更新、从购物车中删除商品，下订单，查看历史记录和跟踪状态。
-- 💳 **支付集成**：通过VNPAY进行安全的支付处理。
-- 📊 **管理面板**：管理产品、类别、用户和订单（如果确认将添加详细信息）。
-- 💡 **推荐系统**：可能提供产品推荐。
-- 📧 **电子邮件服务**：集成用于发送电子邮件（例如，订单确认）。
+---
 
-## 🛠️ 安装
-本节提供在本地计算机上设置和运行项目以进行开发和测试的说明。
+## 🚀 功能特点
 
-**系统要求**：
+- 🛒 **商品目录：** 按类别浏览商品，查看详细描述和图片
+- 🔐 **客户验证：** 通过JWT和Google验证实现安全登录和注册
+- 🛍️ **购物车和订单管理：** 添加/修改/删除商品，提交订单，查看订单历史和状态
+- 💳 **安全支付集成：** 通过VNPAY进行支付
+- 📊 **后台管理面板：** 管理商品、类别、客户和订单
+- 💡 **推荐系统：** 利用ML.NET提供个性化商品推荐
+- 📧 **邮件服务：** 自动发送订单确认、通知和优惠码
+- 🌟 **高级客户功能：** 
+  - 商品对比（结合AI API实现虚拟试穿）
+  - 转盘抽奖优惠券
+  - 聊天机器人支持
+  - 查看近期浏览历史
+
+---
+
+## 🛠️ 安装指南
+
+**系统需求：**
 - Windows 10/11
 - PowerShell 5.1或更高版本
-- .NET 8.0 SDK
-- Node.js (推荐LTS版本)
-- Vue CLI (全局安装：`npm install -g @vue/cli`)
-- SQL Server (或SQL Server Express/LocalDB)
-- SQL Server Management Studio (SSMS) (可选，用于数据库管理)
+- .NET 8 SDK
+- Node.js（建议使用LTS版本）
+- Vue CLI（`npm install -g @vue/cli`）
+- SQL Server或SQL Server Express/LocalDB
 
-**步骤**：
+**操作步骤：**
+
 ```powershell
-# 步骤 1: 克隆仓库
-git clone <repository_url> # 将 <repository_url> 替换为实际的URL
+# 1. 克隆仓库
+git clone <仓库地址>  # 替换为你的仓库链接
 cd EcommerceShop
 
-# 步骤 2: 后端设置 (APIClothesEcommerceShop)
-# 导航到后端项目目录
+# 后端API
 cd APIClothesEcommerceShop/APIClothesEcommerceShop
+# 配置数据库连接：
+# 编辑appsettings.json文件，填写你的SQL Server连接字符串
+# 例：
+# "EcommerceShopConnect_Dot": "Server=.;Database=EcommerceShopDb;Trusted_Connection=True;TrustServerCertificate=True;"
+# 保存文件
 
-# 配置数据库连接:
-# 打开 appsettings.json (和 appsettings.Development.json) 并更新 ConnectionStrings 部分。
-# 示例: "EcommerceShopConnect_Dot": "Server=.;Database=EcommerceShopDb;Trusted_Connection=True;TrustServerCertificate=True;"
-# 如果不同，请将 '.' 替换为您的SQL Server实例名称。
-
-# 应用迁移和种子数据
+# 恢复依赖并更新数据库
+dotnet restore
 dotnet ef database update
 
 # 运行后端API
 dotnet run
+# API将访问地址为：https://localhost:7217/swagger 或 http://localhost:7218/swagger
 
-# 步骤 3: 前端设置 (ECOMMERCESHOPUXUI)
-# 导航到前端项目目录
+# 前端界面
 cd ../../ECOMMERCESHOPUXUI/EcommerceProject
-
-# 安装依赖项
 npm install
-
-# 运行Vue.js应用程序
-npm run serve
+npm run dev
+# 访问地址：http://localhost:5173
 ```
 
-## 🎯 使用
+---
 
-成功设置后端和前端后，您可以通过Web浏览器访问应用程序。前端应用程序提供用户界面，用于浏览产品、将商品添加到购物车、管理订单和进行支付。
+## 🎯 使用说明
 
-### 访问应用程序
-*   **前端**：打开您的Web浏览器并导航到 `http://localhost:8080/`（或运行 `npm run serve` 后前端控制台中显示的地址）。
-*   **后端API文档**：有关详细的API端点和测试，请在浏览器中访问 `https://localhost:7217/swagger/index.html` 或 `http://localhost:7218/swagger/index.html`。
+前后端服务启动后：
 
-### 主要功能使用
-*   **产品浏览**：通过类别导航或使用搜索栏查找产品。
-*   **购物和结账**：将商品添加到购物车，进行结账，并通过VNPAY完成支付。
-*   **用户账户**：注册、登录、管理您的个人资料和查看订单历史记录。
-*   **产品比较（AI驱动）**：利用 `CompareProduct` 功能比较商品，包括虚拟试穿（确保AI API密钥已配置）。
-*   **幸运轮优惠券**：参与 `WheelCoupon` 功能以赢取折扣代码。
-*   **聊天/聊天机器人**：通过聊天或聊天机器人与系统互动以获取支持或查询。
-*   **浏览历史**：跟踪最近浏览的产品。
-*   **管理功能**：（供员工/管理员访问）管理产品、类别、用户、订单、员工、查看统计数据和上传图像。
+- 打开浏览器，访问 [http://localhost:5173](http://localhost:5173)
+- 使用界面浏览商品、注册/登录、添加到购物车、使用VNPAY结账
 
-特定功能（例如，管理功能）的详细使用说明将在此处添加。
+**主要功能：**
 
-## ⚙️ 配置
-（有关配置应用程序的信息，例如API密钥、环境变量，将在此处。）
+- 商品浏览与搜索
+- 购物车管理和结算
+- 用户注册、登录与个人资料管理
+- AI虚拟试穿商品对比
+- 转盘抽奖优惠券
+- 实时聊天机器人支持
+- 查看订单历史与近期活动
+- 后台商品、订单、用户和数据分析管理
 
-## 🏗️ 架构
-（项目架构概述，例如图表、组件分解，将在此处。）
+---
 
-## 👥 作者
+## ⚙️ 配置方式
 
-*   Silent Stack - 初始工作和开发
+- 在环境变量（`.env`文件）中设置Cloudinary、Gemini AI、Firebase、VNPAY等服务的API密钥
+- 在`appsettings.json`中更新数据库连接字符串
+- 配置第三方API接口，用于AI、支付和邮件通知
 
+---
+
+## 🏗️ 系统架构
+
+系统采用客户端-服务器解耦架构：
+
+- **后端API：** 使用.NET 8 Web API开发，处理业务逻辑、数据存储、第三方服务集成及提供RESTful接口
+- **前端应用：** 基于Vue.js 3，使用Vite作为构建工具，Pinia管理状态，Vue Router进行路由配置，Bootstrap 5提供UI样式，确保用户操作流畅快速。
+
+---
+
+## 📂 项目结构
+
+```
+/
+├── APIClothesEcommerceShop/                # 后端API
+│   ├── Controllers/                        # API控制器
+│   ├── DTO/                                # 数据传输对象
+│   ├── Data/                               # 数据库上下文、迁移
+│   ├── Models/                             # 数据模型
+│   ├── Repositories/                       #数据访问层
+│   └── Services/                           # 业务逻辑
+└── ECOMMERCESHOPUXUI/                        # 前端Vue.js应用
+    └── EcommerceProject/
+        ├── src/
+        │   ├── assets/                     # 图片资源
+        │   ├── components/                 # 可复用组件
+        │   ├── views/                      # 页面视图
+        │   ├── router/                     # 路由配置
+        │   ├── stores/                     # 状态管理
+        │   └── services/                   # API调用
+        └── package.json
+```
+
+---
+
+## 作者
+
+- **主要贡献者**：Silent Stack团队
+
+- **贡献者**：
+<p align="center">
+    <a href="https://github.com/dat0968/EcommerceShop/graphs/contributors">
+      <img src="https://contrib.rocks/image?repo=dat0968/EcommerceShop" style="max-width: 400px;" />
+    </a>
+</p>
+
+
+---
 
 ## 📜 许可证
-本项目根据MIT许可证授权 - 有关详细信息，请参阅[LICENSE.md](LICENSE.md)文件。
+
+本项目基于MIT许可证授权，详见 [LICENSE.md](LICENSE.md)。
