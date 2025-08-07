@@ -181,11 +181,18 @@ watch(
     if (newcombo.soLuong < 1 && newcombo.soLuong !== '') {
       newcombo.soLuong = 1;
     }
+     // Validate số tiền giảm
     if (newcombo.soTienGiam < 0) {
       newcombo.soTienGiam = 0;
+    } else if (newcombo.soTienGiam > 0 && isNaN(newcombo.soTienGiam)) {
+      newcombo.soTienGiam = 0;
     }
+
+    // Validate phần trăm giảm
     if (newcombo.phanTramGiam < 0) {
       newcombo.phanTramGiam = 0;
+    } else if (newcombo.phanTramGiam >= 100) {
+      newcombo.phanTramGiam = 99;
     }
     if (newcombo.ngayBatDau && newcombo.ngayKetThuc) {
       const startDate = new Date(newcombo.ngayBatDau);
@@ -269,7 +276,16 @@ const addCombo = async () => {
       isValid = false;
       Swal.fire('Ngày bắt đầu và ngày kết thúc không được để trống', '', 'error');
     }
+    // Trong hàm addCombo
+    if (combo.value.phanTramGiam !== 0 && (combo.value.phanTramGiam <= 0 || combo.value.phanTramGiam >= 100)) {
+      isValid = false;
+      Swal.fire('Phần trăm giảm phải lớn hơn 0 và nhỏ hơn 100', '', 'error');
+    }
 
+    if (combo.value.soTienGiam !== 0 && combo.value.soTienGiam <= 0) {
+      isValid = false;
+      Swal.fire('Số tiền giảm phải lớn hơn 0', '', 'error');
+    }
     if (!isValid) {
       return;
     }

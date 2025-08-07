@@ -43,6 +43,42 @@ const productMap = ref({})
 const search = ref('')
 const token = Cookies.get('accessToken')
 
+// Hàm validateDiscount
+const validateDiscount = (phanTramGiam, soTienGiam) => {
+  if (phanTramGiam !== null && phanTramGiam !== undefined) {
+    if (phanTramGiam < 0) {
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Phần trăm giảm không được nhỏ hơn 0%',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+      return false
+    }
+    if (phanTramGiam > 100) {
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Phần trăm giảm không được lớn hơn 100%',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+      return false
+    }
+  }
+  if (soTienGiam !== null && soTienGiam !== undefined) {
+    if (soTienGiam < 0) {
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Số tiền giảm không được nhỏ hơn 0 VNĐ',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      })
+      return false
+    }
+  }
+  return true
+}
+
 // Kích hoạt/ẩn modal chọn sản phẩm
 watch(showProductModal, (newValue) => {
   console.log('showProductModal thay đổi:', newValue)
@@ -139,7 +175,7 @@ onMounted(() => {
 onUnmounted(() => {
   const modalElement = document.getElementById('productModalEdit')
   if (modalElement) {
-    modalElement.removeEventListener('hidden.bs.modal', () => {})
+    modalElement.removeEventListener('hidden.bs.modal', () => { })
   }
 })
 
@@ -270,11 +306,8 @@ watch(
     if (newcomboEdit.soLuong < 1 && newcomboEdit.soLuong !== '') {
       newcomboEdit.soLuong = 1
     }
-    if (newcomboEdit.soTienGiam < 0) {
-      newcomboEdit.soTienGiam = 0
-    }
-    if (newcomboEdit.phanTramGiam < 0) {
-      newcomboEdit.phanTramGiam = 0
+    if (!validateDiscount(newcomboEdit.phanTramGiam, newcomboEdit.soTienGiam)) {
+      // Không cần gán lại giá trị vì validateDiscount đã xử lý
     }
     if (newcomboEdit.ngayBatDau && newcomboEdit.ngayKetThuc) {
       const startDate = new Date(newcomboEdit.ngayBatDau)
@@ -319,6 +352,32 @@ function removeDetailCombo(index) {
   }
 }
 
+// Hàm closeModal
+function closeModal() {
+  const editModalId = `comboEditModal_${props.Combo.maCombo}`
+  const editModal = document.getElementById(editModalId)
+  if (editModal) {
+    const modal = bootstrap.Modal.getInstance(editModal)
+    if (modal) {
+      modal.hide()
+      // Xóa backdrop thủ công để đảm bảo màn hình không bị tối
+      setTimeout(() => {
+        const backdrops = document.querySelectorAll('.modal-backdrop')
+        backdrops.forEach((backdrop) => backdrop.remove())
+        document.body.classList.remove('modal-open')
+        document.body.style.removeProperty('overflow')
+        document.body.style.removeProperty('padding-right')
+      }, 100)
+    } else {
+      console.error(`Không tìm thấy instance modal với ID: ${editModalId}`)
+      Swal.fire('Lỗi: Không thể đóng modal', '', 'error')
+    }
+  } else {
+    console.error(`Không tìm thấy modal với ID: ${editModalId}`)
+    Swal.fire('Lỗi: Không tìm thấy modal chỉnh sửa', '', 'error')
+  }
+}
+
 // Hủy thay đổi
 const cancelEdit = () => {
   const comboChanged = JSON.stringify(comboEdit.value) !== JSON.stringify(initialCombo.value)
@@ -334,25 +393,15 @@ const cancelEdit = () => {
       if (result.isConfirmed) {
         UpdateCombo()
       } else if (result.isDenied) {
-        Swal.clickCancel()
+        // Tiếp tục chỉnh sửa, không làm gì
       } else {
-        comboEdit.value = {
-          ...initialCombo.value,
-          chitietcombos: initialCombo.value.chitietcombos.map((detail) => ({ ...detail })),
-        }
-        const instanceModal = document.getElementById(`comboEditModal_${props.Combo.maCombo}`)
-        const closeButton = instanceModal.querySelector('[data-bs-dismiss="modal"]')
-        if (closeButton) {
-          closeButton.click()
-        }
+        // Hủy và đóng modal
+        closeModal()
       }
     })
   } else {
-    const instanceModal = document.getElementById(`comboEditModal_${props.Combo.maCombo}`)
-    const closeButton = instanceModal.querySelector('[data-bs-dismiss="modal"]')
-    if (closeButton) {
-      closeButton.click()
-    }
+    // Nếu không có thay đổi, đóng modal ngay
+    closeModal()
   }
 }
 
@@ -401,6 +450,11 @@ async function UpdateCombo() {
 
     if (!comboEdit.value.ngayBatDau || !comboEdit.value.ngayKetThuc) {
       Swal.fire('Ngày bắt đầu và ngày kết thúc không được để trống', '', 'error')
+      isValid = false
+    }
+
+    // Kiểm tra validateDiscount trước khi gửi
+    if (!validateDiscount(comboEdit.value.phanTramGiam, comboEdit.value.soTienGiam)) {
       isValid = false
     }
 
@@ -475,13 +529,15 @@ async function UpdateCombo() {
 
             <div class="mb-3">
               <label for="moTa" class="form-label">Mô tả</label>
-              <textarea v-model="comboEdit.moTa" class="form-control" id="moTa" rows="3" placeholder="Nhập mô tả combo"></textarea>
+              <textarea v-model="comboEdit.moTa" class="form-control" id="moTa" rows="3"
+                placeholder="Nhập mô tả combo"></textarea>
               <label style="color: red" class="error-message"></label>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Số lượng</label>
-              <input @keydown="blockNegativeNumbers" v-model="comboEdit.soLuong" type="number" class="form-control" min="1" />
+              <input @keydown="blockNegativeNumbers" v-model="comboEdit.soLuong" type="number" class="form-control"
+                min="1" />
               <label style="color: red" class="error-message"></label>
             </div>
 
@@ -505,7 +561,8 @@ async function UpdateCombo() {
                     <div class="col-md-6">
                       <label class="form-label">Sản phẩm</label>
                       <div class="input-group">
-                        <input type="text" class="form-control" :value="productMap[detail.maSp] || 'Chọn sản phẩm'" readonly />
+                        <input type="text" class="form-control" :value="productMap[detail.maSp] || 'Chọn sản phẩm'"
+                          readonly />
                         <button class="btn btn-outline-primary" type="button" @click="openProductModal(index)">
                           Chọn
                         </button>
@@ -513,7 +570,8 @@ async function UpdateCombo() {
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Số lượng</label>
-                      <input type="number" class="form-control" v-model="detail.soLuongSp" min="1" @keydown="blockNegativeNumbers" />
+                      <input type="number" class="form-control" v-model="detail.soLuongSp" min="1"
+                        @keydown="blockNegativeNumbers" />
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                       <button @click="removeDetailCombo(index)" type="button" class="btn btn-danger btn-sm">
@@ -523,20 +581,23 @@ async function UpdateCombo() {
                   </div>
                 </div>
               </div>
-              <button @click="addDetailCombo()" type="button" class="btn btn-secondary" style="background-color: #4C7CF3; margin-bottom: 10px;">
+              <button @click="addDetailCombo()" type="button" class="btn btn-secondary"
+                style="background-color: #4C7CF3; margin-bottom: 10px;">
                 Thêm chi tiết combo
               </button>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Phần trăm giảm</label>
-              <input type="number" class="form-control" v-model="comboEdit.phanTramGiam" min="0" @input="resetSoTienGiam" />
+              <input type="number" class="form-control" v-model="comboEdit.phanTramGiam" min="0"
+                @input="resetSoTienGiam" />
               <label style="color: red" class="error-message"></label>
             </div>
 
             <div class="mb-3">
               <label class="form-label">Số tiền giảm</label>
-              <input type="number" class="form-control" v-model="comboEdit.soTienGiam" min="0" @input="resetPhanTramGiam" />
+              <input type="number" class="form-control" v-model="comboEdit.soTienGiam" min="0"
+                @input="resetPhanTramGiam" />
               <label style="color: red" class="error-message"></label>
             </div>
 
@@ -565,7 +626,8 @@ async function UpdateCombo() {
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="productModalLabel">Chọn sản phẩm</h5>
-          <button type="button" class="btn-close" @click="showProductModal = false; close()" aria-label="Close"></button>
+          <button type="button" class="btn-close" @click="showProductModal = false; close()"
+            aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="row g-3 mb-3">
@@ -592,9 +654,8 @@ async function UpdateCombo() {
                   <td>{{ product.maSp }}</td>
                   <td>{{ product.tenSanPham }}</td>
                   <td>
-                    <img
-                      :src="`${getUrlAPI.value}/HinhAnh/Products/${product.hinh}`"
-                      alt="Product Image" width="50" height="50" style="object-fit: cover; border-radius: 5px" />
+                    <img :src="`${getUrlAPI.value}/HinhAnh/Products/${product.hinh}`" alt="Product Image" width="50"
+                      height="50" style="object-fit: cover; border-radius: 5px" />
                   </td>
                   <td>
                     <button class="btn btn-primary btn-sm" @click="selectProduct(product)">
