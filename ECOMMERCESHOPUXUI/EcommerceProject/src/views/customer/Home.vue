@@ -222,13 +222,14 @@ const toggleFavoriteProduct = async (maSp) => {
     }
   } catch (error) {
     Swal.fire({
-      title: 'Lỗi khi xử lý yêu thích!',
-      text: error.message,
-      icon: 'error',
+      title: 'Sản phẩm này đã có trong yêu thích',
+      text: "Cảm ơn bạn vì sự quan tâm sâu sắc tới sản phẩm này",
+      icon: 'info',
       timer: 2000,
       showConfirmButton: false,
       timerProgressBar: true,
     })
+    console.log(error)
   }
 }
 
