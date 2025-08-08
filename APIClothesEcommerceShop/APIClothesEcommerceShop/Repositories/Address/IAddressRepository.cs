@@ -5,8 +5,9 @@ namespace APIClothesEcommerceShop.Repositories.Address
 {
     public interface IAddressRepository
     {
-        Task<Diachi?> UpdateDefaultAddress(int? id, bool defaultAddress);
+        Task<Diachi?> UpdateDefaultAddress(int? id, bool? defaultAddress);
         Task<IEnumerable<AddressesResponseDTO>> GetByCustomerAsync(int maKh);
+        Task<AddressesResponseDTO> GetByCustomer_DefaultAddressAsync(int maKh);
         Task<Diachi> AddAsync(Diachi diachi);
         Task<Diachi?> UpdateAsync(Diachi diachi);
         Task<bool> DeleteAsync(int id);

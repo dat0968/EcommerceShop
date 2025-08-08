@@ -15,6 +15,8 @@ import insta3 from '@/assets/Customer/img/instagram/insta-3.jpg'
 import insta4 from '@/assets/Customer/img/instagram/insta-4.jpg'
 import insta5 from '@/assets/Customer/img/instagram/insta-5.jpg'
 import insta6 from '@/assets/Customer/img/instagram/insta-6.jpg'
+import { GetApiUrl } from '@/constants/api'
+const getUrlAPI = ref(GetApiUrl())
 const favoriteStatus = ref({})
 const setBackgroundImages = () => {
   const elements = document.querySelectorAll('[data-setbg]')
@@ -71,26 +73,26 @@ const setBackgroundImages = () => {
 }
 function ReadToken(token) {
   if (token) {
-    const decoded = jwtDecode(token);
+    const decoded = jwtDecode(token)
     return {
       IdUser: decoded.sub,
       Phone: decoded.PhoneNumber,
       Name: decoded.FullName,
       Role: decoded.role,
-      Exp: decoded.exp // Đơn vị giây
-    };
+      Exp: decoded.exp, // Đơn vị giây
+    }
   }
-  return null;
+  return null
 }
-const token = Cookies.get('accessToken');
-const decodedToken = ReadToken(token);
-const idKhachHang = decodedToken ? decodedToken.IdUser : null;
+const token = Cookies.get('accessToken')
+const decodedToken = ReadToken(token)
+const idKhachHang = decodedToken ? decodedToken.IdUser : null
 // Countdown timer state
 const countdown = ref({
   days: 3,
   hours: 23,
   minutes: 19,
-  seconds: 56
+  seconds: 56,
 })
 
 // Initialize countdown timer
@@ -122,15 +124,15 @@ onMounted(() => {
 const checkFavoriteProduct = async (maSp) => {
   if (!idKhachHang) return
   try {
-    const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
+    const response = await fetch(getUrlAPI.value + `/api/Favorite/CheckFavoriteProduct`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         maSp: maSp,
-        maKh: idKhachHang
-      })
+        maKh: idKhachHang,
+      }),
     })
     const data = await response.json()
     favoriteStatus.value[maSp] = data
@@ -146,7 +148,7 @@ const toggleFavoriteProduct = async (maSp) => {
       icon: 'warning',
       timer: 2000,
       showConfirmButton: false,
-      timerProgressBar: true
+      timerProgressBar: true,
     })
     router.push('/Login')
     return
@@ -154,17 +156,15 @@ const toggleFavoriteProduct = async (maSp) => {
 
   try {
     if (favoriteStatus.value[maSp] == true) {
-      const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
+      const response = await fetch(getUrlAPI.value + '/api/Favorite/DeleteFavoriteProducts', {
         method: 'DELETE',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           maKh: idKhachHang,
           maSp: maSp,
-
-        })
-
+        }),
       })
       const data = await response.json()
       if (response.ok) {
@@ -175,7 +175,7 @@ const toggleFavoriteProduct = async (maSp) => {
           icon: 'success',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       } else {
         Swal.fire({
@@ -183,20 +183,19 @@ const toggleFavoriteProduct = async (maSp) => {
           icon: 'error',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       }
-    }
-    else if (favoriteStatus.value[maSp] == false) {
-      const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+    } else if (favoriteStatus.value[maSp] == false) {
+      const response = await fetch(getUrlAPI.value + '/api/Favorite/AddFavoriteProduct', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           maSp: maSp,
-          maKh: idKhachHang
-        })
+          maKh: idKhachHang,
+        }),
       })
 
       const data = await response.json()
@@ -209,7 +208,7 @@ const toggleFavoriteProduct = async (maSp) => {
           icon: 'success',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       } else {
         Swal.fire({
@@ -217,7 +216,7 @@ const toggleFavoriteProduct = async (maSp) => {
           icon: 'error',
           timer: 2000,
           showConfirmButton: false,
-          timerProgressBar: true
+          timerProgressBar: true,
         })
       }
     }
@@ -228,17 +227,16 @@ const toggleFavoriteProduct = async (maSp) => {
       icon: 'error',
       timer: 2000,
       showConfirmButton: false,
-      timerProgressBar: true
+      timerProgressBar: true,
     })
   }
 }
 
-const getUrlAPI = ref(`https://localhost:7217/api`)
 const ListNewProducts = ref([])
 const ListBestSellerProducts = ref([])
 const ListBestHotProducts = ref([])
 const fetchAPINewProduts = async () => {
-  const response = await fetch(`${getUrlAPI.value}/Home/GetNewProduct`, {
+  const response = await fetch(`${getUrlAPI.value}/api/Home/GetNewProduct`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -252,7 +250,7 @@ const fetchAPINewProduts = async () => {
 }
 
 const fetchAPIBestSellerProduts = async () => {
-  const response = await fetch(`${getUrlAPI.value}/Home/GetBestSellerProduct`, {
+  const response = await fetch(`${getUrlAPI.value}/api/Home/GetBestSellerProduct`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -266,7 +264,7 @@ const fetchAPIBestSellerProduts = async () => {
 }
 
 const fetchAPIHotProduts = async () => {
-  const response = await fetch(`${getUrlAPI.value}/Home/GetHotProduct`, {
+  const response = await fetch(`${getUrlAPI.value}/api/Home/GetHotProduct`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -282,24 +280,21 @@ const fetchAPIHotProduts = async () => {
 const productDiscounts = ref({}) // Store fixed discount percentages for each product
 
 // Calculate original price and discount percentage (fixed per product)
-const calculatePriceInfo = (currentPrice, productId) => {
-  // If discount already calculated for this product, return it
-  if (productDiscounts.value[productId]) {
-    return productDiscounts.value[productId]
-  }
+// const calculatePriceInfo = (currentPrice, productId) => {
+//   if (productDiscounts.value[productId]) {
+//     return productDiscounts.value[productId]
+//   }
 
-  const discountPercentages = [30,10, 25, ]
-  const randomDiscount = discountPercentages[Math.floor(Math.random() * discountPercentages.length)]
-  const originalPrice = Math.round(currentPrice * (1 + randomDiscount / 100))
+//   const discountPercentages = [30, 10, 25]
+//   const randomDiscount = discountPercentages[Math.floor(Math.random() * discountPercentages.length)]
+//   const originalPrice = Math.round(currentPrice * (1 + randomDiscount / 100))
+//   productDiscounts.value[productId] = {
+//     originalPrice,
+//     discountPercentage: randomDiscount,
+//   }
 
-  // Store the discount info for this product
-  productDiscounts.value[productId] = {
-    originalPrice,
-    discountPercentage: randomDiscount
-  }
-
-  return productDiscounts.value[productId]
-}
+//   return productDiscounts.value[productId]
+// }
 
 // Parse price from string
 const parsePrice = (priceString) => {
@@ -365,14 +360,14 @@ onMounted(() => {
   fetchAPIBestSellerProduts()
   fetchAPIHotProduts()
   setTimeout(() => {
-    ListNewProducts.value.forEach(item => {
-      calculatePriceInfo(parsePrice(item.khoangGia), item.maSp)
+    ListNewProducts.value.forEach((item) => {
+      // calculatePriceInfo(parsePrice(item.khoangGia), item.maSp)
       checkFavoriteProduct(item.maSp)
     })
-    ListBestHotProducts.value.forEach(item => {
+    ListBestHotProducts.value.forEach((item) => {
       checkFavoriteProduct(item.maSp)
     })
-    ListBestSellerProducts.value.forEach(item => {
+    ListBestSellerProducts.value.forEach((item) => {
       checkFavoriteProduct(item.maSp)
     })
   }, 100)
@@ -381,7 +376,7 @@ onMounted(() => {
 <template>
   <div>
     <!-- Categories Section Begin -->
-    <section class="categories" style="font-family: Arial, Helvetica, sans-serif;">
+    <section class="categories" style="font-family: Arial, Helvetica, sans-serif">
       <div class="container-fluid">
         <div class="row">
           <div class="col-lg-6 p-0">
@@ -390,10 +385,20 @@ onMounted(() => {
               data-setbg="../../assets/img/categories/category-1.jpg"
             >
               <div class="categories__text">
-                <h1 style="font-family: Arial, Helvetica, sans-serif;">Thời trang nữ</h1>
-                <p style="color: #000;">Khám phá phong cách thời trang dành riêng cho phái đẹp.</p>
-                <router-link style="text-decoration-line: none" to="/Shop">Mua ngay</router-link>
+                <h1 style="font-family: Arial, Helvetica, sans-serif; font-size: 36px">
+                  Thời trang nữ
+                </h1>
+                <p style="color: #000; font-size: 28px">
+                  Khám phá phong cách thời trang dành riêng cho phái đẹp.
+                </p>
+                <router-link
+                  style="text-decoration-line: none; font-size: 18px; font-weight: bold"
+                  to="/Shop"
+                >
+                  Mua ngay
+                </router-link>
               </div>
+
               <div class="category-icon"><i class="fas fa-female fa-3x"></i></div>
             </div>
           </div>
@@ -405,24 +410,31 @@ onMounted(() => {
                   data-setbg="../../assets/img/categories/category-2.jpg"
                 >
                   <div class="categories__text">
-                    <h4>Thời trang nam</h4>
-                
-                    <router-link style="text-decoration-line: none" to="/Shop"
-                      >Mua ngay</router-link
+                    <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">
+                      Thời trang nam
+                    </h4>
+                    <router-link
+                      to="/Shop"
+                      style="text-decoration: none; font-size: 15px; font-weight: bold"
                     >
+                      Mua ngay
+                    </router-link>
                   </div>
-                  <div class="category-icon"><i class="fas fa-male fa-3x"></i></div>
+                  <div class="category-icon">
+                    <i class="fas fa-male fa-3x"></i>
+                  </div>
                 </div>
               </div>
+
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
                 <div
                   class="categories__item set-bg animated-category"
                   data-setbg="../../assets/img/categories/category-3.jpg"
                 >
                   <div class="categories__text">
-                    <h4>Thời trang trẻ em</h4>
+                    <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">Thời trang trẻ em</h4>
                     <!-- <p>Phong cách năng động, dễ thương cho bé yêu</p> -->
-                    <router-link style="text-decoration-line: none" to="/Shop"
+                    <router-link style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop"
                       >Mua ngay</router-link
                     >
                   </div>
@@ -434,10 +446,10 @@ onMounted(() => {
                   class="categories__item set-bg animated-category"
                   data-setbg="../../assets/img/categories/category-4.jpg"
                 >
-                  <div class="categories__text" style="margin-top: 100px;">
-                    <h4>Giày dép</h4>
+                  <div class="categories__text" style="margin-top: 100px">
+                    <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">Giày dép</h4>
                     <!-- <p>Bước đi phong cách, vững vàng mỗi ngày</p> -->
-                    <router-link style="text-decoration-line: none" to="/Shop"
+                    <router-link style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop"
                       >Mua ngay</router-link
                     >
                   </div>
@@ -449,10 +461,10 @@ onMounted(() => {
                   class="categories__item set-bg animated-category"
                   data-setbg="../../assets/img/categories/category-5.jpg"
                 >
-                  <div class="categories__text">
-                    <h4>Phụ kiện</h4>
+                  <div class="categories__text" style="margin-top: 100px">
+                    <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">Phụ kiện</h4>
                     <!-- <p>Hoàn thiện phong cách với hàng trăm phụ kiện hot</p> -->
-                    <router-link style="text-decoration-line: none" to="/Shop"
+                    <router-link  style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop"
                       >Mua ngay</router-link
                     >
                   </div>
@@ -465,55 +477,36 @@ onMounted(() => {
       </div>
     </section>
     <!-- Categories Section End -->
-   
+
     <!-- Product Section Begin -->
     <section class="product spad">
-      <div class="" style="margin-left: 100px;margin-right: 100px;">
+      <div class="" style="margin-left: 100px; margin-right: 100px">
         <!-- Flash Sale Header -->
         <div class="row align-items-center mb-4">
           <!-- Flash Sale Badge -->
           <div class="col-md-6">
             <div class="d-flex align-items-center">
-              <div class="bg-gradient-angel text-white px-3 py-1 rounded-2 me-3">
-                <small class="fw-bold">Flash sale</small>
-              </div>
-              <h3 class="mb-0 fw-bold angel-text-gradient"><i class="fa fa-flash"></i> Sản phẩm giảm giá</h3>
+              <h3 class="mb-0 fw-bold angel-text-gradient">
+                <i class="fa fa-heart"></i>Được yêu thích nhiều nhất
+              </h3>
             </div>
           </div>
-
-          <!-- Countdown Timer -->
-          <div class="col-md-4">
-            <div class="d-flex align-items-center gap-3">
-              <div class="text-center">
-                <div class="text-muted small">Ngày</div>
-                <div class="fw-bold h4 mb-0 angel-accent">{{ countdown.days.toString().padStart(2, '0') }}</div>
-              </div>
-              <div class="h5 mb-0 angel-accent">:</div>
-              <div class="text-center">
-                <div class="text-muted small">Giờ</div>
-                <div class="fw-bold h4 mb-0 angel-accent">{{ countdown.hours.toString().padStart(2, '0') }}</div>
-              </div>
-              <div class="h5 mb-0 angel-accent">:</div>
-              <div class="text-center">
-                <div class="text-muted small">Phút</div>
-                <div class="fw-bold h4 mb-0 angel-accent">{{ countdown.minutes.toString().padStart(2, '0') }}</div>
-              </div>
-              <div class="h5 mb-0 angel-accent">:</div>
-              <div class="text-center">
-                <div class="text-muted small">Giây</div>
-                <div class="fw-bold h4 mb-0 angel-accent">{{ countdown.seconds.toString().padStart(2, '0') }}</div>
-              </div>
-            </div>
-          </div>
-
           <!-- Navigation Buttons -->
           <div class="col-md-2 text-end">
-            <button class="btn btn-outline-angel rounded-circle me-2" style="width: 45px; height: 45px;"
-              @click="slideLeft" :disabled="currentSlide === 0">
+            <button
+              class="btn btn-outline-angel rounded-circle me-2"
+              style="width: 45px; height: 45px"
+              @click="slideLeft"
+              :disabled="currentSlide === 0"
+            >
               <i class="fas fa-chevron-left"></i>
             </button>
-            <button class="btn btn-outline-angel rounded-circle" style="width: 45px; height: 45px;" @click="slideRight"
-              :disabled="currentSlide >= maxSlides">
+            <button
+              class="btn btn-outline-angel rounded-circle"
+              style="width: 45px; height: 45px"
+              @click="slideRight"
+              :disabled="currentSlide >= maxSlides"
+            >
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
@@ -522,24 +515,36 @@ onMounted(() => {
         <!-- Products Slider Container -->
         <div class="product-slider-container position-relative">
           <div class="product-slider-wrapper overflow-hidden">
-            <div class="product-slider d-flex transition-all"
-              :style="{ transform: `translateX(-${currentSlide * slideWidth}px)` }">
-
-              <div class="product-slide flex-shrink-0 me-3" v-for="item in ListNewProducts" :key="item.maSp"
-                style="width: 280px;">
-                <div class="product__item">
-                  <div class="product__item__pic position-relative animated-product" style="height: 320px;">
+            <div
+              class="product-slider d-flex transition-all"
+              :style="{ transform: `translateX(-${currentSlide * slideWidth}px)` }"
+            >
+              <div
+                class="product-slide flex-shrink-0 me-3"
+                v-for="item in ListBestHotProducts"
+                :key="item.maSp"
+                style="width: 280px"
+              >
+                <div class="product__item" style="background-color: #ffffff; border-radius: 12px">
+                  <div
+                    class="product__item__pic position-relative animated-product"
+                    style="height: 320px"
+                  >
                     <img
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-                      :alt="item.tenSanPham" class="w-100 h-100" style="object-fit: cover; border-radius: 12px;" />
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                        item.productDetails[0].images[0].tenHinhAnh
+                      }`"
+                      :alt="item.tenSanPham"
+                      class="w-100 h-100"
+                      style="object-fit: cover; border-radius: 12px"
+                    />
 
                     <!-- Discount Badge on Image -->
                     <div class="discount-badge position-absolute top-0 start-0 m-2">
-                      <div class="bg-danger text-white px-2 py-1 rounded-2 d-flex align-items-center shadow-sm">
-                        <i class="fas fa-bolt me-1 animated-icon" style="font-size: 12px;"></i>
-                        <small class="fw-bold" style="font-size: 11px;">
-                          -{{ calculatePriceInfo(parsePrice(item.khoangGia), item.maSp).discountPercentage }}%
-                        </small>
+                      <div
+                        class="bg-danger text-white px-2 py-1 rounded-2 d-flex align-items-center shadow-sm"
+                      >
+                        <i class="fas fa-heart"></i>
                       </div>
                     </div>
 
@@ -552,8 +557,10 @@ onMounted(() => {
                       </li> -->
                       <li>
                         <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                          <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
-                            style="color: #EC4E79; font-size: 20px; transition: 0.3s"></span>
+                          <span
+                            :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
+                            style="color: #ec4e79; font-size: 20px; transition: 0.3s"
+                          ></span>
                         </a>
                       </li>
                       <!-- <li>
@@ -564,8 +571,15 @@ onMounted(() => {
 
                   <div class="product__item__text text-center pt-3">
                     <h6 class="mb-2">
-                      <router-link :to="`/product/${item.maSp}`"
-                        style="text-decoration-line: none; color: #333; font-size: 1.1rem; font-weight: 600;">
+                      <router-link
+                        :to="`/product/${item.maSp}`"
+                        style="
+                          text-decoration-line: none;
+                          color: #333;
+                          font-size: 1.1rem;
+                          font-weight: 600;
+                        "
+                      >
                         {{ item.tenSanPham }}
                       </router-link>
                     </h6>
@@ -576,18 +590,7 @@ onMounted(() => {
                       <div class="product__price text-danger fw-bold fs-6">
                         {{ formatPrice(parsePrice(item.khoangGia)) }}
                       </div>
-
-                      <!-- Original Price -->
-                      <small class="text-muted text-decoration-line-through">
-                        {{ formatPrice(calculatePriceInfo(parsePrice(item.khoangGia), item.maSp).originalPrice) }}
-                      </small>
-
-                      <!-- Discount Percentage -->
-                      <small class="text-success fw-bold">
-                        -{{ calculatePriceInfo(parsePrice(item.khoangGia), item.maSp).discountPercentage }}%
-                      </small>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -595,18 +598,30 @@ onMounted(() => {
           </div>
 
           <!-- Slider Indicators -->
-
         </div>
       </div>
     </section>
     <!-- Product Section End -->
 
     <!-- Banner Section Begin -->
-    <section class=" set-bg" style="position: relative; margin-bottom: 50px;">
-      <img src="../../assets/Customer/img/banner/banner-1.jpg" class="animated-banner" style="width: 100%; height:400px;">
+    <section class="set-bg" style="position: relative; margin-bottom: 50px">
+      <img
+        src="../../assets/Customer/img/banner/banner-1.jpg"
+        class="animated-banner"
+        style="width: 100%; height: 400px"
+      />
       <div class="banner-icon"><i class="fas fa-tags fa-3x"></i></div>
-      <div class="container"
-        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white;">
+      <div
+        class="container"
+        style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          text-align: center;
+          color: white;
+        "
+      >
         <div class="row">
           <div class="col-12">
             <div class="banner__slider owl-carousel">
@@ -651,8 +666,6 @@ onMounted(() => {
                         </linearGradient>
                       </defs>
 
-
-
                       <!-- Angel text with soft cursive font -->
                       <RouterLink to="/" style="text-decoration: none">
                         <text
@@ -692,23 +705,28 @@ onMounted(() => {
     <!-- Banner Section End -->
 
     <!-- Trend Section Begin -->
-    <section class="trend spad" style="margin-top: -100px;">
+    <section class="trend spad" style="margin-top: -100px">
       <div class="container-fluid px-5">
         <!-- Đang hot Section -->
         <div class="mb-5">
           <div class="row align-items-center mb-4">
             <div class="col">
-              <h3 class="fw-bold mb-0 angel-text-gradient"><i class="fas fa-fire"></i> Sản phẩm đang hot</h3>
+              <h3 class="fw-bold mb-0 angel-text-gradient">
+                <i class="fas fa-clock"></i> Sản phẩm mới nhất
+              </h3>
             </div>
-
           </div>
 
           <div class="row">
             <!-- Left Side - Advertisement Banner -->
             <div class="col-md-2">
-              <div class="position-relative overflow-hidden rounded-3 h-100 animated-banner">
-                <img src="/src/assets/images/Beige Minimalist Fashion Business Banner (1).png" alt="Fashion Banner"
-                  class="w-100 h-100 object-fit-cover" style="min-height: 580px;">
+              <div class="banner-container h-100">
+                <img
+                  src="/src/assets/images/Beige Minimalist Fashion Business Banner (1).png"
+                  alt="Fashion Banner"
+                  class="w-100 h-100 object-fit-cover"
+                  style="min-height: 580px;"
+                />
                 <div class="banner-icon"><i class="fas fa-ad fa-3x"></i></div>
               </div>
             </div>
@@ -717,18 +735,28 @@ onMounted(() => {
             <div class="col-md-10">
               <!-- First Row - 4 products -->
               <div class="row g-3 mb-4">
-                <div class="col-md-3" v-for="item in ListBestHotProducts.slice(0, 4)" :key="item.maSp">
-                  <div class="hot-product-item">
+                <div class="col-md-3" v-for="item in ListNewProducts.slice(0, 4)" :key="item.maSp">
+                  <div
+                    class="hot-product-item"
+                    style="background-color: #ffffff; border-radius: 12px"
+                  >
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                      <div
+                        class="product__item__pic position-relative animated-product"
+                        style="height: 300px; overflow: hidden; border-radius: 12px"
+                      >
                         <img
-  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-  :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
-<div class="product-icon position-absolute top-0 start-0 m-2">
-  <i class="fas fa-fire text-danger fa-2x"></i>
-</div>
+                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                            item.productDetails[0].images[0].tenHinhAnh
+                          }`"
+                          :alt="item.tenSanPham"
+                          class="img-fluid w-100 h-100"
+                          style="object-fit: cover"
+                        />
+                        <div class="product-icon position-absolute top-0 start-0 m-2">
+                          <i class="fas fa-clock text-danger fa-2x"></i>
+                        </div>
                         <!-- Hover Icons -->
                         <ul class="product__hover">
                           <li>
@@ -738,8 +766,12 @@ onMounted(() => {
                           </li>
                           <li>
                             <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
-                                style="color: #EC4E79; font-size: 18px; transition: 0.3s"></span>
+                              <span
+                                :class="[
+                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
+                                ]"
+                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
+                              ></span>
                             </a>
                           </li>
                           <li>
@@ -751,22 +783,34 @@ onMounted(() => {
 
                     <!-- Product Info -->
                     <div class="product-info text-center">
-                      <h6 class="product-title mb-2" style="font-size: 1rem; line-height: 1.3; font-weight: 600;">
-                        <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none; color: #333;">
+                      <h6
+                        class="product-title mb-2"
+                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
+                      >
+                        <router-link
+                          :to="`/product/${item.maSp}`"
+                          style="text-decoration-line: none; color: #333"
+                        >
                           {{ item.tenSanPham }}
                         </router-link>
                       </h6>
 
                       <!-- Price Section -->
                       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #EC4E79;">
+                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
                           class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
-                          @click="toggleFavoriteProduct(item.maSp)">
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
+                          style="
+                            width: 32px;
+                            height: 32px;
+                            cursor: pointer;
+                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
+                          "
+                          @click="toggleFavoriteProduct(item.maSp)"
+                        >
+                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
                         </div>
                       </div>
                     </div>
@@ -776,23 +820,33 @@ onMounted(() => {
 
               <!-- Divider -->
               <div class="text-center mb-4">
-                <hr style="border: none; border-top: 2px dashed #000;">
+                <hr style="border: none; border-top: 2px dashed #000" />
               </div>
 
               <!-- Second Row - 4 more products -->
               <div class="row g-3">
-                <div class="col-md-3" v-for="item in ListBestHotProducts.slice(4, 8)" :key="item.maSp">
-                  <div class="hot-product-item">
+                <div class="col-md-3" v-for="item in ListNewProducts.slice(4, 8)" :key="item.maSp">
+                  <div
+                    class="hot-product-item"
+                    style="background-color: #ffffff; border-radius: 12px"
+                  >
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                      <div
+                        class="product__item__pic position-relative animated-product"
+                        style="height: 300px; overflow: hidden; border-radius: 12px"
+                      >
                         <img
-  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-  :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
-<div class="product-icon position-absolute top-0 start-0 m-2">
-  <i class="fas fa-fire text-danger fa-2x"></i>
-</div>
+                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                            item.productDetails[0].images[0].tenHinhAnh
+                          }`"
+                          :alt="item.tenSanPham"
+                          class="img-fluid w-100 h-100"
+                          style="object-fit: cover"
+                        />
+                        <div class="product-icon position-absolute top-0 start-0 m-2">
+                          <i class="fas fa-clock text-danger fa-2x"></i>
+                        </div>
 
                         <!-- Hover Icons -->
                         <ul class="product__hover">
@@ -803,8 +857,12 @@ onMounted(() => {
                           </li>
                           <li>
                             <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
-                                style="color: #EC4E79; font-size: 18px; transition: 0.3s"></span>
+                              <span
+                                :class="[
+                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
+                                ]"
+                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
+                              ></span>
                             </a>
                           </li>
                           <li>
@@ -816,22 +874,34 @@ onMounted(() => {
 
                     <!-- Product Info -->
                     <div class="product-info text-center">
-                      <h6 class="product-title mb-2" style="font-size: 1rem; line-height: 1.3; font-weight: 600;">
-                        <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none; color: #333;">
+                      <h6
+                        class="product-title mb-2"
+                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
+                      >
+                        <router-link
+                          :to="`/product/${item.maSp}`"
+                          style="text-decoration-line: none; color: #333"
+                        >
                           {{ item.tenSanPham }}
                         </router-link>
                       </h6>
 
                       <!-- Price Section -->
                       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #EC4E79;">
+                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
                           class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
-                          @click="toggleFavoriteProduct(item.maSp)">
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
+                          style="
+                            width: 32px;
+                            height: 32px;
+                            cursor: pointer;
+                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
+                          "
+                          @click="toggleFavoriteProduct(item.maSp)"
+                        >
+                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
                         </div>
                       </div>
                     </div>
@@ -847,19 +917,31 @@ onMounted(() => {
           <div class="col-12">
             <div class="row g-4">
               <!-- Left Banner -->
-              <div class="col-md-6">
-                <div class="position-relative overflow-hidden rounded-4 angel-banner animated-banner">
-                  <img src="/src/assets/images/banner ngang2.jpg"
-                    alt="Angel Fashion Banner" class="w-100" style="height: 350px; object-fit: cover; ">
+              <!-- <div class="col-md-6">
+                <div
+                  class="position-relative overflow-hidden rounded-4 angel-banner animated-banner"
+                >
+                  <img
+                    src="/src/assets/images/banner ngang2.jpg"
+                    alt="Angel Fashion Banner"
+                    class="w-100"
+                    style="height: 350px; object-fit: cover"
+                  />
                   <div class="banner-icon"><i class="fas fa-female fa-3x"></i></div>
                 </div>
-              </div>
+              </div> -->
 
               <!-- Right Banner -->
-              <div class="col-md-6">
-                <div class="position-relative overflow-hidden rounded-4 angel-banner animated-banner">
-                  <img src="/src/assets/images/banner ngang.jpg"
-                    alt="Angel Fashion Trends" class="w-100" style="height: 350px; object-fit: cover;">
+              <div >
+                <div
+                  class="position-relative overflow-hidden rounded-4 angel-banner animated-banner"
+                >
+                  <img
+                    src="/src/assets/images/banner ngang.jpg"
+                    alt="Angel Fashion Trends"
+                    class="w-100"
+                    style="height: 350px; object-fit: cover"
+                  />
                   <div class="banner-icon"><i class="fas fa-star fa-3x"></i></div>
                 </div>
               </div>
@@ -872,7 +954,9 @@ onMounted(() => {
         <div class="mb-5">
           <div class="row align-items-center mb-4">
             <div class="col">
-              <h3 class="fw-bold mb-0 angel-text-gradient"><i class="fas fa-trophy text-warning "></i> Sản phẩm bán chạy</h3>
+              <h3 class="fw-bold mb-0 angel-text-gradient">
+                <i class="fas fa-chart-line text-warning"></i> Sản phẩm bán chạy
+              </h3>
             </div>
           </div>
 
@@ -880,8 +964,12 @@ onMounted(() => {
             <!-- Left Side - Advertisement Banner -->
             <div class="col-md-2">
               <div class="position-relative overflow-hidden rounded-3 h-100 animated-banner">
-                <img src="https://i.pinimg.com/1200x/17/12/e0/1712e06978a02432d83d400d6bded81a.jpg"
-                  alt="Best Seller Banner" class="w-100 h-100 object-fit-cover" style="min-height: 580px;">
+                <img
+                  src="https://i.pinimg.com/1200x/17/12/e0/1712e06978a02432d83d400d6bded81a.jpg"
+                  alt="Best Seller Banner"
+                  class="w-100 h-100 object-fit-cover"
+                  style="min-height: 580px"
+                />
                 <div class="banner-icon"><i class="fas fa-ad fa-3x"></i></div>
               </div>
             </div>
@@ -890,18 +978,32 @@ onMounted(() => {
             <div class="col-md-10">
               <!-- First Row - 4 products -->
               <div class="row g-3 mb-4">
-                <div class="col-md-3" v-for="item in ListBestSellerProducts.slice(0, 4)" :key="item.maSp">
-                  <div class="hot-product-item">
+                <div
+                  class="col-md-3"
+                  v-for="item in ListBestSellerProducts.slice(0, 4)"
+                  :key="item.maSp"
+                >
+                  <div
+                    class="hot-product-item"
+                    style="background-color: #ffffff; border-radius: 12px"
+                  >
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                      <div
+                        class="product__item__pic position-relative animated-product"
+                        style="height: 300px; overflow: hidden; border-radius: 12px"
+                      >
                         <img
-  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-  :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
-<div class="product-icon position-absolute top-0 start-0 m-2">
-  <i class="fas fa-trophy text-warning fa-2x"></i>
-</div>
+                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                            item.productDetails[0].images[0].tenHinhAnh
+                          }`"
+                          :alt="item.tenSanPham"
+                          class="img-fluid w-100 h-100"
+                          style="object-fit: cover"
+                        />
+                        <div class="product-icon position-absolute top-0 start-0 m-2">
+                          <i class="fas fa-chart-line text-warning fa-2x"></i>
+                        </div>
 
                         <!-- Hover Icons -->
                         <ul class="product__hover">
@@ -912,8 +1014,12 @@ onMounted(() => {
                           </li>
                           <li>
                             <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
-                                style="color: #EC4E79; font-size: 18px; transition: 0.3s"></span>
+                              <span
+                                :class="[
+                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
+                                ]"
+                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
+                              ></span>
                             </a>
                           </li>
                           <li>
@@ -925,22 +1031,34 @@ onMounted(() => {
 
                     <!-- Product Info -->
                     <div class="product-info text-center">
-                      <h6 class="product-title mb-2" style="font-size: 1rem; line-height: 1.3; font-weight: 600;">
-                        <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none; color: #333;">
+                      <h6
+                        class="product-title mb-2"
+                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
+                      >
+                        <router-link
+                          :to="`/product/${item.maSp}`"
+                          style="text-decoration-line: none; color: #333"
+                        >
                           {{ item.tenSanPham }}
                         </router-link>
                       </h6>
 
                       <!-- Price Section -->
                       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #EC4E79;">
+                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
                           class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
-                          @click="toggleFavoriteProduct(item.maSp)">
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
+                          style="
+                            width: 32px;
+                            height: 32px;
+                            cursor: pointer;
+                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
+                          "
+                          @click="toggleFavoriteProduct(item.maSp)"
+                        >
+                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
                         </div>
                       </div>
                     </div>
@@ -950,22 +1068,36 @@ onMounted(() => {
 
               <!-- Divider -->
               <div class="text-center mb-4">
-                <hr style="border: none; border-top: 2px dashed #000;">
+                <hr style="border: none; border-top: 2px dashed #000" />
               </div>
 
               <!-- Second Row - 4 more products -->
               <div class="row g-3">
-                <div class="col-md-3" v-for="item in ListBestSellerProducts.slice(4, 8)" :key="item.maSp">
-                  <div class="hot-product-item">
+                <div
+                  class="col-md-3"
+                  v-for="item in ListBestSellerProducts.slice(4, 8)"
+                  :key="item.maSp"
+                >
+                  <div
+                    class="hot-product-item"
+                    style="background-color: #ffffff; border-radius: 12px"
+                  >
                     <!-- Product Image with Hover Effects -->
                     <div class="text-center position-relative mb-3">
-                      <div class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                      <div
+                        class="product__item__pic position-relative animated-product"
+                        style="height: 300px; overflow: hidden; border-radius: 12px"
+                      >
                         <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-                          :alt="item.tenSanPham" class="img-fluid w-100 h-100" style="object-fit: cover;">
-                        <div class="product-icon position-absolute bottom-0 end-0 m-2">
-                          <i class="fas fa-trophy text-warning fa-2x"></i>
+                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                            item.productDetails[0].images[0].tenHinhAnh
+                          }`"
+                          :alt="item.tenSanPham"
+                          class="img-fluid w-100 h-100"
+                          style="object-fit: cover"
+                        />
+                        <div class="product-icon position-absolute top-0 left-0 m-2">
+                          <i class="fas fa-chart-line text-warning fa-2x"></i>
                         </div>
 
                         <!-- Hover Icons -->
@@ -977,8 +1109,12 @@ onMounted(() => {
                           </li>
                           <li>
                             <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
-                                style="color: #EC4E79; font-size: 18px; transition: 0.3s"></span>
+                              <span
+                                :class="[
+                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
+                                ]"
+                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
+                              ></span>
                             </a>
                           </li>
                           <li>
@@ -990,22 +1126,34 @@ onMounted(() => {
 
                     <!-- Product Info -->
                     <div class="product-info text-center">
-                      <h6 class="product-title mb-2" style="font-size: 1rem; line-height: 1.3; font-weight: 600;">
-                        <router-link :to="`/product/${item.maSp}`" style="text-decoration-line: none; color: #333;">
+                      <h6
+                        class="product-title mb-2"
+                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
+                      >
+                        <router-link
+                          :to="`/product/${item.maSp}`"
+                          style="text-decoration-line: none; color: #333"
+                        >
                           {{ item.tenSanPham }}
                         </router-link>
                       </h6>
 
                       <!-- Price Section -->
                       <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #EC4E79;">
+                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
                           {{ formatPrice(parsePrice(item.khoangGia)) }}
                         </span>
                         <div
                           class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="width: 32px; height: 32px; cursor: pointer; box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);"
-                          @click="toggleFavoriteProduct(item.maSp)">
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white;"></i>
+                          style="
+                            width: 32px;
+                            height: 32px;
+                            cursor: pointer;
+                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
+                          "
+                          @click="toggleFavoriteProduct(item.maSp)"
+                        >
+                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
                         </div>
                       </div>
                     </div>
@@ -1097,11 +1245,10 @@ onMounted(() => {
           </div>
         </div> -->
       </div>
-
     </section>
     <!-- Trend Section End -->
   </div>
-  <CompareProduct />
+  <!-- <CompareProduct /> -->
 </template>
 
 <style>
@@ -1236,28 +1383,28 @@ onMounted(() => {
 
 /* Angel Theme Colors and Styles */
 .bg-gradient-angel {
-  background: linear-gradient(135deg, #EC4E79, #ABA2B7, #5CCAE7) !important;
+  background: linear-gradient(135deg, #ec4e79, #aba2b7, #5ccae7) !important;
 }
 
 .angel-text-gradient {
-  background: linear-gradient(135deg, #EC4E79, #ABA2B7);
+  background: linear-gradient(135deg, #ec4e79, #aba2b7);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .angel-accent {
-  color: #EC4E79 !important;
+  color: #ec4e79 !important;
 }
 
 .btn-outline-angel {
-  border-color: #EC4E79;
-  color: #EC4E79;
+  border-color: #ec4e79;
+  color: #ec4e79;
 }
 
 .btn-outline-angel:hover {
-  background-color: #EC4E79;
-  border-color: #EC4E79;
+  background-color: #ec4e79;
+  border-color: #ec4e79;
   color: white;
 }
 
@@ -1335,5 +1482,4 @@ onMounted(() => {
 .product__item__pic:hover .product-icon {
   transform: scale(1.2);
 }
-
 </style>

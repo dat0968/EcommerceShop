@@ -1,3 +1,86 @@
+
+<script setup>
+import { useRouter, RouterLink } from 'vue-router'
+import Cookies from 'js-cookie'
+import NavigationUserReview from './ui/navigationUserReview.vue'
+import WheelRandomCode from './specicals/WheelRandomCode.vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Swal from 'sweetalert2'
+import { emitter } from '@/stores/eventBus'
+const router = useRouter()
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+const isLoggedIn = ref(false)
+const numberCart = ref(0)
+const getUrlAPI = ref(GetApiUrl())
+const checkLogin = async () => {
+  if (accessToken.value && refreshToken.value) {
+    const result = await validateToken(accessToken.value, refreshToken.value)
+    isLoggedIn.value = result.isValid
+    if (result.isValid) {
+      accessToken.value = result.newAccessToken
+      Cookies.set('accessToken', accessToken.value)
+    } else {
+      Cookies.remove('accessToken')
+      Cookies.remove('refreshToken')
+    }
+  } else {
+    isLoggedIn.value = false
+  }
+}
+async function fetchCart() {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid) {
+    accessToken.value = validatetoken.newAccessToken
+    const readToken = decodeToken(accessToken.value)
+    const response = await fetch(`${getUrlAPI.value}/api/Cart/${readToken.IdUser}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!response.ok) {
+      throw new Error('Failed to fetchCart')
+    }
+    const result = await response.json()
+    numberCart.value = result.length
+  }
+}
+
+
+const handleLogout = () => {
+  Swal.fire({
+    title: 'Bạn có chắc chắn muốn đăng xuất?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Đăng xuất',
+    cancelButtonText: 'Hủy',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Cookies.remove('accessToken')
+      Cookies.remove('refreshToken')
+      isLoggedIn.value = false
+      Swal.fire({
+        title: 'Đăng xuất thành công!',
+        icon: 'success',
+        confirmButtonColor: '#3085d6',
+        timer: 1500,
+      }).then(() => {
+        router.push('/Login')
+      })
+    }
+  })
+}
+onMounted(() => {
+  checkLogin()
+  fetchCart()
+  emitter.on('cart-updated', fetchCart)
+})
+</script>
 <template>
   <div>
     <!-- Offcanvas Menu Begin -->
@@ -138,11 +221,7 @@
                         >
                       </li>
                       <li class="dropdown-submenu position-relative">
-                        <a
-                          class="dropdown-item text-danger"
-                        >
-                          Tài khoản của tôi
-                        </a>
+                        <a class="dropdown-item text-danger"> Tài khoản của tôi </a>
                         <ul class="dropdown-menu">
                           <li>
                             <router-link to="/profile" class="dropdown-item"
@@ -152,6 +231,11 @@
                           <li>
                             <router-link to="/MyAddresses" class="dropdown-item"
                               >Địa chỉ</router-link
+                            >
+                          </li>
+                          <li>
+                            <router-link to="/Order" class="dropdown-item"
+                              >Đơn hàng</router-link
                             >
                           </li>
                         </ul>
@@ -178,7 +262,7 @@
                     <span
                       class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                     >
-                      2
+                      {{ numberCart }}
                       <span class="visually-hidden">sản phẩm trong giỏ hàng</span>
                     </span>
                   </router-link>
@@ -200,64 +284,6 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
-import Cookies from 'js-cookie'
-import { validateToken } from '@/utils/auth'
-import NavigationUserReview from './ui/navigationUserReview.vue'
-import WheelRandomCode from './specicals/WheelRandomCode.vue'
-
-import Swal from 'sweetalert2'
-const router = useRouter()
-const accessToken = ref(Cookies.get('accessToken'))
-const refreshToken = ref(Cookies.get('refreshToken'))
-const isLoggedIn = ref(false)
-
-const checkLogin = async () => {
-  if (accessToken.value && refreshToken.value) {
-    const result = await validateToken(accessToken.value, refreshToken.value)
-    isLoggedIn.value = result.isValid
-    if (result.isValid) {
-      Cookies.set('accessToken', result.newAccessToken)
-    } else {
-      Cookies.remove('accessToken')
-      Cookies.remove('refreshToken')
-    }
-  } else {
-    isLoggedIn.value = false
-  }
-}
-
-const handleLogout = () => {
-  Swal.fire({
-    title: 'Bạn có chắc chắn muốn đăng xuất?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Đăng xuất',
-    cancelButtonText: 'Hủy',
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Cookies.remove('accessToken')
-      Cookies.remove('refreshToken')
-      isLoggedIn.value = false
-      Swal.fire({
-        title: 'Đăng xuất thành công!',
-        icon: 'success',
-        confirmButtonColor: '#3085d6',
-        timer: 1500,
-      }).then(() => {
-        router.push('/Login')
-      })
-    }
-  })
-}
-onMounted(() => {
-  checkLogin()
-})
-</script>
 
 <style scoped>
 .header__menu {

@@ -389,7 +389,7 @@ async function submitEdit() {
           router.push('/Login')
           return
         } else {
-          throw new Error('HandleCreateAddress Failed')
+          throw new Error('HandleEditAddress Failed')
         }
       }
       const result = await response.json()

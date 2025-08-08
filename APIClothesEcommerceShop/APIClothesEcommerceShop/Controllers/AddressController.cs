@@ -23,6 +23,12 @@ namespace APIClothesEcommerceShop.Controllers
             var addresses = await addressRepository.GetByCustomerAsync(Makh);
             return Ok(addresses);
         }
+        [HttpGet("GetByCustomer_DefaultAddressAsync/{Makh}")]
+        public async Task<IActionResult> GetByCustomer_DefaultAddressAsync(int Makh)
+        {
+            var addresses = await addressRepository.GetByCustomer_DefaultAddressAsync(Makh);
+            return Ok(addresses);
+        }
         [HttpPost]
         public async Task<IActionResult> Create(AddressesRequestDTO model)
         {
@@ -88,6 +94,7 @@ namespace APIClothesEcommerceShop.Controllers
                 await addressRepository.DeleteAsync(id);
                 return Ok(new
                 {
+                    Success = true,
                     Message = "Đã xóa địa chỉ"
                 });
             }

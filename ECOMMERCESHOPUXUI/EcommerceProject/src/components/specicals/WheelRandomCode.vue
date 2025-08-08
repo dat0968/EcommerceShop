@@ -182,7 +182,7 @@ const initializeWheel = async () => {
       await patchToApi(
         '/WheelCoupon/update-last-login-streak',
         '',
-        ConfigsRequest.getSkipAuthConfig(),
+        ConfigsRequest.getSkipAuthConfig()
       )
       localStorage.setItem('wheel_last_spin_date', today)
     } catch (error) {
@@ -268,7 +268,7 @@ const spin = async () => {
 
   // Determine if it's a blank spin (10% chance)
   const blankIndex = prizes.value.findIndex((p) => p.isBlank)
-  const willBeBlank = Math.random() < 0.9 // ? 90% chance of landing on blank
+  const willBeBlank = Math.random() < 0.1 // ? 90% chance of landing on blank
 
   let targetIndex
   let couponData = null

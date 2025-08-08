@@ -3,6 +3,7 @@ using APIClothesEcommerceShop.DTO.Addresses;
 using APIClothesEcommerceShop.Models;
 using DocumentFormat.OpenXml.Bibliography;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.Repositories.Address
 {
@@ -12,6 +13,33 @@ namespace APIClothesEcommerceShop.Repositories.Address
         public AddressRepository(EcommerceShopContext db)
         {
             this.db = db;
+        }
+        public async Task<AddressesResponseDTO> GetByCustomer_DefaultAddressAsync(int maKh)
+        {
+            try
+            {
+                var data = await db.Diachis
+                .Where(d => d.MaKh == maKh && d.MacDinh)
+                .Select(p => new AddressesResponseDTO
+                {
+                    ID = p.ID,
+                    Tinh = p.Tinh,
+                    QuanHuyen = p.QuanHuyen,
+                    XaPhuong = p.XaPhuong,
+                    diachichitiet = p.diachichitiet,
+                    MacDinh = p.MacDinh,
+                    Hoten = p.Hoten,
+                    SDT = p.SDT,
+                    MaKh = p.MaKh
+                })
+                .FirstOrDefaultAsync();
+                return data;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi khi lấy danh sách địa chỉ của khách hàng có mã {maKh}.", ex);
+            }
         }
         public async Task<IEnumerable<AddressesResponseDTO>> GetByCustomerAsync(int maKh)
         {
@@ -32,6 +60,7 @@ namespace APIClothesEcommerceShop.Repositories.Address
                         SDT = p.SDT,
                         MaKh = maKh
                     })
+                    .OrderByDescending(p => p.MacDinh)
                     .ToListAsync();
                 return data;
             }
@@ -46,6 +75,10 @@ namespace APIClothesEcommerceShop.Repositories.Address
         {
             try
             {
+                if(diachi.MacDinh == true)
+                {
+                    await UpdateDefaultAddress(null, null);
+                }
                 db.Diachis.Add(diachi);
                 await db.SaveChangesAsync();
                 return diachi;
@@ -55,21 +88,21 @@ namespace APIClothesEcommerceShop.Repositories.Address
                 throw new Exception("Lỗi khi thêm địa chỉ.", ex);
             }
         }
-        public async Task<Diachi?> UpdateDefaultAddress(int? id, bool defaultAddress)
+        public async Task<Diachi?> UpdateDefaultAddress(int? id, bool? defaultAddress)
         {
             try
             {
                 var existing = new Diachi();
                 if (id.HasValue)
                 {
-                    existing = await db.Diachis.FindAsync(id);
+                    existing = db.Diachis.Local.FirstOrDefault(p => p.ID == id) ?? await db.Diachis.FindAsync(id);
                     if (existing == null)
                         return null;
                     if (existing.MacDinh == false && existing.MacDinh != defaultAddress)
                     {
                         var findAddress = await db.Diachis.FirstOrDefaultAsync(p => p.MacDinh == true);
                         findAddress.MacDinh = false;
-                        existing.MacDinh = defaultAddress;
+                        existing.MacDinh = defaultAddress.Value;
                     }
                 }
                 else
@@ -95,11 +128,11 @@ namespace APIClothesEcommerceShop.Repositories.Address
         {
             try
             {
-                var existing = await db.Diachis.FindAsync(diachi.ID);
+                var existing = db.Diachis.Local.FirstOrDefault(p => p.ID == diachi.ID) ?? await db.Diachis.FindAsync(diachi.ID);
                 if (existing == null)
                     return null;
 
-                await UpdateDefaultAddress(diachi.ID, existing.MacDinh);
+                await UpdateDefaultAddress(diachi.ID, diachi.MacDinh);
                 existing.Tinh = diachi.Tinh;
                 existing.QuanHuyen = diachi.QuanHuyen;
                 existing.XaPhuong = diachi.XaPhuong;

@@ -14,6 +14,6 @@ export const useCartStore = defineStore('cart', {
     },
     clearCart() {
       this.selectedItems = []
-    }
+    },
   }
 })

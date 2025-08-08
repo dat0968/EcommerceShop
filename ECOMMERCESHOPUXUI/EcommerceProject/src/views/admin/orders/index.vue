@@ -46,6 +46,16 @@ statusOrders.value = [
   'Đã hủy',
   'Hoàn trả/Hoàn tiền',
 ]
+const countByStatus = computed(() => {
+  const counts = {}
+  for (const status of statusOrders.value) {
+    if (status.toLowerCase() === 'đang xử lý vnpay') continue
+    counts[status] = listOrders.value.filter(
+      (order) => order.tinhTrang?.toLowerCase() === status.toLowerCase()
+    ).length
+  }
+  return counts
+})
 // Fetch dữ liệu từ API
 const fetchOrders = async () => {
   try {
@@ -374,8 +384,24 @@ const exportOrder = async (order) => {
       <div class="fw-semibold text-primary mt-2">Đang tải dữ liệu...</div>
     </div>
     <!-- Table -->
-    <div v-else class="table-responsive" style="border: solid 0.5px; border-radius: 10px">
-      <table class="table table-hover table-bordered">
+    <div v-else class="table-responsive" >
+      <!-- Thống kê số lượng theo trạng thái -->
+      <div
+        class="status-summary mb-4"
+        style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px"
+      >
+        <div
+          v-for="status in statusOrders.filter((s) => s.toLowerCase() !== 'đang xử lý vnpay')"
+          :key="status"
+          class="card text-center p-2"
+          style="min-height: 80px"
+        >
+          <div style="font-size: 0.75rem; line-height: 1rem">{{ status }}</div>
+          <div class="fw-bold" style="font-size: 0.9rem">{{ countByStatus[status] }} đơn</div>
+        </div>
+      </div>
+
+      <table class="table table-hover table-bordered" >
         <thead class="table-light">
           <tr>
             <th style="border-right: 1px solid #dee2e6">Mã đơn hàng</th>

@@ -10,7 +10,7 @@ import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import { jwtDecode } from 'jwt-decode'
-
+import { emitter } from '@/stores/eventBus'
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
@@ -62,7 +62,7 @@ const isShortDescription = computed(() => {
 
 const addFavoriteProduct = async () => {
   try {
-    const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
+    const response = await fetch(getUrlAPI.value + '/api/Favorite/CheckFavoriteProduct', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ const toggleFavoriteProduct = async () => {
     
     if (isFavorited.value) {
       // Remove from favorites
-      const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
+      const response = await fetch(getUrlAPI.value + '/api/Favorite/DeleteFavoriteProducts', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ const toggleFavoriteProduct = async () => {
       }
     } else {
       // Add to favorites
-      const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+      const response = await fetch(getUrlAPI.value + '/api/Favorite/AddFavoriteProduct', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +231,7 @@ const fetchAPI = async () => {
       ),
     ]
 
-    selectedColor.value = colors.value[0]
+    selectedColor.value = colors.value[0] || ''
   } catch (error) {
     console.error('Error fetching product:', error)
   }
@@ -277,7 +277,7 @@ const sizes = computed(() => {
 
 watch(sizes, (newSizes) => {
   if (newSizes.length > 0) {
-    selectedSize.value = newSizes[0]
+    selectedSize.value = newSizes[0] || ''
   }
 })
 
@@ -535,10 +535,10 @@ const addToCart = async () => {
       const readToken = decodeToken(accessToken.value)
       const matched = product.value.productDetails.find(
         (p) =>
-          p.mauSac?.toLowerCase() === selectedColor.value?.toLowerCase() &&
-          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase(),
+          (p.mauSac != null ? p.mauSac?.toLowerCase() : '' ) === selectedColor.value?.toLowerCase() &&
+          (p.kichThuoc != null ? p.kichThuoc?.toLowerCase() : '') === selectedSize.value?.toLowerCase(),
       )
-
+      console.log(product.value.productDetails)
       const content = {
         maKh: readToken.IdUser,
         maCtsp: matched.maCtsp,
@@ -581,6 +581,7 @@ const addToCart = async () => {
           showConfirmButton: false,
           timerProgressBar: true,
         })
+        emitter.emit('cart-updated')
       }
     }
   } catch (error) {
