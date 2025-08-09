@@ -1,20 +1,19 @@
 <script setup>
-import '../../assets/admin/images/favicon.ico'
-import '../../assets/admin/plugins/chartist-js/chartist.min.css'
 import 'bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css'
-import 'bootstrap/dist/css/bootstrap.min.css'
-import '../../assets/admin/css/icons.css'
-import '../../assets/admin/css/style.css'
 import 'jquery'
-import '@popperjs/core'
 import 'bootstrap'
-import '../../assets/Admin/js/detect.js'
-import '../../assets/Admin/js/jquery.slimscroll.js'
-import '../../assets/Admin/js/sidebar-menu.js'
-import '../../assets/Admin/js/init/to-do-list-init.js'
+import '@popperjs/core'
 import 'bootstrap-datepicker'
 import 'bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js'
-import '../../assets/Admin/js/main.js'
+import '@/assets/Admin/css/icons.css'
+import '@/assets/Admin/css/style.css'
+import '@/assets/Admin/js/detect.js'
+import '@/assets/Admin/js/jquery.slimscroll.js'
+import '@/assets/Admin/js/sidebar-menu.js'
+import '@/assets/Admin/js/init/to-do-list-init.js'
+import '@/assets/Admin/images/favicon.ico'
+import '@/assets/Admin/plugins/chartist-js/chartist.min.css'
+import '@/assets/Admin/js/main.js'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Cookies from 'js-cookie'
@@ -230,7 +229,7 @@ onMounted(() => {
                           <li class="media xp-msg">
                             <img
                               class="mr-3 align-self-center rounded-circle"
-                              src="../../assets/admin/images/topbar/user-message-1.jpg"
+                              src="@/assets/Admin/images/topbar/user-message-1.jpg"
                               alt="Generic placeholder image"
                             />
                             <div class="media-body">
@@ -250,7 +249,7 @@ onMounted(() => {
                           <li class="media xp-msg">
                             <img
                               class="mr-3 align-self-center rounded-circle"
-                              src="../../assets/admin/images/topbar/user-message-2.jpg"
+                              src="@/assets/Admin/images/topbar/user-message-2.jpg"
                               alt="Generic placeholder image"
                             />
                             <div class="media-body">
@@ -270,7 +269,7 @@ onMounted(() => {
                           <li class="media xp-msg">
                             <img
                               class="mr-3 align-self-center rounded-circle"
-                              src="../../assets/admin/images/topbar/user-message-3.jpg"
+                              src="@/assets/Admin/images/topbar/user-message-3.jpg"
                               alt="Generic placeholder image"
                             />
                             <div class="media-body">
@@ -310,7 +309,7 @@ onMounted(() => {
                         aria-haspopup="true"
                         aria-expanded="false"
                         ><img
-                          src="../../assets/admin/images/topbar/Avtdf.jpg"
+                          src="@/assets/Admin/images/topbar/Avtdf.jpg"
                           alt="user-profile"
                           class="rounded-circle img-fluid"
                         /><span class="xp-user-live"></span
