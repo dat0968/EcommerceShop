@@ -96,7 +96,6 @@
                 <li><a href="#">Blog</a></li>
                 <li><RouterLink to="/contactus">Liên hệ</RouterLink></li>
                 <li><a href="#">Câu hỏi thường gặp</a></li>
-                <TestCodeQr />
               </ul>
             </div>
           </div>
@@ -163,11 +162,9 @@
 </template>
 
 <script>
-import TestCodeQr from './tests/TestCodeQr.vue'
 
 export default {
   name: 'AppFooter',
-  components: { TestCodeQr },
 }
 </script>
 
