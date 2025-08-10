@@ -92,10 +92,10 @@
             <div class="footer__widget">
               <h6>Liên kết nhanh</h6>
               <ul>
-                <li><a href="#">Giới thiệu</a></li>
-                <li><a href="#">Blog</a></li>
+                <li><RouterLink to="/about-us">Giới thiệu</RouterLink></li>
+                <li><RouterLink to="/blog">Blog</RouterLink></li>
                 <li><RouterLink to="/contactus">Liên hệ</RouterLink></li>
-                <li><a href="#">Câu hỏi thường gặp</a></li>
+                <li><RouterLink to="/faq">Câu hỏi thường gặp</RouterLink></li>
               </ul>
             </div>
           </div>
