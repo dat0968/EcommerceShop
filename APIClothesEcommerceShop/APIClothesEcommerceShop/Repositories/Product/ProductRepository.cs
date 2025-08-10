@@ -143,7 +143,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                     MoTa = GetProductById.MoTa,
                     NgayTao = GetProductById.NgayTao,
                     HasVariants = GetProductById.Chitietsanphams.Where(p => p.IsActive == true && (string.IsNullOrEmpty(p.MauSac) == true && string.IsNullOrEmpty(p.KichThuoc) == true)).Count() > 0 ? false : true,
-                    LuotXem = GetProductById.LuotXem,
+                    LuotYeuThich = GetProductById.Sanphamyeuthichs.Count(),
                     CategoryDetails = GetProductById.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO
                     {
                         MaDanhMucCha = p.MaDanhMucCha,

@@ -24,6 +24,8 @@ const useSavedAddress = ref(false)
 const addresses = ref([])
 const getUrlAPI = ref(GetApiUrl())
 const payment = ref('COD')
+const loading = ref(false)
+const selectedAddress = ref('')
 const userInfo = ref({
   hoTen: '',
   soDienThoai: '',
@@ -33,9 +35,64 @@ const userInfo = ref({
   districtId: '',
   wardCode: '',
 })
+async function fetchMyaddress() {
+  try {
+    loading.value = true
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (!validatetoken.isValid) {
+      router.push('/Login')
+      return
+    }
+    accessToken.value = validatetoken.newAccessToken
+    const readToken = decodeToken(accessToken.value)
+    const response = await fetch(getUrlAPI.value + `/api/Address/${readToken.IdUser}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + accessToken.value,
+      },
+    })
+    if (!response.ok) {
+      if (response.status >= 400 && response.status <= 403) {
+        router.push('/Login')
+        return
+      } else {
+        throw new Error('HandleGetAddress Failed')
+      }
+    }
+    const result = await response.json()
+    addresses.value = result
+    addresses.value.forEach(async (element) => {
+      if (element.macDinh) {
+        userInfo.value.hoTen = element.hoten
+        userInfo.value.soDienThoai = element.sdt
+        userInfo.value.diaChi = element.diachichitiet
+        const province = provinces.value.find(
+          (p) => p.ProvinceName.toLowerCase() === element.tinh.toLowerCase()
+        )
+
+        userInfo.value.provinceId = province?.ProvinceID || ''
+        await fetchDistrict()
+        const district = districts.value.find(
+          (p) => p.DistrictName.toLowerCase() === element.quanHuyen.toLowerCase()
+        )
+
+        userInfo.value.districtId = district?.DistrictID || ''
+        await fetchWard()
+        const ward = wards.value.find(
+          (p) => p.WardName.toLowerCase() === element.xaPhuong.toLowerCase()
+        )
+        userInfo.value.wardCode = ward?.WardCode || ''
+      }
+    })
+  } catch (error) {
+    console.log(error)
+  } finally {
+    loading.value = false
+  }
+}
 
 const isOpenModelAddress = ref(false)
-const selectedAddress = ref('')
 const errors = ref({
   hoTen: '',
   soDienThoai: '',
@@ -45,20 +102,6 @@ const errors = ref({
   wardCode: '',
   payment: '',
 })
-
-async function fetchAdrress() {
-  const response = await fetch(`https://localhost:7217/api/Address/${readToken.value.IdUser}`, {
-    method: 'GET',
-    headers: {
-      'Content-type': 'application/json',
-      Token: `${token}`,
-    },
-  })
-  const result = await response.json()
-  if (response.ok) {
-    addresses.value = result
-  }
-}
 
 async function fetchProvince() {
   const responseProvince = await fetch(
@@ -93,6 +136,7 @@ async function fetchDistrict() {
   const resultDistrict = await responseDistrict.json()
   if (resultDistrict.code === 200) {
     districts.value = resultDistrict.data
+    console.log(districts.value)
     wards.value = []
   }
 }
@@ -128,7 +172,7 @@ onMounted(async () => {
     userInfo.value.soDienThoai = readToken.value.Phone
   }
   await fetchProvince()
-  await fetchAdrress()
+  await fetchMyaddress()
 })
 
 selectedItems.value = cartStore.selectedItems
@@ -155,18 +199,34 @@ watch(useSavedAddress, (newValue) => {
     isOpenModelAddress.value = false
   }
 })
-function saveAddress() {
-  if (selectedAddress.value == '' && useSavedAddress.value) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Vui lòng chọn một địa chỉ!',
-      timer: 2000,
-      showConfirmButton: false,
-    })
-    return
+async function saveAddress() {
+  try {
+    loading.value = true;
+    userInfo.value.hoTen = selectedAddress.value.hoten
+    userInfo.value.soDienThoai = selectedAddress.value.sdt
+    userInfo.value.diaChi = selectedAddress.value.diachichitiet
+    const province = provinces.value.find(
+      (p) => p.ProvinceName.toLowerCase() === selectedAddress.value.tinh.toLowerCase()
+    )
+
+    userInfo.value.provinceId = province?.ProvinceID || ''
+    await fetchDistrict()
+    const district = districts.value.find(
+      (p) => p.DistrictName.toLowerCase() === selectedAddress.value.quanHuyen.toLowerCase()
+    )
+
+    userInfo.value.districtId = district?.DistrictID || ''
+    await fetchWard()
+    const ward = wards.value.find(
+      (p) => p.WardName.toLowerCase() === selectedAddress.value.xaPhuong.toLowerCase()
+    )
+    userInfo.value.wardCode = ward?.WardCode || ''
+    useSavedAddress.value = false
+  } catch (error) {
+    console.log(error)
+  }finally{
+    loading.value = false;
   }
-  userInfo.value.diaChi = selectedAddress.value
-  isOpenModelAddress.value = false
 }
 const CalculateFee = async () => {
   let service = 0
@@ -458,9 +518,18 @@ async function HandlePayment() {
     Swal.fire('Đã hủy', 'Đơn hàng chưa được thanh toán', 'info')
   }
 }
+const selectedAddressId = ref(null)
+async function selectAddress(dc) {
+  selectedAddressId.value = dc.id
+  selectedAddress.value = dc
+}
 </script>
 <template>
   <div>
+    <div v-if="loading" class="spinner-overlay">
+      <div class="spinner"></div>
+    </div>
+
     <div
       class="modal show"
       tabindex="-1"
@@ -503,23 +572,39 @@ async function HandlePayment() {
 
           <!-- Body -->
           <div class="modal-body">
-            <div v-for="(address, index) in addresses" :key="index">
-              <label>
-                <input
-                  type="radio"
-                  name="selectedAddress"
-                  :value="address.diachichitiet"
-                  v-model="selectedAddress"
-                />
-                {{ address.diachichitiet }}
-              </label>
-              <br />
+            <div class="container mt-4">
+              <div
+                v-for="dc in addresses"
+                :key="dc.id"
+                class="border rounded p-3 mb-3"
+                :style="{
+                  backgroundColor: selectedAddressId === dc.id ? '#d4edda' : 'white',
+                  borderColor: selectedAddressId === dc.id ? '#28a745' : '#dee2e6',
+                  cursor: 'pointer',
+                }"
+                @click="selectAddress(dc)"
+              >
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <strong>{{ dc.hoten }}</strong>
+                    <span class="ms-2 text-muted">{{ dc.sdt }}</span>
+                  </div>
+                </div>
+
+                <div class="mt-2 text-muted">
+                  {{ dc.diachichitiet }}
+                </div>
+
+                <div class="mt-2">
+                  <span v-if="dc.macDinh" class="badge bg-light text-danger border">Mặc định</span>
+                </div>
+              </div>
             </div>
           </div>
 
           <!-- Footer -->
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="saveAddress">Lưu</button>
+            <button type="button" class="btn btn-primary" @click="saveAddress()">Lưu</button>
           </div>
         </div>
       </div>
@@ -737,6 +822,38 @@ async function HandlePayment() {
 
 
 <style scoped>
+.spinner {
+  border: 4px solid #f3f3f3; /* màu viền nhạt */
+  border-top: 4px solid #3498db; /* màu viền trên quay vòng */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .discount__content > div {
   display: flex;
   gap: 10px;

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import CreateCombo from '../Combo/Create.vue'
 import EditCombo from '../Combo/Edit.vue'
 import DetailCombo from '../Combo/Details.vue'
@@ -16,11 +16,58 @@ const TotalPages = ref(0)
 const CurrentPage = ref(1)
 const valueSearch = ref('')
 const discountFilter = ref('all') // Bộ lọc mức giảm giá
-const sortOrder = ref('asc') // Thứ tự sắp xếp (asc: A-Z, desc: Z-A)
+const sortOrder = ref('default') // Thứ tự sắp xếp (asc: A-Z, desc: Z-A)
 let accesstoken = Cookies.get('accessToken')
 let refreshtoken = Cookies.get('refreshToken')
 const role = ref('')
 const getUrlAPI = ref('https://localhost:7217')
+const activeTab = ref('all') // Tab mặc định là 'all'
+
+// Hàm kiểm tra validation
+const validateDiscount = (phanTramGiam, soTienGiam) => {
+  if (phanTramGiam !== null && phanTramGiam !== undefined) {
+    if (phanTramGiam < 0) {
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Phần trăm giảm không được nhỏ hơn 0%',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return false;
+    }
+    if (phanTramGiam > 100) {
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Phần trăm giảm không được lớn hơn 100%',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return false;
+    }
+  }
+  if (soTienGiam !== null && soTienGiam !== undefined) {
+    if (soTienGiam < 0) {
+      Swal.fire({
+        title: 'Lỗi',
+        text: 'Số tiền giảm không được nhỏ hơn 0 VNĐ',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return false;
+    }
+  }
+  return true;
+};
+
+// Hàm gọi từ component con để validate trước khi lưu
+const handleSave = async (comboData) => {
+  if (!validateDiscount(comboData.phanTramGiam, comboData.soTienGiam)) {
+    return false;
+  }
+  // Logic lưu dữ liệu (giả định gọi API hoặc xử lý trong component con)
+  return true;
+};
+
 const isActive = (ngayKetThuc) => {
   return ngayKetThuc && new Date(ngayKetThuc) >= new Date();
 };
@@ -49,7 +96,7 @@ const checkToken = () => {
 async function fetchCombo() {
   try {
     let url = `${getUrlAPI.value}/api/Combos?page=${CurrentPage.value}&search=${encodeURIComponent(valueSearch.value)}`;
-    
+
     console.log('Đang lấy danh sách combo với URL:', url);
     console.log('Access token:', accesstoken);
     const response = await fetch(url, {
@@ -59,24 +106,24 @@ async function fetchCombo() {
         'Authorization': `Bearer ${accesstoken}`,
       },
     });
-    
+
     console.log('Trạng thái phản hồi:', response.status);
     if (!response.ok) {
       throw new Error(`Lỗi khi lấy dữ liệu: ${response.status} - ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     console.log('Phản hồi API:', data);
-    
+
     if (!data || !data.data) {
       throw new Error('Dữ liệu API không hợp lệ hoặc không có danh sách combo');
     }
-    
+
     listCombo.value = data.data || [];
     TotalPages.value = data.totalPages || 1;
     CurrentPage.value = data.currentPage || 1;
     console.log('Danh sách combo:', listCombo.value);
-    
+
     // Áp dụng bộ lọc và sắp xếp
     applyFilter();
   } catch (error) {
@@ -120,9 +167,20 @@ async function fetchProducts() {
   }
 }
 
+
+// Biến để kiểm soát sắp xếp mặc định
+const defaultSortByDate = ref(true);
+
 // Hàm lọc và sắp xếp combo
 function applyFilter() {
   let combos = [...listCombo.value];
+
+  // Lọc theo tab tình trạng
+  if (activeTab.value === 'active') {
+    combos = combos.filter(combo => isActive(combo.ngayKetThuc));
+  } else if (activeTab.value === 'expired') {
+    combos = combos.filter(combo => !isActive(combo.ngayKetThuc));
+  }
 
   // Lọc theo mức giảm giá
   if (discountFilter.value !== 'all') {
@@ -138,27 +196,34 @@ function applyFilter() {
     });
   }
 
-  // Sắp xếp theo maCombo (giảm dần để combo mới lên đầu) rồi theo tenCombo (A-Z hoặc Z-A)
-  combos.sort((a, b) => {
-    // Sắp xếp theo maCombo giảm dần (combo mới có maCombo lớn hơn)
-    
-    // Sắp xếp theo tenCombo dựa trên sortOrder
-    return sortOrder.value === 'asc'
-      ? a.tenCombo.localeCompare(b.tenCombo, 'vi', { sensitivity: 'base' })
-      : b.tenCombo.localeCompare(a.tenCombo, 'vi', { sensitivity: 'base' });
-  });
+  // Sắp xếp theo ngày kết thúc (mới nhất lên đầu) làm mặc định
+  if (defaultSortByDate.value) {
+    combos.sort((a, b) => {
+      const dateA = new Date(a.ngayKetThuc || a.ngayBatDau || '1970-01-01');
+      const dateB = new Date(b.ngayKetThuc || b.ngayBatDau || '1970-01-01');
+      return dateB - dateA; // Sắp xếp giảm dần theo ngày
+    });
+  }
+
+  // Sắp xếp theo tenCombo dựa trên sortOrder nếu có, chỉ khi người dùng chọn
+  if (sortOrder.value == 'asc' && !defaultSortByDate.value) {
+    combos.sort((a, b) => a.tenCombo.localeCompare(b.tenCombo, 'vi', { sensitivity: 'base' }));
+  } else if (sortOrder.value === 'desc' && !defaultSortByDate.value) {
+    combos.sort((a, b) => b.tenCombo.localeCompare(a.tenCombo, 'vi', { sensitivity: 'base' }));
+  }
+  else if (sortOrder.value === 'default' && !defaultSortByDate.value) {
+    combos.sort((a, b) => b.tenCombo.localeCompare(a.tenCombo, 'vi', { sensitivity: 'base' }));
+  }
 
   filteredCombos.value = combos;
-
-  // if (filteredCombos.value.length === 0) {
-  //   Swal.fire({
-  //     title: 'Không tìm thấy combo',
-  //     text: 'Không có combo nào phù hợp với bộ lọc hiện tại.',
-  //     icon: 'info',
-  //     confirmButtonText: 'OK'
-  //   });
-  // }
 }
+
+// Cập nhật khi sortOrder thay đổi
+watch(sortOrder, (newVal) => {
+  defaultSortByDate.value = false; // Tắt sắp xếp mặc định theo ngày khi người dùng chọn sắp xếp tên
+  applyFilter();
+});
+
 
 const ChangePage = (page) => {
   if (page >= 1 && page <= TotalPages.value) {
@@ -184,7 +249,7 @@ async function removeCombo(id) {
     }).then(async (result) => {
       if (result.isConfirmed) {
         const response = await fetch(`${getUrlAPI.value}/api/Combos/${id}/Cancel`, {
-method: 'PUT',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${accesstoken}`,
@@ -217,6 +282,12 @@ onMounted(() => {
   fetchCombo();
   fetchProducts();
   checkToken();
+  defaultSortByDate.value = true; // Đảm bảo sắp xếp theo ngày khi vào trang
+});
+
+// Watch activeTab to reapply filter when changed
+watch(activeTab, () => {
+  ReturnCombo();
 });
 </script>
 
@@ -228,20 +299,11 @@ onMounted(() => {
     <!-- Thanh tìm kiếm, bộ lọc và sắp xếp -->
     <div class="row g-3 mb-3 align-items-center">
       <div class="col-md-3">
-        <input
-          type="text"
-          class="form-control shadow-sm border-primary bg-white"
-          placeholder="🔍 Nhập tên combo..."
-          v-model="valueSearch"
-          @input="ReturnCombo()"
-        />
+        <input type="text" class="form-control shadow-sm border-primary bg-white" placeholder="🔍 Nhập tên combo..."
+          v-model="valueSearch" @input="ReturnCombo()" />
       </div>
       <div class="col-md-3">
-        <select
-          class="form-select shadow-sm border-primary"
-          v-model="discountFilter"
-          @change="ReturnCombo()"
-        >
+        <select class="form-select shadow-sm border-primary" v-model="discountFilter" @change="ReturnCombo()">
           <option value="all">Tất cả mức giảm</option>
           <option value="percent">Giảm theo phần trăm</option>
           <option value="fixed">Giảm theo số tiền</option>
@@ -249,11 +311,8 @@ onMounted(() => {
         </select>
       </div>
       <div class="col-md-3">
-        <select
-          class="form-select shadow-sm border-primary"
-          v-model="sortOrder"
-          @change="ReturnCombo()"
-        >
+        <select class="form-select shadow-sm border-primary" v-model="sortOrder" @change="ReturnCombo()">
+          <option value="default">Sắp xếp</option> <!-- Thêm tùy chọn mặc định -->
           <option value="asc">Sắp xếp: A đến Z</option>
           <option value="desc">Sắp xếp: Z đến A</option>
         </select>
@@ -262,17 +321,28 @@ onMounted(() => {
 
     <!-- Nút thêm combo -->
     <div class="mb-4">
-      <button
-        type="button"
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#exampleModal"
-      >
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
         ➕ Thêm combo
       </button>
     </div>
-    <CreateCombo />
-    
+    <CreateCombo :validateDiscount="validateDiscount" :handleSave="handleSave" />
+
+    <!-- Tabs cho tình trạng -->
+    <div class="status-tabs mb-4">
+      <button
+        v-for="tab in [
+          { value: 'all', label: 'Tất cả' },
+          { value: 'active', label: 'Đang hoạt động' },
+          { value: 'expired', label: 'Hết hạn' }
+        ]"
+        :key="tab.value"
+        :class="['tab-button', { active: activeTab === tab.value }]"
+        @click="activeTab = tab.value; ReturnCombo()"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
     <!-- Bảng dữ liệu -->
     <div class="table-responsive">
       <table class="table table-bordered table-hover" style="text-align: center">
@@ -290,17 +360,12 @@ onMounted(() => {
           </tr>
         </thead>
         <tbody>
-<tr v-for="combo in filteredCombos" :key="combo.maCombo">
+          <tr v-for="combo in filteredCombos" :key="combo.maCombo">
             <td class="text-center">{{ combo.maCombo }}</td>
             <td class="text-center">{{ combo.tenCombo }}</td>
             <td class="text-center">
-              <img
-                :src="getApiUrl + '/HinhAnh/AnhCombo/' + combo.hinh"
-                alt="Combo Image"
-                width="50"
-                height="50"
-                style="object-fit: cover; border-radius: 5px"
-              />
+              <img :src="getApiUrl + '/HinhAnh/AnhCombo/' + combo.hinh" alt="Combo Image" width="50" height="50"
+                style="object-fit: cover; border-radius: 5px" />
             </td>
             <td class="text-center">{{ combo.soLuong }}</td>
             <td class="text-center">
@@ -313,34 +378,23 @@ onMounted(() => {
             <td class="text-center">{{ formatDate(combo.ngayBatDau) }}</td>
             <td class="text-center">{{ formatDate(combo.ngayKetThuc) }}</td>
             <td class="text-center">
-              {{ new Date(combo.ngayKetThuc) < new Date() ? 'Hết hạn' : 'Đang hoạt động' }}
-            </td>
+              {{ new Date(combo.ngayKetThuc) < new Date() ? 'Hết hạn' : 'Đang hoạt động' }} </td>
             <td class="text-center">
-              <div class="action-buttons">
-                <div v-if="combo.ngayKetThuc && new Date(combo.ngayKetThuc) >= new Date()">
-                  <button
-                    type="button"
-                    data-bs-toggle="modal"
-                    :data-bs-target="`#comboEditModal_${combo.maCombo}`"
-                    class="btn btn-sm btn-warning me-1 mb-2"
-                  >
+              <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
+                <template v-if="combo.ngayKetThuc && new Date(combo.ngayKetThuc) >= new Date()">
+                  <button type="button" data-bs-toggle="modal" :data-bs-target="`#comboEditModal_${combo.maCombo}`"
+                    class="btn btn-sm btn-warning">
                     Sửa
                   </button>
-                  <EditCombo :Combo="combo" :ListProduct="ListProduct" />
-                  <button
-                    @click="removeCombo(combo.maCombo)"
-                    class="btn btn-danger btn-sm me-1"
-                  >
+                  <EditCombo :Combo="combo" :ListProduct="ListProduct" :validateDiscount="validateDiscount" :handleSave="handleSave" />
+
+                  <button @click="removeCombo(combo.maCombo)" class="btn btn-danger btn-sm">
                     Xóa
                   </button>
-                </div>
-                <button
-                  type="button"
-                  data-bs-toggle="modal"
-                  :data-bs-target="`#comboDetailModal_${combo.maCombo}`"
-                  class="btn btn-sm btn-info me-1"
-                      style="width: 100px;"
-                >
+                </template>
+
+                <button type="button" data-bs-toggle="modal" :data-bs-target="`#comboDetailModal_${combo.maCombo}`"
+                  class="btn btn-sm btn-info text-white">
                   Chi tiết
                 </button>
                 <DetailCombo :Combo="combo" :ListProduct="ListProduct" />
@@ -358,15 +412,10 @@ onMounted(() => {
           <li class="page-item" :class="{ disabled: CurrentPage === 1 }">
             <a class="page-link" @click="ChangePage(CurrentPage - 1)" tabindex="-1">«</a>
           </li>
-          <li
-            v-for="page in TotalPages"
-            :key="page"
-            :class="{ active: page === CurrentPage }"
-            class="page-item"
-          >
+          <li v-for="page in TotalPages" :key="page" :class="{ active: page === CurrentPage }" class="page-item">
             <a class="page-link" @click="ChangePage(page)"> {{ page }} </a>
           </li>
-<li class="page-item" :class="{ disabled: CurrentPage === TotalPages }">
+          <li class="page-item" :class="{ disabled: CurrentPage === TotalPages }">
             <a class="page-link" @click="ChangePage(CurrentPage + 1)">»</a>
           </li>
         </ul>
@@ -380,9 +429,11 @@ onMounted(() => {
   cursor: pointer;
   user-select: none;
 }
+
 .sortable:hover {
   color: #f8d210;
 }
+
 /* CSS cho cột Thao tác */
 .action-buttons {
   display: flex;
@@ -397,17 +448,52 @@ onMounted(() => {
 
 /* Thêm hiệu ứng hover cho tất cả các nút */
 .btn-warning:hover {
-  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
-  background-color: #be9629 !important; /* Đổi màu nền sáng hơn */
+  color: #fff !important;
+  background-color: #be9629 !important;
 }
 
 .btn-danger:hover {
-  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
-  background-color: #dc3545 !important; /* Đổi màu nền đậm hơn */
+  color: #fff !important;
+  background-color: #dc3545 !important;
 }
 
 .btn-info:hover {
-  color: #fff !important; /* Đổi màu chữ thành trắng khi hover */
-  background-color: #17a2b8 !important; /* Đổi màu nền đậm hơn */
+  color: #fff !important;
+  background-color: #17a2b8 !important;
+}
+
+/* CSS cho tab giống MyOrders.vue */
+.status-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.25rem;
+  background: white;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button {
+  padding: 0.75rem 0.5rem;
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.tab-button:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+.tab-button.active {
+  background-color: #3b82f6;
+  color: white;
 }
 </style>

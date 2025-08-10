@@ -31,7 +31,7 @@ const { isModalVisible } = useModalVisibility({
 })
 </script>
 <template>
-  <div style="background-color:#F5F3EA ;">
+  <div style="background-color:#fffcfa">
     <HeaderComponent />
     <router-view :key="$route.fullPath" />
     <chatbot></chatbot>

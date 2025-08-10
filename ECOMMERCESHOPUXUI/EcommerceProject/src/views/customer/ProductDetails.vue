@@ -10,6 +10,7 @@ import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import { jwtDecode } from 'jwt-decode'
+import { emitter } from '@/stores/eventBus'
 import TryOnProduct from '@/components/specicals/TryOnProduct.vue' // Import TryOnProduct
 
 const route = useRoute()
@@ -63,7 +64,7 @@ const isShortDescription = computed(() => {
 
 const addFavoriteProduct = async () => {
   try {
-    const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
+    const response = await fetch(getUrlAPI.value + '/api/Favorite/CheckFavoriteProduct', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +100,7 @@ const toggleFavoriteProduct = async () => {
     
     if (isFavorited.value) {
       // Remove from favorites
-      const response = await fetch('https://localhost:7217/api/Favorite/DeleteFavoriteProducts', {
+      const response = await fetch(getUrlAPI.value + '/api/Favorite/DeleteFavoriteProducts', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -136,7 +137,7 @@ const toggleFavoriteProduct = async () => {
       }
     } else {
       // Add to favorites
-      const response = await fetch('https://localhost:7217/api/Favorite/AddFavoriteProduct', {
+      const response = await fetch(getUrlAPI.value + '/api/Favorite/AddFavoriteProduct', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +233,7 @@ const fetchAPI = async () => {
       ),
     ]
 
-    selectedColor.value = colors.value[0]
+    selectedColor.value = colors.value[0] || ''
   } catch (error) {
     console.error('Error fetching product:', error)
   }
@@ -278,7 +279,7 @@ const sizes = computed(() => {
 
 watch(sizes, (newSizes) => {
   if (newSizes.length > 0) {
-    selectedSize.value = newSizes[0]
+    selectedSize.value = newSizes[0] || ''
   }
 })
 
@@ -536,10 +537,10 @@ const addToCart = async () => {
       const readToken = decodeToken(accessToken.value)
       const matched = product.value.productDetails.find(
         (p) =>
-          p.mauSac?.toLowerCase() === selectedColor.value?.toLowerCase() &&
-          p.kichThuoc?.toLowerCase() === selectedSize.value?.toLowerCase(),
+          (p.mauSac != null ? p.mauSac?.toLowerCase() : '' ) === selectedColor.value?.toLowerCase() &&
+          (p.kichThuoc != null ? p.kichThuoc?.toLowerCase() : '') === selectedSize.value?.toLowerCase(),
       )
-
+      console.log(product.value.productDetails)
       const content = {
         maKh: readToken.IdUser,
         maCtsp: matched.maCtsp,
@@ -582,6 +583,7 @@ const addToCart = async () => {
           showConfirmButton: false,
           timerProgressBar: true,
         })
+        emitter.emit('cart-updated')
       }
     }
   } catch (error) {
@@ -673,7 +675,7 @@ watch(
         </nav>
         <div class="row">
             <!-- Left Column - Product Images -->
-            <div class="col-md-6">
+            <div class="col-md-6" >
                 <!-- Main Product Image -->
                 <div class="mb-3 text-center">
                     <img 
@@ -685,8 +687,8 @@ watch(
                 </div>
 
                 <!-- Thumbnail Images -->
-                <div class="row g-2" v-if="allImages.length > 0">
-                    <div class="col-3" v-for="(image, index) in allImages.slice(0, 4)" :key="index">
+                <div class="row g-2" v-if="allImages.length > 0" >
+                    <div class="col-3" v-for="(image, index) in allImages.slice(0, 4)" :key="index" >
                         <img 
                             :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
                             :alt="`Thumbnail ${index + 1}`" 
@@ -701,7 +703,7 @@ watch(
             <!-- Middle Column - Product Info -->
             <div class="col-md-4">
                 <!-- Product Title -->
-                <h1 class="h2 fw-bold mb-3">{{ product.tenSanPham }}</h1>
+                <h1 class="h2 fw-bold mb-3" style="color: black;">{{ product.tenSanPham }}</h1>
 
                 <!-- Product Status and Brand -->
                 <div class="mb-3">
@@ -768,22 +770,38 @@ watch(
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="d-grid gap-2 mb-4">
-                    <button class="btn btn-outline-danger" @click="addToCart" :disabled="maxQuantity <= 0">
-                        <i class="fas fa-shopping-cart me-2"></i>THÊM VÀO GIỎ
-                    </button>
-       
-                    <button style="background-color: #FBE3D7;"
-                        @click="toggleFavoriteProduct"
-                        :class="['btn', 'btn-sm', isFavorited ? 'btn-outline-danger' : 'btn-outline-danger']">
-                        <i :class="['fas', isFavorited ? 'fa-heart' : 'fa-heart']"></i>
-                        {{ isFavorited ? 'Đã yêu thích' : 'Yêu thích' }}
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" @click="addToCompare">
-                        <i class="bi bi-arrow-left-right"></i> Thêm vào so sánh
-                    </button>
+                <div style="display: grid; gap: 8px; margin-bottom: 1.5rem;"> 
+    <!-- Nút Thêm vào giỏ -->
+    <button @click="addToCart" :disabled="maxQuantity <= 0" 
+            style="background-color: red; color: white; border: 1px solid red; padding: 12px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 16px;" 
+            @mouseover="$event.target.style.backgroundColor='#dc3545'; $event.target.style.borderColor='#dc3545';" 
+            @mouseout="$event.target.style.backgroundColor='red'; $event.target.style.borderColor='red';"> 
+        <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i>THÊM VÀO GIỎ 
+    </button> 
+    
+    <!-- Hàng nút Yêu thích và So sánh -->
+    <div style="display: flex; gap: 8px;"> 
+        <!-- Nút Yêu thích -->
+        <button @click="toggleFavoriteProduct" 
+                :style="isFavorited ? 
+                    'background-color: transparent; color: #007bff; border: 1px solid #007bff; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;' : 
+                    'background-color: transparent; color: red; border: 1px solid red; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;'" 
+                @mouseover="isFavorited ? ($event.target.style.backgroundColor='#007bff', $event.target.style.color='white') : ($event.target.style.backgroundColor='red', $event.target.style.color='white')" 
+                @mouseout="isFavorited ? ($event.target.style.backgroundColor='transparent', $event.target.style.color='#007bff') : ($event.target.style.backgroundColor='transparent', $event.target.style.color='red')"> 
+            <i class="fas fa-heart" style="margin-right: 4px; color: red;"></i> 
+            {{ isFavorited ? 'Đã thích' : 'Yêu thích' }} ({{ favoriteCount || 0 }}) 
+        </button> 
+        
+        <!-- Nút So sánh -->
+        <button @click="addToCompare" 
+                style="background-color: transparent; color: #007bff; border: 1px solid #007bff; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" 
+                @mouseover="$event.target.style.backgroundColor='#007bff'; $event.target.style.color='white';" 
+                @mouseout="$event.target.style.backgroundColor='transparent'; $event.target.style.color='#007bff';"> 
+            <i class="bi bi-arrow-left-right" style="margin-right: 4px;"></i> So sánh 
+        </button> 
+    </div> 
+</div>
                     <TryOnProduct :product="productForTryOn" v-if="productForTryOn" />
-                </div>
 
                 <!-- Product Features -->
                 <div class="mb-4">

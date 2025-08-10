@@ -231,10 +231,11 @@ app.UseStaticFiles(new StaticFileOptions
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
     }
 });
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseRouting();
 app.UseCors("MyPolicy");
+app.UseRouting();
+
 
 // Middleware for mobile headers and logging
 app.Use(async (context, next) =>

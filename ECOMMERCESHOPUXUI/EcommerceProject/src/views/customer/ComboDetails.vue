@@ -10,6 +10,7 @@ import Swal from 'sweetalert2'
 import ReviewProductCombo from '@/components/pages/customers/reviews/ReviewProductCombo.vue'
 import TryOnProduct from '@/components/specicals/TryOnProduct.vue' // Import TryOnProduct
 
+import { emitter } from '@/stores/eventBus'
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
@@ -212,6 +213,7 @@ async function addToCart() {
         showConfirmButton: false,
         timerProgressBar: true,
       })
+      emitter.emit('cart-updated')
     }
     console.log(content)
   }

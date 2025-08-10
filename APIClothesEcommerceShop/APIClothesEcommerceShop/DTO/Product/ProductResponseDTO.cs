@@ -11,7 +11,7 @@ namespace APIClothesEcommerceShop.DTO.Product
         public bool? HasVariants { get; set; }  
         public string KhoangGia { get; set; }
         public DateTime NgayTao { get; set; }
-        public int LuotXem { get; set; }
+        public int LuotYeuThich { get; set; }
         public int SoLuong { get; set; }
         public string? AnhDaiDien { get; set; }
         public virtual ICollection<CategoryDetailsResponseDTO> CategoryDetails { get; set; } = new List<CategoryDetailsResponseDTO>();

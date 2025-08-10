@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Services;
 using Azure;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VNPAY.NET;
@@ -66,9 +67,9 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet("Callback")]
         public async Task<ActionResult<string>> Callback()
         {
+            var paymentResult = _vnpay.GetPaymentResult(Request.Query);
             if (Request.QueryString.HasValue)
             {
-                var paymentResult = _vnpay.GetPaymentResult(Request.Query);
                 try
                 {
                     var resultDescription = $"{paymentResult.PaymentResponse.Description}. {paymentResult.TransactionStatus.Description}.";
@@ -92,7 +93,7 @@ namespace APIClothesEcommerceShop.Controllers
                     return BadRequest(ex.Message);
                 }
             }
-
+            await orderRepository.CancelOrders((int)paymentResult.PaymentId, "Đã hủy", "Khách hủy giao dịch VNPAY");
             return NotFound("Không tìm thấy thông tin thanh toán.");
         }
     }

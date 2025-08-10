@@ -301,7 +301,7 @@ onMounted(async () => {
 
             <div v-else class="row">
               <div class="col-lg-3 col-md-4 col-sm-6 mix" v-for="product in products" :key="product.id">
-                <div class="product__item">
+                <div class="product__item" style="background-color: #ffffff; border-radius: 12px">
                   <div class="product__item__pic">
                     <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${product.image}`"
                       alt="Hình ảnh sản phẩm" v-if="product.image != undefined" />

@@ -10,6 +10,7 @@
             class="col-xl-3 col-lg-2"
             style="width: 300px; margin-right: 50px; padding-bottom: 20px"
           >
+            <!-- Logo SVG -->
             <svg
               viewBox="0 0 700 250"
               role="img"
@@ -43,7 +44,6 @@
                   </stop>
                 </linearGradient>
               </defs>
-              <!-- Left wing - smooth curves -->
               <path
                 class="wing left"
                 d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z"
@@ -53,7 +53,6 @@
                 d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
                 opacity="0.5"
               />
-              <!-- Right wing - smooth curves -->
               <path
                 class="wing right"
                 d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z"
@@ -63,7 +62,6 @@
                 d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
                 opacity="0.5"
               />
-              <!-- Angel text with soft cursive font -->
               <RouterLink to="/" style="text-decoration: none">
                 <text
                   x="50%"
@@ -77,24 +75,21 @@
               </RouterLink>
             </svg>
           </div>
+
           <div class="col-xl-6 col-lg-7">
             <nav class="header__menu">
               <ul>
-                <li>
-                  <RouterLink to="/">Trang Chủ</RouterLink>
-                </li>
-                <li>
-                  <RouterLink to="/Shop">Cửa Hàng</RouterLink>
-                </li>
-                <li>
-                  <RouterLink to="/chat">Liên Hệ</RouterLink>
-                </li>
+                <li><RouterLink to="/">Trang Chủ</RouterLink></li>
+                <li><RouterLink to="/Shop">Cửa Hàng</RouterLink></li>
+                <li><RouterLink to="/chat">Liên Hệ</RouterLink></li>
               </ul>
             </nav>
           </div>
+
           <div class="col-lg-3">
-            <div class="header__right" style="margin-top: 10px;">
+            <div class="header__right" style="margin-top: 10px">
               <div class="header__right__auth">
+                <!-- Chưa đăng nhập -->
                 <template v-if="!isLoggedIn">
                   <div class="dropdown">
                     <button
@@ -106,13 +101,9 @@
                       Tài khoản
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
-                      <li>
-                        <router-link to="/Login" class="dropdown-item">Đăng nhập</router-link>
-                      </li>
-                      <li>
-                        <router-link to="/Register" class="dropdown-item">Đăng ký</router-link>
-                      </li>
-                      <li><hr class="dropdown-divider"></li>
+                      <li><router-link to="/Login" class="dropdown-item">Đăng nhập</router-link></li>
+                      <li><router-link to="/Register" class="dropdown-item">Đăng ký</router-link></li>
+                      <li><hr class="dropdown-divider" /></li>
                       <li>
                         <router-link to="/favoriteproduct" class="dropdown-item">
                           <i class="fa fa-heart me-2"></i>Yêu thích
@@ -123,12 +114,12 @@
                           <i class="fa fa-shopping-bag me-2"></i>Giỏ hàng
                         </router-link>
                       </li>
-                      <li>
-                        <WheelRandomCode class="dropdown-item" />
-                      </li>
+                      <li><WheelRandomCode class="dropdown-item" /></li>
                     </ul>
                   </div>
                 </template>
+
+                <!-- Đã đăng nhập -->
                 <template v-else>
                   <div class="dropdown">
                     <button
@@ -146,44 +137,43 @@
                       <span></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                      <li>
-                        <router-link to="/profile" class="dropdown-item"
-                          >Cập nhật thông tin</router-link
-                        >
-                      </li>
-                      <li><hr class="dropdown-divider"></li>
-                      <li>
-                        <router-link to="/favoriteproduct" class="dropdown-item">
-                          <i class="fa fa-heart me-2"></i>Yêu thích
-                        </router-link>
-                      </li>
-                      <li>
-                        <router-link to="/Cart" class="dropdown-item">
-                          <i class="fa fa-shopping-bag me-2"></i>Giỏ hàng
-                        </router-link>
-                      </li>
-                      <li>
-                        <router-link to="/Order" class="dropdown-item">
-                          <i class="fa fa-box me-2"></i>Đơn hàng
-                        </router-link>
-                      </li>
-                      <li>
-                        <NavigationUserReview class="dropdown-item" />
-                      </li>
-                      <li>
-                        <WheelRandomCode class="dropdown-item" />
-                      </li>
-                      <li><hr class="dropdown-divider"></li>
-                      <li>
-                        <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"
-                          >Đăng xuất</a
-                        >
-                      </li>
+                      <li><router-link to="/profile" class="dropdown-item">Cập nhật thông tin</router-link></li>
+                      <li><router-link to="/favoriteproduct" class="dropdown-item"><i class="fa fa-heart me-2"></i>Yêu thích</router-link></li>
+                      <li><router-link to="/Cart" class="dropdown-item"><i class="fa fa-shopping-bag me-2"></i>Giỏ hàng</router-link></li>
+                      <li><router-link to="/Order" class="dropdown-item"><i class="fa fa-box me-2"></i>Đơn hàng</router-link></li>
+                      <li><NavigationUserReview class="dropdown-item" /></li>
+                      <li><WheelRandomCode class="dropdown-item" /></li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li><a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger">Đăng xuất</a></li>
                     </ul>
                   </div>
                 </template>
               </div>
-              </div>
+
+              <!-- Icon yêu thích + giỏ hàng -->
+              <ul class="header__right__widget">
+                <li>
+                  <router-link to="/favoriteproduct" class="position-relative">
+                    <i class="fa fa-heart fs-5"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      2
+                      <span class="visually-hidden">sản phẩm yêu thích</span>
+                    </span>
+                  </router-link>
+                </li>
+                <li>
+                  <router-link to="/Cart" class="position-relative">
+                    <i class="fa fa-shopping-bag fs-5"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                      {{ numberCart }}
+                      <span class="visually-hidden">sản phẩm trong giỏ hàng</span>
+                    </span>
+                  </router-link>
+                </li>
+                <li v-if="isLoggedIn"><NavigationUserReview /></li>
+                <li><WheelRandomCode /></li>
+              </ul>
+            </div>
           </div>
         </div>
         <div id="mobile-menu-wrap"></div>
@@ -193,64 +183,103 @@
   </div>
 </template>
 
-<script setup>
+<script>
 import { ref, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
-import { validateToken } from '@/utils/auth'
-import NavigationUserReview from '@/components/ui/NavigationUserReview.vue'
-import WheelRandomCode from '@/components/specicals/WheelRandomCode.vue'
-
+import NavigationUserReview from '@/ui/NavigationUserReview.vue'
+import WheelRandomCode from '@/specicals/WheelRandomCode.vue'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
 import Swal from 'sweetalert2'
-const router = useRouter()
-const accessToken = ref(Cookies.get('accessToken'))
-const refreshToken = ref(Cookies.get('refreshToken'))
-const isLoggedIn = ref(false)
+import { emitter } from '@/stores/eventBus'
 
-const checkLogin = async () => {
-  if (accessToken.value && refreshToken.value) {
-    const result = await validateToken(accessToken.value, refreshToken.value)
-    isLoggedIn.value = result.isValid
-    if (result.isValid) {
-      Cookies.set('accessToken', result.newAccessToken)
-    } else {
-      Cookies.remove('accessToken')
-      Cookies.remove('refreshToken')
+export default {
+  components: {
+    NavigationUserReview,
+    WheelRandomCode,
+    RouterLink
+  },
+  setup() {
+    const router = useRouter()
+    const accessToken = ref(Cookies.get('accessToken'))
+    const refreshToken = ref(Cookies.get('refreshToken'))
+    const isLoggedIn = ref(false)
+    const numberCart = ref(0)
+    const getUrlAPI = ref(GetApiUrl())
+
+    const checkLogin = async () => {
+      if (accessToken.value && refreshToken.value) {
+        const result = await validateToken(accessToken.value, refreshToken.value)
+        isLoggedIn.value = result.isValid
+        if (result.isValid) {
+          accessToken.value = result.newAccessToken
+          Cookies.set('accessToken', accessToken.value)
+        } else {
+          Cookies.remove('accessToken')
+          Cookies.remove('refreshToken')
+        }
+      } else {
+        isLoggedIn.value = false
+      }
     }
-  } else {
-    isLoggedIn.value = false
-  }
-}
 
-const handleLogout = () => {
-  Swal.fire({
-    title: 'Bạn có chắc chắn muốn đăng xuất?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Đăng xuất',
-    cancelButtonText: 'Hủy',
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Cookies.remove('accessToken')
-      Cookies.remove('refreshToken')
-      isLoggedIn.value = false
+    const fetchCart = async () => {
+      const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+      if (validatetoken.isValid) {
+        accessToken.value = validatetoken.newAccessToken
+        const readToken = decodeToken(accessToken.value)
+        const response = await fetch(`${getUrlAPI.value}/api/Cart/${readToken.IdUser}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        if (!response.ok) throw new Error('Failed to fetchCart')
+        const result = await response.json()
+        numberCart.value = result.length
+      }
+    }
+
+    const handleLogout = () => {
       Swal.fire({
-        title: 'Đăng xuất thành công!',
-        icon: 'success',
-        confirmButtonColor: '#3085d6',
-        timer: 1500,
-      }).then(() => {
-        router.push('/Login')
+        title: 'Bạn có chắc chắn muốn đăng xuất?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Đăng xuất',
+        cancelButtonText: 'Hủy',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Cookies.remove('accessToken')
+          Cookies.remove('refreshToken')
+          isLoggedIn.value = false
+          Swal.fire({
+            title: 'Đăng xuất thành công!',
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+            timer: 1500,
+          }).then(() => {
+            router.push('/Login')
+          })
+        }
       })
     }
-  })
+
+    onMounted(() => {
+      checkLogin()
+      fetchCart()
+      emitter.on('cart-updated', fetchCart)
+    })
+
+    return {
+      isLoggedIn,
+      numberCart,
+      handleLogout
+    }
+  }
 }
-onMounted(() => {
-  checkLogin()
-})
 </script>
+
 
 <style>
 .header__menu {
@@ -315,6 +344,24 @@ onMounted(() => {
 .header__right {
   display: flex;
   align-items: center;
-  justify-content:space-evenly;
+  justify-content: space-evenly;
+}
+/* Cho phép dropdown con hiện ra bên phải */
+.dropdown-submenu {
+  position: relative;
+}
+
+.dropdown-submenu > .dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -0.1rem;
+  display: none;
+}
+
+.dropdown-submenu:hover > .dropdown-menu {
+  display: block;
+}
+.dropdown-item::after {
+  content: none !important;
 }
 </style>

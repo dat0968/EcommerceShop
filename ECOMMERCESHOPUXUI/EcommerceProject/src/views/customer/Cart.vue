@@ -8,6 +8,7 @@ import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import { useCartStore } from '@/stores/cartStore'
 const cartStore = useCartStore()
+import { emitter } from '@/stores/eventBus'
 const listCart = ref([])
 const router = useRouter()
 const getUrlAPI = ref(GetApiUrl())
@@ -84,6 +85,7 @@ async function removeCart(id) {
       timerProgressBar: true,
     })
     cartStore.deleteItemsCart(id)
+    emitter.emit('cart-updated')
     await fetchCart()
   }
 }
@@ -118,7 +120,7 @@ function confirmCart() {
 <template>
   <div >
     <!-- Shop Cart Section Begin -->
-    <section class="shop-cart spad"style="margin-bottom: 200px;">
+    <section class="shop-cart spad" style="margin-bottom: 200px;">
       <div class="container">
         <div class="row">
           <div class="col-lg-9">

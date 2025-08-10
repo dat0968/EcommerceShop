@@ -67,7 +67,7 @@ namespace APIClothesEcommerceShop.Repositories.Home
                     TenSanPham = p.TenSanPham,
                     MoTa = p.MoTa,
                     NgayTao = p.NgayTao,
-                    LuotXem = p.LuotXem,
+                    LuotYeuThich = p.Sanphamyeuthichs.Count(),
                     KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
                         ? (p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia) == p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)
                             ? $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
@@ -86,7 +86,7 @@ namespace APIClothesEcommerceShop.Repositories.Home
                             TenHinhAnh = p.TenHinhAnh
                         }).ToList(),
                     }).ToList(),
-                }).OrderByDescending(d => d.LuotXem).Take(8).ToListAsync();
+                }).OrderByDescending(d => d.LuotYeuThich).Take(8).ToListAsync();
                 return products;
             }
             catch (Exception ex)

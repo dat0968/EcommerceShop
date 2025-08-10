@@ -387,7 +387,7 @@ public class CustomerRepository : ICustomerRepository
         if (customerDto.IsActive != existingCustomer.IsActive)
             existingCustomer.IsActive = customerDto.IsActive;
 
-        existingCustomer.NgayTao = DateTime.Now; 
+        //existingCustomer.NgayTao = DateTime.Now; 
 
         // Xử lý hình ảnh
         if (customerDto.HinhDaiDien != null)
