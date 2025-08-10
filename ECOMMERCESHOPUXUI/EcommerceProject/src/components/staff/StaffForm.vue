@@ -32,7 +32,7 @@
                             <span class="error-message" v-if="errors.hinh">{{ errors.hinh }}</span>
                         </div>
                     </div>
-                    
+
                     <!-- Họ tên -->
                     <div class="form-group">
                         <label for="hoTen">Họ tên:</label>
@@ -117,7 +117,7 @@
                     </div>
 
                     <!-- Mật khẩu -->
-                    <div class="form-group password-group">
+                    <div class="form-group password-group d-none">
                         <label for="matKhau">Mật khẩu:</label>
                         <div class="password-input-container">
                             <input :type="showPassword ? 'text' : 'password'" id="matKhau" v-model="formData.matKhau"
@@ -255,7 +255,7 @@ export default {
                 }
                 accessToken.value = validatetoken.newAccessToken
                 const response = await axios.get(`${apiUrl.value}/api/Staff/chucvus`, {
-                    headers: {'Authorization': 'Bearer ' + accessToken.value}
+                    headers: { 'Authorization': 'Bearer ' + accessToken.value }
                 });
                 chucvus.value = response.data;
             } catch (error) {
@@ -274,70 +274,80 @@ export default {
 
         // Lấy thông tin nhân viên nếu đang cập nhật
         const fetchStaffData = async () => {
-            if (!props.staffId) return;
-            try {
-                const validatetoken = await validateToken(accessToken.value, refreshToken.value)
-                if (validatetoken.isValid == false) {
-                    router.push('/Login')
-                    return
-                }
-                accessToken.value = validatetoken.newAccessToken
-                loading.value = true;
-                showLoadingIndicator('Đang tải thông tin nhân viên...');
-                const response = await axios.get(`${apiUrl.value}/api/Staff/${props.staffId}`, {
-                    headers: {'Authorization': 'Bearer ' + accessToken.value}
-                });
-                const staffData = response.data;
+    if (!props.staffId) return;
+    try {
+        const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+        if (validatetoken.isValid == false) {
+            router.push('/Login')
+            return
+        }
+        accessToken.value = validatetoken.newAccessToken
+        loading.value = true;
+        showLoadingIndicator('Đang tải thông tin nhân viên...');
+        const response = await axios.get(`${apiUrl.value}/api/Staff/${props.staffId}`, {
+            headers: {'Authorization': 'Bearer ' + accessToken.value}
+        });
+        const staffData = response.data;
 
-                // Lưu dữ liệu gốc mà không trim để giữ khoảng cách
-                originalStaffData.value = {
-                    ...staffData,
-                    hoTen: staffData.hoTen || '',
-                    cccd: staffData.cccd || '',
-                    diaChi: staffData.diaChi || '',
-                    sdt: staffData.sdt || '',
-                    email: staffData.email || '',
-                    matKhau: staffData.matKhau || '',
-                    tenTaiKhoan: staffData.tenTaiKhoan || ''
-                };
-
-                formData.value = {
-                    maNV: staffData.maNV,
-                    hoTen: staffData.hoTen || '',
-                    gioiTinh: staffData.gioiTinh || 'Nam',
-                    ngaySinh: staffData.ngaySinh ? new Date(staffData.ngaySinh).toISOString().split('T')[0] : '',
-                    cccd: staffData.cccd || '',
-                    diaChi: staffData.diaChi || '',
-                    sdt: staffData.sdt || '',
-                    email: staffData.email || '',
-                    maChucVu: staffData.maChucVu || '',
-                    ngayVaoLam: staffData.ngayVaoLam ? new Date(staffData.ngayVaoLam).toISOString().split('T')[0] : '',
-                    tinhTrang: staffData.tinhTrang || 'Đang hoạt động',
-                    matKhau: staffData.matKhau || '',
-                    hinh: staffData.hinh || null,
-                    tenTaiKhoan: staffData.tenTaiKhoan || ''
-                };
-
-                if (staffData.hinh) {
-                    imagePreview.value = getImageUrl(staffData.hinh);
-                }
-                Swal.close();
-            } catch (error) {
-                console.error('Lỗi khi lấy thông tin nhân viên:', error);
-                Swal.close();
-                Swal.fire({
-                    title: 'Lỗi!',
-                    text: 'Không thể lấy thông tin nhân viên. Vui lòng thử lại sau.',
-                    icon: 'error',
-                    confirmButtonColor: '#f44336',
-                    customClass: {
-                        container: 'my-swal-container'
-                    }
-                });
-            } finally {
-                loading.value = false;
-            }
+        // Save original data without trim to preserve spaces
+        originalStaffData.value = {
+            ...staffData,
+            hoTen: staffData.hoTen || '',
+            cccd: staffData.cccd || '',
+            diaChi: staffData.diaChi || '',
+            sdt: staffData.sdt || '',
+            email: staffData.email || '',
+            matKhau: '', // Don't store password in original data
+            tenTaiKhoan: staffData.tenTaiKhoan || ''
         };
+
+        // FIXED: Date handling - use proper date formatting to avoid timezone issues
+        const formatDateForInput = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            // Use local date string to avoid timezone shift
+            return date.getFullYear() + '-' + 
+                   String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(date.getDate()).padStart(2, '0');
+        };
+
+        formData.value = {
+            maNV: staffData.maNV,
+            hoTen: staffData.hoTen || '',
+            gioiTinh: staffData.gioiTinh || 'Nam',
+            ngaySinh: formatDateForInput(staffData.ngaySinh),
+            cccd: staffData.cccd || '',
+            diaChi: staffData.diaChi || '',
+            sdt: staffData.sdt || '',
+            email: staffData.email || '',
+            maChucVu: staffData.maChucVu || '',
+            ngayVaoLam: formatDateForInput(staffData.ngayVaoLam),
+            tinhTrang: staffData.tinhTrang || 'Đang hoạt động',
+            matKhau: '', // Empty password for editing - don't prefill
+            hinh: staffData.hinh || null,
+            tenTaiKhoan: staffData.tenTaiKhoan || ''
+        };
+
+        if (staffData.hinh) {
+            imagePreview.value = getImageUrl(staffData.hinh);
+        }
+        Swal.close();
+    } catch (error) {
+        console.error('Lỗi khi lấy thông tin nhân viên:', error);
+        Swal.close();
+        Swal.fire({
+            title: 'Lỗi!',
+            text: 'Không thể lấy thông tin nhân viên. Vui lòng thử lại sau.',
+            icon: 'error',
+            confirmButtonColor: '#f44336',
+            customClass: {
+                container: 'my-swal-container'
+            }
+        });
+    } finally {
+        loading.value = false;
+    }
+};
 
         const handleImageError = (event) => {
             event.target.src = 'https://via.placeholder.com/150';
@@ -371,108 +381,123 @@ export default {
         };
 
         const submitForm = async () => {
-            validateForm();
-            if (Object.keys(errors.value).length > 0) {
-                const firstError = document.querySelector('.error-message');
-                if (firstError) {
-                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    Swal.fire({
-                        title: 'Cảnh báo!',
-                        text: firstError.textContent,
-                        icon: 'warning',
-                        confirmButtonColor: '#ff9800',
-                        customClass: {
-                            container: 'my-swal-container'
-                        }
-                    });
+    const isValid = await validateForm();
+    
+    if (!isValid) {
+        const firstError = document.querySelector('.error-message');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            Swal.fire({
+                title: 'Cảnh báo!',
+                text: firstError.textContent,
+                icon: 'warning',
+                confirmButtonColor: '#ff9800',
+                customClass: {
+                    container: 'my-swal-container'
                 }
-                return;
-            }
+            });
+        }
+        return;
+    }
 
-            loading.value = true;
-            showLoadingIndicator();
+    loading.value = true;
+    showLoadingIndicator();
 
-            try {
-                const formDataToSend = new FormData();
+    try {
+        const formDataToSend = new FormData();
 
-                // Thêm tất cả dữ liệu form vào formDataToSend, trừ tenTaiKhoan khi cập nhật
-                for (const key in formData.value) {
-                    if (key !== 'hinh' && formData.value[key] !== null && formData.value[key] !== '') {
-                        if (isEditing.value && key === 'tenTaiKhoan') continue; // Bỏ qua tenTaiKhoan khi cập nhật
-                        formDataToSend.append(key, formData.value[key]);
+        // Add all form data to formDataToSend
+        for (const key in formData.value) {
+            if (key !== 'hinh' && formData.value[key] !== null && formData.value[key] !== '') {
+                // Skip tenTaiKhoan when updating
+                if (isEditing.value && key === 'tenTaiKhoan') continue;
+                
+                // FIXED: For password - only send if not empty (for editing)
+                if (key === 'matKhau') {
+                    const trimmedPassword = formData.value[key].trim();
+                    if (trimmedPassword !== '') {
+                        formDataToSend.append(key, trimmedPassword);
                     }
-                }
-
-                // Chỉ thêm ảnh mới nếu người dùng đã chọn ảnh mới
-                if (imageFile.value) {
-                    formDataToSend.append('hinhDaiDien', imageFile.value);
-                }
-                const validatetoken = await validateToken(accessToken.value, refreshToken.value)
-                if (validatetoken.isValid == false) {
-                    router.push('/Login')
-                    return
-                }
-                accessToken.value = validatetoken.newAccessToken
-                let response;
-                if (isEditing.value) {
-                    response = await axios.put(`${apiUrl.value}/api/Staff/${props.staffId}`, formDataToSend, {
-                        headers: { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + accessToken.value },
-                    });
+                    // If password is empty when editing, don't send it (keep existing password)
                 } else {
-                    response = await axios.post(`${apiUrl.value}/api/Staff`, formDataToSend, {
-                        headers: { 'Content-Type': 'multipart/form-data', 'Authorization': 'Bearer ' + accessToken.value },
-                    });
+                    formDataToSend.append(key, formData.value[key]);
                 }
-
-                Swal.close();
-                console.log('Attempting to show success message'); // Debug
-                await Swal.fire({
-                    title: 'Thành công!',
-                    text: response.data.message || (isEditing.value ? 'Cập nhật thông tin nhân viên thành công.' : 'Thêm nhân viên mới thành công.'),
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#4CAF50',
-                    customClass: {
-                        container: 'my-swal-container'
-                    }
-                });
-                console.log('Success message shown'); // Debug
-                emit('submit-success', response.data);
-                if (!isEditing.value) resetForm();
-            } catch (error) {
-                Swal.close();
-                console.error('Lỗi khi lưu thông tin nhân viên:', error);
-                let errorMessage = error.response?.data?.message || 'Không thể lưu thông tin nhân viên. Vui lòng thử lại sau.';
-
-                // Xử lý các lỗi cụ thể từ API
-                if (errorMessage.includes('CCCD đã tồn tại')) {
-                    errors.value.cccd = 'CCCD đã tồn tại';
-                    errorMessage = 'CCCD đã tồn tại trong hệ thống!';
-                } else if (errorMessage.includes('SĐT đã tồn tại')) {
-                    errors.value.sdt = 'Số điện thoại đã tồn tại';
-                    errorMessage = 'Số điện thoại đã tồn tại trong hệ thống!';
-                } else if (errorMessage.includes('Email đã tồn tại')) {
-                    errors.value.email = 'Email đã tồn tại';
-                    errorMessage = 'Email đã tồn tại trong hệ thống!';
-                }
-                // else if (errorMessage.includes('Tên tài khoản đã tồn tại')) {
-                //     errors.value.tenTaiKhoan = 'Tên tài khoản đã tồn tại';
-                //     errorMessage = 'Tên tài khoản đã tồn tại trong hệ thống!';
-                // }
-
-                Swal.fire({
-                    title: 'Lỗi!',
-                    text: errorMessage,
-                    icon: 'error',
-                    confirmButtonColor: '#f44336',
-                    customClass: {
-                        container: 'my-swal-container'
-                    }
-                });
-            } finally {
-                loading.value = false;
             }
-        };
+        }
+
+        // Only add new image if user has selected a new image
+        if (imageFile.value) {
+            formDataToSend.append('hinhDaiDien', imageFile.value);
+        }
+        
+        const validatetoken = await validateToken(accessToken.value, refreshToken.value);
+        if (validatetoken.isValid == false) {
+            router.push('/Login');
+            return;
+        }
+        accessToken.value = validatetoken.newAccessToken;
+        
+        let response;
+        if (isEditing.value) {
+            response = await axios.put(`${apiUrl.value}/api/Staff/${props.staffId}`, formDataToSend, {
+                headers: { 
+                    'Content-Type': 'multipart/form-data', 
+                    'Authorization': 'Bearer ' + accessToken.value 
+                },
+            });
+        } else {
+            response = await axios.post(`${apiUrl.value}/api/Staff`, formDataToSend, {
+                headers: { 
+                    'Content-Type': 'multipart/form-data', 
+                    'Authorization': 'Bearer ' + accessToken.value 
+                },
+            });
+        }
+
+        Swal.close();
+        await Swal.fire({
+            title: 'Thành công!',
+            text: response.data.message || (isEditing.value ? 'Cập nhật thông tin nhân viên thành công.' : 'Thêm nhân viên mới thành công.'),
+            icon: 'success',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#4CAF50',
+            customClass: {
+                container: 'my-swal-container'
+            }
+        });
+        
+        emit('submit-success', response.data);
+        if (!isEditing.value) resetForm();
+    } catch (error) {
+        Swal.close();
+        console.error('Lỗi khi lưu thông tin nhân viên:', error);
+        let errorMessage = error.response?.data?.message || 'Không thể lưu thông tin nhân viên. Vui lòng thử lại sau.';
+
+        // Handle specific API errors
+        if (errorMessage.includes('CCCD đã tồn tại')) {
+            errors.value.cccd = 'CCCD đã tồn tại';
+            errorMessage = 'CCCD đã tồn tại trong hệ thống!';
+        } else if (errorMessage.includes('SĐT đã tồn tại')) {
+            errors.value.sdt = 'Số điện thoại đã tồn tại';
+            errorMessage = 'Số điện thoại đã tồn tại trong hệ thống!';
+        } else if (errorMessage.includes('Email đã tồn tại')) {
+            errors.value.email = 'Email đã tồn tại';
+            errorMessage = 'Email đã tồn tại trong hệ thống!';
+        }
+
+        Swal.fire({
+            title: 'Lỗi!',
+            text: errorMessage,
+            icon: 'error',
+            confirmButtonColor: '#f44336',
+            customClass: {
+                container: 'my-swal-container'
+            }
+        });
+    } finally {
+        loading.value = false;
+    }
+};
 
         const resetForm = () => {
             formData.value = {
@@ -533,60 +558,89 @@ export default {
 
             if (!formData.value.cccd) {
                 errors.value.cccd = 'CCCD không được để trống';
+                return false;
             } else if (!cccdRegex.test(formData.value.cccd)) {
                 errors.value.cccd = 'CCCD phải có đúng 12 số và bắt đầu bằng 0';
-            } else if (!isEditing.value || (isEditing.value && trimmedCCCD !== originalStaffData.value?.cccd)) {
+                return false;
+            } else if (!isEditing.value || (isEditing.value && trimmedCCCD !== originalStaffData.value?.cccd?.trim())) {
                 try {
+                    const validatetoken = await validateToken(accessToken.value, refreshToken.value);
+                    if (validatetoken.isValid == false) {
+                        router.push('/Login');
+                        return false;
+                    }
+                    accessToken.value = validatetoken.newAccessToken;
+
                     const response = await axios.get(`${apiUrl.value}/api/Staff/check-cccd`, {
                         params: {
                             cccd: trimmedCCCD,
                             maNV: isEditing.value ? props.staffId : null
-                        }
+                        },
+                        headers: { 'Authorization': 'Bearer ' + accessToken.value }
                     });
                     if (response.data) {
                         errors.value.cccd = 'CCCD đã tồn tại';
+                        return false;
                     } else {
                         delete errors.value.cccd;
+                        return true;
                     }
                 } catch (error) {
                     console.error('Lỗi khi kiểm tra CCCD:', error);
                     errors.value.cccd = 'Không thể kiểm tra CCCD. Vui lòng thử lại sau.';
+                    return false;
                 }
             } else {
                 delete errors.value.cccd;
+                return true;
             }
         };
 
         const validatePhone = async () => {
-            const phoneRegex = /^[0-9]{10}$/;
-            const trimmedSDT = (formData.value.sdt || '').trim();
-            formData.value.sdt = trimmedSDT;
+    // Phone must start with 0 and have exactly 10 digits
+    const phoneRegex = /^0[0-9]{9}$/;
+    const trimmedSDT = (formData.value.sdt || '').trim();
+    formData.value.sdt = trimmedSDT;
 
-            if (!formData.value.sdt) {
-                errors.value.sdt = 'Số điện thoại không được để trống';
-            } else if (!phoneRegex.test(formData.value.sdt)) {
-                errors.value.sdt = 'Số điện thoại phải có đúng 10 số';
-            } else if (!isEditing.value || (isEditing.value && trimmedSDT !== originalStaffData.value?.sdt)) {
-                try {
-                    const response = await axios.get(`${apiUrl.value}/api/Staff/check-sdt`, {
-                        params: {
-                            sdt: trimmedSDT,
-                            maNV: isEditing.value ? props.staffId : null
-                        }
-                    });
-                    if (response.data) {
-                        errors.value.sdt = 'Số điện thoại đã tồn tại';
-                    } else {
-                        delete errors.value.sdt;
-                    }
-                } catch (error) {
-                    console.error('Lỗi khi kiểm tra SĐT:', error);
-                    errors.value.sdt = 'Không thể kiểm tra SĐT. Vui lòng thử lại sau.';
-                }
+    if (!formData.value.sdt) {
+        errors.value.sdt = 'Số điện thoại không được để trống';
+        return false;
+    } else if (!phoneRegex.test(formData.value.sdt)) {
+        errors.value.sdt = 'Số điện thoại phải có đúng 10 số và bắt đầu bằng số 0';
+        return false;
+    } else if (!isEditing.value || (isEditing.value && trimmedSDT !== originalStaffData.value?.sdt?.trim())) {
+        try {
+            const validatetoken = await validateToken(accessToken.value, refreshToken.value);
+            if (validatetoken.isValid == false) {
+                router.push('/Login');
+                return false;
+            }
+            accessToken.value = validatetoken.newAccessToken;
+
+            const response = await axios.get(`${apiUrl.value}/api/Staff/check-sdt`, {
+                params: {
+                    sdt: trimmedSDT,
+                    maNV: isEditing.value ? props.staffId : null
+                },
+                headers: { 'Authorization': 'Bearer ' + accessToken.value }
+            });
+            if (response.data) {
+                errors.value.sdt = 'Số điện thoại đã tồn tại';
+                return false;
             } else {
                 delete errors.value.sdt;
+                return true;
             }
-        };
+        } catch (error) {
+            console.error('Lỗi khi kiểm tra SĐT:', error);
+            errors.value.sdt = 'Không thể kiểm tra SĐT. Vui lòng thử lại sau.';
+            return false;
+        }
+    } else {
+        delete errors.value.sdt;
+        return true;
+    }
+};
 
         const validateEmail = async () => {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -595,27 +649,41 @@ export default {
 
             if (!formData.value.email) {
                 errors.value.email = 'Email không được để trống';
+                return false;
             } else if (!emailRegex.test(formData.value.email)) {
                 errors.value.email = 'Email không hợp lệ';
-            } else if (!isEditing.value || (isEditing.value && trimmedEmail !== originalStaffData.value?.email)) {
+                return false;
+            } else if (!isEditing.value || (isEditing.value && trimmedEmail !== originalStaffData.value?.email?.trim())) {
                 try {
+                    const validatetoken = await validateToken(accessToken.value, refreshToken.value);
+                    if (validatetoken.isValid == false) {
+                        router.push('/Login');
+                        return false;
+                    }
+                    accessToken.value = validatetoken.newAccessToken;
+
                     const response = await axios.get(`${apiUrl.value}/api/Staff/check-email`, {
                         params: {
                             email: trimmedEmail,
                             maNV: isEditing.value ? props.staffId : null
-                        }
+                        },
+                        headers: { 'Authorization': 'Bearer ' + accessToken.value }
                     });
                     if (response.data) {
                         errors.value.email = 'Email đã tồn tại';
+                        return false;
                     } else {
                         delete errors.value.email;
+                        return true;
                     }
                 } catch (error) {
                     console.error('Lỗi khi kiểm tra email:', error);
                     errors.value.email = 'Không thể kiểm tra email. Vui lòng thử lại sau.';
+                    return false;
                 }
             } else {
                 delete errors.value.email;
+                return true;
             }
         };
 
@@ -661,17 +729,22 @@ export default {
         };
 
         const validateMatKhau = () => {
-            if (formData.value.matKhau) {
-                formData.value.matKhau = formData.value.matKhau.trim();
-            }
-            if (!isEditing.value && (!formData.value.matKhau || formData.value.matKhau.length < 6)) {
-                errors.value.matKhau = 'Mật khẩu phải có ít nhất 6 ký tự';
-            } else if (isEditing.value && formData.value.matKhau && formData.value.matKhau.length < 6) {
-                errors.value.matKhau = 'Mật khẩu phải có ít nhất 6 ký tự';
-            } else {
-                delete errors.value.matKhau;
-            }
-        };
+    // Only validate password if it's provided (not empty)
+    if (formData.value.matKhau && formData.value.matKhau.trim() !== '') {
+        const trimmedPassword = formData.value.matKhau.trim();
+        if (trimmedPassword.length < 6) {
+            errors.value.matKhau = 'Mật khẩu phải có ít nhất 6 ký tự';
+        } else {
+            delete errors.value.matKhau;
+        }
+    } else if (!isEditing.value) {
+        // Only require password for new staff
+        errors.value.matKhau = 'Mật khẩu không được để trống';
+    } else {
+        // For editing, if password is empty, don't validate (keep existing password)
+        delete errors.value.matKhau;
+    }
+};
 
         const validateHinh = () => {
             if (!isEditing.value && !imageFile.value && !formData.value.hinh) {
@@ -686,51 +759,72 @@ export default {
             formData.value.tenTaiKhoan = trimmedTenTaiKhoan;
 
             if (!isEditing.value) {
-                // Chỉ validate khi thêm mới
+                // Only validate when adding new staff
                 if (!formData.value.tenTaiKhoan || formData.value.tenTaiKhoan.length < 4) {
                     errors.value.tenTaiKhoan = 'Tên tài khoản không được để trống và phải có ít nhất 4 ký tự';
+                    return false;
                 } else {
                     try {
+                        const validatetoken = await validateToken(accessToken.value, refreshToken.value);
+                        if (validatetoken.isValid == false) {
+                            router.push('/Login');
+                            return false;
+                        }
+                        accessToken.value = validatetoken.newAccessToken;
+
                         const response = await axios.get(`${apiUrl.value}/api/Staff/check-ten-tai-khoan`, {
                             params: {
                                 tenTaiKhoan: trimmedTenTaiKhoan,
-                                maNV: null // Không cần maNV khi thêm mới
-                            }
+                                maNV: null // No maNV needed when adding new
+                            },
+                            headers: { 'Authorization': 'Bearer ' + accessToken.value }
                         });
                         if (response.data) {
                             errors.value.tenTaiKhoan = 'Tên tài khoản đã tồn tại';
+                            return false;
                         } else {
                             delete errors.value.tenTaiKhoan;
+                            return true;
                         }
                     } catch (error) {
                         console.error('Lỗi khi kiểm tra tên tài khoản:', error);
                         errors.value.tenTaiKhoan = 'Không thể kiểm tra tên tài khoản. Vui lòng thử lại sau.';
+                        return false;
                     }
                 }
             } else {
-                // Khi chỉnh sửa, không validate trùng tenTaiKhoan
+                // When editing, don't validate username duplication
                 delete errors.value.tenTaiKhoan;
+                return true;
             }
         };
+        const validateForm = async () => {
+            // Clear all errors first
+            errors.value = {};
 
-        const validateForm = () => {
+            // Validate synchronous fields first
             validateHoTen();
             validateNgaySinh();
-            validateCCCD();
             validateDiaChi();
-            validatePhone();
-            validateEmail();
             validateChucVu();
             validateNgayVaoLam();
             validateTinhTrang();
             validateMatKhau();
             validateHinh();
-            validateTenTaiKhoan();
+
             if (!formData.value.gioiTinh) {
                 errors.value.gioiTinh = 'Vui lòng chọn giới tính';
-            } else {
-                delete errors.value.gioiTinh;
             }
+
+            // Validate asynchronous fields
+            const cccdValid = await validateCCCD();
+            const phoneValid = await validatePhone();
+            const emailValid = await validateEmail();
+            const usernameValid = await validateTenTaiKhoan();
+
+            // Return true only if all validations pass
+            return Object.keys(errors.value).length === 0 &&
+                cccdValid && phoneValid && emailValid && usernameValid;
         };
 
         const getImageUrl = (relativePath) => {
@@ -1033,8 +1127,13 @@ export default {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .password-group {

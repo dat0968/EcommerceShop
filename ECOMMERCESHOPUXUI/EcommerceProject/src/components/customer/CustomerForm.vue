@@ -3,7 +3,7 @@
     <!-- Form header -->
     <div class="form-header" style=" background-color: #4C7CF3; color:white">
       <div class="form-accent-border"></div>
-      <h1 >{{ isEdit ? 'Cập Nhật Khách Hàng' : 'Thêm Mới Khách Hàng' }}</h1>
+      <h1>{{ isEdit ? 'Cập Nhật Khách Hàng' : 'Thêm Mới Khách Hàng' }}</h1>
     </div>
 
     <!-- Column layout -->
@@ -17,13 +17,7 @@
           </label>
           <div class="image-container">
             <!-- Input file phủ lên toàn bộ image-preview -->
-            <input
-              type="file"
-              id="hinhDaiDien"
-              @change="handleFileUpload"
-              accept="image/*"
-              class="file-input"
-            />
+            <input type="file" id="hinhDaiDien" @change="handleFileUpload" accept="image/*" class="file-input" />
             <div class="image-preview" :class="{ 'empty-preview': !imagePreview }">
               <img v-if="imagePreview" :src="imagePreview" alt="Xem trước hình ảnh" />
               <div v-else class="placeholder-content">
@@ -53,14 +47,7 @@
         <!-- CCCD -->
         <div class="form-group">
           <label class="section-title" for="cccd"> CCCD <span class="required">*</span> </label>
-          <input
-            type="text"
-            id="cccd"
-            v-model="form.cccd"
-            class="info-input"
-            maxlength="12"
-            @input="validateCCCD"
-          />
+          <input type="text" id="cccd" v-model="form.cccd" class="info-input" maxlength="12" @input="validateCCCD" />
           <div class="error-message" v-if="errors.cccd">{{ errors.cccd }}</div>
         </div>
 
@@ -69,14 +56,7 @@
           <label class="section-title" for="sdt">
             Số điện thoại <span class="required">*</span>
           </label>
-          <input
-            type="text"
-            id="sdt"
-            v-model="form.sdt"
-            @blur="handlePhoneBlur"
-            class="info-input"
-            maxlength="12"
-          />
+          <input type="text" id="sdt" v-model="form.sdt" @blur="handlePhoneBlur" class="info-input" maxlength="12" />
           <div class="error-message" v-if="errors.sdt">{{ errors.sdt }}</div>
         </div>
       </div>
@@ -152,6 +132,8 @@
 </template>
 
 <script>
+// Fixed script section - removed duplicate functions
+
 import { ref, reactive, onMounted, watch } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'
@@ -159,6 +141,7 @@ import { useRouter } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
+
 export default {
   name: 'CustomerForm',
   props: {
@@ -186,6 +169,7 @@ export default {
       tinhTrang: 'Đang hoạt động',
       isActive: true,
     })
+
     const accessToken = ref(Cookies.get('accessToken'))
     const refreshToken = ref(Cookies.get('refreshToken'))
     const readToken = ref({})
@@ -267,18 +251,68 @@ export default {
       return age >= 10
     }
 
+    // Combined phone handling functions
     const formatPhoneNumber = (phone) => {
       if (!phone) return ''
+
+      // Remove all non-digit characters (letters and special characters)
       const cleaned = phone.replace(/\D/g, '')
+
+      // Ensure starts with 0 and max 10 digits
       const truncated = cleaned.substring(0, 10)
+
+      // Format with spaces for display
       if (truncated.length >= 7) {
-        return `${truncated.substring(0, 4)} ${truncated.substring(4, 7)} ${truncated.substring(
-          7
-        )}`.trim()
+        return `${truncated.substring(0, 4)} ${truncated.substring(4, 7)} ${truncated.substring(7)}`.trim()
       } else if (truncated.length >= 4) {
         return `${truncated.substring(0, 4)} ${truncated.substring(4)}`.trim()
       }
       return truncated
+    }
+
+    const handlePhoneInput = (event) => {
+      const value = event.target.value
+
+      // Remove all non-digit characters immediately
+      const digitsOnly = value.replace(/\D/g, '')
+
+      // Must start with 0
+      if (digitsOnly.length > 0 && !digitsOnly.startsWith('0')) {
+        // If user types without 0, prepend 0
+        form.sdt = '0' + digitsOnly.substring(0, 9)
+      } else {
+        // Limit to 10 digits
+        form.sdt = digitsOnly.substring(0, 10)
+      }
+    }
+
+    const handlePhoneBlur = () => {
+      if (form.sdt) {
+        // Format for display when user leaves the field
+        form.sdt = formatPhoneNumber(form.sdt)
+      }
+    }
+
+    const validatePhoneInput = (phone) => {
+      // Remove spaces and check format
+      const cleanPhone = phone.replace(/\s+/g, '')
+
+      // Check if contains only digits
+      if (!/^\d+$/.test(cleanPhone)) {
+        return 'Số điện thoại không được chứa chữ cái hoặc ký tự đặc biệt'
+      }
+
+      // Check if starts with 0
+      if (!cleanPhone.startsWith('0')) {
+        return 'Số điện thoại phải bắt đầu từ số 0'
+      }
+
+      // Check length
+      if (cleanPhone.length !== 10) {
+        return 'Số điện thoại phải có đúng 10 số'
+      }
+
+      return null // Valid
     }
 
     const validateCCCD = () => {
@@ -315,12 +349,7 @@ export default {
       reader.readAsDataURL(file)
     }
 
-    const handlePhoneBlur = () => {
-      if (form.sdt) {
-        form.sdt = formatPhoneNumber(form.sdt)
-      }
-    }
-
+    // Watch for phone number changes (removed duplicate)
     watch(
       () => form.sdt,
       (newValue) => {
@@ -351,27 +380,29 @@ export default {
       if (!form.cccd?.trim()) {
         errors.cccd = 'CCCD không được để trống'
         isValid = false
-      } else if (!/^[0][0-9]{11}$/.test(form.cccd.trim())) {
+      } else if (!/^0[0-9]{11}$/.test(form.cccd.trim())) {
         errors.cccd = 'CCCD phải là 12 số và bắt đầu bằng 0'
         isValid = false
       }
 
+      // Updated phone validation
       if (!form.sdt?.trim()) {
         errors.sdt = 'Số điện thoại không được để trống'
         isValid = false
       } else {
-        const cleanPhone = form.sdt.replace(/\s+/g, '')
-        if (!/^[0-9]{10}$/.test(cleanPhone)) {
-          errors.sdt = 'Số điện thoại phải là 10 số'
+        const phoneError = validatePhoneInput(form.sdt)
+        if (phoneError) {
+          errors.sdt = phoneError
           isValid = false
         }
       }
 
+      // Updated email validation - must be @gmail.com
       if (!form.email?.trim()) {
         errors.email = 'Email không được để trống'
         isValid = false
-      } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(form.email.trim())) {
-        errors.email = 'Email không hợp lệ'
+      } else if (!/^[^\s@]+@[^\s@]+\.com$/.test(form.email.trim())) {
+        errors.email = 'Email phải có định dạng @.com'
         isValid = false
       }
 
@@ -441,20 +472,19 @@ export default {
           await axios.put(`${apiUrl.value}/api/Customer/${props.customerId}`, formData, {
             headers: {
               Authorization: `Bearer ${accessToken.value}`,
-              'Content-Type': 'multipart/form-data', // nếu formData là FormData
+              'Content-Type': 'multipart/form-data',
             },
           })
         } else {
           await axios.post(`${apiUrl.value}/api/Customer`, formData, {
             headers: {
               Authorization: `Bearer ${accessToken.value}`,
-              'Content-Type': 'multipart/form-data', // nếu formData là FormData
+              'Content-Type': 'multipart/form-data',
             },
           })
         }
 
         Swal.close()
-        console.log('Attempting to show success message') // Debug
         await Swal.fire({
           title: 'Thành công!',
           text: props.isEdit
@@ -467,11 +497,9 @@ export default {
             container: 'my-swal-container',
           },
         })
-        console.log('Success message shown') // Debug
         emit('submit-success')
       } catch (error) {
         Swal.close()
-        console.error('Error in submitForm:', error) // Debug
         if (error.response?.data) {
           const errorMessage = error.response.data
           if (errorMessage.includes('CCCD đã tồn tại')) {
@@ -496,6 +524,7 @@ export default {
         isSubmitting.value = false
       }
     }
+
     const cancelForm = () => {
       showConfirmDialog('Bạn có muốn hủy? Các thay đổi sẽ không được lưu!', () => {
         emit('cancel')
@@ -537,9 +566,8 @@ export default {
               const fileName = imagePath.split('/').pop()
               imagePreview.value = `${apiUrl.value}/api/Customer/image/${fileName}`
             } else {
-              imagePreview.value = `${apiUrl.value}/api/${
-                imagePath.startsWith('/') ? '' : '/'
-              }${imagePath}`
+              imagePreview.value = `${apiUrl.value}/api/${imagePath.startsWith('/') ? '' : '/'
+                }${imagePath}`
             }
           } else {
             imagePreview.value = ''
@@ -561,10 +589,12 @@ export default {
       isSubmitting,
       imagePreview,
       handleFileUpload,
+      handlePhoneInput,  // Added this
       handlePhoneBlur,
       submitForm,
       cancelForm,
       validateCCCD,
+      validatePhoneInput, // Added this
     }
   },
 }

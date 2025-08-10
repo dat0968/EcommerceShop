@@ -654,7 +654,7 @@ watch(
         </nav>
         <div class="row">
             <!-- Left Column - Product Images -->
-            <div class="col-md-6">
+            <div class="col-md-6" >
                 <!-- Main Product Image -->
                 <div class="mb-3 text-center">
                     <img 
@@ -666,8 +666,8 @@ watch(
                 </div>
 
                 <!-- Thumbnail Images -->
-                <div class="row g-2" v-if="allImages.length > 0">
-                    <div class="col-3" v-for="(image, index) in allImages.slice(0, 4)" :key="index">
+                <div class="row g-2" v-if="allImages.length > 0" >
+                    <div class="col-3" v-for="(image, index) in allImages.slice(0, 4)" :key="index" >
                         <img 
                             :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
                             :alt="`Thumbnail ${index + 1}`" 
@@ -749,22 +749,37 @@ watch(
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="d-grid gap-2 mb-4">
-                    <button class="btn btn-outline-danger" @click="addToCart" :disabled="maxQuantity <= 0">
-                        <i class="fas fa-shopping-cart me-2"></i>THÊM VÀO GIỎ
-                    </button>
-       
-                    <button 
-                        @click="toggleFavoriteProduct"
-                        :class="['btn', 'btn-sm', isFavorited ? 'btn-outline-danger' : 'btn-outline-danger']">
-                        <i :class="['fas', isFavorited ? 'fa-heart' : 'fa-heart']"></i>
-                        {{ isFavorited ? 'Đã yêu thích' : 'Yêu thích' }}
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" @click="addToCompare">
-                        <i class="bi bi-arrow-left-right"></i> Thêm vào so sánh
-                    </button>
-             
-                </div>
+                <div style="display: grid; gap: 8px; margin-bottom: 1.5rem;"> 
+    <!-- Nút Thêm vào giỏ -->
+    <button @click="addToCart" :disabled="maxQuantity <= 0" 
+            style="background-color: red; color: white; border: 1px solid red; padding: 12px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 16px;" 
+            @mouseover="$event.target.style.backgroundColor='#dc3545'; $event.target.style.borderColor='#dc3545';" 
+            @mouseout="$event.target.style.backgroundColor='red'; $event.target.style.borderColor='red';"> 
+        <i class="fas fa-shopping-cart" style="margin-right: 8px;"></i>THÊM VÀO GIỎ 
+    </button> 
+    
+    <!-- Hàng nút Yêu thích và So sánh -->
+    <div style="display: flex; gap: 8px;"> 
+        <!-- Nút Yêu thích -->
+        <button @click="toggleFavoriteProduct" 
+                :style="isFavorited ? 
+                    'background-color: transparent; color: #007bff; border: 1px solid #007bff; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;' : 
+                    'background-color: transparent; color: red; border: 1px solid red; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;'" 
+                @mouseover="isFavorited ? ($event.target.style.backgroundColor='#007bff', $event.target.style.color='white') : ($event.target.style.backgroundColor='red', $event.target.style.color='white')" 
+                @mouseout="isFavorited ? ($event.target.style.backgroundColor='transparent', $event.target.style.color='#007bff') : ($event.target.style.backgroundColor='transparent', $event.target.style.color='red')"> 
+            <i class="fas fa-heart" style="margin-right: 4px; color: red;"></i> 
+            {{ isFavorited ? 'Đã thích' : 'Yêu thích' }} ({{ favoriteCount || 0 }}) 
+        </button> 
+        
+        <!-- Nút So sánh -->
+        <button @click="addToCompare" 
+                style="background-color: transparent; color: #007bff; border: 1px solid #007bff; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" 
+                @mouseover="$event.target.style.backgroundColor='#007bff'; $event.target.style.color='white';" 
+                @mouseout="$event.target.style.backgroundColor='transparent'; $event.target.style.color='#007bff';"> 
+            <i class="bi bi-arrow-left-right" style="margin-right: 4px;"></i> So sánh 
+        </button> 
+    </div> 
+</div>
 
                 <!-- Product Features -->
                 <div class="mb-4">

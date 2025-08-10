@@ -317,19 +317,19 @@ namespace APIClothesEcommerceShop.Repositories.Staff
 
         public async Task<ValidationResult> UpdateStaffAsync(int maNV, StaffDto staffDto)
         {
-            // Làm sạch dữ liệu đầu vào
+            // Clean input data
             staffDto.CCCD = staffDto.CCCD?.Trim();
             staffDto.Email = staffDto.Email?.Trim();
             staffDto.SDT = staffDto.SDT?.Trim();
-            staffDto.MatKhau = staffDto.MatKhau?.Trim();
-            // Không xử lý tenTaiKhoan vì không cho phép cập nhật
+            staffDto.TenTaiKhoan = staffDto.TenTaiKhoan?.Trim();
+            // DON'T trim password here - we need to check if it's provided for update
 
-            // Tìm nhân viên hiện tại
+            // Find existing staff
             var existingStaff = await _context.Nhanviens.FindAsync(maNV);
             if (existingStaff == null)
                 return new ValidationResult(false, "Nhân viên không tồn tại");
 
-            // Kiểm tra các trường bắt buộc
+            // Required field validation
             if (!string.IsNullOrEmpty(staffDto.HoTen) && string.IsNullOrWhiteSpace(staffDto.HoTen))
                 return new ValidationResult(false, "Họ tên không được để trống");
             if (!string.IsNullOrEmpty(staffDto.Email) && string.IsNullOrWhiteSpace(staffDto.Email))
@@ -339,21 +339,24 @@ namespace APIClothesEcommerceShop.Repositories.Staff
             if (!string.IsNullOrEmpty(staffDto.SDT) && string.IsNullOrWhiteSpace(staffDto.SDT))
                 return new ValidationResult(false, "SĐT không được để trống");
 
-            // Kiểm tra định dạng
+            // Format validation
             if (!string.IsNullOrEmpty(staffDto.CCCD) && !Regex.IsMatch(staffDto.CCCD, @"^[0][0-9]{11}$"))
                 return new ValidationResult(false, "CCCD phải là 12 số và bắt đầu bằng 0");
             if (!string.IsNullOrEmpty(staffDto.SDT) && !Regex.IsMatch(staffDto.SDT, @"^[0-9]{10}$"))
                 return new ValidationResult(false, "SĐT phải là 10 số");
             if (!string.IsNullOrEmpty(staffDto.Email) && !Regex.IsMatch(staffDto.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
                 return new ValidationResult(false, "Email không hợp lệ");
-            if (!string.IsNullOrEmpty(staffDto.MatKhau) && staffDto.MatKhau.Length < 6)
+
+            // Password validation - ONLY if password is provided AND not empty
+            if (!string.IsNullOrEmpty(staffDto.MatKhau?.Trim()) && staffDto.MatKhau.Trim().Length < 6)
                 return new ValidationResult(false, "Mật khẩu phải có ít nhất 6 ký tự");
 
-            // Kiểm tra tuổi
+            // Age validation - FIXED: Use proper date comparison
             if (staffDto.NgaySinh != DateTime.MinValue)
             {
+                // Parse date properly to avoid timezone issues
+                var birthDate = DateTime.SpecifyKind(staffDto.NgaySinh.Date, DateTimeKind.Local);
                 var today = DateTime.Today;
-                var birthDate = staffDto.NgaySinh.Date;
                 var age = today.Year - birthDate.Year;
                 if (birthDate.AddYears(age) > today)
                 {
@@ -363,7 +366,7 @@ namespace APIClothesEcommerceShop.Repositories.Staff
                     return new ValidationResult(false, "Nhân viên phải từ 18 tuổi trở lên");
             }
 
-            // Kiểm tra chức vụ có tồn tại không
+            // Check if position exists
             if (staffDto.MaChucVu > 0 && staffDto.MaChucVu != existingStaff.MaChucVu)
             {
                 var chucVu = await _context.Chucvus.FindAsync(staffDto.MaChucVu);
@@ -371,64 +374,82 @@ namespace APIClothesEcommerceShop.Repositories.Staff
                     return new ValidationResult(false, "Chức vụ không tồn tại");
             }
 
-            // Kiểm tra trùng CCCD, SĐT, Email CHỈ KHI có thay đổi
+            // Check for duplicates - Fixed logic
             if (!string.IsNullOrEmpty(staffDto.CCCD) &&
-                !string.Equals(staffDto.CCCD, existingStaff.Cccd, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(staffDto.CCCD.Trim(), existingStaff.Cccd?.Trim(), StringComparison.OrdinalIgnoreCase))
             {
-                if (await _context.Nhanviens.AnyAsync(k => k.MaNv != maNV && k.Cccd == staffDto.CCCD))
+                if (await _context.Nhanviens.AnyAsync(k => k.MaNv != maNV &&
+                    k.Cccd.Trim().ToLower() == staffDto.CCCD.Trim().ToLower()))
                     return new ValidationResult(false, "CCCD đã tồn tại");
             }
+
             if (!string.IsNullOrEmpty(staffDto.SDT) &&
-                !string.Equals(staffDto.SDT, existingStaff.Sdt, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(staffDto.SDT.Trim(), existingStaff.Sdt?.Trim(), StringComparison.OrdinalIgnoreCase))
             {
-                if (await _context.Nhanviens.AnyAsync(k => k.MaNv != maNV && k.Sdt == staffDto.SDT))
+                if (await _context.Nhanviens.AnyAsync(k => k.MaNv != maNV &&
+                    k.Sdt.Trim().ToLower() == staffDto.SDT.Trim().ToLower()))
                     return new ValidationResult(false, "SĐT đã tồn tại");
             }
+
             if (!string.IsNullOrEmpty(staffDto.Email) &&
-                !string.Equals(staffDto.Email, existingStaff.Email, StringComparison.OrdinalIgnoreCase))
+                !string.Equals(staffDto.Email.Trim(), existingStaff.Email?.Trim(), StringComparison.OrdinalIgnoreCase))
             {
-                if (await _context.Nhanviens.AnyAsync(k => k.MaNv != maNV && k.Email == staffDto.Email))
+                if (await _context.Nhanviens.AnyAsync(k => k.MaNv != maNV &&
+                    k.Email.Trim().ToLower() == staffDto.Email.Trim().ToLower()))
                     return new ValidationResult(false, "Email đã tồn tại");
             }
 
-            // Cập nhật thông tin - chỉ cập nhật các trường đã được thay đổi
-            existingStaff.HoTen = string.IsNullOrEmpty(staffDto.HoTen) ? existingStaff.HoTen : staffDto.HoTen;
-            existingStaff.GioiTinh = string.IsNullOrEmpty(staffDto.GioiTinh) ? existingStaff.GioiTinh : staffDto.GioiTinh;
+            // Update fields - only update changed fields
+            if (!string.IsNullOrEmpty(staffDto.HoTen))
+                existingStaff.HoTen = staffDto.HoTen;
+            if (!string.IsNullOrEmpty(staffDto.GioiTinh))
+                existingStaff.GioiTinh = staffDto.GioiTinh;
+
+            // FIXED: Date handling - only update if actually changed and not MinValue
             if (staffDto.NgaySinh != DateTime.MinValue)
-                existingStaff.NgaySinh = DateOnly.FromDateTime(staffDto.NgaySinh);
-            existingStaff.DiaChi = string.IsNullOrEmpty(staffDto.DiaChi) ? existingStaff.DiaChi : staffDto.DiaChi;
-            existingStaff.Cccd = string.IsNullOrEmpty(staffDto.CCCD) ? existingStaff.Cccd : staffDto.CCCD;
-            existingStaff.Sdt = string.IsNullOrEmpty(staffDto.SDT) ? existingStaff.Sdt : staffDto.SDT;
-            existingStaff.Email = string.IsNullOrEmpty(staffDto.Email) ? existingStaff.Email : staffDto.Email;
-            if (staffDto.NgayVaoLam != DateTime.MinValue)
-                existingStaff.NgayVaoLam = DateOnly.FromDateTime(staffDto.NgayVaoLam);
-
-            
-
-
-            if (!string.IsNullOrEmpty(staffDto.MatKhau) && staffDto.MatKhau.Trim() != existingStaff.MatKhau.Trim())
             {
-                existingStaff.MatKhau = passwordHasher.HashPassword(staffDto.MatKhau);
-                //existingStaff.MatKhau = HashPassword(staffDto.MatKhau);
-                //var checkPassword = passwordHasher.VerifyPassword(staffDto.MatKhau, existingStaff.MatKhau);
-                //if (checkPassword)
-                //{
-
-                //}
+                var newBirthDate = DateOnly.FromDateTime(DateTime.SpecifyKind(staffDto.NgaySinh.Date, DateTimeKind.Local));
+                if (existingStaff.NgaySinh != newBirthDate)
+                    existingStaff.NgaySinh = newBirthDate;
             }
 
+            if (!string.IsNullOrEmpty(staffDto.DiaChi))
+                existingStaff.DiaChi = staffDto.DiaChi;
+            if (!string.IsNullOrEmpty(staffDto.CCCD))
+                existingStaff.Cccd = staffDto.CCCD;
+            if (!string.IsNullOrEmpty(staffDto.SDT))
+                existingStaff.Sdt = staffDto.SDT;
+            if (!string.IsNullOrEmpty(staffDto.Email))
+                existingStaff.Email = staffDto.Email;
 
+            // FIXED: Date handling for NgayVaoLam
+            if (staffDto.NgayVaoLam != DateTime.MinValue)
+            {
+                var newJoinDate = DateOnly.FromDateTime(DateTime.SpecifyKind(staffDto.NgayVaoLam.Date, DateTimeKind.Local));
+                if (existingStaff.NgayVaoLam != newJoinDate)
+                    existingStaff.NgayVaoLam = newJoinDate;
+            }
 
-            existingStaff.TinhTrang = string.IsNullOrEmpty(staffDto.TinhTrang) ? existingStaff.TinhTrang : staffDto.TinhTrang;
+            // FIXED: Password update - ONLY hash if new password is provided and not empty
+            if (!string.IsNullOrEmpty(staffDto.MatKhau?.Trim()))
+            {
+                // Only hash new password when it's actually provided (not empty string)
+                var newPassword = staffDto.MatKhau.Trim();
+                existingStaff.MatKhau = passwordHasher.HashPassword(newPassword);
+            }
+            // If MatKhau is null or empty, don't change the existing password
+
+            if (!string.IsNullOrEmpty(staffDto.TinhTrang))
+                existingStaff.TinhTrang = staffDto.TinhTrang;
             if (staffDto.MaChucVu > 0)
                 existingStaff.MaChucVu = staffDto.MaChucVu;
             if (staffDto.IsActive.HasValue)
                 existingStaff.IsActive = staffDto.IsActive.Value;
 
-
-            // Xử lý hình ảnh
+            // Handle image update
             if (staffDto.HinhDaiDien != null)
             {
+                // Delete old image if exists
                 if (!string.IsNullOrEmpty(existingStaff.HinhDaiDien))
                 {
                     string oldImagePath = existingStaff.HinhDaiDien.Replace("/", "");
@@ -445,6 +466,8 @@ namespace APIClothesEcommerceShop.Repositories.Staff
                         }
                     }
                 }
+
+                // Save new image
                 string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "AnhNhanVien");
                 Directory.CreateDirectory(uploadsFolder);
                 string fileName = Guid.NewGuid().ToString() + Path.GetExtension(staffDto.HinhDaiDien.FileName);
@@ -460,7 +483,6 @@ namespace APIClothesEcommerceShop.Repositories.Staff
             await _context.SaveChangesAsync();
             return new ValidationResult(true, "Cập nhật nhân viên thành công");
         }
-
         public async Task<ValidationResult> DeleteStaffAsync(int maNV)
         {
             var staff = await _context.Nhanviens.FindAsync(maNV);

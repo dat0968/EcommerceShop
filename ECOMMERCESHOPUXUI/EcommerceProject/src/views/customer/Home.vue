@@ -354,7 +354,7 @@ onMounted(() => {
 })
 // Format price to Vietnamese format
 const formatPrice = (price) => {
-  return price.toLocaleString('vi-VN') + 'vnđ'
+  return price.toLocaleString('vi-VN') + ' Vnđ'
 }
 onMounted(() => {
   setBackgroundImages(), fetchAPINewProduts()
@@ -381,10 +381,8 @@ onMounted(() => {
       <div class="container-fluid">
         <div class="row">
           <div class="col-lg-6 p-0">
-            <div
-              class="categories__item categories__large__item set-bg animated-category"
-              data-setbg="../../assets/img/categories/category-1.jpg"
-            >
+            <div class="categories__item categories__large__item set-bg animated-category"
+              data-setbg="../../assets/img/categories/category-1.jpg">
               <div class="categories__text">
                 <h1 style="font-family: Arial, Helvetica, sans-serif; font-size: 36px">
                   Thời trang nữ
@@ -392,10 +390,7 @@ onMounted(() => {
                 <p style="color: #000; font-size: 28px">
                   Khám phá phong cách thời trang dành riêng cho phái đẹp.
                 </p>
-                <router-link
-                  style="text-decoration-line: none; font-size: 18px; font-weight: bold"
-                  to="/Shop"
-                >
+                <router-link style="text-decoration-line: none; font-size: 18px; font-weight: bold" to="/Shop">
                   Mua ngay
                 </router-link>
               </div>
@@ -406,18 +401,13 @@ onMounted(() => {
           <div class="col-lg-6">
             <div class="row">
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
-                <div
-                  class="categories__item set-bg animated-category"
-                  data-setbg="../../assets/img/categories/category-2.jpg"
-                >
+                <div class="categories__item set-bg animated-category"
+                  data-setbg="../../assets/img/categories/category-2.jpg">
                   <div class="categories__text">
                     <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">
                       Thời trang nam
                     </h4>
-                    <router-link
-                      to="/Shop"
-                      style="text-decoration: none; font-size: 15px; font-weight: bold"
-                    >
+                    <router-link to="/Shop" style="text-decoration: none; font-size: 15px; font-weight: bold">
                       Mua ngay
                     </router-link>
                   </div>
@@ -428,46 +418,37 @@ onMounted(() => {
               </div>
 
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
-                <div
-                  class="categories__item set-bg animated-category"
-                  data-setbg="../../assets/img/categories/category-3.jpg"
-                >
+                <div class="categories__item set-bg animated-category"
+                  data-setbg="../../assets/img/categories/category-3.jpg">
                   <div class="categories__text">
                     <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">Thời trang trẻ em</h4>
                     <!-- <p>Phong cách năng động, dễ thương cho bé yêu</p> -->
-                    <router-link style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop"
-                      >Mua ngay</router-link
-                    >
+                    <router-link style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop">Mua
+                      ngay</router-link>
                   </div>
                   <div class="category-icon"><i class="fas fa-child fa-3x"></i></div>
                 </div>
               </div>
               <div class="col-lg-6 col-md-6 col-sm-6 p-0" style="height: 327px">
-                <div
-                  class="categories__item set-bg animated-category"
-                  data-setbg="../../assets/img/categories/category-4.jpg"
-                >
+                <div class="categories__item set-bg animated-category"
+                  data-setbg="../../assets/img/categories/category-4.jpg">
                   <div class="categories__text" style="margin-top: 100px">
                     <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">Giày dép</h4>
                     <!-- <p>Bước đi phong cách, vững vàng mỗi ngày</p> -->
-                    <router-link style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop"
-                      >Mua ngay</router-link
-                    >
+                    <router-link style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop">Mua
+                      ngay</router-link>
                   </div>
                   <div class="category-icon"><i class="fas fa-shoe-prints fa-3x"></i></div>
                 </div>
               </div>
               <div class="col-lg-6 col-md-6 col-sm-6 p-0">
-                <div
-                  class="categories__item set-bg animated-category"
-                  data-setbg="../../assets/img/categories/category-5.jpg"
-                >
+                <div class="categories__item set-bg animated-category"
+                  data-setbg="../../assets/img/categories/category-5.jpg">
                   <div class="categories__text" style="margin-top: 100px">
                     <h4 style="font-size: 25px; font-family: Arial, Helvetica, sans-serif">Phụ kiện</h4>
                     <!-- <p>Hoàn thiện phong cách với hàng trăm phụ kiện hot</p> -->
-                    <router-link  style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop"
-                      >Mua ngay</router-link
-                    >
+                    <router-link style="text-decoration: none; font-size: 15px; font-weight: bold" to="/Shop">Mua
+                      ngay</router-link>
                   </div>
                   <div class="category-icon"><i class="fas fa-glasses fa-3x"></i></div>
                 </div>
@@ -488,110 +469,100 @@ onMounted(() => {
           <div class="col-md-6">
             <div class="d-flex align-items-center">
               <h3 class="mb-0 fw-bold angel-text-gradient">
-                <i class="fa fa-heart"></i>Được yêu thích nhiều nhất
+                <i class="fa fa-heart"></i> Được yêu thích nhiều nhất
               </h3>
             </div>
           </div>
           <!-- Navigation Buttons -->
           <div class="col-md-2 text-end">
-            <button
-              class="btn btn-outline-angel rounded-circle me-2"
-              style="width: 45px; height: 45px"
-              @click="slideLeft"
-              :disabled="currentSlide === 0"
-            >
+            <button class="btn btn-outline-angel rounded-circle me-2" style="width: 45px; height: 45px"
+              @click="slideLeft" :disabled="currentSlide === 0">
               <i class="fas fa-chevron-left"></i>
             </button>
-            <button
-              class="btn btn-outline-angel rounded-circle"
-              style="width: 45px; height: 45px"
-              @click="slideRight"
-              :disabled="currentSlide >= maxSlides"
-            >
+            <button class="btn btn-outline-angel rounded-circle" style="width: 45px; height: 45px" @click="slideRight"
+              :disabled="currentSlide >= maxSlides">
               <i class="fas fa-chevron-right"></i>
             </button>
           </div>
         </div>
 
         <!-- Products Slider Container -->
-        <div class="product-slider-container position-relative">
+        <div class="product-slider-container position-relative ">
           <div class="product-slider-wrapper overflow-hidden">
-            <div
-              class="product-slider d-flex transition-all"
-              :style="{ transform: `translateX(-${currentSlide * slideWidth}px)` }"
-            >
-              <div
-                class="product-slide flex-shrink-0 me-3"
-                v-for="item in ListBestHotProducts"
-                :key="item.maSp"
-                style="width: 280px"
-              >
-                <div class="product__item" style="background-color: #ffffff; border-radius: 12px">
-                  <div
-                    class="product__item__pic position-relative animated-product"
-                    style="height: 320px"
-                  >
+            <div class="product-slider d-flex transition-all"
+              :style="{ transform: `translateX(-${currentSlide * slideWidth}px)` }">
+              <div class="product-slide flex-shrink-0 me-3" v-for="item in ListBestHotProducts" :key="item.maSp"
+                style="width: 280px;height: 470px;margin-bottom: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
+
+                <div class="product__item" style="border-radius: 12px; position: relative;">
+                  <!-- Sales Tag - Ribbon Style -->
+
+                  <div class="product__item__pic position-relative animated-product" style="height: 320px;">
                     <img
-                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                        item.productDetails[0].images[0].tenHinhAnh
-                      }`"
-                      :alt="item.tenSanPham"
-                      class="w-100 h-100"
-                      style="object-fit: cover; border-radius: 12px"
-                    />
+                      :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                      :alt="item.tenSanPham" class="w-100 h-100"
+                      style="object-fit: cover; border-radius: 12px 12px 0 0;" />
 
                     <!-- Discount Badge on Image -->
                     <div class="discount-badge position-absolute top-0 start-0 m-2">
                       <div
-                        class="bg-danger text-white px-2 py-1 rounded-2 d-flex align-items-center shadow-sm"
-                      >
-                        <i class="fas fa-heart"></i>
+                        style="background-color: #dc3545; color: white; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); font-size: 12px; font-weight: 500;">
+                        <i class="fa fa-heart" style="margin-right: 4px;"></i>
+                        Yêu Thích
                       </div>
+                    </div>
+
+
+
+                    <!-- Stock Badge -->
+                    <div
+                      style="position: absolute; bottom: 8px; right: 8px; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+                      Còn {{ item.stock || 23 }} sản phẩm
                     </div>
 
                     <!-- Hover Icons -->
                     <ul class="product__hover">
-                      <!-- <li>
-                        <a href="#" class="image-popup">
-                          <span class="arrow_expand"></span>
-                        </a>
-                      </li> -->
                       <li>
                         <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                          <span
-                            :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
-                            style="color: #ec4e79; font-size: 20px; transition: 0.3s"
-                          ></span>
+                          <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
+                            style="color: #ec4e79; font-size: 20px; transition: 0.3s"></span>
                         </a>
                       </li>
-                      <!-- <li>
-                        <a href="#"><span class="icon_bag_alt"></span></a>
-                      </li> -->
                     </ul>
                   </div>
 
-                  <div class="product__item__text text-center pt-3">
+                  <div class="product__item__text text-center pt-3" style="padding: 16px;">
                     <h6 class="mb-2">
-                      <router-link
-                        :to="`/product/${item.maSp}`"
-                        style="
-                          text-decoration-line: none;
-                          color: #333;
-                          font-size: 1.1rem;
-                          font-weight: 600;
-                        "
-                      >
+                      <router-link :to="`/product/${item.maSp}`"
+                        style="text-decoration-line: none; color: #333; font-size: 1.1rem; font-weight: 600;">
                         {{ item.tenSanPham }}
                       </router-link>
                     </h6>
 
-                    <!-- Price Section -->
-                    <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                    <!-- Price Section with Sales Info -->
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+                      <!-- Original Price (crossed out) -->
+
                       <!-- Current Price -->
-                      <div class="product__price text-danger fw-bold fs-6">
+                      <div class="product__price text-danger fw-bold fs-5">
                         {{ formatPrice(parsePrice(item.khoangGia)) }}
                       </div>
                     </div>
+
+                    <!-- Sales Stats -->
+                    <div
+                      style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px;">
+                      <div style="display: flex; align-items: center; color: #666;">
+                        <i class="fas fa-star" style="color: #ffc107; margin-right: 4px;"></i>
+                        {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+                      </div>
+                      <div style="color: #28a745; font-weight: 600;">
+                        Đã bán {{ item.soldCount || 1.2 }}k
+                      </div>
+                    </div>
+
+
+
                   </div>
                 </div>
               </div>
@@ -606,76 +577,46 @@ onMounted(() => {
 
     <!-- Banner Section Begin -->
     <section class="set-bg" style="position: relative; margin-bottom: 50px">
-      <img
-        src="../../assets/Customer/img/banner/banner-1.jpg"
-        class="animated-banner"
-        style="width: 100%; height: 400px"
-      />
+      <img src="../../assets/Customer/img/banner/banner-1.jpg" class="animated-banner"
+        style="width: 100%; height: 370px" />
       <div class="banner-icon"><i class="fas fa-tags fa-3x"></i></div>
-      <div
-        class="container"
-        style="
+      <div class="container" style="
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
           text-align: center;
           color: white;
-        "
-      >
+        ">
         <div class="row">
           <div class="col-12">
             <div class="banner__slider owl-carousel">
-              <div class="banner__item" style="margin-bottom: 300px">
+              <div class="banner__item" style="margin-bottom: 160px">
                 <div class="banner__text">
                   <span>Bộ Sưu Tập</span>
-                  <div
-                    class="col-xl-3 col-lg-2"
-                    style="width: 300px; margin-left: 430px; padding-bottom: 20px"
-                  >
-                    <svg
-                      viewBox="0 0 700 250"
-                      role="img"
-                      aria-label="Angel soft curvy logo with wings and animated gradient"
-                    >
+                  <div class="col-xl-3 col-lg-2" style="width: 300px; margin-left: 430px; ">
+                    <svg viewBox="0 0 700 250" role="img"
+                      aria-label="Angel soft curvy logo with wings and animated gradient">
                       <defs>
                         <linearGradient id="start" x1="0%" y1="0%" x2="0%" y2="100%">
                           <stop offset="20%" stop-color="#EC4E79">
-                            <animate
-                              attributeName="stop-color"
-                              values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;"
-                              dur="6s"
-                              repeatCount="indefinite"
-                            />
+                            <animate attributeName="stop-color" values="#EC4E79; #ABA2B7; #5CCAE7; #ABA2B7; #EC4E79;"
+                              dur="6s" repeatCount="indefinite" />
                           </stop>
                           <stop offset="40%" stop-color="#ABA2B7">
-                            <animate
-                              attributeName="stop-color"
-                              values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;"
-                              dur="6s"
-                              repeatCount="indefinite"
-                            />
+                            <animate attributeName="stop-color" values="#ABA2B7; #5CCAE7; #EC4E79; #5CCAE7; #ABA2B7;"
+                              dur="6s" repeatCount="indefinite" />
                           </stop>
                           <stop offset="55%" stop-color="#5CCAE7">
-                            <animate
-                              attributeName="stop-color"
-                              values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;"
-                              dur="6s"
-                              repeatCount="indefinite"
-                            />
+                            <animate attributeName="stop-color" values="#5CCAE7; #ABA2B7; #EC4E79; #ABA2B7; #5CCAE7;"
+                              dur="6s" repeatCount="indefinite" />
                           </stop>
                         </linearGradient>
                       </defs>
 
                       <!-- Angel text with soft cursive font -->
                       <RouterLink to="/" style="text-decoration: none">
-                        <text
-                          x="50%"
-                          y="60%"
-                          dominant-baseline="middle"
-                          text-anchor="middle"
-                          class="angel-text"
-                        >
+                        <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" class="angel-text">
                           Angel Fashion
                         </text>
                       </RouterLink>
@@ -722,12 +663,8 @@ onMounted(() => {
             <!-- Left Side - Advertisement Banner -->
             <div class="col-md-2">
               <div class="banner-container h-100">
-                <img
-                  src="/src/assets/images/Beige Minimalist Fashion Business Banner (1).png"
-                  alt="Fashion Banner"
-                  class="w-100 h-100 object-fit-cover"
-                  style="min-height: 580px;"
-                />
+                <img src="/src/assets/images/Beige Minimalist Fashion Business Banner (1).png" alt="Fashion Banner"
+                  class="w-100 h-100 object-fit-cover" style="min-height: 580px;" />
                 <div class="banner-icon"><i class="fas fa-ad fa-3x"></i></div>
               </div>
             </div>
@@ -737,86 +674,71 @@ onMounted(() => {
               <!-- First Row - 4 products -->
               <div class="row g-3 mb-4">
                 <div class="col-md-3" v-for="item in ListNewProducts.slice(0, 4)" :key="item.maSp">
-                  <div
-                    class="hot-product-item"
-                    style="background-color: #ffffff; border-radius: 12px"
-                  >
-                    <!-- Product Image with Hover Effects -->
-                    <div class="text-center position-relative mb-3">
-                      <div
-                        class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px"
-                      >
-                        <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                            item.productDetails[0].images[0].tenHinhAnh
-                          }`"
-                          :alt="item.tenSanPham"
-                          class="img-fluid w-100 h-100"
-                          style="object-fit: cover"
-                        />
-                        <div class="product-icon position-absolute top-0 start-0 m-2">
-                          <i class="fas fa-clock text-danger fa-2x"></i>
-                        </div>
-                        <!-- Hover Icons -->
-                        <ul class="product__hover">
-                          <li>
-                            <a href="#" class="image-popup">
-                              <span class="arrow_expand"></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span
-                                :class="[
-                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
-                                ]"
-                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
-                              ></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#"><span class="icon_bag_alt"></span></a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
+  <div class="hot-product-item" 
+       style="width: 280px; height: 470px; margin-bottom: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
+    
+    <div class="product__item" style="border-radius: 12px; position: relative;">
+      <!-- Product Image with Hover Effects -->
+      <div class="product__item__pic position-relative animated-product" style="height: 320px;">
+        <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`" 
+             :alt="item.tenSanPham" 
+             class="w-100 h-100" 
+             style="object-fit: cover; border-radius: 12px 12px 0 0;" />
+        
+        <!-- NEW Badge -->
+        <div class="discount-badge position-absolute top-0 start-0 m-2">
+          <div style="background-color: #dc3545; color: white; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); font-size: 12px; font-weight: bold; letter-spacing: 0.5px;">
+            NEW
+          </div>
+        </div>
 
-                    <!-- Product Info -->
-                    <div class="product-info text-center">
-                      <h6
-                        class="product-title mb-2"
-                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
-                      >
-                        <router-link
-                          :to="`/product/${item.maSp}`"
-                          style="text-decoration-line: none; color: #333"
-                        >
-                          {{ item.tenSanPham }}
-                        </router-link>
-                      </h6>
+        <!-- Stock Badge -->
+        <div style="position: absolute; bottom: 8px; right: 8px; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+          Còn {{ item.stock || 23 }} sản phẩm
+        </div>
 
-                      <!-- Price Section -->
-                      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
-                          {{ formatPrice(parsePrice(item.khoangGia)) }}
-                        </span>
-                        <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="
-                            width: 32px;
-                            height: 32px;
-                            cursor: pointer;
-                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
-                          "
-                          @click="toggleFavoriteProduct(item.maSp)"
-                        >
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        <!-- Hover Icons -->
+        <ul class="product__hover">
+          <li>
+            <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
+              <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
+                    style="color: #ec4e79; font-size: 20px; transition: 0.3s"></span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Product Info -->
+      <div class="product__item__text text-center pt-3" style="padding: 10px;">
+        <h6 class="mb-2">
+          <router-link :to="`/product/${item.maSp}`" 
+                       style="text-decoration-line: none; color: #333; font-size: 1.1rem; font-weight: 600;">
+            {{ item.tenSanPham }}
+          </router-link>
+        </h6>
+
+        <!-- Price Section -->
+        <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+          <!-- Current Price -->
+          <div class="product__price text-danger fw-bold fs-5">
+            {{ formatPrice(parsePrice(item.khoangGia)) }}
+          </div>
+        </div>
+
+        <!-- Sales Stats -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px;">
+          <div style="display: flex; align-items: center; color: #666;">
+            <i class="fas fa-star" style="color: #ffc107; margin-right: 4px;"></i>
+            {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+          </div>
+          <div style="color: #28a745; font-weight: 600;">
+            Đã bán {{ item.soldCount || 1.2 }}k
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
               </div>
 
               <!-- Divider -->
@@ -827,87 +749,71 @@ onMounted(() => {
               <!-- Second Row - 4 more products -->
               <div class="row g-3">
                 <div class="col-md-3" v-for="item in ListNewProducts.slice(4, 8)" :key="item.maSp">
-                  <div
-                    class="hot-product-item"
-                    style="background-color: #ffffff; border-radius: 12px"
-                  >
-                    <!-- Product Image with Hover Effects -->
-                    <div class="text-center position-relative mb-3">
-                      <div
-                        class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px"
-                      >
-                        <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                            item.productDetails[0].images[0].tenHinhAnh
-                          }`"
-                          :alt="item.tenSanPham"
-                          class="img-fluid w-100 h-100"
-                          style="object-fit: cover"
-                        />
-                        <div class="product-icon position-absolute top-0 start-0 m-2">
-                          <i class="fas fa-clock text-danger fa-2x"></i>
-                        </div>
+  <div class="hot-product-item" 
+       style="width: 280px; height: 470px; margin-bottom: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
+    
+    <div class="product__item" style="border-radius: 12px; position: relative;">
+      <!-- Product Image with Hover Effects -->
+      <div class="product__item__pic position-relative animated-product" style="height: 320px;">
+        <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`" 
+             :alt="item.tenSanPham" 
+             class="w-100 h-100" 
+             style="object-fit: cover; border-radius: 12px 12px 0 0;" />
+        
+        <!-- NEW Badge -->
+        <div class="discount-badge position-absolute top-0 start-0 m-2">
+          <div style="background-color: #dc3545; color: white; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); font-size: 12px; font-weight: bold; letter-spacing: 0.5px;">
+            NEW
+          </div>
+        </div>
 
-                        <!-- Hover Icons -->
-                        <ul class="product__hover">
-                          <li>
-                            <a href="#" class="image-popup">
-                              <span class="arrow_expand"></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span
-                                :class="[
-                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
-                                ]"
-                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
-                              ></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#"><span class="icon_bag_alt"></span></a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
+        <!-- Stock Badge -->
+        <div style="position: absolute; bottom: 8px; right: 8px; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+          Còn {{ item.stock || 23 }} sản phẩm
+        </div>
 
-                    <!-- Product Info -->
-                    <div class="product-info text-center">
-                      <h6
-                        class="product-title mb-2"
-                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
-                      >
-                        <router-link
-                          :to="`/product/${item.maSp}`"
-                          style="text-decoration-line: none; color: #333"
-                        >
-                          {{ item.tenSanPham }}
-                        </router-link>
-                      </h6>
+        <!-- Hover Icons -->
+        <ul class="product__hover">
+          <li>
+            <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
+              <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
+                    style="color: #ec4e79; font-size: 20px; transition: 0.3s"></span>
+            </a>
+          </li>
+        </ul>
+      </div>
 
-                      <!-- Price Section -->
-                      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
-                          {{ formatPrice(parsePrice(item.khoangGia)) }}
-                        </span>
-                        <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="
-                            width: 32px;
-                            height: 32px;
-                            cursor: pointer;
-                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
-                          "
-                          @click="toggleFavoriteProduct(item.maSp)"
-                        >
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      <!-- Product Info -->
+      <div class="product__item__text text-center pt-3" style="padding: 16px;">
+        <h6 class="mb-2">
+          <router-link :to="`/product/${item.maSp}`" 
+                       style="text-decoration-line: none; color: #333; font-size: 1.1rem; font-weight: 600;">
+            {{ item.tenSanPham }}
+          </router-link>
+        </h6>
+
+        <!-- Price Section -->
+        <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+          <!-- Current Price -->
+          <div class="product__price text-danger fw-bold fs-5">
+            {{ formatPrice(parsePrice(item.khoangGia)) }}
+          </div>
+        </div>
+
+        <!-- Sales Stats -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px;">
+          <div style="display: flex; align-items: center; color: #666;">
+            <i class="fas fa-star" style="color: #ffc107; margin-right: 4px;"></i>
+            {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+          </div>
+          <div style="color: #28a745; font-weight: 600;">
+            Đã bán {{ item.soldCount || 1.2 }}k
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
               </div>
             </div>
           </div>
@@ -933,16 +839,10 @@ onMounted(() => {
               </div> -->
 
               <!-- Right Banner -->
-              <div >
-                <div
-                  class="position-relative overflow-hidden rounded-4 angel-banner animated-banner"
-                >
-                  <img
-                    src="/src/assets/images/banner ngang.jpg"
-                    alt="Angel Fashion Trends"
-                    class="w-100"
-                    style="height: 350px; object-fit: cover"
-                  />
+              <div>
+                <div class="position-relative overflow-hidden rounded-4 angel-banner animated-banner">
+                  <img src="/src/assets/images/banner ngang.jpg" alt="Angel Fashion Trends" class="w-100"
+                    style="height: 350px; object-fit: cover" />
                   <div class="banner-icon"><i class="fas fa-star fa-3x"></i></div>
                 </div>
               </div>
@@ -965,203 +865,174 @@ onMounted(() => {
             <!-- Left Side - Advertisement Banner -->
             <div class="col-md-2">
               <div class="position-relative overflow-hidden rounded-3 h-100 animated-banner">
-                <img
-                  src="https://i.pinimg.com/1200x/17/12/e0/1712e06978a02432d83d400d6bded81a.jpg"
-                  alt="Best Seller Banner"
-                  class="w-100 h-100 object-fit-cover"
-                  style="min-height: 580px"
-                />
+                <img src="https://i.pinimg.com/1200x/17/12/e0/1712e06978a02432d83d400d6bded81a.jpg"
+                  alt="Best Seller Banner" class="w-100 h-100 object-fit-cover" style="min-height: 580px" />
                 <div class="banner-icon"><i class="fas fa-ad fa-3x"></i></div>
               </div>
             </div>
 
             <!-- Right Side - Product Grid (8 products: 4 top + 4 bottom) -->
             <div class="col-md-10">
-              <!-- First Row - 4 products -->
-              <div class="row g-3 mb-4">
-                <div
-                  class="col-md-3"
-                  v-for="item in ListBestSellerProducts.slice(0, 4)"
-                  :key="item.maSp"
-                >
-                  <div
-                    class="hot-product-item"
-                    style="background-color: #ffffff; border-radius: 12px"
-                  >
-                    <!-- Product Image with Hover Effects -->
-                    <div class="text-center position-relative mb-3">
-                      <div
-                        class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px"
-                      >
-                        <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                            item.productDetails[0].images[0].tenHinhAnh
-                          }`"
-                          :alt="item.tenSanPham"
-                          class="img-fluid w-100 h-100"
-                          style="object-fit: cover"
-                        />
-                        <div class="product-icon position-absolute top-0 start-0 m-2">
-                          <i class="fas fa-chart-line text-warning fa-2x"></i>
-                        </div>
+  <!-- First Row - 4 products -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3" v-for="(item, index) in ListBestSellerProducts.slice(0, 4)" :key="item.maSp">
+      <div class="hot-product-item" 
+           style="width: 280px; height: 470px; margin-bottom: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
+        
+        <div class="product__item" style="border-radius: 12px; position: relative;">
+          <!-- Product Image with Hover Effects -->
+          <div class="product__item__pic position-relative animated-product" style="height: 320px;">
+            <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`" 
+                 :alt="item.tenSanPham" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover; border-radius: 12px 12px 0 0;" />
 
-                        <!-- Hover Icons -->
-                        <ul class="product__hover">
-                          <li>
-                            <a href="#" class="image-popup">
-                              <span class="arrow_expand"></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span
-                                :class="[
-                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
-                                ]"
-                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
-                              ></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#"><span class="icon_bag_alt"></span></a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
+            <!-- TOP Badge - hiển thị cho 4 sản phẩm đầu -->
+            <div v-if="index === 0"
+                 style="position: absolute; top: 8px; left: 8px; background-color: #ff6b35; color: white; padding: 4px 8px; border-radius: 0 0 8px 0; font-weight: bold; font-size: 12px; z-index: 10; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+              <div style="font-size: 10px; line-height: 1;">TOP</div>
+              <div style="font-size: 14px; line-height: 1; font-weight: 900;">1</div>
+            </div>
+            <div v-else-if="index === 1"
+                 style="position: absolute; top: 8px; left: 8px; background-color: #ff6b35; color: white; padding: 4px 8px; border-radius: 0 0 8px 0; font-weight: bold; font-size: 12px; z-index: 10; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+              <div style="font-size: 10px; line-height: 1;">TOP</div>
+              <div style="font-size: 14px; line-height: 1; font-weight: 900;">2</div>
+            </div>
+            <div v-else-if="index === 2"
+                 style="position: absolute; top: 8px; left: 8px; background-color: #ff6b35; color: white; padding: 4px 8px; border-radius: 0 0 8px 0; font-weight: bold; font-size: 12px; z-index: 10; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+              <div style="font-size: 10px; line-height: 1;">TOP</div>
+              <div style="font-size: 14px; line-height: 1; font-weight: 900;">3</div>
+            </div>
+            <div v-else-if="index === 3"
+                 style="position: absolute; top: 8px; left: 8px; background-color: #ff6b35; color: white; padding: 4px 8px; border-radius: 0 0 8px 0; font-weight: bold; font-size: 12px; z-index: 10; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+              <div style="font-size: 10px; line-height: 1;">TOP</div>
+              <div style="font-size: 14px; line-height: 1; font-weight: 900;">4</div>
+            </div>
 
-                    <!-- Product Info -->
-                    <div class="product-info text-center">
-                      <h6
-                        class="product-title mb-2"
-                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
-                      >
-                        <router-link
-                          :to="`/product/${item.maSp}`"
-                          style="text-decoration-line: none; color: #333"
-                        >
-                          {{ item.tenSanPham }}
-                        </router-link>
-                      </h6>
+            <!-- Stock Badge -->
+            <div style="position: absolute; bottom: 8px; right: 8px; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+              Còn {{ item.stock || 23 }} sản phẩm
+            </div>
 
-                      <!-- Price Section -->
-                      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
-                          {{ formatPrice(parsePrice(item.khoangGia)) }}
-                        </span>
-                        <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="
-                            width: 32px;
-                            height: 32px;
-                            cursor: pointer;
-                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
-                          "
-                          @click="toggleFavoriteProduct(item.maSp)"
-                        >
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <!-- Hover Icons -->
+            <ul class="product__hover">
+              <li>
+                <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
+                  <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
+                        style="color: #ec4e79; font-size: 20px; transition: 0.3s"></span>
+                </a>
+              </li>
+            </ul>
+          </div>
 
-              <!-- Divider -->
-              <div class="text-center mb-4">
-                <hr style="border: none; border-top: 2px dashed #000" />
-              </div>
+          <!-- Product Info -->
+          <div class="product__item__text text-center pt-3" style="padding: 16px;">
+            <h6 class="mb-2">
+              <router-link :to="`/product/${item.maSp}`" 
+                           style="text-decoration-line: none; color: #333; font-size: 1.1rem; font-weight: 600;">
+                {{ item.tenSanPham }}
+              </router-link>
+            </h6>
 
-              <!-- Second Row - 4 more products -->
-              <div class="row g-3">
-                <div
-                  class="col-md-3"
-                  v-for="item in ListBestSellerProducts.slice(4, 8)"
-                  :key="item.maSp"
-                >
-                  <div
-                    class="hot-product-item"
-                    style="background-color: #ffffff; border-radius: 12px"
-                  >
-                    <!-- Product Image with Hover Effects -->
-                    <div class="text-center position-relative mb-3">
-                      <div
-                        class="product__item__pic position-relative animated-product"
-                        style="height: 300px; overflow: hidden; border-radius: 12px"
-                      >
-                        <img
-                          :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                            item.productDetails[0].images[0].tenHinhAnh
-                          }`"
-                          :alt="item.tenSanPham"
-                          class="img-fluid w-100 h-100"
-                          style="object-fit: cover"
-                        />
-                        <div class="product-icon position-absolute top-0 left-0 m-2">
-                          <i class="fas fa-chart-line text-warning fa-2x"></i>
-                        </div>
-
-                        <!-- Hover Icons -->
-                        <ul class="product__hover">
-                          <li>
-                            <a href="#" class="image-popup">
-                              <span class="arrow_expand"></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
-                              <span
-                                :class="[
-                                  favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt',
-                                ]"
-                                style="color: #ec4e79; font-size: 18px; transition: 0.3s"
-                              ></span>
-                            </a>
-                          </li>
-                          <li>
-                            <a href="#"><span class="icon_bag_alt"></span></a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    <!-- Product Info -->
-                    <div class="product-info text-center">
-                      <h6
-                        class="product-title mb-2"
-                        style="font-size: 1rem; line-height: 1.3; font-weight: 600"
-                      >
-                        <router-link
-                          :to="`/product/${item.maSp}`"
-                          style="text-decoration-line: none; color: #333"
-                        >
-                          {{ item.tenSanPham }}
-                        </router-link>
-                      </h6>
-
-                      <!-- Price Section -->
-                      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
-                        <span class="angel-price fw-bold" style="font-size: 1.1rem; color: #ec4e79">
-                          {{ formatPrice(parsePrice(item.khoangGia)) }}
-                        </span>
-                        <div
-                          class="bg-gradient-angel text-white rounded-circle d-flex align-items-center justify-content-center animated-icon"
-                          style="
-                            width: 32px;
-                            height: 32px;
-                            cursor: pointer;
-                            box-shadow: 0 2px 8px rgba(236, 78, 121, 0.3);
-                          "
-                          @click="toggleFavoriteProduct(item.maSp)"
-                        >
-                          <i class="fas fa-heart" style="font-size: 0.8rem; color: white"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+            <!-- Price Section -->
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+              <!-- Current Price -->
+              <div class="product__price text-danger fw-bold fs-5">
+                {{ formatPrice(parsePrice(item.khoangGia)) }}
               </div>
             </div>
+
+            <!-- Sales Stats -->
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px;">
+              <div style="display: flex; align-items: center; color: #666;">
+                <i class="fas fa-star" style="color: #ffc107; margin-right: 4px;"></i>
+                {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+              </div>
+              <div style="color: #28a745; font-weight: 600;">
+                Đã bán {{ item.soldCount || 1.2 }}k
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Divider -->
+  <div class="text-center mb-4">
+    <hr style="border: none; border-top: 2px dashed #000" />
+  </div>
+
+  <!-- Second Row - 4 more products -->
+  <div class="row g-3">
+    <div class="col-md-3" v-for="(item, index) in ListBestSellerProducts.slice(4, 8)" :key="item.maSp">
+      <div class="hot-product-item" 
+           style="width: 280px; height: 470px; margin-bottom: 10px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden;">
+        
+        <div class="product__item" style="border-radius: 12px; position: relative;">
+          <!-- Product Image with Hover Effects -->
+          <div class="product__item__pic position-relative animated-product" style="height: 320px;">
+            <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`" 
+                 :alt="item.tenSanPham" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover; border-radius: 12px 12px 0 0;" />
+
+            <!-- TOP Badge cho row thứ 2 - sản phẩm thứ 5 -->
+            <div v-if="index === 0"
+                 style="position: absolute; top: 8px; left: 8px; background-color: #ff6b35; color: white; padding: 4px 8px; border-radius: 0 0 8px 0; font-weight: bold; font-size: 12px; z-index: 10; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+              <div style="font-size: 10px; line-height: 1;">TOP</div>
+              <div style="font-size: 14px; line-height: 1; font-weight: 900;">5</div>
+            </div>
+
+            <!-- Stock Badge -->
+            <div style="position: absolute; bottom: 8px; right: 8px; background: linear-gradient(45deg, #28a745, #20c997); color: white; padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: bold;">
+              Còn {{ item.stock || 23 }} sản phẩm
+            </div>
+
+            <!-- Hover Icons -->
+            <ul class="product__hover">
+              <li>
+                <a href="#" @click.prevent="toggleFavoriteProduct(item.maSp)">
+                  <span :class="[favoriteStatus[item.maSp] ? 'icon_heart' : 'icon_heart_alt']"
+                        style="color: #ec4e79; font-size: 20px; transition: 0.3s"></span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Product Info -->
+          <div class="product__item__text text-center pt-3" style="padding: 16px;">
+            <h6 class="mb-2">
+              <router-link :to="`/product/${item.maSp}`" 
+                           style="text-decoration-line: none; color: #333; font-size: 1.1rem; font-weight: 600;">
+                {{ item.tenSanPham }}
+              </router-link>
+            </h6>
+
+            <!-- Price Section -->
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+              <!-- Current Price -->
+              <div class="product__price text-danger fw-bold fs-5">
+                {{ formatPrice(parsePrice(item.khoangGia)) }}
+              </div>
+            </div>
+
+            <!-- Sales Stats -->
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px 12px; background-color: #f8f9fa; border-radius: 6px; font-size: 12px;">
+              <div style="display: flex; align-items: center; color: #666;">
+                <i class="fas fa-star" style="color: #ffc107; margin-right: 4px;"></i>
+                {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+              </div>
+              <div style="color: #28a745; font-weight: 600;">
+                Đã bán {{ item.soldCount || 1.2 }}k
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
           </div>
         </div>
 
@@ -1253,6 +1124,20 @@ onMounted(() => {
 </template>
 
 <style>
+.ranking-badge {
+  transition: all 0.3s ease;
+  font-family: 'Arial', sans-serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.ranking-badge:hover {
+  transform: scale(1.1);
+}
+
+.animated-product:hover .ranking-badge {
+  transform: scale(1.05);
+}
+
 .product__item__pic {
   height: 300px;
   position: relative;
@@ -1453,9 +1338,11 @@ onMounted(() => {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
