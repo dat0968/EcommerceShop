@@ -440,3 +440,5 @@ npm-debug.log
 yarn-error.log
 
 # End of https://www.toptal.com/developers/gitignore/api/dotnetcore,csharp,vuejs
+ECOMMERCESHOPUXUI/create-missing-assets.sh
+ECOMMERCESHOPUXUI/EcommerceProject/pnpm-lock.yaml
