@@ -105,12 +105,12 @@
             <div class="footer__widget">
               <h6>Tài khoản</h6>
               <ul>
-                <li><a href="#">Tài khoản của tôi</a></li>
+                <li><RouterLink to="/Profile">Tài khoản của tôi</RouterLink></li>
                 <li><RouterLink to="/FollowOrder">Theo dõi đơn hàng</RouterLink></li>
-                <li><a href="#">Thanh toán</a></li>
+                <li><RouterLink to="/cart">Thanh toán</RouterLink></li>
                 <li><RouterLink to="/favoriteproduct">Danh sách yêu thích</RouterLink></li>
               </ul>
-            </div>
+            </div> 
           </div>
 
           <!-- Contact Section -->
