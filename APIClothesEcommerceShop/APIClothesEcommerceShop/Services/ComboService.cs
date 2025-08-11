@@ -67,7 +67,7 @@ namespace APIClothesEcommerceShop.Services
                     }
                     await db.Database.CommitTransactionAsync();
                 }
-            }catch(Exception ex)
+            }catch(Exception)
             {
                await db.Database.RollbackTransactionAsync();
                throw;
@@ -120,7 +120,7 @@ namespace APIClothesEcommerceShop.Services
                 }   
                 await db.Database.CommitTransactionAsync();
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 await db.Database.RollbackTransactionAsync();
                 throw;

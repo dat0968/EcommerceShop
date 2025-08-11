@@ -188,32 +188,32 @@ namespace APIClothesEcommerceShop.Repositories.Account
                 });
             }
         }
-        public async Task<IActionResult> VerifyEmail(string email, string code)
+        public Task<IActionResult> VerifyEmail(string email, string code)
         {
             // Kiểm tra mã xác minh trong cache
             if (!_cache.TryGetValue($"VerificationCode_{email.ToLower()}", out string storedCode))
             {
-                return new OkObjectResult(new
+                return Task.FromResult<IActionResult>(new OkObjectResult(new
                 {
                     Success = false,
                     Message = "Mã xác minh không tồn tại hoặc đã hết hạn."
-                });
+                }));
             }
 
             if (storedCode != code)
             {
-                return new OkObjectResult(new
+                return Task.FromResult<IActionResult>(new OkObjectResult(new
                 {
                     Success = false,
                     Message = "Mã xác minh không đúng."
-                });
+                }));
             }
 
-            return new OkObjectResult(new
+            return Task.FromResult<IActionResult>(new OkObjectResult(new
             {
                 Success = true,
                 Message = "Xác minh email thành công."
-            });
+            }));
         }
         public async Task<IActionResult> LoginCustomer(LoginDTO model)
         {
@@ -473,31 +473,31 @@ namespace APIClothesEcommerceShop.Repositories.Account
             }
         }
 
-        public async Task<IActionResult> VerifyResetPasswordCode(string email, string code)
+        public Task<IActionResult> VerifyResetPasswordCode(string email, string code)
         {
             if (!_cache.TryGetValue($"ResetPasswordCode_{email.ToLower()}", out string storedCode))
             {
-                return new OkObjectResult(new
+                return Task.FromResult<IActionResult>(new OkObjectResult(new
                 {
                     Success = false,
                     Message = "Mã xác minh không tồn tại hoặc đã hết hạn."
-                });
+                }));
             }
 
             if (storedCode != code)
             {
-                return new OkObjectResult(new
+                return Task.FromResult<IActionResult>(new OkObjectResult(new
                 {
                     Success = false,
                     Message = "Mã xác minh không đúng."
-                });
+                }));
             }
 
-            return new OkObjectResult(new
+            return Task.FromResult<IActionResult>(new OkObjectResult(new
             {
                 Success = true,
                 Message = "Xác minh thành công. Vui lòng nhập mật khẩu mới."
-            });
+            }));
         }
 
         public async Task<IActionResult> ResetPasswordCustomer(string email, string newPassword, bool loginAfterReset)
@@ -625,16 +625,16 @@ namespace APIClothesEcommerceShop.Repositories.Account
             });
         }
 
-        public async Task<IActionResult> RenewToken(PersonalInformationDTO model)
+        public Task<IActionResult> RenewToken(PersonalInformationDTO model)
         {
-            var checkRefreshToken = await _db.Refreshtokens.AsNoTracking().FirstOrDefaultAsync(p => p.Token == model.RefreshToken);
+            var checkRefreshToken = _db.Refreshtokens.AsNoTracking().FirstOrDefault(p => p.Token == model.RefreshToken);
             if (checkRefreshToken == null || checkRefreshToken.ExpiredAt < DateTime.UtcNow)
             {
-                return new OkObjectResult(new
+                return Task.FromResult<IActionResult>(new OkObjectResult(new
                 {
                     Success = false,
                     Message = "RefreshToken has expired. Login again",
-                });
+                }));
             }
             var information = new PersonalInformationDTO
             {
@@ -644,7 +644,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
                 VaiTro = model.VaiTro,
             };
             var generateAccessToken = _tokenServices.GenerateAccessToken(information);
-            return new OkObjectResult(new
+            return Task.FromResult<IActionResult>(new OkObjectResult(new
             {
                 Success = true,
                 Message = "Renew AccessToken successfully",
@@ -653,7 +653,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
                     AccessToken = generateAccessToken,
                     RefreshToken = model.RefreshToken,
                 }
-            });
+            }));
         }
 
         public async Task LoginGoogle()

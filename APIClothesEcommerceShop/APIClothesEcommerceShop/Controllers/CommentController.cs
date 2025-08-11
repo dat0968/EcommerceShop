@@ -21,7 +21,7 @@ namespace APIClothesEcommerceShop.Controllers
         }
         [ProducesResponseType(typeof(ResponseAPI<IEnumerable<CommentResponseDTO>>), 200)]
         [HttpGet("{productId}")]
-        public async Task<IActionResult> GetCommentsByProductId(int productId)
+        public IActionResult GetCommentsByProductId(int productId)
         {
             // ResponseAPI<IEnumerable<CommentResponseDTO>> res = new();
             // var comments = await _unit.Comment.GetCommentsByProductIdAsync(productId);
