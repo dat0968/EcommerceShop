@@ -4,6 +4,7 @@ using APIClothesEcommerceShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    partial class EcommerceShopContextModelSnapshot : ModelSnapshot
+    [Migration("20250813011331_addCommentToDb")]
+    partial class addCommentToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,10 +41,7 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasMaxLength(54)
                         .HasColumnType("nvarchar(54)");
 
-                    b.Property<int?>("IdCombo")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("IdSanPham")
+                    b.Property<int>("IdSanPham")
                         .HasColumnType("int");
 
                     b.Property<int>("MaKh")
@@ -59,8 +59,6 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("IdCombo");
 
                     b.HasIndex("IdSanPham");
 
@@ -982,21 +980,17 @@ namespace APIClothesEcommerceShop.Migrations
 
             modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>
                 {
-                    b.HasOne("APIClothesEcommerceShop.Models.Combo", "Combo")
-                        .WithMany()
-                        .HasForeignKey("IdCombo");
-
                     b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "SanPham")
                         .WithMany()
-                        .HasForeignKey("IdSanPham");
+                        .HasForeignKey("IdSanPham")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "Khachhang")
                         .WithMany()
                         .HasForeignKey("MaKh")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Combo");
 
                     b.Navigation("Khachhang");
 

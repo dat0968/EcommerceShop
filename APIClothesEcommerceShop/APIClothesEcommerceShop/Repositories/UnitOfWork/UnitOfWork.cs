@@ -19,7 +19,7 @@ namespace APIClothesEcommerceShop.Repositories.UnitOfWork
         public ICategoryRepository Category { get; private set; }
         public IReviewRepository Review { get; private set; }
         public IWheelCouponRepository WheelCoupon { get; private set; }
-        // public ICommentRepository Comment { get; private set; }
+        public ICommentRepository Comment { get; private set; }
 
         public UnitOfWork(EcommerceShopContext context, IGeminiAIService ai, IConfiguration configuration)
         {
@@ -29,6 +29,7 @@ namespace APIClothesEcommerceShop.Repositories.UnitOfWork
             Category = new CategoryRepository(_context);
             Review = new ReviewRepository(_context, _ai);
             WheelCoupon = new WheelCouponRepository(_context, _configuration);
+            Comment = new CommentRepository(_context);
         }
         public void Save()
         {

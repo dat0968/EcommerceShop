@@ -13,7 +13,8 @@ namespace APIClothesEcommerceShop.Models
         [Key]
         public int Id { get; set; }
 
-        public int IdSanPham { get; set; }
+        public int? IdSanPham { get; set; }
+        public int? IdCombo { get; set; }
         public int MaKh { get; set; } = 0;
 
         [MaxLength(54)]
@@ -28,6 +29,9 @@ namespace APIClothesEcommerceShop.Models
 
         [ForeignKey("IdSanPham")]
         public virtual Sanpham? SanPham { get; set; }
+
+        [ForeignKey("IdCombo")]
+        public virtual Combo? Combo { get; set; }
 
         [ForeignKey("MaKh")]
         public virtual Khachhang? Khachhang { get; set; }

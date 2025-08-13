@@ -55,7 +55,7 @@ public partial class EcommerceShopContext : DbContext
     public virtual DbSet<DanhGia> DanhGias { get; set; }
     public virtual DbSet<LichSuXem> LichSuXems { get; set; }
 
-    // ? public virtual DbSet<BinhLuan> BinhLuans { get; set; }
+    public virtual DbSet<BinhLuan> BinhLuan { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
