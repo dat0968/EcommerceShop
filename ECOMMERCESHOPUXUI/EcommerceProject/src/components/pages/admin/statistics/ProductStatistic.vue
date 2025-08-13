@@ -10,27 +10,28 @@
             <option value="year">Theo năm</option>
           </select>
         </div>
-        
       </div>
     </div>
-    <div class="card-body flex align-items-center m-3">
-      <div class="chart-container flex align-items-center position-relative">
-        <Overlay
-          :is-visible="!hasSalesChartData && !isLoading"
-          overlay-content="Không có dữ liệu để hiển thị biểu đồ."
-        />
-        <div v-if="isLoading" class="text-center my-4">
-          <LoadingSpinner />
-        </div>
-        <div class="flex align-items-center" v-else>
-          <div class="" v-show="selectedTimePeriod === 'date'">
-            <canvas id="salesQuantityChartByDay" ></canvas>
+    <div class="card-body m-3">
+      <div class="flex align-items-center">
+        <div class="chart-container flex align-items-center position-relative">
+          <Overlay
+            :is-visible="!hasSalesChartData && !isLoading"
+            overlay-content="Không có dữ liệu để hiển thị biểu đồ."
+          />
+          <div v-if="isLoading" class="text-center my-4">
+            <LoadingSpinner />
           </div>
-          <div class="" v-show="selectedTimePeriod === 'month'">
-            <canvas id="salesQuantityChartByMonth" ></canvas>
-          </div>
-          <div class="" v-show="selectedTimePeriod === 'year'">
-            <canvas id="salesQuantityChartByYear" ></canvas>
+          <div class="flex align-items-center" v-else>
+            <div class="" v-show="selectedTimePeriod === 'date'">
+              <canvas id="salesQuantityChartByDay"></canvas>
+            </div>
+            <div class="" v-show="selectedTimePeriod === 'month'">
+              <canvas id="salesQuantityChartByMonth"></canvas>
+            </div>
+            <div class="" v-show="selectedTimePeriod === 'year'">
+              <canvas id="salesQuantityChartByYear"></canvas>
+            </div>
           </div>
         </div>
       </div>
@@ -199,8 +200,8 @@ export default {
               position: 'left',
               title: {
                 display: true,
-                text: 'Doanh thu'
-              }
+                text: 'Doanh thu',
+              },
             },
             y1: {
               beginAtZero: true,
@@ -210,8 +211,8 @@ export default {
               },
               title: {
                 display: true,
-                text: 'Số lượng bán'
-              }
+                text: 'Số lượng bán',
+              },
             },
           },
           plugins: {
@@ -219,17 +220,17 @@ export default {
               mode: 'index',
               intersect: false,
               callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
+                label: function (context) {
+                  let label = context.dataset.label || ''
                   if (label) {
-                    label += ': ';
+                    label += ': '
                   }
                   if (context.parsed.y !== null) {
-                    label += context.parsed.y;
+                    label += context.parsed.y
                   }
-                  return label;
-                }
-              }
+                  return label
+                },
+              },
             },
             legend: {
               display: true,
@@ -238,13 +239,21 @@ export default {
               display: true,
               text: 'Doanh thu và số lượng bán theo thời gian',
               font: {
-                size: 16
-              }
-            }
-          }
+                size: 16,
+              },
+            },
+          },
         },
       })
     },
   },
 }
 </script>
+
+
+<style scoped>
+canvas {
+  width: 100%;
+  height: 35rem;
+}
+</style>

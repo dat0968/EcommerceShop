@@ -11,6 +11,7 @@ import ReviewProductCombo from '@/components/pages/customers/reviews/ReviewProdu
 import TryOnProduct from '@/components/specicals/TryOnProduct.vue' // Import TryOnProduct
 
 import { emitter } from '@/stores/eventBus'
+import CommentSection from '@/components/comments/CommentSection.vue';
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
@@ -411,6 +412,15 @@ const tryOnProductData = computed(() => {
                     >Đánh giá</a
                   >
                 </li>
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    :class="{ active: activeTab === 'comment' }"
+                    href="#"
+                    @click.prevent="activeTab = 'comment'"
+                    >Bình luận</a
+                  >
+                </li>
               </ul>
               <div class="tab-content vh-100 overflow-auto">
                 <div
@@ -432,6 +442,15 @@ const tryOnProductData = computed(() => {
                   role="tabpanel"
                 >
                   <ReviewProductCombo :objectId="id" :isProduct="false" />
+                </div>
+                <div
+                  v-show="activeTab == 'comment'"
+                  class="tab-pane"
+                  :class="{ active: activeTab === 'comment' }"
+                  id="tabs-3"
+                  role="tabpanel"
+                >
+                  <CommentSection :objectId="combo.id" objectType="combo" />
                 </div>
               </div>
             </div>

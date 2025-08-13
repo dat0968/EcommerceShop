@@ -97,7 +97,7 @@
             <div class="review-product-info">
               <img
                 v-if="review.tenHinhAnh"
-                :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
+                :src="pathReplaceImg(undefined, 'HinhAnh/Products', review.tenHinhAnh)"
                 alt="Ảnh sản phẩm"
                 class="product-thumbnail"
               />
