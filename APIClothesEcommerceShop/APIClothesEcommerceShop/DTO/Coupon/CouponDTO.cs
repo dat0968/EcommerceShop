@@ -25,9 +25,11 @@ namespace APIClothesEcommerceShop.DTO.Coupon
 
         [Range(1, int.MaxValue, ErrorMessage = "Số lượng phải lớn hơn 0")]
         public int SoLuong { get; set; }
-
         public int SoLuongDaDung { get; set; }
 
         public bool? TrangThai { get; set; }
+
+        public int? MaKhachHang { get; set; }
+        public string? HoTen { get; set; }
     }
 }

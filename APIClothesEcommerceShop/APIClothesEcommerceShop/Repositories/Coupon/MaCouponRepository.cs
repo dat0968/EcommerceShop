@@ -38,7 +38,7 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     SoLuong = maCoupon.SoLuong,
                     TrangThai = true,
                     DonHangToiThieu = maCoupon.DonHangToiThieu,
-                    SoLuongDaDung = 0
+                    SoLuongDaDung = 0,
                 };
 
                 db.Macoupons.Add(newCouponCode);
@@ -71,7 +71,9 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
 
         public async Task<List<CouponDTO>> GetAll(string? keywords, string? status, string? sort)
         {
-            var listCouponCode = db.Macoupons.AsQueryable();
+            var listCouponCode = db.Macoupons
+                .Include(c => c.KhachHang)
+                .AsQueryable();
             var covertToListMaCouponVM = new List<CouponDTO>();
 
             if (!string.IsNullOrEmpty(keywords))
@@ -82,13 +84,16 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
             switch (status)
             {
                 case "Còn hiệu lực":
-                    listCouponCode = listCouponCode.Where(p => p.TrangThai == true && p.NgayKetThuc > DateTime.Now);
+                    listCouponCode = listCouponCode.Where(p => p.TrangThai == true && p.NgayKetThuc > DateTime.Now && p.SoLuongDaDung < p.SoLuong);
                     break;
                 case "Đã hủy":
                     listCouponCode = listCouponCode.Where(p => p.TrangThai == false);
                     break;
                 case "Đã hết hạn":
-                    listCouponCode = listCouponCode.Where(p => p.NgayKetThuc < DateTime.Now);
+                    listCouponCode = listCouponCode.Where(p => p.TrangThai == true && p.NgayKetThuc < DateTime.Now && p.SoLuongDaDung < p.SoLuong);
+                    break;
+                case "Đã hết":
+                    listCouponCode = listCouponCode.Where(p => p.TrangThai == true && p.SoLuongDaDung >= p.SoLuong);
                     break;
                 default:
                     listCouponCode = listCouponCode.OrderByDescending(p => p.NgayBatDau);
@@ -119,6 +124,8 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     TrangThai = item.TrangThai,
                     NgayBatDau = item.NgayBatDau,
                     DonHangToiThieu = item.DonHangToiThieu,
+                    MaKhachHang = item.MaKhachHang,
+                    HoTen = item.KhachHang?.HoTen
                 });
             }
             return covertToListMaCouponVM;
@@ -141,7 +148,6 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     editCouponCode.NgayBatDau = maCoupon.NgayBatDau;
                     editCouponCode.SoLuongDaDung = maCoupon.SoLuongDaDung;
                     editCouponCode.DonHangToiThieu = maCoupon.DonHangToiThieu;
-
                     db.Macoupons.Update(editCouponCode);
                     await db.SaveChangesAsync();
                 }
@@ -169,6 +175,8 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     NgayBatDau = findCoupon.NgayBatDau,
                     NgayKetThuc = findCoupon.NgayKetThuc,
                     TrangThai = findCoupon.TrangThai,
+                    MaKhachHang = findCoupon.MaKhachHang,
+                    HoTen = findCoupon.KhachHang?.HoTen
                 };
                 return couponDTO;
             }
