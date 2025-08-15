@@ -29,7 +29,7 @@ namespace APIClothesEcommerceShop.Controllers
             try
             {
                 var comments = await _unit.Comment.GetCommentsByProductIdAsync(productId);
-                response.SetSuccessResponse(data: comments, message: "Comments retrieved successfully");
+                response.SetSuccessResponse(data: comments, message: "Bình luận lấy lại thành công ");
                 return Ok(response);
             }
             catch (Exception ex)
@@ -46,7 +46,7 @@ namespace APIClothesEcommerceShop.Controllers
             try
             {
                 var comments = await _unit.Comment.GetCommentsByComboIdAsync(comboId);
-                response.SetSuccessResponse(data: comments, message: "Comments retrieved successfully");
+                response.SetSuccessResponse(data: comments, message: "Bình luận lấy lại thành công");
                 return Ok(response);
             }
             catch (Exception ex)
@@ -66,7 +66,7 @@ namespace APIClothesEcommerceShop.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    response.SetErrorResponse("User not found");
+                    response.SetErrorResponse("Người dùng không tìm thấy");
                     return Unauthorized(response);
                 }
 
@@ -88,14 +88,15 @@ namespace APIClothesEcommerceShop.Controllers
                 }
                 else
                 {
-                    response.SetErrorResponse("Either MaSP or MaCombo must be provided.");
+                    response.SetErrorResponse("Hiện không thể bình luận.");
+                    Console.WriteLine("Không tìm thấy thông số Id");
                     return BadRequest(response);
                 }
 
                 await _unit.Comment.AddCommentAsync(comment);
                 await _unit.SaveAsync();
 
-                response.SetSuccessResponse("Comment added successfully");
+                response.SetSuccessResponse("Bình luận được thêm thành công");
                 return Ok(response);
             }
             catch (Exception ex)
@@ -115,20 +116,20 @@ namespace APIClothesEcommerceShop.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    response.SetErrorResponse("User not found");
+                    response.SetErrorResponse("Người dùng không tìm thấy");
                     return Unauthorized(response);
                 }
 
                 var existingComment = await _unit.Comment.GetAsync(c => c.Id == commentId);
                 if (existingComment == null)
                 {
-                    response.SetErrorResponse("Comment not found");
+                    response.SetErrorResponse("Bình luận không tìm thấy");
                     return NotFound(response);
                 }
 
                 if (existingComment.MaKh != int.Parse(userId) && !User.IsInRole("Admin"))
                 {
-                    response.SetErrorResponse("You are not authorized to update this comment");
+                    response.SetErrorResponse("Bạn không được phép cập nhật bình luận này");
                     return Forbid();
                 }
 
@@ -137,7 +138,7 @@ namespace APIClothesEcommerceShop.Controllers
                 await _unit.Comment.UpdateCommentAsync(existingComment);
                 await _unit.SaveAsync();
 
-                response.SetSuccessResponse("Comment updated successfully");
+                response.SetSuccessResponse("Bình luận cập nhật thành công");
                 return Ok(response);
             }
             catch (Exception ex)
@@ -157,27 +158,27 @@ namespace APIClothesEcommerceShop.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    response.SetErrorResponse("User not found");
+                    response.SetErrorResponse("Người dùng không tìm thấy");
                     return Unauthorized(response);
                 }
 
                 var existingComment = await _unit.Comment.GetAsync(c => c.Id == commentId);
                 if (existingComment == null)
                 {
-                    response.SetErrorResponse("Comment not found");
+                    response.SetErrorResponse("Bình luận không tìm thấy");
                     return NotFound(response);
                 }
 
                 if (existingComment.MaKh != int.Parse(userId) && !User.IsInRole("Admin"))
                 {
-                    response.SetErrorResponse("You are not authorized to delete this comment");
+                    response.SetErrorResponse("Bạn không được phép xóa bình luận này");
                     return Forbid();
                 }
 
                 await _unit.Comment.DeleteCommentAsync(commentId);
                 await _unit.SaveAsync();
 
-                response.SetSuccessResponse("Comment deleted successfully");
+                response.SetSuccessResponse("Bình luận đã xóa thành công");
                 return Ok(response);
             }
             catch (Exception ex)
