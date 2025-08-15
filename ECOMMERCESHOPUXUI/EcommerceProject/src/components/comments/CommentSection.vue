@@ -172,7 +172,16 @@ export default {
       try {
         const response = await commentService.getCommentsByObjectIdAndType(props.objectId, props.objectType);
         if (response.success) {
-          comments.value = response.data.sort((a, b) => new Date(b.ngayBinhLuan) - new Date(a.ngayBinhLuan));
+          const sortComments = (commentList) => {
+            commentList.sort((a, b) => new Date(b.ngayBinhLuan) - new Date(a.ngayBinhLuan));
+            commentList.forEach(comment => {
+              if (comment.replies && comment.replies.length > 0) {
+                sortComments(comment.replies);
+              }
+            });
+          };
+          sortComments(response.data);
+          comments.value = response.data;
         } else {
           Swal.fire('Lỗi', 'Không thể tải được danh sách bình luận.', 'error');
         }
