@@ -1,104 +1,103 @@
 <template>
   <li>
-    <a href="#" @click.prevent="showModal = true" class="dropdown-item d-flex">
+    <a href="#" @click.prevent="showModal = true" class="d-flex">
       <div class="position-relative">
         <span class="icon_ribbon_alt me-2"></span>
         <div v-if="spinsLeft > 0" class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger">{{ spinsLeft }}</div>
       </div>
       Vòng quay
     </a>
-  </li>
-
-  <teleport to="body">
-    <div
-      v-if="showModal"
-      class="modal fade show d-block"
-      tabindex="-1"
-      style="background: rgba(0, 0, 0, 0.45)"
-      @click.self="closeModal"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content p-4 position-relative">
-          <div class="modal-header text-center border-0 pb-0">
-            <h5 class="modal-title w-100 fs-4">Vòng Quay May Mắn
-              <a href="#" @click.prevent="openInfoModal" class="position-relative text-decoration-none ms-3">
-                <span class="icon_info_alt"></span>
-              </a>
-            </h5>
-            <button
-              type="button"
-              class="btn-close position-absolute end-0 top-0 m-3"
-              @click="closeModal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body d-flex flex-column align-items-center">
-            <div class="wheel-container">
-              <svg
-                class="wheel-svg"
-                viewBox="0 0 100 100"
-                :style="{ transform: `rotate(${rotation}deg)` }"
-              >
-                <g v-for="(item, idx) in wheelPrizes" :key="idx">
-                  <path
-                    :d="describeArc(50, 50, 48, idx * arc, (idx + 1) * arc)"
-                    :fill="item.isBlank ? '#BDBDBD' : colors[idx % colors.length]"
-                    stroke="#fff"
-                    stroke-width="0.5"
-                  />
-                  <text
-                    class="wheel-text"
-                    :x="getTextPos(idx).x"
-                    :y="getTextPos(idx).y"
-                    :transform="getTextTransform(idx)"
-                  >
-                    {{ item.name }}
-                  </text>
-                </g>
-              </svg>
-              <div class="wheel-pointer">▼</div>
+    <teleport to="body">
+      <div
+        v-if="showModal"
+        class="modal fade show d-block"
+        tabindex="-1"
+        style="background: rgba(0, 0, 0, 0.45)"
+        @click.self="closeModal"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content p-4 position-relative">
+            <div class="modal-header text-center border-0 pb-0">
+              <h5 class="modal-title w-100 fs-4">Vòng Quay May Mắn
+                <a href="#" @click.prevent="openInfoModal" class="position-relative text-decoration-none ms-3">
+                  <span class="icon_info_alt"></span>
+                </a>
+              </h5>
+              <button
+                type="button"
+                class="btn-close position-absolute end-0 top-0 m-3"
+                @click="closeModal"
+                aria-label="Close"
+              ></button>
             </div>
-
-            <button
-              class="btn btn-primary mt-4 px-4 py-2 fs-5"
-              :disabled="isSpinning || spinsLeft <= 0"
-              @click="spinWheel"
-            >
-              <span v-if="isSpinning">Đang quay...</span>
-              <span v-else>Quay (còn {{ spinsLeft }} lượt)</span>
-            </button>
-
-            <button
-              class="btn btn-info mt-3 px-4 py-2 fs-5 text-white"
-              :disabled="isSpinning || isLoading"
-              @click="initializeWheel"
-            >
-              <span v-if="isLoading"><i class="bi bi-arrow-clockwise spin-animation"></i> Đang tải...</span>
-              <span v-else><i class="bi bi-arrow-clockwise"></i> Kiểm tra lại</span>
-            </button>
-
-            <div
-              v-if="resultMessage"
-              :class="['alert', resultIsWin ? 'alert-success' : 'alert-secondary', 'mt-4', 'text-center', 'w-100']"
-              role="alert"
-            >
-              <h5 v-if="resultIsWin" class="mb-2">Chúc mừng bạn đã trúng!</h5>
-              <div class="fw-bold fs-5">{{ resultMessage }}</div>
-              <div v-if="resultIsWin && couponCode" class="mt-2">
-                Mã code:
-                <code class="coupon-code" @click="copyCode(couponCode)">{{ couponCode }}</code>
+            <div class="modal-body d-flex flex-column align-items-center">
+              <div class="wheel-container">
+                <svg
+                  class="wheel-svg"
+                  viewBox="0 0 100 100"
+                  :style="{ transform: `rotate(${rotation}deg)` }"
+                >
+                  <g v-for="(item, idx) in wheelPrizes" :key="idx">
+                    <path
+                      :d="describeArc(50, 50, 48, idx * arc, (idx + 1) * arc)"
+                      :fill="item.isBlank ? '#BDBDBD' : colors[idx % colors.length]"
+                      stroke="#fff"
+                      stroke-width="0.5"
+                    />
+                    <text
+                      class="wheel-text"
+                      :x="getTextPos(idx).x"
+                      :y="getTextPos(idx).y"
+                      :transform="getTextTransform(idx)"
+                    >
+                      {{ item.name }}
+                    </text>
+                  </g>
+                </svg>
+                <div class="wheel-pointer">▼</div>
               </div>
-              <transition name="fade">
-                <div v-if="copied" class="text-success mt-2">Đã sao chép!</div>
-              </transition>
+
+              <button
+                class="btn btn-primary mt-4 px-4 py-2 fs-5"
+                :disabled="isSpinning || spinsLeft <= 0"
+                @click="spinWheel"
+              >
+                <span v-if="isSpinning">Đang quay...</span>
+                <span v-else>Quay (còn {{ spinsLeft }} lượt)</span>
+              </button>
+
+              <button
+                class="btn btn-info mt-3 px-4 py-2 fs-5 text-white"
+                :disabled="isSpinning || isLoading"
+                @click="initializeWheel"
+              >
+                <span v-if="isLoading"><i class="bi bi-arrow-clockwise spin-animation"></i> Đang tải...</span>
+                <span v-else><i class="bi bi-arrow-clockwise"></i> Kiểm tra lại</span>
+              </button>
+
+              <div
+                v-if="resultMessage"
+                :class="['alert', resultIsWin ? 'alert-success' : 'alert-secondary', 'mt-4', 'text-center', 'w-100']"
+                role="alert"
+              >
+                <h5 v-if="resultIsWin" class="mb-2">Chúc mừng bạn đã trúng!</h5>
+                <div class="fw-bold fs-5">{{ resultMessage }}</div>
+                <div v-if="resultIsWin && couponCode" class="mt-2">
+                  Mã code:
+                  <code class="coupon-code" @click="copyCode(couponCode)">{{ couponCode }}</code>
+                </div>
+                <transition name="fade">
+                  <div v-if="copied" class="text-success mt-2">Đã sao chép!</div>
+                </transition>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <WheelInfoModal v-if="showInfoModal" :show="showInfoModal" :wheelInfo="wheelInfo" @close="showInfoModal = false" />
-  </teleport>
+      <WheelInfoModal v-if="showInfoModal" :show="showInfoModal" :wheelInfo="wheelInfo" @close="showInfoModal = false" />
+    </teleport>
+  </li>
 </template>
 
 <script>
