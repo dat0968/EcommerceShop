@@ -13,10 +13,12 @@ import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
 import pathReplaceImg from '@/utils/processPathImg'
 import NoDataMessage from '@/components/common/NoDataMessage.vue'
+import StarRating from '@/components/common/StarRating.vue';
+import { createApp } from 'vue';
 
 export default {
   name: 'ComboTable',
-  components: { NoDataMessage },
+  components: { NoDataMessage, StarRating },
   props: {
     combos: {
       type: Array,
@@ -33,7 +35,8 @@ export default {
         comboId: combo.comboId,
         comboName: combo.comboName,
         salesCount: combo.salesCount,
-        revenue: combo.revenue, // Keep as a number
+        revenue: combo.revenue,
+        starCount: combo.starCount
       }))
 
       // Khởi tạo DataTable
@@ -45,25 +48,23 @@ export default {
           { data: 'comboId', title: 'Mã combo', className: 'text-center' },
           { data: 'comboName', title: 'Tên combo' },
           {
-            data: null,
+            data: 'starCount',
             title: 'Đánh giá',
-            render: function (data, type, row) {
-              const averageRating = row.averageRating ?? 0;
-              const fullStars = Math.floor(averageRating);
-              const emptyStars = 5 - Math.ceil(averageRating);
-              let starsHtml = '';
-
-              for (let i = 0; i < fullStars; i++) {
-                starsHtml += '<span style="color: #ffc107">★</span>';
+            className: 'text-center',
+            render: (data, type, row) => {
+              if (type === 'display') {
+                const container = document.createElement('div');
+                const app = createApp(StarRating, {
+                  rating: data,
+                  readOnly: true,
+                  showRating: true,
+                  starSize: 20
+                });
+                app.mount(container);
+                return container.outerHTML;
               }
-              if (averageRating % 1 !== 0) { // Check for fractional part
-                starsHtml += '<span style="color: #ffc107; position: relative;">★<span style="position: absolute; width: ' + (averageRating % 1) * 100 + '%; overflow: hidden; display: inline-block;">★</span></span>'; // Partial star
-              }
-              for (let i = 0; i < emptyStars; i++) {
-                starsHtml += '<span style="color: #e4e5e9">★</span>';
-              }
-              return `<span>${starsHtml}</span>`;
-            },
+              return data;
+            }
           },
           { data: 'salesCount', title: 'Số lượng bán', className: 'text-center' },
           {
@@ -85,7 +86,6 @@ export default {
       })
       configsDt.attachSearchDebounce('#comboDatatable', table)
     },
-    // ! Not certainly about this method. Damn
     formatDetails(rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')
       const combo = this.combos.find((x) => x.comboId == rowData.comboId)

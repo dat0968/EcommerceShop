@@ -146,6 +146,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         .Select(ctspGroup =>
                         {
                             var ctsp = ctspGroup.First().MaCtspNavigation;
+                            var reviews = ctspGroup.Select(cthd => cthd.DanhGia).Where(dg => dg != null);
+                            var averageRating = reviews.Any() ? (decimal)reviews.Average(dg => dg.SoSao) : 0;
+
                             return new DetailTopProduct(
                                 ctsp?.MaCtsp ?? 0,
                                 ctsp?.MaSp ?? 0,
@@ -154,7 +157,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                                 ctsp?.SoLuongTon ?? 0,
                                 ctsp?.DonGia ?? 0,
                                 ctsp?.Hinhanhs != null && ctsp.Hinhanhs.Any() ? ctsp.Hinhanhs.First().TenHinhAnh ?? string.Empty : string.Empty,
-                                ctsp?.Cthoadons?.Sum(cthd => cthd.DanhGia?.SoSao ?? 0) ?? 0,
+                                averageRating,
                                 ctsp?.IsActive ?? false
                             );
                         })
@@ -163,6 +166,9 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                              .Sum(x => (x.SoLuong))
                         )
                         .ToList();
+                    
+                    var allVariantReviews = g.Select(cthd => cthd.DanhGia).Where(dg => dg != null);
+                    var productAverageRating = allVariantReviews.Any() ? allVariantReviews.Average(dg => dg.SoSao) : 0;
 
                     return new TopProduct
                     {
@@ -171,6 +177,7 @@ namespace APIClothesEcommerceShop.Repositories.Statistics
                         CategoryName = categoryName ?? string.Empty,
                         Revenue = g.Sum(x => (x.Gia * x.SoLuong)),
                         Count = g.Sum(x => x.SoLuong),
+                        AverageRating = (decimal)productAverageRating,
                         DetailTopProducts = detailTopProducts
                     };
                 })
