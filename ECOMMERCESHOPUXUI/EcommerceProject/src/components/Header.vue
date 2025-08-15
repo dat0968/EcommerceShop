@@ -151,28 +151,7 @@
               </div>
 
               <!-- Icon yêu thích + giỏ hàng -->
-              <ul class="header__right__widget">
-                <li>
-                  <router-link to="/favoriteproduct" class="position-relative">
-                    <i class="fa fa-heart fs-5"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                      2
-                      <span class="visually-hidden">sản phẩm yêu thích</span>
-                    </span>
-                  </router-link>
-                </li>
-                <li>
-                  <router-link to="/Cart" class="position-relative">
-                    <i class="fa fa-shopping-bag fs-5"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                      {{ numberCart }}
-                      <span class="visually-hidden">sản phẩm trong giỏ hàng</span>
-                    </span>
-                  </router-link>
-                </li>
-                <li v-if="isLoggedIn"><NavigationUserReview /></li>
-                <li><WheelRandomCode /></li>
-              </ul>
+              
             </div>
           </div>
         </div>
