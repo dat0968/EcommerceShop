@@ -5,7 +5,6 @@ import Swal from 'sweetalert2';
 const checkAndUpdateExpiredCoupons = async (couponsList) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Đặt thời gian về 00:00:00 để so sánh ngày
-
   for (const coupon of couponsList) {
     const endDate = new Date(coupon.ngayKetThuc);
     if (coupon.trangThai === true && endDate < today && !isCouponUsedUp(coupon)) {
@@ -38,11 +37,14 @@ const checkAndUpdateExpiredCoupons = async (couponsList) => {
 
 const getApiUrl = 'https://localhost:7217';
 const coupons = ref([]);
+const customers = ref([]);
 const showAddModal = ref(false);
 const showEditModal = ref(false);
 const isEdit = ref(false);
 const couponForm = ref({
   maCode: '',
+  maKhachHang: '',
+  hoTen: '',
   moTa: '',
   soTienGiam: null,
   phanTramGiam: null,
@@ -112,13 +114,36 @@ const validateForm = () => {
   }
   return true;
 };
-
+// Fetch all customers for dropdown
+const fetchCustomers = async () => {
+  try {
+    const response = await fetch(`${getApiUrl}/api/C/GetAll`);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    const data = await response.json();
+    if (data.success) {
+      customers.value = data.data;
+    } else {
+      console.error('Unable to fetch customers:', data.message);
+    }
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+  }
+};
 // Fetch coupons with pagination
 const fetchCoupons = async () => {
   try {
     const params = new URLSearchParams({
       keywords: searchQuery.value,
-      status: filterStatus.value === 'all' ? '' : filterStatus.value === 'active' ? 'Còn hiệu lực' : filterStatus.value === 'activess' ? 'Hết hiệu lực' : 'Đã hủy',
+      status: filterStatus.value === 'all'
+      ? '' : filterStatus.value === 'active'
+      ? 'Còn hiệu lực'
+      : filterStatus.value === 'noactive'
+      ? 'Đã hết hạn'
+      : filterStatus.value === 'noactives'
+      ? 'Đã hết'
+      : 'Đã hủy',
       sort: sortOrder.value,
       page: currentPage.value,
       pageSize: itemsPerPage.value
@@ -132,7 +157,8 @@ const fetchCoupons = async () => {
       coupons.value = data.data.map(coupon => ({
         ...coupon,
         ngayBatDau: coupon.ngayBatDau ? new Date(coupon.ngayBatDau).toISOString().split('T')[0] : '',
-        ngayKetThuc: coupon.ngayKetThuc ? new Date(coupon.ngayKetThuc).toISOString().split('T')[0] : ''
+        ngayKetThuc: coupon.ngayKetThuc ? new Date(coupon.ngayKetThuc).toISOString().split('T')[0] : '',
+        hoTen: getCustomerName(coupon.maKhachHang)
       }));
 
       // Kiểm tra và cập nhật trạng thái coupon hết hạn
@@ -147,6 +173,13 @@ const fetchCoupons = async () => {
     Swal.fire('Lỗi', `Không thể tải danh sách coupon: ${error.message}`, 'error');
     console.error('Fetch error:', error);
   }
+};
+
+// Get customer name by maKhachHang
+const getCustomerName = (maKhachHang) => {
+  if (!maKhachHang) return '';
+  const customer = customers.value.find(c => c.maKhachHang === maKhachHang);
+  return customer ? customer.hoTen : '';
 };
 
 
@@ -172,7 +205,7 @@ const getCouponStatus = (coupon) => {
     return { text: 'Đã hết', color: 'red' };
   }
   if (coupon.trangThai === 'expired' || (coupon.trangThai === true && endDate < today)) {
-    return { text: 'Hết hiệu lực', color: 'orange' };
+    return { text: 'Đã Hết Hạn', color: 'orange' };
   }
   if (coupon.trangThai === true) {
     return { text: 'Còn hiệu lực', color: 'green' };
@@ -187,6 +220,8 @@ const openAddModal = () => {
   couponForm.value = {
     maCode: '',
     moTa: '',
+    maKhachHang: '',
+    hoTen: '',
     soTienGiam: null,
     phanTramGiam: null,
     ngayBatDau: '',
@@ -203,6 +238,8 @@ const openEditModal = (coupon) => {
   isEdit.value = true;
   couponForm.value = {
     maCode: coupon.maCode,
+    maKhachHang: coupon.maKhachHang,
+    hoTen: coupon.hoTen,
     moTa: coupon.moTa || '',
     soTienGiam: coupon.soTienGiam,
     phanTramGiam: coupon.phanTramGiam,
@@ -374,17 +411,19 @@ onMounted(() => {
     <select v-model="filterStatus" class="form-control" @change="fetchCoupons" style="font-weight: 700; color: #000;">
       <option value="all">Tất cả trạng thái</option>
       <option value="active">Còn hiệu lực</option>
+      <option value="noactive">Đã hết hạn</option>
+      <option value="noactives">Đã hết</option>
       <option value="inactive">Đã hủy</option>
     </select>
   </div>
-  <div class="col-md-1">
+  <!-- <div class="col-md-1">
     <select v-model="itemsPerPage" class="form-control" @change="fetchCoupons" style="font-weight: 700; color: #000;">
       <option value="5">5</option>
       <option value="10">10</option>
       <option value="20">20</option>
       <option value="50">50</option>
     </select>
-  </div>
+  </div> -->
   <div class="col-md-3">
     <button class="btn btn-primary w-100" @click="openAddModal" style="font-weight: 700; color: #fff;">Thêm mới</button>
   </div>
@@ -395,6 +434,7 @@ onMounted(() => {
         <thead>
           <tr>
             <th>Mã Coupon</th>
+            <th>Mã Khách Hàng</th>
             <th @click="changeSort" class="sortable">
               Số tiền giảm
               <span v-if="sortOrder === 'asc'">↑</span>
@@ -417,6 +457,7 @@ onMounted(() => {
         <tbody>
           <tr v-for="coupon in coupons" :key="coupon.maCode">
             <td>{{ coupon.maCode }}</td>
+            <td>{{ coupon.maKhachHang }}</td>
             <td>{{ coupon.soTienGiam || 0 }}</td>
             <td>{{ coupon.phanTramGiam || 0 }}%</td>
             <td>{{ formatDate(coupon.ngayBatDau) }}</td>

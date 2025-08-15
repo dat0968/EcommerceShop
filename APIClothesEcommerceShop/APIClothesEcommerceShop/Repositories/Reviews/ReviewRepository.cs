@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO;
@@ -9,7 +10,6 @@ using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Repository;
 using APIClothesEcommerceShop.Services;
 using APIClothesEcommerceShop.Utils;
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIClothesEcommerceShop.Repositories.Reviews
@@ -160,6 +160,12 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     .Include(h => h.Cthoadons)
                         .ThenInclude(ct => ct.DanhGia)
                             .ThenInclude(dg => dg.KhachHang)
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.DanhGia)
+                            .ThenInclude(dg => dg.Combo)
+                    .Include(h => h.Cthoadons)
+                        .ThenInclude(ct => ct.DanhGia)
+                            .ThenInclude(dg => dg.SanPham)
                     .Include(h => h.Cthoadons)
                         .ThenInclude(ct => ct.MaCtspNavigation)
                             .ThenInclude(ctsp => ctsp.MaSpNavigation)
