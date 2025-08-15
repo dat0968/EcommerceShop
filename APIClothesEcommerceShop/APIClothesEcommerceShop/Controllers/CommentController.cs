@@ -187,5 +187,30 @@ namespace APIClothesEcommerceShop.Controllers
                 return BadRequest(response);
             }
         }
+
+        [HttpGet("my-comments")]
+        [Authorize]
+        public async Task<IActionResult> GetMyComments()
+        {
+            var response = new ResponseAPI<List<CommentResponseDTO>>();
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    response.SetErrorResponse("Người dùng không tìm thấy");
+                    return Unauthorized(response);
+                }
+
+                var comments = await _unit.Comment.GetCommentsByUserIdAsync(int.Parse(userId));
+                response.SetSuccessResponse(data: comments, message: "Bình luận của tôi lấy lại thành công");
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                response.SetErrorResponse(ex.Message);
+                return BadRequest(response);
+            }
+        }
     }
 }

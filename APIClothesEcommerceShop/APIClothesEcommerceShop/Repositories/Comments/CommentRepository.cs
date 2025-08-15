@@ -115,5 +115,44 @@ namespace APIClothesEcommerceShop.Repositories.Comments
                 _db.BinhLuan.Remove(comment);
             }
         }
+
+        public async Task<List<CommentResponseDTO>> GetCommentsByUserIdAsync(int userId)
+        {
+            var comments = await _db.BinhLuan
+                .Where(c => c.MaKh == userId)
+                .Include(c => c.Khachhang)
+                .OrderByDescending(c => c.NgayBinhLuan)
+                .ToListAsync();
+
+            var commentViewModels = comments.Select(c => new CommentResponseDTO
+            {
+                Id = c.Id,
+                MaSP = c.IdSanPham,
+                MaCombo = c.IdCombo,
+                MaKh = c.MaKh,
+                HoTen = c.Khachhang?.HoTen ?? "Anonymous",
+                Avatar = c.Khachhang?.HinhDaiDien ?? "",
+                NoiDung = c.NoiDung,
+                NgayBinhLuan = c.NgayBinhLuan,
+                ParentId = c.ParentId == 0 ? null : c.ParentId,
+            }).ToList();
+
+            var nestedComments = new List<CommentResponseDTO>();
+            var commentLookup = commentViewModels.ToDictionary(c => c.Id);
+
+            foreach (var comment in commentViewModels)
+            {
+                if (comment.ParentId.HasValue && commentLookup.TryGetValue(comment.ParentId.Value, out var parentComment))
+                {
+                    parentComment.Replies.Add(comment);
+                }
+                else
+                {
+                    nestedComments.Add(comment);
+                }
+            }
+
+            return nestedComments;
+        }
     }
 }

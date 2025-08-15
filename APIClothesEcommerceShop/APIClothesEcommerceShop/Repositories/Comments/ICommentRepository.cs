@@ -14,5 +14,6 @@ namespace APIClothesEcommerceShop.Repositories.Comments
         Task AddCommentAsync(BinhLuan comment);
         Task UpdateCommentAsync(BinhLuan comment);
         Task DeleteCommentAsync(int commentId);
+        Task<List<CommentResponseDTO>> GetCommentsByUserIdAsync(int userId);
     }
 }

@@ -40,6 +40,7 @@ import MyAddresses from '../views/customer/Addresses.vue'
 import FAQ from '../views/customer/FAQ.vue'
 import Blog from '../views/customer/Blog.vue'
 import AboutUs from '../views/customer/AboutUs.vue'
+import MyComments from '../views/customer/MyComments.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -65,6 +66,7 @@ const router = createRouter({
         { path: 'faq', name: 'FAQ', component: FAQ },
         { path: 'blog', name: 'Blog', component: Blog },
         { path: 'about-us', name: 'AboutUs', component: AboutUs },
+        { path: 'my-comments', name: 'MyComments', component: MyComments },
       ],
     },
     {

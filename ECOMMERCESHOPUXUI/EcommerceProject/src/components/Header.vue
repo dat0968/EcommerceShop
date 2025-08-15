@@ -137,10 +137,11 @@
                       <span></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                      <li><router-link to="/profile" class="dropdown-item">Cập nhật thông tin</router-link></li>
+                      <li><router-link to="/profile" class="dropdown-item"><i class="fa fa-user me-2"></i>Cập nhật thông tin</router-link></li>
                       <li><router-link to="/favoriteproduct" class="dropdown-item"><i class="fa fa-heart me-2"></i>Yêu thích</router-link></li>
                       <li><router-link to="/Cart" class="dropdown-item"><i class="fa fa-shopping-bag me-2"></i>Giỏ hàng</router-link></li>
                       <li><router-link to="/Order" class="dropdown-item"><i class="fa fa-box me-2"></i>Đơn hàng</router-link></li>
+                      <li><router-link to="/my-comments" class="dropdown-item"><i class="fa fa-comments me-2"></i>Bình luận của tôi</router-link></li>
                       <li><NavigationUserReview class="dropdown-item" /></li>
                       <li><WheelRandomCode class="dropdown-item" /></li>
                       <li><hr class="dropdown-divider" /></li>
