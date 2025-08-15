@@ -182,6 +182,11 @@ onMounted(() => {
                   <i class="icon-star"></i><span class="font-color">Đánh giá</span>
                 </RouterLink>
               </li>
+              <li>
+                <RouterLink to="/admin/comment-management">
+                  <i class="icon-speech"></i><span class="font-color">Bình luận</span>
+                </RouterLink>
+              </li>
               <li class="nav-item">
                 <router-link to="/admin/chat">
                   <i class="bi bi-chat-dots"></i> <span class="font-color">Liên hệ </span>

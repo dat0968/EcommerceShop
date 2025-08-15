@@ -15,5 +15,7 @@ namespace APIClothesEcommerceShop.Repositories.Comments
         Task UpdateCommentAsync(BinhLuan comment);
         Task DeleteCommentAsync(int commentId);
         Task<List<CommentResponseDTO>> GetCommentsByUserIdAsync(int userId);
+        Task UpdateCommentStatusAsync(int commentId, bool trangThai, string? lyDoHuy);
+        Task<IEnumerable<CommentResponseDTO>> GetAllCommentsForStaffAsync();
     }
 }

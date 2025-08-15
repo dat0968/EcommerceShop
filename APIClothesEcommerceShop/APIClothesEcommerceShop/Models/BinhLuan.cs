@@ -36,6 +36,9 @@ namespace APIClothesEcommerceShop.Models
         [ForeignKey("MaKh")]
         public virtual Khachhang? Khachhang { get; set; }
 
+        public bool TrangThai { get; set; } = true;
+        public string? LyDoHuy { get; set; }
+
         public int ParentId { get; set; } = 0;
     }
 }

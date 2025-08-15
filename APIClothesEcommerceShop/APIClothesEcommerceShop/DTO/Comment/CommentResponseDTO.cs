@@ -16,5 +16,9 @@ namespace APIClothesEcommerceShop.DTO.Comment
         public DateTime NgayBinhLuan { get; set; }
         public int? ParentId { get; set; }
         public List<CommentResponseDTO> Replies { get; set; } = new List<CommentResponseDTO>();
+        public string? TenSanPham { get; set; }
+        public string? TenCombo { get; set; }
+        public bool TrangThai { get; set; }
+        public string? LyDoHuy { get; set; }
     }
 }

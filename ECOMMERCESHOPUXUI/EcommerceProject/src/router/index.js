@@ -85,6 +85,11 @@ const router = createRouter({
         { path: 'coupon', name: 'couponManagement', component: couponManagement },
         {path: 'chat', name: 'StaffChat', component: StaffChat},
         {path: 'chat/:id', name: 'StaffChatDetail', component: StaffChat},
+        {
+          path: 'comment-management',
+          name: 'AdminCommentManagement',
+          component: () => import('@/views/admin/CommentManagement.vue')
+        },
       ],
     },
     { path: '/VNPAYresponse/:orderId/:total', name: 'VNPAYresponse', component: VNPAYresponse },

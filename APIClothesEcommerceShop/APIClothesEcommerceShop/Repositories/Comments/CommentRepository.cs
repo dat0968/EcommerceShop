@@ -154,5 +154,44 @@ namespace APIClothesEcommerceShop.Repositories.Comments
 
             return nestedComments;
         }
+
+        public async Task UpdateCommentStatusAsync(int commentId, bool trangThai, string? lyDoHuy)
+        {
+            var comment = await _db.BinhLuan.FindAsync(commentId);
+            if (comment != null)
+            {
+                comment.TrangThai = trangThai;
+                comment.LyDoHuy = lyDoHuy;
+                _db.BinhLuan.Update(comment);
+                await _db.SaveChangesAsync();
+            }
+        }
+
+        public async Task<IEnumerable<CommentResponseDTO>> GetAllCommentsForStaffAsync()
+        {
+            var comments = await _db.BinhLuan
+                .Include(c => c.Khachhang)
+                .Include(c => c.SanPham)
+                .Include(c => c.Combo)
+                .OrderByDescending(c => c.NgayBinhLuan)
+                .ToListAsync();
+
+            return comments.Select(c => new CommentResponseDTO
+            {
+                Id = c.Id,
+                MaSP = c.IdSanPham,
+                MaCombo = c.IdCombo,
+                MaKh = c.MaKh,
+                HoTen = c.Khachhang?.HoTen ?? "Anonymous",
+                Avatar = c.Khachhang?.HinhDaiDien ?? "",
+                NoiDung = c.NoiDung,
+                NgayBinhLuan = c.NgayBinhLuan,
+                ParentId = c.ParentId == 0 ? null : c.ParentId,
+                TrangThai = c.TrangThai,
+                LyDoHuy = c.LyDoHuy,
+                TenSanPham = c.SanPham?.TenSanPham,
+                TenCombo = c.Combo?.TenCombo
+            }).ToList();
+        }
     }
 }
