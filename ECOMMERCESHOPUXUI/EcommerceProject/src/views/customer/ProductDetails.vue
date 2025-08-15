@@ -30,6 +30,9 @@ const quantity = ref('1')
 const activeTab = ref('desc')
 const recommendationProduct = ref([])
 const isLoading = ref(true)
+
+// Add a new ref for overall loading state
+const overallLoading = ref(true)
 const readToken = ref({})
 function ReadToken(token) {
   if (token) {
@@ -360,6 +363,8 @@ onMounted(async () => {
     ])
   } catch (error) {
     console.error('Error during component initialization:', error)
+  } finally {
+    overallLoading.value = false // Set overall loading to false after all fetches
   }
 })
 
@@ -667,8 +672,15 @@ watch(
 
 <template>
   <div class="">
-    <!-- Product Details Section Begin -->
-    <section class="product-details spad">
+    <div v-if="overallLoading" class="loading-spinner-overlay">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted">Đang tải dữ liệu sản phẩm...</p>
+    </div>
+    <div v-else>
+      <!-- Product Details Section Begin -->
+      <section class="product-details spad">
       <div class="" style="margin-left: 100px; margin-right: 100px; margin-top: -50px">
         <nav aria-label="breadcrumb" class="mb-4">
           <ol class="breadcrumb">
@@ -1053,7 +1065,7 @@ watch(
                   role="tabpanel"
                 >
                   <div class="comment-content">
-                    <CommentSection :objectId="product.maSp" objectType="product" />
+                    <CommentSection v-if="product.maSp" :objectId="product.maSp" objectType="product" />
                   </div>
                 </div>
               </div>
@@ -1066,6 +1078,7 @@ watch(
     </section>
     <!-- Product Details Section End -->
   </div>
+</div>
 </template>
 
 <style scoped>
