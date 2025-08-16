@@ -348,7 +348,7 @@ export default {
     <h2 style="text-align: center; padding-bottom: 20px;">Sản phẩm yêu thích</h2>
 
     <!-- Danh sách sản phẩm yêu thích -->
-    <div class="favorite-items">
+    
       <div
         v-for="item in favorites.data"
         :key="item.maSp"
@@ -380,15 +380,15 @@ export default {
           </button>
         </div>
       </div>
-    </div>
+    
 
     <!-- Thông báo khi không có sản phẩm -->
     <p v-if="favorites.data && favorites.data.length === 0" class="no-data" style="text-align: center; color: #f44336;">
       Không có sản phẩm yêu thích.
     </p>
-    <p v-else-if="favorites.message && !favorites.success" class="error-message" style="text-align: center; color: #f44336;">
+    <!-- <p v-else-if="favorites.message && !favorites.success" class="error-message" style="text-align: center; color: #f44336;">
       {{ favorites.message }}
-    </p>
+    </p> -->
 
     <!-- Thông báo -->
     <p v-if="message" :class="{ 'success': success, 'error': !success }" style="text-align: center;">
@@ -464,7 +464,7 @@ export default {
       </div>
     </div>
 
-    <!-- Banner -->
+    <!-- Banner
     <div class="row mb-5">
       <div class="col-12">
         <div class="row g-4">
@@ -490,7 +490,7 @@ export default {
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 <style scoped>
