@@ -43,12 +43,12 @@ namespace APIClothesEcommerceShop.Controllers
                 throw new Exception("Error", ex);
             }
         }
-        [HttpGet("GetHotProduct")]
-        public async Task<IActionResult> GetBestHotProduct()
+        [HttpGet("GetFavoriteProduct")]
+        public async Task<IActionResult> GetBestFavoriteProduct()
         {
             try
             {
-                var products = await homeRepository.GetHotProducts();
+                var products = await homeRepository.GetFavoriteProduct();
                 return Ok(products);
             }
             catch (Exception ex)

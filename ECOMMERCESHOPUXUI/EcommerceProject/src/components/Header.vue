@@ -260,6 +260,7 @@ onMounted(() => {
                   <router-link to="/Cart" class="position-relative">
                     <i class="fa fa-shopping-bag fs-5"></i>
                     <span
+                      v-if="isLoggedIn"
                       class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                     >
                       {{ numberCart }}

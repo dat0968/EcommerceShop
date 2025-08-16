@@ -7,7 +7,7 @@ namespace APIClothesEcommerceShop.Repositories.Home
     {
         Task<List<ProductResponseDTO>> GetNewProducts();
         Task<List<ProductResponseDTO>> GetBestsellerProducts();
-        Task<List<ProductResponseDTO>> GetHotProducts();
+        Task<List<ProductResponseDTO>> GetFavoriteProduct();
         Task<List<CategoryParentResponseDTO>> GetPublicCategories();
     }
 }
