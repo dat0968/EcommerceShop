@@ -12,7 +12,6 @@ public partial class Sanpham
     public int LuotXem { get; set; }
     public string? MoTa { get; set; }
     public bool? IsActive { get; set; }
-
     public virtual ICollection<Chitietdanhmuc> Chitietdanhmucs { get; set; } = new List<Chitietdanhmuc>();
 
     public virtual ICollection<Chitietsanpham> Chitietsanphams { get; set; } = new List<Chitietsanpham>();
