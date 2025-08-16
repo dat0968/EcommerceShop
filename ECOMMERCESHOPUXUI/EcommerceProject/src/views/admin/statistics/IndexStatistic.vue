@@ -58,6 +58,7 @@
 <script>
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
+import Cookies from 'js-cookie'
 
 import Swal from 'sweetalert2'
 
@@ -104,9 +105,45 @@ export default {
   computed: {},
   watch: {},
   async mounted() {
-    this.reloadData()
+    // Proactively ensure the API base URL is initialized before doing anything else.
+    await axiosConfig.initApiBaseUrl()
+    // Now, proceed with waiting for the auth token and loading data.
+    this.waitForAuthAndLoad()
   },
   methods: {
+    waitForAuthAndLoad(retries = 50) {
+      // Wait for both the auth token AND the API endpoint to be ready.
+      if (Cookies.get('accessToken') && axiosConfig.isEndpointAvailable()) {
+        this.reloadData()
+      } else if (retries > 0) {
+        setTimeout(() => this.waitForAuthAndLoad(retries - 1), 100)
+      } else {
+        let errorMessage = 'Không thể tải dữ liệu thống kê.'
+        if (!Cookies.get('accessToken')) {
+          errorMessage =
+            'Không tìm thấy thông tin đăng nhập. Vui lòng thử đăng nhập lại.'
+        } else if (!axiosConfig.isEndpointAvailable()) {
+          errorMessage =
+            'Không thể kết nối đến máy chủ API. Vui lòng kiểm tra lại kết nối.'
+        }
+        console.error(
+          'Could not load statistics. Token or API endpoint not available in time.',
+        )
+        Swal.fire('Lỗi', errorMessage, 'error')
+
+        // Set loading to false to stop spinners
+        this.isLoading = false
+        this.revenueIsLoading = false
+        this.productIsLoading = false
+        this.customerIsLoading = false
+        this.employeeIsLoading = false
+        this.orderSummaryIsLoading = false
+        this.datatableIsLoading = false
+        this.categoryIsLoading = false
+        this.inventoryIsLoading = false
+        this.reviewIsLoading = false
+      }
+    },
     async reloadData() {
       this.isLoading = true
       let errorMessage = ''
@@ -231,9 +268,31 @@ export default {
       await this.$nextTick()
       this.reviewIsLoading = false
     },
+    resetLoadingState() {
+      this.isLoading = true
+      this.revenueIsLoading = true
+      this.productIsLoading = true
+      this.customerIsLoading = true
+      this.employeeIsLoading = true
+      this.orderSummaryIsLoading = true
+      this.datatableIsLoading = true
+      this.categoryIsLoading = true
+      this.inventoryIsLoading = true
+      this.reviewIsLoading = true
+    },
   },
-
-  
+  activated() {
+    // Called when a cached component is made active.
+    this.reloadData()
+  },
+  deactivated() {
+    // Called when a cached component is deactivated.
+    this.resetLoadingState()
+  },
+  unmounted() {
+    // Called when the component is unmounted.
+    this.resetLoadingState()
+  },
   }
 
 </script>
