@@ -101,8 +101,8 @@
                       Tài khoản
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
-                      <li><router-link to="/Login" class="dropdown-item">Đăng nhập</router-link></li>
-                      <li><router-link to="/Register" class="dropdown-item">Đăng ký</router-link></li>
+                      <li><router-link to="/Login" class="dropdown-item"><i class="fa fa-user me-2"></i>Đăng nhập</router-link></li>
+                      <li><router-link to="/Register" class="dropdown-item"><i class="fa fa-user-plus me-2"></i>Đăng ký</router-link></li>
                       <li><hr class="dropdown-divider" /></li>
                       <li>
                         <router-link to="/favoriteproduct" class="dropdown-item">
@@ -145,7 +145,7 @@
                       <li><NavigationUserReview class="dropdown-item" /></li>
                       <li><WheelRandomCode class="dropdown-item" /></li>
                       <li><hr class="dropdown-divider" /></li>
-                      <li><a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger">Đăng xuất</a></li>
+                      <li><a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"><i class="fa fa-sign-out me-2"></i>Đăng xuất</a></li>
                     </ul>
                   </div>
                 </template>

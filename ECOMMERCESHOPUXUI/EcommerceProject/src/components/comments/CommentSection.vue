@@ -5,14 +5,22 @@
       <div class="row">
         <h5 class="mb-3">Để lại bình luận</h5>
       </div>
-      <textarea class="form-control mb-2" rows="3" placeholder="Viết bình luận của bạn..." v-model="newCommentContent"
-        :disabled="isSubmitting"></textarea>
-      <div class="row">
-        <button class="btn btn-primary col-3" @click="addComment" :disabled="isSubmitting">
-          <span v-if="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          <span v-if="isSubmitting"> Đang gửi...</span>
-          <span v-else>Gửi bình luận</span>
-        </button>
+      <div v-if="isAuthenticated">
+        <textarea class="form-control mb-2" rows="3" placeholder="Viết bình luận của bạn..." v-model="newCommentContent"
+          :disabled="isSubmitting"></textarea>
+        <div class="row">
+          <button class="btn btn-primary col-3" @click="addComment" :disabled="isSubmitting">
+            <span v-if="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span v-if="isSubmitting"> Đang gửi...</span>
+            <span v-else>Gửi bình luận</span>
+          </button>
+        </div>
+      </div>
+      <div v-else>
+        <textarea class="form-control mb-2" rows="3" placeholder="Bạn phải đăng nhập để bình luận" disabled></textarea>
+        <p class="mt-2">
+          Vui lòng <router-link to="/login">đăng nhập</router-link> để gửi bình luận.
+        </p>
       </div>
     </div>
 
@@ -51,7 +59,7 @@
             </div>
 
             <!-- Reply Button -->
-            <button v-if="replyingToCommentId !== comment.id" class="btn btn-sm btn-outline-primary reply-btn"
+            <button v-if="isAuthenticated && replyingToCommentId !== comment.id" class="btn btn-sm btn-outline-primary reply-btn"
               @click="startReply(comment.id)">
               <i class="fa fa-reply"></i> Trả lời
             </button>
@@ -148,13 +156,7 @@ export default {
     const currentPage = ref(1);
     const itemsPerPage = ref(5);
 
-    
-
-    // --- Real-time Event Handlers ---
-    
-
-    // --- SignalR Connection ---
-    
+    const isAuthenticated = computed(() => !!Cookies.get('accessToken'));
 
     // --- Lifecycle Hooks ---
     onMounted(() => {
@@ -162,8 +164,6 @@ export default {
         fetchComments();
       }
     });
-
-    
 
     // --- Data Fetching ---
     const fetchComments = async () => {
@@ -194,17 +194,6 @@ export default {
 
     // --- Actions ---
     const addComment = async () => {
-      if (!Cookies.get('accessToken')) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Vui lòng đăng nhập để bình luận',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-        });
-        return;
-      }
       if (!newCommentContent.value.trim()) {
         Swal.fire({ icon: 'warning', title: 'Vui lòng nhập nội dung bình luận', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         return;
@@ -238,17 +227,6 @@ export default {
     };
 
     const submitReply = async (parentId) => {
-      if (!Cookies.get('accessToken')) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Vui lòng đăng nhập để trả lời bình luận',
-          toast: true,
-          position: 'top-end',
-          showConfirmButton: false,
-          timer: 3000,
-        });
-        return;
-      }
       if (!replyContent.value.trim()) {
         Swal.fire({ icon: 'warning', title: 'Vui lòng nhập nội dung trả lời', toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
         return;
@@ -313,6 +291,7 @@ export default {
       comments, loading, isSubmitting, isSubmittingReply, newCommentContent,
       replyingToCommentId, replyContent, paginatedComments, currentPage, totalPages,
       addComment, startReply, cancelReply, submitReply, formatDate, changePage,
+      isAuthenticated,
     };
   },
 };
