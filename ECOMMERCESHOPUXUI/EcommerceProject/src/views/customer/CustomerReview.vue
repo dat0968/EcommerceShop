@@ -22,34 +22,20 @@
             <div class="d-flex align-items-center mb-4 position-relative">
               <ul class="nav nav-tabs flex-grow-1">
                 <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    :class="{ active: activeTab === 'notReviewed' }"
-                    href="#"
-                    @click.prevent="activeTab = 'notReviewed'"
-                    >Chưa đánh giá
+                  <a class="nav-link" :class="{ active: activeTab === 'notReviewed' }" href="#"
+                    @click.prevent="activeTab = 'notReviewed'">Chưa đánh giá
                     <span v-if="notReviewed.length" class="badge bg-primary ms-1">{{
                       notReviewed.length
-                    }}</span></a
-                  >
+                      }}</span></a>
                 </li>
                 <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    :class="{ active: activeTab === 'reviewed' }"
-                    href="#"
-                    @click.prevent="activeTab = 'reviewed'"
-                    >Đã đánh giá</a
-                  >
+                  <a class="nav-link" :class="{ active: activeTab === 'reviewed' }" href="#"
+                    @click.prevent="activeTab = 'reviewed'">Đã đánh giá</a>
                 </li>
               </ul>
               <div class="ms-3">
-                <button
-                  class="btn btn-outline-secondary"
-                  @click="reloadReviews"
-                  :disabled="isLoading"
-                  title="Tải lại danh sách đánh giá"
-                >
+                <button class="btn btn-outline-secondary" @click="reloadReviews" :disabled="isLoading"
+                  title="Tải lại danh sách đánh giá">
                   <i class="fa fa-refresh" :class="{ 'fa-spin': isLoading }"></i>
                 </button>
               </div>
@@ -82,20 +68,18 @@
 
                   <!-- Order Items Preview -->
                   <div class="order-items">
-                    <div
-                      v-for="item in orderGroup.items"
-                      :key="item.maCthd"
-                      class="order-item"
-                    >
+                    <div v-for="item in orderGroup.items" :key="item.maCthd"
+                      class="order-item p-3 border border-rounded mb-2">
                       <div class="item-details row">
                         <div class="item-image col-4">
                           <img :src="item.hinhAnhUrl" :alt="item.tenDoiTuong" />
                         </div>
                         <div class="col-8">
-                          
+
                           <div class="product-review-summary">
                             <h5 class="">
-                              <RouterLink :to="item.maSp ? '/product/' + item.maSp : '/combo/' + item.maCombo" class="text-decoration-none">
+                              <RouterLink :to="item.maSp ? '/product/' + item.maSp : '/combo/' + item.maCombo"
+                                class="text-decoration-none">
                                 {{ item.tenDoiTuong }}
                               </RouterLink>
                             </h5>
@@ -104,71 +88,42 @@
                               <span v-if="item.kichThuoc && item.mauSac"> | </span>
                               <span v-if="item.mauSac">Màu: {{ item.mauSac }}</span>
                             </p>
-                            <p class="item-quantity">x{{ item.soLuong }}</p>
+                            <!-- <p class="item-quantity">x{{ item.soLuong }}</p> -->
                           </div>
                         </div>
 
                         <div class="review-input-section">
                           <div class="mb-3 mt-3">
                             <label class="form-label fw-bold">Đánh giá của bạn:</label>
-                            <StarRating :rating="item._editSoSao" :read-only="false" @update:rating="item._editSoSao = $event" />
-                            <textarea
-                              v-model.trim="item._editNoiDung"
-                              class="form-control"
-                              rows="3"
-                              placeholder="Sản phẩm dùng có tốt không? Bạn có hài lòng không? Hãy chia sẻ cảm nhận của bạn tại đây nhé."
-                            ></textarea>
+                            <StarRating :rating="item._editSoSao" :read-only="false"
+                              @update:rating="item._editSoSao = $event" />
+                            <textarea v-model.trim="item._editNoiDung" class="form-control" rows="3"
+                              placeholder="Sản phẩm dùng có tốt không? Bạn có hài lòng không? Hãy chia sẻ cảm nhận của bạn tại đây nhé."></textarea>
                           </div>
 
                           <div class="mb-3">
                             <label class="form-label fw-bold">Hình ảnh kèm theo:</label>
-                            <input
-                              type="file"
-                              multiple
-                              accept="image/*"
-                              class="form-control"
-                              :disabled="getImageCount(item) >= maxImages"
-                              @change="onImagesChange($event, item)"
-                            />
-                            <small class="form-text text-muted"
-                              >Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá 5MB.</small
-                            >
-                            <div
-                              v-if="item._previewImgs && item._previewImgs.length"
-                              class="d-flex flex-wrap mt-2"
-                            >
-                              <div
-                                v-for="(img, idx) in item._previewImgs"
-                                :key="idx"
-                                class="position-relative me-2 mb-2"
-                              >
-                                <img
-                                  :src="img"
-                                  class="img-fluid border rounded"
+                            <input type="file" multiple accept="image/*" class="form-control"
+                              :disabled="getImageCount(item) >= maxImages" @change="onImagesChange($event, item)" />
+                            <small class="form-text text-muted">Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá
+                              5MB.</small>
+                            <div v-if="item._previewImgs && item._previewImgs.length" class="d-flex flex-wrap mt-2">
+                              <div v-for="(img, idx) in item._previewImgs" :key="idx"
+                                class="position-relative me-2 mb-2">
+                                <img :src="img" class="img-fluid border rounded"
                                   style="width: 100px; height: 100px; object-fit: cover"
-                                  @click="openLightbox(item._previewImgs, idx)"
-                                />
-                                <button
-                                  class="btn btn-sm btn-danger position-absolute top-0 end-0"
-                                  @click="removePreviewImage(item, idx)"
-                                >
+                                  @click="openLightbox(item._previewImgs, idx)" />
+                                <button class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                  @click="removePreviewImage(item, idx)">
                                   &times;
                                 </button>
                               </div>
                             </div>
                           </div>
 
-                          <button
-                            class="btn btn-primary"
-                            @click="submitReview(item)"
-                            :disabled="item._isSubmitting"
-                          >
-                            <span
-                              v-if="item._isSubmitting"
-                              class="spinner-border spinner-border-sm"
-                              role="status"
-                              aria-hidden="true"
-                            ></span>
+                          <button class="btn btn-primary" @click="submitReview(item)" :disabled="item._isSubmitting">
+                            <span v-if="item._isSubmitting" class="spinner-border spinner-border-sm" role="status"
+                              aria-hidden="true"></span>
                             Gửi đánh giá
                           </button>
                         </div>
@@ -178,11 +133,8 @@
                   <!-- No "more items" indicator for review page as all items are listed for review -->
                 </div>
               </div>
-              <EmptySuggestBox
-                v-else
-                contentText="Bạn không có sản phẩm nào cần đánh giá. Hãy mua sắm thêm nhé!"
-                linkNav="/shop"
-              />
+              <EmptySuggestBox v-else contentText="Bạn không có sản phẩm nào cần đánh giá. Hãy mua sắm thêm nhé!"
+                linkNav="/shop" />
             </div>
 
             <!-- Tab Đã đánh giá -->
@@ -205,20 +157,16 @@
 
                   <!-- Order Items Preview -->
                   <div class="order-items">
-                    <div
-                      v-for="item in orderGroup.items"
-                      :key="item.id"
-                      class="order-item"
-                    >
-                      <div class="item-details row">
-                        
+                    <div v-for="item in orderGroup.items" :key="item.id" class="order-item">
+                      <div class="item-details p-3 border border-rounded mb-2 row">
                         <div class="item-image col-4">
-                          <img :src="item.hinhAnhUrl" :alt="item.tenDoiTuong" class="img-fluid"/>
+                          <img :src="item.hinhAnhUrl" :alt="item.tenDoiTuong" class="img-fluid" />
                         </div>
                         <div class="col-8">
                           <div class="product-review-summary">
                             <h5 class="">
-                              <RouterLink :to="item.maSp ? '/product/' + item.maSp : '/combo/' + item.maCombo" class="text-decoration-none">
+                              <RouterLink :to="item.maSp ? '/product/' + item.maSp : '/combo/' + item.maCombo"
+                                class="text-decoration-none">
                                 {{ item.tenDoiTuong }}
                               </RouterLink>
                             </h5>
@@ -233,32 +181,24 @@
 
                         <div class="review-display-section">
                           <p class="mb-2">{{ item.noiDung }}</p>
-                          <div
-                            v-if="item.hinhAnhs && item.hinhAnhs.length"
-                            class="d-flex flex-wrap my-2"
-                          >
-                            <img
-                              v-for="(img, idx) in item.hinhAnhs"
-                              :key="idx"
-                              :src="img"
+                          <div v-if="item.hinhAnhs && item.hinhAnhs.length">
+
+                            <b>Hình ảnh đánh giá</b>
+                            <br>
+                          </div>
+                          <div v-if="item.hinhAnhs && item.hinhAnhs.length" class="d-flex flex-wrap my-2">
+                            <img v-for="(img, idx) in item.hinhAnhs" :key="idx" :src="img"
                               class="img-fluid me-2 mb-2 border rounded"
                               style="width: 100px; height: 100px; object-fit: cover"
-                              @click="openLightbox(item.hinhAnhs, idx)"
-                            />
+                              @click="openLightbox(item.hinhAnhs, idx)" />
                           </div>
-                          <blockquote
-                            v-if="item.shopPhanHoi"
-                            class="blockquote bg-light p-2 rounded mt-2"
-                          >
+                          <blockquote v-if="item.shopPhanHoi" class="blockquote bg-light p-2 rounded mt-2">
                             <p class="mb-0 small">
                               <strong>Phản hồi từ Shop:</strong> {{ item.shopPhanHoi }}
                             </p>
                           </blockquote>
-                          <button
-                            v-if="!item._isEditing"
-                            class="btn btn-sm btn-outline-primary mt-2"
-                            @click="toggleEditMode(item)"
-                          >
+                          <button v-if="!item._isEditing" class="btn btn-sm btn-outline-primary mt-2"
+                            @click="toggleEditMode(item)">
                             <i class="fa fa-edit"></i> Chỉnh sửa
                           </button>
 
@@ -266,64 +206,37 @@
                             <h6 class="mb-3">Chỉnh sửa đánh giá</h6>
                             <div class="mb-3">
                               <label class="form-label fw-bold">Số sao:</label>
-                              <StarRating :rating="item._editSoSao" :read-only="false" @update:rating="item._editSoSao = $event" />
+                              <StarRating :rating="item._editSoSao" :read-only="false"
+                                @update:rating="item._editSoSao = $event" />
                             </div>
                             <div class="mb-3">
                               <label class="form-label fw-bold">Nội dung:</label>
-                              <textarea
-                                v-model.trim="item._editNoiDung"
-                                class="form-control"
-                                rows="3"
-                              ></textarea>
+                              <textarea v-model.trim="item._editNoiDung" class="form-control" rows="3"></textarea>
                             </div>
                             <div class="mb-3">
                               <label class="form-label fw-bold">Hình ảnh:</label>
-                              <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                class="form-control"
+                              <input type="file" multiple accept="image/*" class="form-control"
                                 :disabled="getImageCount(item) >= maxImages"
-                                @change="onImagesChangeForEdit($event, item)"
-                              />
-                              <small class="form-text text-muted"
-                                >Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá 5MB.</small
-                              >
-                              <div
-                                v-if="item._previewImgs && item._previewImgs.length"
-                                class="d-flex flex-wrap mt-2"
-                              >
-                                <div
-                                  v-for="(img, idx) in item._previewImgs"
-                                  :key="idx"
-                                  class="position-relative me-2 mb-2"
-                                >
-                                  <img
-                                    :src="img"
-                                    class="img-fluid border rounded"
+                                @change="onImagesChangeForEdit($event, item)" />
+                              <small class="form-text text-muted">Tối đa {{ maxImages }} ảnh, mỗi ảnh không quá
+                                5MB.</small>
+                              <div v-if="item._previewImgs && item._previewImgs.length" class="d-flex flex-wrap mt-2">
+                                <div v-for="(img, idx) in item._previewImgs" :key="idx"
+                                  class="position-relative me-2 mb-2">
+                                  <img :src="img" class="img-fluid border rounded"
                                     style="width: 100px; height: 100px; object-fit: cover"
-                                    @click="openLightbox(item._previewImgs, idx)"
-                                  />
-                                  <button
-                                    class="btn btn-sm btn-danger position-absolute top-0 end-0"
-                                    @click="removePreviewImageForEdit(item, idx)"
-                                  >
+                                    @click="openLightbox(item._previewImgs, idx)" />
+                                  <button class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                                    @click="removePreviewImageForEdit(item, idx)">
                                     &times;
                                   </button>
                                 </div>
                               </div>
                             </div>
-                            <button
-                              class="btn btn-primary me-2"
-                              @click="updateReview(item)"
-                              :disabled="item._isSubmitting"
-                            >
-                              <span
-                                v-if="item._isSubmitting"
-                                class="spinner-border spinner-border-sm"
-                                role="status"
-                                aria-hidden="true"
-                              ></span>
+                            <button class="btn btn-primary me-2" @click="updateReview(item)"
+                              :disabled="item._isSubmitting">
+                              <span v-if="item._isSubmitting" class="spinner-border spinner-border-sm" role="status"
+                                aria-hidden="true"></span>
                               Lưu thay đổi
                             </button>
                             <button class="btn btn-secondary" @click="cancelEdit(item)">Hủy</button>
@@ -334,22 +247,13 @@
                   </div>
                 </div>
               </div>
-              <EmptySuggestBox
-                v-else
-                contentText="Bạn chưa đánh giá sản phẩm nào."
-                linkNav="/shop"
-              />
+              <EmptySuggestBox v-else contentText="Bạn chưa đánh giá sản phẩm nào." linkNav="/shop" />
             </div>
           </div>
         </div>
       </div>
     </section>
-    <VueEasyLightbox
-      :visible="isLightboxOpen"
-      :imgs="lightboxImages"
-      :index="lightboxIndex"
-      @hide="closeLightbox"
-    />
+    <VueEasyLightbox :visible="isLightboxOpen" :imgs="lightboxImages" :index="lightboxIndex" @hide="closeLightbox" />
   </div>
 </template>
 
@@ -495,8 +399,7 @@ export default {
       if (oversizedFiles.length > 0) {
         Swal.fire(
           'Kích thước ảnh quá lớn',
-          `Các ảnh sau vượt quá dung lượng ${
-            this.maxImageSize / 1024 / 1024
+          `Các ảnh sau vượt quá dung lượng ${this.maxImageSize / 1024 / 1024
           }MB: ${oversizedFiles.map((f) => f.name).join(', ')}`,
           'error',
         )
@@ -613,8 +516,7 @@ export default {
       if (oversizedFiles.length > 0) {
         Swal.fire(
           'Kích thước ảnh quá lớn',
-          `Các ảnh sau vượt quá dung lượng ${
-            this.maxImageSize / 1024 / 1024
+          `Các ảnh sau vượt quá dung lượng ${this.maxImageSize / 1024 / 1024
           }MB: ${oversizedFiles.map((f) => f.name).join(', ')}`,
           'error',
         );
@@ -702,6 +604,7 @@ export default {
   color: #666;
   border-bottom: 2px solid transparent;
 }
+
 .nav-tabs .nav-link.active {
   color: #007bff;
   border-color: #007bff;
