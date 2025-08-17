@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIClothesEcommerceShop.Migrations
 {
     [DbContext(typeof(EcommerceShopContext))]
-    [Migration("20250815180541_AddStatusInfoToBinhLuan")]
-    partial class AddStatusInfoToBinhLuan
+    [Migration("20250817014100_BinhLuanToDb")]
+    partial class BinhLuanToDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
