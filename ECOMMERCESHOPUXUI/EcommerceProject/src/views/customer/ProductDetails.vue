@@ -936,42 +936,41 @@ watch(
                 <h5 class="fw-bold mb-0">Sản phẩm gợi ý</h5>
               </div>
 
-              <!-- Related Products Grid - Vertical Layout -->
-              <div class="d-flex flex-column gap-3">
-                <!-- Product Item -->
-                <div v-for="item in recommendationProduct.slice(0, 5)" :key="item.maSp" class="">
-                  <div class="row g-0">
-                    <div class="col-4">
-                      <img
-                        :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-                        :alt="item.tenSanPham"
-                        class="img-fluid rounded-start"
-                        style="height: 90px; width: 100%; object-fit: contain"
-                      />
-                    </div>
-                    <div class="col-8">
-                      <div class="card-body p-2">
-                        <h4 class="card-title mb-1" style="font-size: 0.8rem; padding-bottom: 5px">
-                          <router-link
-                            :to="`/product/${item.maSp}`"
-                            class="text-decoration-none text-dark"
-                          >
-                            {{ item.tenSanPham }} ({{ item.maSp }})
-                          </router-link>
-                        </h4>
-                        <h6 style="padding-bottom: 5px"></h6>
-                        <div class="d-flex align-items-center justify-content-between">
-                          <span class="text-danger fw-bold" style="font-size: 1rem">{{
-                            formatPrice(item.khoangGia)
-                          }}</span>
+                    <!-- Related Products Grid - Vertical Layout -->
+                    <div class="d-flex flex-column gap-3">
+                        <!-- Product Item -->
+                        <div 
+                            v-for="item in recommendationProduct.slice(0, 5)" 
+                            :key="item.maSp"
+                            class="">
+                            <div class="row g-0">
+                                <div class="col-4">
+                                    <img 
+                                        :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                                        :alt="item.tenSanPham" 
+                                        class="img-fluid rounded-start"
+                                        style="height: 90px; width: 100%; object-fit: contain;">
+                                </div>
+                                <div class="col-8">
+                                    <div class="card-body p-2">
+                                        <h4 class="card-title mb-1" style="font-size: 0.8rem; padding-bottom: 5px;">
+                                            <router-link :to="`/product/${item.maSp}`" class="text-decoration-none text-dark">
+                                                {{ item.tenSanPham }}
+                                            </router-link>
+                                      
+                                        </h4>
+                                        <h6 style="padding-bottom: 5px;">   </h6>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span class="text-danger fw-bold" style="font-size: 1rem;">{{ formatPrice(item.khoangGia) }}</span>
+                                       
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                  </div>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
         <div class="text-center mb-4">
           <hr style="border: none; border-top: 2px dashed #000" />
