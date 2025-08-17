@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using APIClothesEcommerceShop.DTO;
-using Microsoft.Extensions.Configuration;
-
-
-using System.Text.Json;
-using Mscc.GenerativeAI;
 using APIClothesEcommerceShop.DTO.TryOn;
+using Microsoft.Extensions.Configuration;
+using Mscc.GenerativeAI;
 
 namespace APIClothesEcommerceShop.Services
 {
@@ -45,7 +43,7 @@ namespace APIClothesEcommerceShop.Services
 
                 // Initialize Google AI with the API key
                 var googleAI = new GoogleAI(apiKey: apiKey);
-                var model = googleAI.GenerativeModel(model: Model.Gemini15Flash);
+                var model = googleAI.GenerativeModel(model: Model.Gemini15FlashLatest);
 
                 // Generate content based on the prompt
                 var aiResponse = await model.GenerateContent(prompt);
@@ -292,7 +290,12 @@ namespace APIClothesEcommerceShop.Services
 
                     {productDetails}
 
-                    Phân tích tính thẩm mỹ, phong cách và sự phù hợp giới tính của trang phục được người mẫu mặc trong hình ảnh đã cung cấp. Xem xét mức độ phù hợp của trang phục với người mẫu và tổng thể hình ảnh. Cung cấp điểm thẩm mỹ trên thang điểm 10, và mô tả phong cách cũng như sự phù hợp giới tính. 
+                    Phân tích tính thẩm mỹ, phong cách và sự phù hợp giới tính của trang phục được người mẫu mặc trong hình ảnh đã cung cấp. Xem xét mức độ phù hợp của trang phục với người mẫu và tổng thể hình ảnh. 
+                    
+                    YÊU CẦU:
+                    1. Cung cấp điểm thẩm mỹ trên thang điểm 10.
+                    2. Mô tả phong cách và sự phù hợp giới tính một cách NGẮN GỌN.
+                    3. QUAN TRỌNG: Luôn trả lời bằng tiếng Việt.
 
                     Định dạng phản hồi dưới dạng đối tượng JSON với các khóa: aesthetic_score (float), style (string), gender_suitability (string).
 

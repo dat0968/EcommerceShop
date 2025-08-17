@@ -1,13 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using APIClothesEcommerceShop.DTO;
 using APIClothesEcommerceShop.DTO.TryOn;
 using APIClothesEcommerceShop.Services;
 using APIClothesEcommerceShop.Services.CloudinaryService;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -114,7 +114,7 @@ namespace APIClothesEcommerceShop.Controllers
                 // Convert localhost URL to physical path
                 var uri = new Uri(request.ImageUrl);
                 var relativePath = uri.AbsolutePath.TrimStart('/');
-                var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, relativePath.Replace('/', '\\'));
+                var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, relativePath); //? .Replace('/', '\\')
 
                 if (!System.IO.File.Exists(physicalPath))
                 {
