@@ -1,6 +1,5 @@
 <template>
-  <li>
-    <a href="#" @click.prevent="showModal = true" class="d-flex">
+    <a href="#" @click.prevent="showModal = true" class="d-flex dropdown-item">
       <div class="position-relative">
         <span class="icon_ribbon_alt me-2"></span>
         <div v-if="spinsLeft > 0" class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-danger">{{ spinsLeft }}</div>
@@ -97,7 +96,6 @@
 
       <WheelInfoModal v-if="showInfoModal" :show="showInfoModal" :wheelInfo="wheelInfo" @close="showInfoModal = false" />
     </teleport>
-  </li>
 </template>
 
 <script>
