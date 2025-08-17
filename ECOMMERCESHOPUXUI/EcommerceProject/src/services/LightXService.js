@@ -270,18 +270,21 @@ class LightXService {
   }
 
   async performTryOnAndAnalysis(apiKey, modelImageUrl, productsData) {
+    // Step 1: Process with LightX to get the try-on image URL.
+    // This step is critical. If it fails, we throw the error because we can't proceed.
+    const tryOnImageUrl = await this.processWithLightX(apiKey, modelImageUrl, productsData);
+
+    // Step 2: Analyze the try-on image with Gemini AI.
+    // This step is non-critical. If it fails, we return the image URL with a null result.
+    let analysisResult = null;
     try {
-      // Step 1: Process with LightX to get the try-on image URL
-      const tryOnImageUrl = await this.processWithLightX(apiKey, modelImageUrl, productsData);
-
-      // Step 2: Analyze the try-on image with Gemini AI
-      const analysisResult = await this.analyzeImageWithGemini(tryOnImageUrl, productsData);
-
-      return { tryOnImageUrl, analysisResult };
-    } catch (error) {
-      console.error('Error in performTryOnAndAnalysis:', error);
-      throw error; // Re-throw to be caught by the calling function
+      analysisResult = await this.analyzeImageWithGemini(tryOnImageUrl, productsData);
+    } catch (analysisError) {
+      console.error('Gemini AI analysis failed, but the try-on image was generated successfully.', analysisError);
+      // We don't re-throw the error. The calling function will receive analysisResult = null.
     }
+
+    return { tryOnImageUrl, analysisResult };
   }
 }
 

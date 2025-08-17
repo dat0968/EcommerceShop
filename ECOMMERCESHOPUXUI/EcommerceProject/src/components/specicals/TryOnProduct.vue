@@ -53,10 +53,10 @@
                     type="file"
                     @change="handleModelUpload"
                     accept="image/*"
-                    id="modelUploadInput"
+                    id="modelUploadInputSingle"
                     style="display: none"
                   />
-                  <label for="modelUploadInput" class="btn btn-outline-info btn-sm">
+                  <label for="modelUploadInputSingle" class="btn btn-outline-info btn-sm">
                     <i class="bi bi-upload"></i> Tải ảnh của bạn
                   </label>
                 </div>
@@ -79,7 +79,7 @@
               </div>
                  <button
                 class="btn btn-primary try-on-action w-100 mt-3"
-                @click="confirmModelSelection"
+                @click="performTryOn"
                 :disabled="!selectedProductImage || (!userModelFile && !selectedTryOnModel) || loading"
               >
                 <i class="bi bi-magic"></i> Thử đồ ngay
@@ -90,24 +90,26 @@
             <div class="tryon-main-content">
               <h4>Kết quả</h4>
               <div v-if="tryOnResult" class="display-card result-card">
-                <img :src="tryOnResult.image" alt="Kết quả thử đồ" class="img-fluid result-image" />
+                <div class="try-on-image-container">
+                    <img :src="tryOnResult.image" alt="Kết quả thử đồ" class="img-fluid result-image" />
+                    <button class="download-btn" @click="downloadTryOnResult" title="Tải ảnh về">
+                        <i class="bi bi-download"></i>
+                    </button>
+                </div>
                 <div class="result-info">
-                  <div v-if="tryOnResult.score && tryOnResult.score !== 'N/A'">
+                  <div v-if="tryOnResult.score != null">
                     <b>Điểm thẩm mỹ:</b>
                     <span class="score">{{ tryOnResult.score }}/10</span>
                   </div>
-                   <div v-if="tryOnResult.style && tryOnResult.style !== 'N/A'">
+                   <div v-if="tryOnResult.style">
                     <b>Phong cách:</b> {{ tryOnResult.style }}
                   </div>
-                  <div v-if="tryOnResult.gender_suitability && tryOnResult.gender_suitability !== 'N/A'">
+                  <div v-if="tryOnResult.gender_suitability">
                     <b>Giới tính:</b> {{ tryOnResult.gender_suitability }}
                   </div>
-                  <div v-if="analysisError" class="alert alert-warning mt-2 small">
-                    {{ analysisError }}
+                  <div v-if="tryOnResult.score == null && tryOnResult.style == null" class="mt-2 text-muted">
+                    <small>AI không thể phân tích ảnh này.</small>
                   </div>
-                  <button class="btn btn-success mt-2" @click="downloadTryOnResult">
-                    <i class="bi bi-download"></i> Tải kết quả
-                  </button>
                 </div>
               </div>
               <div v-else class="placeholder">
@@ -122,7 +124,7 @@
         <div v-if="showApiSettings" class="api-settings-overlay">
           <div class="api-settings-modal">
             <h3>Cài đặt API Key</h3>
-            <div class="form-group">
+            <div class="form-group mb-2">
               <label for="lightxApiKey">
                 LightX API Key
                 <i
@@ -139,7 +141,7 @@
                 placeholder="Nhập LightX API Key"
               />
             </div>
-            <div class="api-settings-actions">
+            <div class="api-settings-actions d-flex justify-content-between">
               <button class="btn btn-secondary" @click="cancelApiSettings">Hủy</button>
               <button class="btn btn-primary" @click="saveApiSettings">Lưu</button>
             </div>
@@ -185,18 +187,18 @@ export default {
       userModelFile: null,
       userModelPreviewUrl: '',
       tryOnResult: null,
-      analysisError: null,
     }
   },
    computed: {
     productImages() {
       if (!this.product) return [];
-      if (this.product.type === 'combo' && this.product.products) {
-        return this.product.products.map(p => p.image).flat();
-      }
+      // This handles the case where product details are fetched from an API
+      // and might have a nested `images` array or a single `image` property.
       if (this.product.images && this.product.images.length > 0) {
+        // Assuming images is an array of strings (URLs)
         return this.product.images;
       }
+      // Fallback for single image
       if (this.product.image) {
         return [this.product.image];
       }
@@ -206,15 +208,10 @@ export default {
   watch: {
     showModalTryOn(val) {
       if (val) {
+        // Reset state when modal opens
         this.tryOnResult = null;
-        this.analysisError = null;
         this.selectedProductImage = this.productImages[0] || null;
-        this.cancelModelSelection();
-        
-        const savedResult = localStorage.getItem(`tryon_result_${this.product.id}`);
-        if (savedResult) {
-          this.tryOnResult = JSON.parse(savedResult);
-        }
+        this.selectPredefinedModel(this.models[0]); // Default to the first model
       }
     },
   },
@@ -222,8 +219,7 @@ export default {
     selectProductImage(image) {
         this.selectedProductImage = image;
     },
-    showApiKeyHelp(keyType) {
-      if (keyType === 'lightx') {
+    showApiKeyHelp() {
         Swal.fire({
           title: 'Cách lấy LightX API Key',
           html: `
@@ -239,14 +235,14 @@ export default {
           icon: 'info',
           confirmButtonText: 'Đã hiểu',
         });
-      }
     },
     selectPredefinedModel(model) {
       this.selectedTryOnModel = model;
       this.userModelFile = null;
       this.userModelPreviewUrl = '';
-      if (document.getElementById('modelUploadInput')) {
-        document.getElementById('modelUploadInput').value = '';
+      const input = document.getElementById('modelUploadInputSingle');
+      if (input) {
+        input.value = '';
       }
     },
     handleModelUpload(event) {
@@ -277,15 +273,8 @@ export default {
       this.showApiSettings = false;
       Swal.fire({ icon: 'success', title: 'Thành công', text: 'API Key đã được lưu.', timer: 1500, showConfirmButton: false });
     },
-    cancelModelSelection() {
-      this.userModelFile = null;
-      this.userModelPreviewUrl = '';
-      this.selectedTryOnModel = null;
-       if (document.getElementById('modelUploadInput')) {
-        document.getElementById('modelUploadInput').value = '';
-      }
-    },
-    async confirmModelSelection() {
+    async performTryOn() {
+      // --- Pre-flight checks ---
       if (!this.apiKeys.lightxApiKey) {
         Swal.fire({
           icon: 'warning',
@@ -308,74 +297,83 @@ export default {
 
       this.loading = true;
       this.tryOnResult = null;
-      this.analysisError = null;
 
-      const modelInfo = this.selectedTryOnModel
-        ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
-        : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl };
-
-      let tryOnImageUrl = '';
+      const modelImageUrl = this.selectedTryOnModel
+        ? this.selectedTryOnModel.url
+        : this.userModelPreviewUrl;
+      
+      // The service expects an array of products. We create one with the selected image.
+      const productForTryOn = { ...this.product, image: this.selectedProductImage };
 
       try {
-        const productForTryOn = { ...this.product, image: this.selectedProductImage };
-        
-        // Step 1: Generate the try-on image
-        tryOnImageUrl = await LightXService.generateTryOnImage(
+        const { tryOnImageUrl, analysisResult } = await LightXService.performTryOnAndAnalysis(
           this.apiKeys.lightxApiKey,
-          modelInfo.url,
-          [productForTryOn],
-          this.userModelFile
+          modelImageUrl,
+          [productForTryOn] // Pass as an array
         );
 
-        // Show the image immediately
+        // Set the result with whatever we get back
         this.tryOnResult = {
-          model: modelInfo,
           image: tryOnImageUrl,
-          score: 'Đang phân tích...',
-          style: 'Đang phân tích...',
-          gender_suitability: 'Đang phân tích...',
-          products: [this.product],
-          time: new Date().toISOString(),
+          score: analysisResult?.aesthetic_score,
+          style: analysisResult?.style,
+          gender_suitability: analysisResult?.gender_suitability,
         };
 
-        // Step 2: Analyze the image
-        try {
-          const analysisResult = await LightXService.analyzeTryOnImage(tryOnImageUrl, [productForTryOn]);
-          this.tryOnResult.score = analysisResult.aesthetic_score;
-          this.tryOnResult.style = analysisResult.style;
-          this.tryOnResult.gender_suitability = analysisResult.gender_suitability;
-
-        } catch (analysisError) {
-            console.error('Image analysis failed:', analysisError);
-            this.analysisError = 'Không thể phân tích hình ảnh. Dịch vụ AI có thể đang gặp sự cố.';
-            this.tryOnResult.score = 'N/A';
-            this.tryOnResult.style = 'N/A';
-            this.tryOnResult.gender_suitability = 'N/A';
+        // If analysis failed, show a non-blocking toast
+        if (!analysisResult) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+            Toast.fire({
+                icon: 'warning',
+                title: 'Phân tích AI thất bại, nhưng ảnh đã được tạo!',
+            });
         }
 
-        localStorage.setItem(`tryon_result_${this.product.id}`, JSON.stringify(this.tryOnResult));
-
       } catch (error) {
+        // This catch block now only handles critical errors (image generation failed)
         console.error('Error during try-on process:', error);
         Swal.fire({
           icon: 'error',
-          title: 'Lỗi xử lý ảnh',
-          text: error.message || 'Có lỗi xảy ra trong quá trình ghép ảnh. Vui lòng thử lại.',
+          title: 'Lỗi tạo ảnh',
+          text: error.message || 'Có lỗi xảy ra trong quá trình tạo ảnh thử đồ.',
         });
       } finally {
         this.loading = false;
       }
     },
-    downloadTryOnResult() {
-      if (!this.tryOnResult) return;
-      const data = { ...this.tryOnResult, image: undefined };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `tryon_result_${this.product.id}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+    async downloadTryOnResult() {
+      if (!this.tryOnResult || !this.tryOnResult.image) return;
+
+      try {
+        const response = await fetch(this.tryOnResult.image);
+        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+        const blob = await response.blob();
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const extension = blob.type.split('/')[1] || 'jpg';
+        a.download = `tryon_result_${this.product.id}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+      } catch (error) {
+        console.error('Error downloading the try-on image:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Tải ảnh thất bại',
+          text: 'Không thể tải về hình ảnh. Vui lòng kiểm tra kết nối và thử lại.',
+        });
+      }
     },
   },
 }
@@ -521,7 +519,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start; /* Align to top */
   overflow-y: auto;
 }
 .tryon-main-content h4 {
@@ -613,5 +611,32 @@ export default {
   max-width: 450px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
-/* Other utility styles as needed */
+
+/* Download Button Styles */
+.try-on-image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.download-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1rem;
+}
+
+.download-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
 </style>

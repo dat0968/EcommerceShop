@@ -294,27 +294,32 @@
                     <div v-if="tryOnResults[groupIdx]">
                       <div class="text-center">
                         <b>Ảnh người mẫu đã ghép:</b><br />
-                        <img
-                          :src="tryOnResults[groupIdx].image"
-                          style="max-width: 220px; border-radius: 8px; border: 1px solid #ccc"
-                        />
-                        <div class="mt-2">
+                        <div class="try-on-image-container">
+                          <img
+                            :src="tryOnResults[groupIdx].image"
+                            style="max-width: 220px; border-radius: 8px; border: 1px solid #ccc"
+                          />
+                          <button class="download-btn" @click="downloadTryOnResult(groupIdx)" title="Tải ảnh về">
+                            <i class="bi bi-download"></i>
+                          </button>
+                        </div>
+                        <div v-if="tryOnResults[groupIdx].score != null" class="mt-2">
                           <b>Điểm thẩm mỹ:</b>
                           <span style="font-size: 1.3rem; color: #e67e22"
                             > {{ tryOnResults[groupIdx].score }}/10</span
                           >
                         </div>
-                        <div class="mt-2">
+                        <div v-if="tryOnResults[groupIdx].style" class="mt-2">
                           <b>Phong cách:</b>
                           <span> {{ tryOnResults[groupIdx].style }}</span>
                         </div>
-                        <div class="mt-2">
+                        <div v-if="tryOnResults[groupIdx].gender_suitability" class="mt-2">
                           <b>Giới tính phù hợp:</b>
                           <span> {{ tryOnResults[groupIdx].gender_suitability }}</span>
                         </div>
-                        <button class="btn btn-success mt-2" @click="downloadTryOnResult(groupIdx)">
-                          Tải về kết quả thử đồ
-                        </button>
+                        <div v-if="!tryOnResults[groupIdx].score && !tryOnResults[groupIdx].style" class="mt-2 text-muted">
+                          <small>AI không thể phân tích ảnh này.</small>
+                        </div>
                       </div>
                     </div>
                     <div v-else class="text-center text-secondary py-5">
@@ -813,28 +818,39 @@ export default {
         );
 
         this.tryOnResults[groupIdx] = {
-          model: { name: 'Người mẫu đã lưu', url: imageUrl }, // Model info is lost, but not critical
+          model: { name: 'Người mẫu đã lưu', url: imageUrl },
           image: tryOnImageUrl,
-          score: analysisResult.aesthetic_score,
-          style: analysisResult.style,
-          gender_suitability: analysisResult.gender_suitability,
+          score: analysisResult?.aesthetic_score, // Use optional chaining
+          style: analysisResult?.style,
+          gender_suitability: analysisResult?.gender_suitability,
           products: group.products,
           time: new Date().toISOString(),
         };
         this.tryOnResults = { ...this.tryOnResults };
         this.groupFlipped[groupIdx] = true;
 
-      } catch (error) {
-        console.error('Error during resumed analysis:', error);
-        let errorMessage = 'Không thể hoàn tất phân tích. Vui lòng thử lại.';
-        const errorText = error.message || '';
-        if (errorText.includes('429') || errorText.includes('RESOURCE_EXHAUSTED')) {
-            errorMessage = 'Lỗi phân tích: Dịch vụ AI đánh giá hình ảnh trong hệ thống hiện đang quá tải, vui lòng thử lại sau.';
+        // Notify user if analysis failed but image is available
+        if (!analysisResult) {
+          const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+          Toast.fire({
+            icon: 'warning',
+            title: 'Phân tích AI thất bại, nhưng ảnh đã được tạo!',
+          });
         }
+
+      } catch (error) {
+        // This catch block now only handles critical errors from image generation
+        console.error('Error during resumed analysis:', error);
         Swal.fire({
-          icon: 'warning',
-          title: 'Phân tích thất bại',
-          text: errorMessage,
+          icon: 'error',
+          title: 'Tạo ảnh thất bại',
+          text: error.message || 'Không thể tạo ảnh thử đồ. Vui lòng thử lại.',
         });
       } finally {
         localStorage.removeItem(`lightx_result_url_${groupIdx}`);
@@ -896,21 +912,37 @@ export default {
             ? { name: this.selectedTryOnModel.name, url: this.selectedTryOnModel.url }
             : { name: 'Người mẫu tải lên', url: this.userModelPreviewUrl },
           image: tryOnImageUrl,
-          score: analysisResult.aesthetic_score,
-          style: analysisResult.style,
-          gender_suitability: analysisResult.gender_suitability,
+          score: analysisResult?.aesthetic_score, // Use optional chaining
+          style: analysisResult?.style,
+          gender_suitability: analysisResult?.gender_suitability,
           products: group.products,
           time: new Date().toISOString(),
         };
         this.tryOnResults = { ...this.tryOnResults };
         this.groupFlipped[groupIdx] = true;
 
+        // Notify user if analysis failed but image is available
+        if (!analysisResult) {
+          const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
+          Toast.fire({
+            icon: 'warning',
+            title: 'Phân tích AI thất bại, nhưng ảnh đã được tạo!',
+          });
+        }
+
       } catch (error) {
+        // This catch block now only handles critical errors from image generation
         console.error('Error during try-on process:', error);
         Swal.fire({
           icon: 'error',
-          title: 'Lỗi xử lý',
-          text: error.message || 'Có lỗi xảy ra trong quá trình xử lý.',
+          title: 'Lỗi tạo ảnh',
+          text: error.message || 'Có lỗi xảy ra trong quá trình tạo ảnh thử đồ.',
         });
       } finally {
         this.loadingGroup = null;
@@ -951,20 +983,40 @@ export default {
         type => type !== 'unknown' && groupClothingTypes.includes(type)
       );
     },
-    downloadTryOnResult(groupIdx) {
-      const result = this.tryOnResults[groupIdx]
-      if (!result) return
-      const data = {
-        ...result,
-        image: undefined,
+    async downloadTryOnResult(groupIdx) {
+      const result = this.tryOnResults[groupIdx];
+      if (!result || !result.image) return;
+
+      try {
+        // Fetch the image data
+        const response = await fetch(result.image);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const blob = await response.blob();
+
+        // Create a link and trigger the download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        // Suggest a filename, e.g., tryon_result_1.png
+        const extension = blob.type.split('/')[1] || 'jpg';
+        a.download = `tryon_result_${groupIdx + 1}.${extension}`;
+        document.body.appendChild(a); // Required for Firefox
+        a.click();
+
+        // Clean up
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+      } catch (error) {
+        console.error('Error downloading the try-on image:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Tải ảnh thất bại',
+          text: 'Không thể tải về hình ảnh thử đồ. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau.',
+        });
       }
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `tryon_result_${groupIdx + 1}.json`
-      a.click()
-      URL.revokeObjectURL(url)
     },
     removeFromSidebar(item) {
       // Use the provided CompareStorageHelper.removeProductFromCompare method
@@ -1564,5 +1616,32 @@ export default {
   align-items: center;
   width: 100%;
   margin-bottom: 4px;
+}
+
+.try-on-image-container {
+  position: relative;
+  display: inline-block; /* To wrap tightly around the image */
+}
+
+.download-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1rem;
+}
+
+.download-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
 }
 </style>
