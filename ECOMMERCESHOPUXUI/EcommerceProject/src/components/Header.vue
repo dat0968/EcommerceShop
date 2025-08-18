@@ -16,21 +16,15 @@ const isLoggedIn = ref(false)
 const numberCart = ref(0)
 const getUrlAPI = ref(GetApiUrl())
 const checkLogin = async () => {
-  if (accessToken.value && refreshToken.value) {
-    const result = await validateToken(accessToken.value, refreshToken.value)
-    isLoggedIn.value = result.isValid
-    if (result.isValid) {
-      accessToken.value = result.newAccessToken
-      Cookies.set('accessToken', accessToken.value)
-    } else {
-      Cookies.remove('accessToken')
-      Cookies.remove('refreshToken')
-    }
-  } else {
-    isLoggedIn.value = false
+  const result = await validateToken(accessToken.value, refreshToken.value)
+  isLoggedIn.value = result.isValid
+  if (result.isValid) {
+    accessToken.value = result.newAccessToken
   }
 }
 async function fetchCart() {
+  // accessToken.value = Cookies.get('accessToken')
+  // refreshToken.value = Cookies.get('refreshToken')
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
   if (validatetoken.isValid) {
     accessToken.value = validatetoken.newAccessToken
@@ -47,8 +41,8 @@ async function fetchCart() {
     const result = await response.json()
     numberCart.value = result.length
   }
+  
 }
-
 
 const handleLogout = () => {
   Swal.fire({
@@ -75,9 +69,9 @@ const handleLogout = () => {
     }
   })
 }
-onMounted(() => {
+onMounted(async () => {
   checkLogin()
-  fetchCart()
+  await fetchCart()
   emitter.on('cart-updated', fetchCart)
 })
 </script>
@@ -234,9 +228,7 @@ onMounted(() => {
                             >
                           </li>
                           <li>
-                            <router-link to="/Order" class="dropdown-item"
-                              >Đơn hàng</router-link
-                            >
+                            <router-link to="/Order" class="dropdown-item">Đơn hàng</router-link>
                           </li>
                         </ul>
                       </li>

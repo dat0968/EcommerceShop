@@ -17,6 +17,8 @@ const refreshToken = ref(Cookies.get('refreshToken'))
 async function fetchCart() {
   const validatetoken = await validateToken(accessToken.value, refreshToken.value)
   if (validatetoken.isValid == false) {
+    console.log(accessToken.value)
+    console.log(refreshToken.value)
     router.push('/Login')
   } else {
     accessToken.value = validatetoken.newAccessToken
@@ -112,15 +114,15 @@ function confirmCart() {
     return
   }
   const selectedCartItems = listCart.value.filter((item) => selectedItems.value.includes(item.id))
-  
+
   cartStore.setSelectedItems(selectedCartItems)
   router.push('/checkout')
 }
 </script>
 <template>
-  <div >
+  <div>
     <!-- Shop Cart Section Begin -->
-    <section class="shop-cart spad" style="margin-bottom: 200px;">
+    <section class="shop-cart spad" style="margin-bottom: 200px">
       <div class="container">
         <div class="row">
           <div class="col-lg-9">
@@ -146,17 +148,17 @@ function confirmCart() {
                     <td class="cart__product__item">
                       <div class="tick-icon" v-if="selectedItems.includes(item.id)">✔</div>
                       <img
-                        :src="item.maCombo == null ? `${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
-                          item.tenHinhAnh
-                        }` : `${getUrlAPI.replace('/api', '')}/HinhAnh/AnhCombo/${
-                          item.tenHinhAnh
-                        }`"
+                        :src="
+                          item.maCombo == null
+                            ? `${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.tenHinhAnh}`
+                            : `${getUrlAPI.replace('/api', '')}/HinhAnh/AnhCombo/${item.tenHinhAnh}`
+                        "
                         alt=""
                         class="cart-product-image"
                         @click="toggleSelection(item.id)"
                       />
                       <div class="cart__product__item__title">
-                        <h6>{{item.tenSanPham_TenCombo}}</h6>
+                        <h6>{{ item.tenSanPham_TenCombo }}</h6>
                         <div v-if="!item.maCombo" class="product-options">
                           <span v-if="item.mau" class="option-label">Màu: {{ item.mau }}</span>
                           <span v-if="item.kichThuoc" class="option-label"
@@ -164,8 +166,13 @@ function confirmCart() {
                           >
                         </div>
                         <div v-else class="product-options">
-                          <span v-for="detailsCombo in item.giohangctcombos" :key="detailsCombo.id" class="option-label">
-                            {{ detailsCombo.tenSanPham }} ({{ detailsCombo.mauSac }}, {{ detailsCombo.kichThuoc }})
+                          <span
+                            v-for="detailsCombo in item.giohangctcombos"
+                            :key="detailsCombo.id"
+                            class="option-label"
+                          >
+                            {{ detailsCombo.tenSanPham }} ({{ detailsCombo.mauSac }},
+                            {{ detailsCombo.kichThuoc }})
                           </span>
                         </div>
                       </div>

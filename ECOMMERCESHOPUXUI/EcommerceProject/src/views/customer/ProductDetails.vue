@@ -581,6 +581,7 @@ const addToCart = async () => {
           showConfirmButton: false,
           timerProgressBar: true,
         })
+
         emitter.emit('cart-updated')
       }
     }

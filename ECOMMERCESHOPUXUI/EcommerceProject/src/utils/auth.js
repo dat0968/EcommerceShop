@@ -84,5 +84,7 @@ export async function validateToken(accessToken, refreshToken) {
       return { isValid: false }
     }
   }
+  Cookies.set('accessToken', accessToken, { expires: 3 / 24 })
+  Cookies.set('refreshToken', refreshToken, { expires: 3 / 24 })
   return { isValid: true, newAccessToken: accessToken }
 }
