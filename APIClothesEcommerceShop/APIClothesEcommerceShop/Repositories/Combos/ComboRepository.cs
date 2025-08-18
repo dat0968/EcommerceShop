@@ -30,9 +30,10 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                     .AsNoTracking()
                     .Where(p => p.IsActive == true)
                     .Include(c => c.Chitietcombos)
-                        .ThenInclude(cc => cc.MaComboNavigation)  // Giữ nguyên navigation property
+                        .ThenInclude(cc => cc.MaComboNavigation) // Giữ nguyên navigation property
                     .Include(c => c.Chitietcombos)
                         .ThenInclude(cc => cc.MaSpNavigation)
+                    .Include(c => c.DanhGias)
                     .Select(p => new ComboResponseDTO
                     {
                         MaCombo = p.MaCombo,
@@ -45,10 +46,8 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                         NgayKetThuc = p.NgayKetThuc,
                         MoTa = p.MoTa,
                         IsActive = p.IsActive,
-                        ReviewCount = p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Count(),
-                        AverageRating = p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Any()
-                                      ? p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Average(dg => dg.SoSao)
-                                      : 5,
+                        ReviewCount = p.DanhGias.Count(dg => dg != null),
+                        AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.SoSao) : 5,
                         Chitietcombos = p.Chitietcombos.Select(cc => new DetaisComboResponseDTO
                         {
                             MaSp = cc.MaSp,
@@ -93,18 +92,18 @@ namespace APIClothesEcommerceShop.Repositories.Combos
         {
             var getCombobyID = await _context.Combos.AsNoTracking()
                 .Include(p => p.Chitietcombos)
-                .ThenInclude(p => p.MaSpNavigation)
-                .ThenInclude(p => p.DanhGias) // Include reviews for products in combo
+                    .ThenInclude(p => p.MaSpNavigation)
                 .Include(p => p.Chitietcombos)
-                .ThenInclude(p => p.MaSpNavigation)
-                .ThenInclude(p => p.Chitietsanphams)
+                    .ThenInclude(p => p.MaSpNavigation)
+                        .ThenInclude(p => p.Chitietsanphams)
+                .Include(p => p.DanhGias) // Include reviews for products in combo
                 .FirstOrDefaultAsync(p => p.MaCombo == id);
             if (getCombobyID == null)
             {
                 throw new Exception("Not Found Combo");
             }
 
-            var allReviews = getCombobyID.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).ToList();
+            var allReviews = getCombobyID.DanhGias;
 
             var ResponseCombo = new ComboResponseDTO
             {

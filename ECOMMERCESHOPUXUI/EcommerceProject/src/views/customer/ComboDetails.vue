@@ -59,6 +59,8 @@ const fetchCombo = async () => {
     description: result.moTa || 'Chưa có mô tả',
     phanTramGiam: result.phanTramGiam,
     soTienGiam: result.soTienGiam,
+    averageRating: result.averageRating,
+    reviewCount: result.reviewCount,
     chitietcombos: result.chitietcombos.map((ct) => ({
       id: ct.maSp,
       name: ct.tenSp,
@@ -301,7 +303,7 @@ const formatRating = (rating) => {
                     <i class="fa fa-star" style="color: #ffc107;"></i>
                     <span>{{ formatRating(combo.averageRating) }}</span>
                 </div>
-                <span class="text-muted ms-2">({{ combo.reviewCount || 0}} đánh giá)</span>
+                <span class="text-muted ms-2">({{ combo.reviewCount || 0 }} đánh giá)</span>
               </div>
               <div class="product__details__price">
                 {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span>
