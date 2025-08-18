@@ -18,6 +18,7 @@ const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
 const product = ref({})
+const productExists = ref(true) // State for error handling
 const allImages = ref([])
 const currentSlider = ref(1)
 const colors = ref([])
@@ -210,9 +211,15 @@ const fetchAPI = async () => {
       },
     })
     if (!response.ok) {
-      throw new Error('Failed to FetchAPI')
+      productExists.value = false
+      return
     }
     const result = await response.json()
+    if (!result || !result.maSp) {
+      productExists.value = false
+      return
+    }
+
     product.value = result
     product.value.productDetails.forEach((element) => {
       element.images.forEach((image) => {
@@ -236,6 +243,7 @@ const fetchAPI = async () => {
     selectedColor.value = colors.value[0] || ''
   } catch (error) {
     console.error('Error fetching product:', error)
+    productExists.value = false
   }
 }
 
@@ -367,7 +375,7 @@ onMounted(async () => {
     overallLoading.value = false // Set overall loading to false after all fetches
     // Initialize carousel
     nextTick(() => {
-      const $carousel = $('.product__details__pic__slider')
+      const $carousel = $(".product__details__pic__slider")
 
       if ($carousel.length === 0) {
         console.warn('Carousel element not found in DOM')
@@ -529,9 +537,9 @@ const addToCart = async () => {
       const matched = product.value.productDetails.find(
         (p) =>
           (p.mauSac != null ? p.mauSac?.toLowerCase() : '') ===
-            selectedColor.value?.toLowerCase() &&
+          selectedColor.value?.toLowerCase() &&
           (p.kichThuoc != null ? p.kichThuoc?.toLowerCase() : '') ===
-            selectedSize.value?.toLowerCase(),
+          selectedSize.value?.toLowerCase(),
       )
       console.log(product.value.productDetails)
       const content = {
@@ -677,414 +685,350 @@ watch(
       <p class="mt-2 text-muted">Đang tải dữ liệu sản phẩm...</p>
     </div>
     <div v-else>
-      <!-- Product Details Section Begin -->
-      <section class="product-details spad">
-      <div class="" style="margin-left: 100px; margin-right: 100px; margin-top: -50px">
-        <nav aria-label="breadcrumb" class="mb-4">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <router-link to="/" class="text-decoration-none text-muted">Trang chủ</router-link>
-            </li>
-            <li class="breadcrumb-item">
-              <a href="#" class="text-decoration-none text-muted">Sản phẩm</a>
-            </li>
-            <li class="breadcrumb-item active text-muted" aria-current="page">
-              {{ product.tenSanPham }}
-            </li>
-          </ol>
-        </nav>
-        <div class="row">
-          <!-- Left Column - Product Images -->
-          <div class="col-md-6">
-            <!-- Main Product Image -->
-            <div class="mb-3 text-center">
-              <img
-                v-if="allImages.length > 0 && currentImage > 0"
-                :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${allImages[currentImage - 1]?.tenHinhAnh}`"
-                :alt="product.tenSanPham"
-                class="img-fluid"
-                style="max-height: 500px; object-fit: contain; border-radius: 12px"
-              />
-            </div>
-
-            <!-- Thumbnail Images -->
-            <div class="row g-2" v-if="allImages.length > 0">
-              <div class="col-3" v-for="(image, index) in allImages.slice(0, 4)" :key="index">
-                <img
-                  :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
-                  :alt="`Thumbnail ${index + 1}`"
-                  class="img-fluid w-100 rounded-2 border"
-                  :class="{ 'border-2 border-danger': currentImage === index + 1 }"
-                  style="height: 80px; object-fit: contain; cursor: pointer"
-                  @click="changeImage(index + 1)"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- Middle Column - Product Info -->
-          <div class="col-md-4">
-            <!-- Product Title -->
-            <h1 class="h2 fw-bold mb-3" style="color: black">{{ product.tenSanPham }}</h1>
-
-            <!-- Rating -->
-            <div class="d-flex align-items-center mb-3">
-              <div class="product__rating">
-                  <i class="fa fa-star" style="color: #ffc107;"></i>
-                  <span>{{ formatRating(product.averageRating) }}</span>
-              </div>
-              <span class="text-muted ms-2">({{ product.reviewCount }} đánh giá)</span>
-            </div>
-
-            <!-- Product Status and Brand -->
-            <div class="mb-3">
-              <div class="d-flex align-items-center mb-2">
-                <span class="me-3">Tình trạng:</span>
-                <span class="text-success fw-bold">{{
-                  maxQuantity > 0 ? 'Còn hàng' : 'Hết hàng'
-                }}</span>
-              </div>
-              <div class="d-flex align-items-center">
-                <span class="me-3">Mã sản phẩm:</span>
-                <span class="text-success fw-bold">{{ product.maSp || 'N/A' }}</span>
-              </div>
-            </div>
-
-            <!-- Price -->
-            <div class="mb-4">
-              <div class="h4 text-danger fw-bold mb-1">{{ formatPrice(originalPrice) }}</div>
-            </div>
-
-            <!-- Color Selection -->
-            <div class="mb-3" v-if="colors.length > 0">
-              <span class="fw-bold mb-2 d-block">Màu sắc:</span>
-              <div class="d-flex gap-2 flex-wrap">
-                <button
-                  v-for="color in colors"
-                  :key="color"
-                  :class="[
-                    'btn',
-                    'btn-outline-secondary',
-                    'btn-sm',
-                    { active: selectedColor === color },
-                  ]"
-                  @click="selectColor(color)"
-                >
-                  {{ color }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Size Selection -->
-            <div class="mb-3" v-if="sizes.length > 0">
-              <span class="fw-bold mb-2 d-block">Kích thước:</span>
-              <div class="d-flex gap-2 flex-wrap">
-                <button
-                  v-for="size in sizes"
-                  :key="size"
-                  :class="[
-                    'btn',
-                    'btn-outline-secondary',
-                    'btn-sm',
-                    { active: selectedSize === size },
-                  ]"
-                  @click="selectSize(size)"
-                >
-                  {{ size }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Quantity -->
-            <div class="mb-4">
-              <span class="fw-bold mb-2 d-block">Số lượng:</span>
-              <div class="d-flex align-items-center">
-                <div class="input-group" style="width: 140px">
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="quantity = Math.max(1, parseInt(quantity) - 1).toString()"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    class="form-control text-center"
-                    v-model="quantity"
-                    @input="validateQuantity"
-                    min="1"
-                    :max="maxQuantity"
-                  />
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    @click="quantity = Math.min(maxQuantity, parseInt(quantity) + 1).toString()"
-                  >
-                    +
-                  </button>
+      <div v-if="productExists">
+        <!-- Product Details Section Begin -->
+        <section class="product-details spad">
+          <div class="" style="margin-left: 100px; margin-right: 100px; margin-top: -50px">
+            <nav aria-label="breadcrumb" class="mb-4">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                  <router-link to="/" class="text-decoration-none text-muted">Trang chủ</router-link>
+                </li>
+                <li class="breadcrumb-item">
+                  <a href="#" class="text-decoration-none text-muted">Sản phẩm</a>
+                </li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">
+                  {{ product.tenSanPham }}
+                </li>
+              </ol>
+            </nav>
+            <div class="row">
+              <!-- Left Column - Product Images -->
+              <div class="col-md-6">
+                <!-- Main Product Image -->
+                <div class="mb-3 text-center">
+                  <img v-if="allImages.length > 0 && currentImage > 0"
+                    :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${allImages[currentImage - 1]?.tenHinhAnh}`"
+                    :alt="product.tenSanPham" class="img-fluid"
+                    style="max-height: 500px; object-fit: contain; border-radius: 12px" />
                 </div>
-                <span class="ms-3 text-muted small">Còn {{ maxQuantity }} sản phẩm</span>
-              </div>
-            </div>
 
-            <!-- Action Buttons -->
-            <div style="display: grid; gap: 8px; margin-bottom: 1.5rem">
-              <!-- Nút Thêm vào giỏ -->
-              <button
-                @click="addToCart"
-                :disabled="maxQuantity <= 0"
-                style="
-                  background-color: red;
-                  color: white;
-                  border: 1px solid red;
-                  padding: 12px 16px;
-                  border-radius: 6px;
-                  font-weight: 600;
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                  font-size: 16px;
-                "
-                @mouseover="
-                  $event.target.style.backgroundColor = '#dc3545';
-                  $event.target.style.borderColor = '#dc3545'
-                "
-                @mouseout="
-                  $event.target.style.backgroundColor = 'red';
-                  $event.target.style.borderColor = 'red'
-                "
-              >
-                <i class="fas fa-shopping-cart" style="margin-right: 8px"></i>THÊM VÀO GIỎ
-              </button>
-
-              <!-- Hàng nút Yêu thích và So sánh -->
-              <div style="display: flex; gap: 8px">
-                <!-- Nút Yêu thích -->
-                <button
-                  @click="toggleFavoriteProduct"
-                  :style="
-                    isFavorited
-                      ? 'background-color: transparent; color: #007bff; border: 1px solid #007bff; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;'
-                      : 'background-color: transparent; color: red; border: 1px solid red; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;'
-                  "
-                  @mouseover="
-                    isFavorited
-                      ? (($event.target.style.backgroundColor = '#007bff'),
-                        ($event.target.style.color = 'white'))
-                      : (($event.target.style.backgroundColor = 'red'),
-                        ($event.target.style.color = 'white'))
-                  "
-                  @mouseout="
-                    isFavorited
-                      ? (($event.target.style.backgroundColor = 'transparent'),
-                        ($event.target.style.color = '#007bff'))
-                      : (($event.target.style.backgroundColor = 'transparent'),
-                        ($event.target.style.color = 'red'))
-                  "
-                >
-                  <i class="fas fa-heart" style="margin-right: 4px; color: red"></i>
-                  {{ isFavorited ? 'Đã thích' : 'Yêu thích' }} ({{ favoriteCount || 0 }})
-                </button>
-
-                <!-- Nút So sánh -->
-                <button
-                  @click="addToCompare"
-                  style="
-                    background-color: transparent;
-                    color: #007bff;
-                    border: 1px solid #007bff;
-                    padding: 8px 12px;
-                    border-radius: 6px;
-                    font-size: 14px;
-                    cursor: pointer;
-                    flex: 1;
-                    min-height: 38px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s ease;
-                  "
-                  @mouseover="
-                    $event.target.style.backgroundColor = '#007bff';
-                    $event.target.style.color = 'white'
-                  "
-                  @mouseout="
-                    $event.target.style.backgroundColor = 'transparent';
-                    $event.target.style.color = '#007bff'
-                  "
-                >
-                  <i class="bi bi-arrow-left-right" style="margin-right: 4px"></i> So sánh
-                </button>
-              </div>
-              <TryOnProduct :product="productForTryOn" v-if="productForTryOn" />
-            </div>
-
-            <!-- Product Features -->
-            <div class="mb-4">
-              <div class="d-flex align-items-center mb-2">
-                <i class="fas fa-check-circle text-success me-2"></i>
-                <small>Cam kết 100% chính hãng</small>
-              </div>
-              <!-- <div class="d-flex align-items-center mb-2">
-                        <i class="fas fa-shipping-fast text-success me-2"></i>
-                        <small>Miễn phí giao hàng</small>
-                    </div> -->
-              <div class="d-flex align-items-center mb-2">
-                <i class="fas fa-headset text-success me-2"></i>
-                <small>Hỗ trợ 24/7</small>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <i class="fas fa-undo text-success me-2"></i>
-                <small>Hoàn tiền 200% nếu hàng giả</small>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <i class="fas fa-shield-alt text-success me-2"></i>
-                <small>Mô hình kiểm tra nhãn hàng</small>
-              </div>
-              <div class="d-flex align-items-center mb-2">
-                <i class="fas fa-clock text-success me-2"></i>
-                <small>Đổi/trả trong 3 ngày</small>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Column - Related Products -->
-          <div class="col-md-2" v-if="isLogin && recommendationProduct.length > 0">
-            <div class="mb-4">
-              <!-- Section Header -->
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Sản phẩm gợi ý</h5>
+                <!-- Thumbnail Images -->
+                <div class="row g-2" v-if="allImages.length > 0">
+                  <div class="col-3" v-for="(image, index) in allImages.slice(0, 4)" :key="index">
+                    <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
+                      :alt="`Thumbnail ${index + 1}`" class="img-fluid w-100 rounded-2 border"
+                      :class="{ 'border-2 border-danger': currentImage === index + 1 }"
+                      style="height: 80px; object-fit: contain; cursor: pointer" @click="changeImage(index + 1)" />
+                  </div>
+                </div>
               </div>
 
-                    <!-- Related Products Grid - Vertical Layout -->
-                    <div class="d-flex flex-column gap-3">
-                        <!-- Product Item -->
-                        <div 
-                            v-for="item in recommendationProduct.slice(0, 5)" 
-                            :key="item.maSp"
-                            class="">
-                            <div class="row g-0">
-                                <div class="col-4">
-                                    <img 
-                                        :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
-                                        :alt="item.tenSanPham" 
-                                        class="img-fluid rounded-start"
-                                        style="height: 90px; width: 100%; object-fit: contain;">
-                                </div>
-                                <div class="col-8">
-                                    <div class="card-body p-2">
-                                        <h4 class="card-title mb-1" style="font-size: 0.8rem; padding-bottom: 5px;">
-                                            <router-link :to="`/product/${item.maSp}`" class="text-decoration-none text-dark">
-                                                {{ item.tenSanPham }}
-                                            </router-link>
-                                      
-                                        </h4>
-                                        <h6 style="padding-bottom: 5px;">   </h6>
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <span class="text-danger fw-bold" style="font-size: 1rem;">{{ formatPrice(item.khoangGia) }}</span>
-                                       
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+              <!-- Middle Column - Product Info -->
+              <div class="col-md-4">
+                <!-- Product Title -->
+                <h1 class="h2 fw-bold mb-3" style="color: black">{{ product.tenSanPham }}</h1>
+
+                <!-- Rating -->
+                <div class="d-flex align-items-center mb-3">
+                  <div class="product__rating">
+                    <i class="fa fa-star" style="color: #ffc107;"></i>
+                    <span>{{ formatRating(product.averageRating) }}</span>
+                  </div>
+                  <span class="text-muted ms-2">({{ product.reviewCount }} đánh giá)</span>
+                </div>
+
+                <!-- Product Status and Brand -->
+                <div class="mb-3">
+                  <div class="d-flex align-items-center mb-2">
+                    <span class="me-3">Tình trạng:</span>
+                    <span class="text-success fw-bold">{{
+                      maxQuantity > 0 ? 'Còn hàng' : 'Hết hàng'
+                      }}</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <span class="me-3">Mã sản phẩm:</span>
+                    <span class="text-success fw-bold">{{ product.maSp || 'N/A' }}</span>
+                  </div>
+                </div>
+
+                <!-- Price -->
+                <div class="mb-4">
+                  <div class="h4 text-danger fw-bold mb-1">{{ formatPrice(originalPrice) }}</div>
+                </div>
+
+                <!-- Color Selection -->
+                <div class="mb-3" v-if="colors.length > 0">
+                  <span class="fw-bold mb-2 d-block">Màu sắc:</span>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button v-for="color in colors" :key="color" :class="[
+                      'btn',
+                      'btn-outline-secondary',
+                      'btn-sm',
+                      { active: selectedColor === color },
+                    ]" @click="selectColor(color)">
+                      {{ color }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Size Selection -->
+                <div class="mb-3" v-if="sizes.length > 0">
+                  <span class="fw-bold mb-2 d-block">Kích thước:</span>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button v-for="size in sizes" :key="size" :class="[
+                      'btn',
+                      'btn-outline-secondary',
+                      'btn-sm',
+                      { active: selectedSize === size },
+                    ]" @click="selectSize(size)">
+                      {{ size }}
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Quantity -->
+                <div class="mb-4">
+                  <span class="fw-bold mb-2 d-block">Số lượng:</span>
+                  <div class="d-flex align-items-center">
+                    <div class="input-group" style="width: 140px">
+                      <button class="btn btn-outline-secondary" type="button"
+                        @click="quantity = Math.max(1, parseInt(quantity) - 1).toString()">
+                        -
+                      </button>
+                      <input type="number" class="form-control text-center" v-model="quantity" @input="validateQuantity"
+                        min="1" :max="maxQuantity" />
+                      <button class="btn btn-outline-secondary" type="button"
+                        @click="quantity = Math.min(maxQuantity, parseInt(quantity) + 1).toString()">
+                        +
+                      </button>
                     </div>
+                    <span class="ms-3 text-muted small">Còn {{ maxQuantity }} sản phẩm</span>
+                  </div>
                 </div>
-            </div>
-        </div>
-        <div class="text-center mb-4">
-          <hr style="border: none; border-top: 2px dashed #000" />
-        </div>
-        <!-- Optimized Tab Section with Dynamic Spacing -->
-        <div class="row" :class="{ 'compact-spacing': isShortDescription }">
-          <div class="col-lg-12">
-            <div class="product-tabs-container">
-              <!-- Tab Navigation -->
-              <ul class="nav nav-tabs custom-tabs" role="tablist">
-                <li class="nav-item">
-                  <a
-                    class="nav-link custom-tab-link"
-                    :class="{ active: activeTab === 'desc' }"
-                    href="#"
-                    @click.prevent="activeTab = 'desc'"
-                  >
-                    <span class="tab-icon">📝</span>
-                    Mô tả
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a
-                    class="nav-link custom-tab-link"
-                    :class="{ active: activeTab === 'review' }"
-                    href="#"
-                    @click.prevent="activeTab = 'review'"
-                  >
-                    <span class="tab-icon">⭐</span>
-                    Đánh giá
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a
-                    class="nav-link custom-tab-link"
-                    :class="{ active: activeTab === 'comment' }"
-                    href="#"
-                    @click.prevent="activeTab = 'comment'"
-                  >
-                    <span class="tab-icon">💬</span>
-                    Bình luận
-                  </a>
-                </li>
-              </ul>
 
-              <!-- Tab Content -->
-              <div class="tab-content custom-tab-content">
-                <div
-                  v-show="activeTab == 'desc'"
-                  class="tab-pane custom-tab-pane"
-                  :class="[
-                    activeTab == 'desc' ? 'active' : '',
-                    { 'short-content': isShortDescription },
-                  ]"
-                  id="tabs-1"
-                  role="tabpanel"
-                >
-                  <div class="description-content">
-                    <p v-html="product.moTa" class="description-text"></p>
-                    <div v-if="isShortDescription" class="content-spacer"></div>
+                <!-- Action Buttons -->
+                <div style="display: grid; gap: 8px; margin-bottom: 1.5rem">
+                  <!-- Nút Thêm vào giỏ -->
+                  <button @click="addToCart" :disabled="maxQuantity <= 0" style="
+                    background-color: red;
+                    color: white;
+                    border: 1px solid red;
+                    padding: 12px 16px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 16px;
+                  " @mouseover="
+                    $event.target.style.backgroundColor = '#dc3545';
+                  $event.target.style.borderColor = '#dc3545'
+                    " @mouseout="
+                    $event.target.style.backgroundColor = 'red';
+                  $event.target.style.borderColor = 'red'
+                    ">
+                    <i class="fas fa-shopping-cart" style="margin-right: 8px"></i>THÊM VÀO GIỎ
+                  </button>
+
+                  <!-- Hàng nút Yêu thích và So sánh -->
+                  <div style="display: flex; gap: 8px">
+                    <!-- Nút Yêu thích -->
+                    <button @click="toggleFavoriteProduct" :style="isFavorited
+                        ? 'background-color: transparent; color: #007bff; border: 1px solid #007bff; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;'
+                        : 'background-color: transparent; color: red; border: 1px solid red; padding: 8px 12px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; min-height: 38px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;'
+                      " @mouseover="
+                      isFavorited
+                        ? (($event.target.style.backgroundColor = '#007bff'),
+                          ($event.target.style.color = 'white'))
+                        : (($event.target.style.backgroundColor = 'red'),
+                          ($event.target.style.color = 'white'))
+                      " @mouseout="
+                      isFavorited
+                        ? (($event.target.style.backgroundColor = 'transparent'),
+                          ($event.target.style.color = '#007bff'))
+                        : (($event.target.style.backgroundColor = 'transparent'),
+                          ($event.target.style.color = 'red'))
+                      ">
+                      <i class="fas fa-heart" style="margin-right: 4px; color: red"></i>
+                      {{ isFavorited ? 'Đã thích' : 'Yêu thích' }} ({{ favoriteCount || 0 }})
+                    </button>
+
+                    <!-- Nút So sánh -->
+                    <button @click="addToCompare" style="
+                      background-color: transparent;
+                      color: #007bff;
+                      border: 1px solid #007bff;
+                      padding: 8px 12px;
+                      border-radius: 6px;
+                      font-size: 14px;
+                      cursor: pointer;
+                      flex: 1;
+                      min-height: 38px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      transition: all 0.3s ease;
+                    " @mouseover="
+                      $event.target.style.backgroundColor = '#007bff';
+                    $event.target.style.color = 'white'
+                      " @mouseout="
+                      $event.target.style.backgroundColor = 'transparent';
+                    $event.target.style.color = '#007bff'
+                      ">
+                      <i class="bi bi-arrow-left-right" style="margin-right: 4px"></i> So sánh
+                    </button>
+                  </div>
+                  <TryOnProduct :product="productForTryOn" v-if="productForTryOn" />
+                </div>
+
+                <!-- Product Features -->
+                <div class="mb-4">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <small>Cam kết 100% chính hãng</small>
+                  </div>
+                  <!-- <div class="d-flex align-items-center mb-2">
+                          <i class="fas fa-shipping-fast text-success me-2"></i>
+                          <small>Miễn phí giao hàng</small>
+                      </div> -->
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-headset text-success me-2"></i>
+                    <small>Hỗ trợ 24/7</small>
+                  </div>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-undo text-success me-2"></i>
+                    <small>Hoàn tiền 200% nếu hàng giả</small>
+                  </div>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-shield-alt text-success me-2"></i>
+                    <small>Mô hình kiểm tra nhãn hàng</small>
+                  </div>
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-clock text-success me-2"></i>
+                    <small>Đổi/trả trong 3 ngày</small>
                   </div>
                 </div>
-                <div
-                  v-show="activeTab == 'review'"
-                  class="tab-pane custom-tab-pane"
-                  :class="[activeTab == 'review' ? 'active' : '']"
-                  id="tabs-2"
-                  role="tabpanel"
-                >
-                  <div class="review-content">
-                    <ReviewProductCombo :objectId="id" :isProduct="true" />
+              </div>
+
+              <!-- Right Column - Related Products -->
+              <div class="col-md-2" v-if="isLogin && recommendationProduct.length > 0">
+                <div class="mb-4">
+                  <!-- Section Header -->
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Sản phẩm gợi ý</h5>
                   </div>
-                </div>
-                <div
-                  v-show="activeTab == 'comment'"
-                  class="tab-pane custom-tab-pane"
-                  :class="[activeTab == 'comment' ? 'active' : '']"
-                  id="tabs-3"
-                  role="tabpanel"
-                >
-                  <div class="comment-content">
-                    <CommentSection v-if="product.maSp" :objectId="product.maSp" objectType="product" />
+
+                  <!-- Related Products Grid - Vertical Layout -->
+                  <div class="d-flex flex-column gap-3">
+                    <!-- Product Item -->
+                    <div v-for="item in recommendationProduct.slice(0, 5)" :key="item.maSp" class="">
+                      <div class="row g-0">
+                        <div class="col-4">
+                          <img
+                            :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                            :alt="item.tenSanPham" class="img-fluid rounded-start"
+                            style="height: 90px; width: 100%; object-fit: contain;">
+                        </div>
+                        <div class="col-8">
+                          <div class="card-body p-2">
+                            <h4 class="card-title mb-1" style="font-size: 0.8rem; padding-bottom: 5px;">
+                              <router-link :to="`/product/${item.maSp}`" class="text-decoration-none text-dark">
+                                {{ item.tenSanPham }}
+                              </router-link>
+
+                            </h4>
+                            <h6 style="padding-bottom: 5px;"> </h6>
+                            <div class="d-flex align-items-center justify-content-between">
+                              <span class="text-danger fw-bold" style="font-size: 1rem;">{{ formatPrice(item.khoangGia)
+                                }}</span>
+
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
+            <div class="text-center mb-4">
+              <hr style="border: none; border-top: 2px dashed #000" />
+            </div>
+            <!-- Optimized Tab Section with Dynamic Spacing -->
+            <div class="row" :class="{ 'compact-spacing': isShortDescription }">
+              <div class="col-lg-12">
+                <div class="product-tabs-container">
+                  <!-- Tab Navigation -->
+                  <ul class="nav nav-tabs custom-tabs" role="tablist">
+                    <li class="nav-item">
+                      <a class="nav-link custom-tab-link" :class="{ active: activeTab === 'desc' }" href="#"
+                        @click.prevent="activeTab = 'desc'">
+                        <span class="tab-icon">📝</span>
+                        Mô tả
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link custom-tab-link" :class="{ active: activeTab === 'review' }" href="#"
+                        @click.prevent="activeTab = 'review'">
+                        <span class="tab-icon">⭐</span>
+                        Đánh giá
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link custom-tab-link" :class="{ active: activeTab === 'comment' }" href="#"
+                        @click.prevent="activeTab = 'comment'">
+                        <span class="tab-icon">💬</span>
+                        Bình luận
+                      </a>
+                    </li>
+                  </ul>
+
+                  <!-- Tab Content -->
+                  <div class="tab-content custom-tab-content">
+                    <div v-show="activeTab == 'desc'" class="tab-pane custom-tab-pane" :class="[
+                      activeTab == 'desc' ? 'active' : '',
+                      { 'short-content': isShortDescription },
+                    ]" id="tabs-1" role="tabpanel">
+                      <div class="description-content">
+                        <p v-html="product.moTa" class="description-text"></p>
+                        <div v-if="isShortDescription" class="content-spacer"></div>
+                      </div>
+                    </div>
+                    <div v-show="activeTab == 'review'" class="tab-pane custom-tab-pane"
+                      :class="[activeTab == 'review' ? 'active' : '']" id="tabs-2" role="tabpanel">
+                      <div class="review-content">
+                        <ReviewProductCombo :objectId="id" :isProduct="true" />
+                      </div>
+                    </div>
+                    <div v-show="activeTab == 'comment'" class="tab-pane custom-tab-pane"
+                      :class="[activeTab == 'comment' ? 'active' : '']" id="tabs-3" role="tabpanel">
+                      <div class="comment-content">
+                        <CommentSection v-if="product.maSp" :objectId="product.maSp" objectType="product" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommendation Section with Smart Spacing -->
+          </div>
+        </section>
+        <!-- Product Details Section End -->
+      </div>
+      <div v-else class="text-center py-5 ">
+        <div class="row justify-content-center align-items-center" style="height: 50vh;">          
+          <div class="col-12">
+            <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+            <h3 class="text-muted">Sản phẩm không tồn tại</h3>
+            <p class="text-muted">Sản phẩm bạn tìm không tồn tại trong hệ thống hoặc hiện không được cửa hàng phục vụ.
+            </p>
+            <router-link to="/shop" class="btn btn-primary mt-3">Quay lại cửa hàng</router-link>
           </div>
         </div>
-
-        <!-- Recommendation Section with Smart Spacing -->
       </div>
-    </section>
-    <!-- Product Details Section End -->
+    </div>
   </div>
-</div>
 </template>
 
 <style scoped>
@@ -1257,6 +1201,7 @@ watch(
 }
 
 @keyframes bounce {
+
   0%,
   20%,
   50%,
@@ -1264,9 +1209,11 @@ watch(
   100% {
     transform: translateY(0);
   }
+
   40% {
     transform: translateY(-8px);
   }
+
   60% {
     transform: translateY(-4px);
   }
@@ -1297,10 +1244,12 @@ watch(
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 0.5;
   }
+
   50% {
     opacity: 1;
   }
@@ -1361,6 +1310,7 @@ watch(
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -1400,6 +1350,7 @@ watch(
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1411,6 +1362,7 @@ watch(
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1804,24 +1756,31 @@ watch(
 .product-card:nth-child(1) {
   animation-delay: 0.1s;
 }
+
 .product-card:nth-child(2) {
   animation-delay: 0.2s;
 }
+
 .product-card:nth-child(3) {
   animation-delay: 0.3s;
 }
+
 .product-card:nth-child(4) {
   animation-delay: 0.4s;
 }
+
 .product-card:nth-child(5) {
   animation-delay: 0.5s;
 }
+
 .product-card:nth-child(6) {
   animation-delay: 0.6s;
 }
+
 .product-card:nth-child(7) {
   animation-delay: 0.7s;
 }
+
 .product-card:nth-child(8) {
   animation-delay: 0.8s;
 }
