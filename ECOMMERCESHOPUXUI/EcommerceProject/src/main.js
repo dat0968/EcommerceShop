@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import piniaPersist from 'pinia-plugin-persistedstate'
 import replaceBrokenImages from '@/utils/autoReplaceImages'
-import { initApiBaseUrl } from '@/utils/axiosClient'
 import './plugins/owl.js'
 import App from './App.vue'
 import router from './router'
@@ -16,7 +15,6 @@ app.use(router)
 app.mount('#app')
 
 async function initializeApp() {
-  await initApiBaseUrl();
   replaceBrokenImages();
 }
 

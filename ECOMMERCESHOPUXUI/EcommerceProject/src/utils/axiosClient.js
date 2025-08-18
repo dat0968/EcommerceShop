@@ -1,12 +1,7 @@
-
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 // --- Configuration ---
-const API_PATHS = [
-  'https://localhost:7217/api',
-  'http://localhost:7218/api', // Fallback for mobile/non-https environments
-];
 const REFRESH_TOKEN_URL = '/Account/RenewAccessToken';
 
 // --- Event Emitter for Auth Failure ---
@@ -17,45 +12,11 @@ export const onAuthFailure = (callback) => {
 
 // --- Singleton Axios Instance ---
 const axiosClient = axios.create({
+  baseURL: 'https://localhost:7217/api', // Set base URL directly
   timeout: 500000,
 });
 
-// --- Health Check & Base URL Initialization ---
-// (This part remains the same as the previous version)
-let baseUrlInitialized = false;
-export async function initApiBaseUrl() {
-  if (baseUrlInitialized) return;
-  const storedBaseUrl = localStorage.getItem('apiBaseUrl');
-  if (storedBaseUrl) {
-    try {
-      await axios.options(`${storedBaseUrl}/Health`, { timeout: 2000 });
-      axiosClient.defaults.baseURL = storedBaseUrl;
-      baseUrlInitialized = true;
-      console.info(`API endpoint restored from cache: ${storedBaseUrl}`);
-      return;
-    } catch (e) {
-      localStorage.removeItem('apiBaseUrl');
-      console.warn(`Cached API endpoint ${storedBaseUrl} is not available.`);
-    }
-  }
-  for (const path of API_PATHS) {
-    try {
-      await axios.options(`${path}/Health`, { timeout: 2000 });
-      axiosClient.defaults.baseURL = path;
-      localStorage.setItem('apiBaseUrl', path);
-      baseUrlInitialized = true;
-      console.info(`API endpoint discovered and set: ${path}`);
-      return;
-    } catch (e) {
-      console.warn(`API endpoint ${path} is not available.`);
-    }
-  }
-  console.error('No available API endpoint found.');
-  authEventBus.dispatchEvent(new CustomEvent('auth-failure', { detail: { type: 'NO_CONNECTION' } }));
-}
-
 // --- Token Refresh Logic with Queueing ---
-// (This part remains the same as the previous version)
 let isRefreshing = false;
 let failedQueue = [];
 const processQueue = (error, token = null) => {
@@ -67,7 +28,6 @@ const processQueue = (error, token = null) => {
 };
 
 // --- Interceptors ---
-// (This part remains the same as the previous version)
 axiosClient.interceptors.request.use(
   (config) => {
     const accessToken = Cookies.get('accessToken');
@@ -129,17 +89,13 @@ axiosClient.interceptors.response.use(
 );
 
 // --- Standardized Response Wrapper ---
-// This is the new part that makes the client non-breaking for existing services.
 const handleApiResponse = async (apiCall) => {
   try {
     const response = await apiCall();
-    // The backend response seems to have a consistent structure.
-    // We pass it through directly.
     return response.data;
   } catch (error) {
     console.error('API Call Failed:', error);
     const defaultMessage = 'An unexpected error occurred.';
-    // Return a standardized error object that mimics the success response structure
     return {
       success: false,
       message: error.response?.data?.message || error.message || defaultMessage,
@@ -150,7 +106,6 @@ const handleApiResponse = async (apiCall) => {
 };
 
 // --- Exported API Functions ---
-// These functions use the wrapper to ensure consistent return values.
 export const getFromApi = (url, config) => handleApiResponse(() => axiosClient.get(url, config));
 export const postToApi = (url, data, config) => handleApiResponse(() => axiosClient.post(url, data, config));
 export const putToApi = (url, data, config) => handleApiResponse(() => axiosClient.put(url, data, config));
@@ -165,3 +120,4 @@ export function isEndpointAvailable() {
 export function getEndpoint() {
   return axiosClient.defaults.baseURL;
 }
+
