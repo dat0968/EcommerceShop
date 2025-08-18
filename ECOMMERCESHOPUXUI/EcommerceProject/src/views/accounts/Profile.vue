@@ -2,7 +2,7 @@
 <template>
   <div>
     <br /><br /><br />
-    <div style="width: 1400px; margin-left: 70px; background-color: aliceblue;">
+    <div style="width: 1400px; margin-left: 500px; background-color: aliceblue;">
       <div class="bg-white sticky-header border-b p-4 mb-6">
         <h1 class="mb-0 text-primary modern-title">← Chỉnh sửa thông tin</h1>
       </div>
@@ -14,15 +14,13 @@
         </div>
       </div>
       
-      <!-- Error State -->
       <div v-else-if="error" class="alert alert-danger modern-alert mx-4">
         <i class="fas fa-exclamation-triangle me-2"></i>
         {{ error }}
       </div>
       
-      <!-- Profile Content -->
-      <div v-else-if="profile" class="row">
-        <!-- Avatar Section -->
+      <div v-else-if="profile" class="row" >
+      
         <div class="col-md-3" style="margin-left: 20px;">
           <br /><br />
           <div class="modern-card">
@@ -31,6 +29,7 @@
                 <div class="avatar-container">
                   <br /><br />
                   <img
+                  style="width: 250px; height: auto;"
                     v-if="profile.hinh"
                     :src="getImageUrl(profile.hinh)"
                     alt="Hình đại diện"
@@ -41,16 +40,13 @@
                     {{ getInitials(profile.hoTen) }}
                   </div>
                 </div>
-                <p class="text-sm text-muted">Nhấn để thay đổi ảnh đại diện</p>
+                
               </div>
             </div>
           </div>
         </div>
-
-        <!-- Profile Information -->
         <div class="col-md-8">
           <br /><br />
-          <!-- Personal Information Card -->
           <div class="modern-card">
             <div class="card-header p-4">
               <h5 class="card-title mb-0 flex items-center">

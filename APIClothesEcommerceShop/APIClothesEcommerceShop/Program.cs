@@ -40,6 +40,7 @@ using APIClothesEcommerceShop.Repositories.FavoriteProduct;
 using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Controllers;
 using APIClothesEcommerceShop.Repositories.ViewHistory;
+using APIClothesEcommerceShop.Repositories.Contact;
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
@@ -67,7 +68,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_PB"));
 });
 
 // Add services to the container.
@@ -165,7 +166,7 @@ builder.Services.AddScoped<ITokenServices, TokenServices>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
-
+builder.Services.AddScoped<IContactRepository, ContactRepository>();
 // Email Service
 builder.Services.AddScoped<GoogleSenderService>();
 var emailSettings = builder.Configuration.GetSection("GoogleEmailSetting");

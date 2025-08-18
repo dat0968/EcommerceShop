@@ -21,11 +21,15 @@ using APIClothesEcommerceShop.DTO.Account;
 using Newtonsoft.Json;
 using System.Net.Http;
 using static APIClothesEcommerceShop.Controllers.AccountController;
+using static ServiceStack.Diagnostics.Events;
+using NetHttpClient = System.Net.Http.HttpClient;
 
 namespace APIClothesEcommerceShop.Repositories.Account
 {
     public class AccountRepository : IAccountRepository
     {
+        private readonly NetHttpClient _httpClient;
+
         private readonly IPasswordHasher _hasher;
         private readonly ITokenServices _tokenServices;
         private readonly EcommerceShopContext _db;
@@ -33,7 +37,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
         private readonly IMemoryCache _cache;
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
-        public AccountRepository(IHttpClientFactory httpClientFactory ,IConfiguration configuration ,IPasswordHasher hasher, ITokenServices tokenServices, EcommerceShopContext db, IHttpContextAccessor httpContextAccessor,IMemoryCache cache)
+        public AccountRepository(IHttpClientFactory httpClientFactory ,IConfiguration configuration ,IPasswordHasher hasher, ITokenServices tokenServices, EcommerceShopContext db, IHttpContextAccessor httpContextAccessor,IMemoryCache cache, NetHttpClient httpClient)
         {
             _hasher = hasher;
             _tokenServices = tokenServices;
@@ -42,7 +46,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
             _cache = cache;
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
-
+            _httpClient = httpClient;
         }
         [HttpPost("VerifyRecaptcha")]
         public async Task<IActionResult> VerifyRecaptcha([FromBody] RecaptchaVerificationDTO model)
@@ -961,6 +965,11 @@ namespace APIClothesEcommerceShop.Repositories.Account
             await _db.SaveChangesAsync();
 
             return new RedirectResult($"http://localhost:8080/google-login-success?access_token={accessToken}&refresh_token={refreshToken}");
+        }
+
+        public Task<bool> VerifyRecaptchaAsync(string recaptchaToken)
+        {
+            throw new NotImplementedException();
         }
     }
 }

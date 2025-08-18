@@ -170,7 +170,7 @@ onMounted(() => {
                   <RouterLink to="/Shop">Cửa Hàng</RouterLink>
                 </li>
                 <li>
-                  <RouterLink to="/chat">Liên Hệ</RouterLink>
+                  <RouterLink to="/Contact">Liên Hệ</RouterLink>
                 </li>
               </ul>
             </nav>
