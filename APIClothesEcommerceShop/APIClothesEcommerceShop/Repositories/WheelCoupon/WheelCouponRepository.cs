@@ -64,7 +64,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                         MoTa = mc.MoTa ?? "Coupon này không có mô tả",
                         SoTienGiam = mc.SoTienGiam,
                         PhanTramGiam = mc.PhanTramGiam,
-                        NgayKetThuc = mc.NgayKetThuc
+                        NgayKetThuc = mc.NgayKetThuc,
+                        IsUsed = mc.SoLuongDaDung > 0
                     }).ToList();
 
                 var result = new PrivateCouponInfoDTO
