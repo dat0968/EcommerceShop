@@ -2,8 +2,8 @@
 <script setup>
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
-import NavigationUserReview from './ui/navigationUserReview.vue'
-import WheelRandomCode from './specicals/WheelRandomCode.vue'
+import NavigationUserReview from '@/components/ui/NavigationUserReview.vue'
+import WheelRandomCode from '@/components/specicals/WheelRandomCode.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
