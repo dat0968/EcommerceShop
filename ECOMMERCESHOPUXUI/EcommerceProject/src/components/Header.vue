@@ -222,11 +222,6 @@ onMounted(async () => {
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
                       <li>
-                        <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"
-                          >Đăng xuất</a
-                        >
-                      </li>
-                      <li>
                         <router-link to="/profile" class="dropdown-item"
                           ><i class="fa fa-user me-2"></i>Cập nhật thông tin</router-link
                         >
