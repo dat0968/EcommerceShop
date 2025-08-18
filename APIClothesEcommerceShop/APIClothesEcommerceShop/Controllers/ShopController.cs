@@ -1,7 +1,6 @@
 ﻿using APIClothesEcommerceShop.DTO.Shop;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Combo;
-using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Repositories.Home;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Services;
@@ -114,7 +113,7 @@ namespace APIClothesEcommerceShop.Controllers
                 }
                 return Ok(details);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return BadRequest(new { Success = false, Message = "Lỗi tải chi tiết sản phẩm" });
             }
@@ -135,9 +134,9 @@ namespace APIClothesEcommerceShop.Controllers
                 }
                 return Ok(details);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new Exception("Error", ex);
+                throw;
             }
         }
     }

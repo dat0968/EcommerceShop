@@ -16,6 +16,6 @@ namespace APIClothesEcommerceShop.Repositories.UnitOfWork
         ICategoryRepository Category { get; }
         IReviewRepository Review { get; }
         IWheelCouponRepository WheelCoupon { get; }
-        // ICommentRepository Comment { get; }
+        ICommentRepository Comment { get; }
     }
 }

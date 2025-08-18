@@ -24,6 +24,7 @@ namespace APIClothesEcommerceShop.Services.EmailService.GoogleSenderService
         /// <param name="toEmail"></param>
         /// <param name="subject"></param>
         /// <param name="message"></param>
+        /// <param name="file"></param>
         /// <returns></returns>
         public async Task SendEmailAsync(string toEmail, string subject, string message, IFormFile? file = null)
         {

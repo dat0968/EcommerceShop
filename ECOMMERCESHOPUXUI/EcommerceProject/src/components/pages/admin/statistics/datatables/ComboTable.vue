@@ -13,10 +13,12 @@ import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
 import pathReplaceImg from '@/utils/processPathImg'
 import NoDataMessage from '@/components/common/NoDataMessage.vue'
+import StarRating from '@/components/common/StarRating.vue';
+import { createApp } from 'vue';
 
 export default {
   name: 'ComboTable',
-  components: { NoDataMessage },
+  components: { NoDataMessage, StarRating },
   props: {
     combos: {
       type: Array,
@@ -33,7 +35,8 @@ export default {
         comboId: combo.comboId,
         comboName: combo.comboName,
         salesCount: combo.salesCount,
-        revenue: combo.revenue, // Keep as a number
+        revenue: combo.revenue,
+        starCount: combo.starCount
       }))
 
       // Khởi tạo DataTable
@@ -45,23 +48,23 @@ export default {
           { data: 'comboId', title: 'Mã combo', className: 'text-center' },
           { data: 'comboName', title: 'Tên combo' },
           {
-            data: null,
+            data: 'starCount',
             title: 'Đánh giá',
-            render: function (data, type, row) {
-              const totalReviewStar = row.starCount ?? 0
-              return `
-              <span>
-                ${Array.from(
-                  { length: totalReviewStar },
-                  () => `<span style="color: #ffc107">★</span>`,
-                ).join('')}
-                ${Array.from(
-                  { length: 5 - totalReviewStar },
-                  () => `<span style="color: #e4e5e9">★</span>`,
-                ).join('')}
-              </span>
-              `
-            },
+            className: 'text-center',
+            render: (data, type, row) => {
+              if (type === 'display') {
+                const container = document.createElement('div');
+                const app = createApp(StarRating, {
+                  rating: data,
+                  readOnly: true,
+                  showRating: true,
+                  starSize: 20
+                });
+                app.mount(container);
+                return container.outerHTML;
+              }
+              return data;
+            }
           },
           { data: 'salesCount', title: 'Số lượng bán', className: 'text-center' },
           {
@@ -83,7 +86,6 @@ export default {
       })
       configsDt.attachSearchDebounce('#comboDatatable', table)
     },
-    // ! Not certainly about this method. Damn
     formatDetails(rowData) {
       const div = $('<div/>').addClass('loading').text('Loading...')
       const combo = this.combos.find((x) => x.comboId == rowData.comboId)

@@ -14,7 +14,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
         Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByProductIdAsync(int productId);
         Task<ResponseAPI<IEnumerable<ReviewResponseDTO>>> GetReviewsByComboIdAsync(int maCombo);
         Task<ResponseAPI<OrderWithReview>> GetOrderWithDetailItemAndReviewByOrderIdAsync(int orderId, int userId);
-        Task<ResponseAPI<Dictionary<string, List<ReviewResponseDTO>>>> GetAllReviewOfUser(int userId);
+        Task<ResponseAPI<Dictionary<string, List<OrderReviewGroupDTO>>>> GetAllReviewOfUser(int userId);
         Task<ResponseAPI<ReviewResponseDTO>> AddReviewForItemInOrderAsync(ReviewRequestDTO entity, bool isProduct);
         Task<ResponseAPI<string>> UpdateReviewAsync(ReviewRequestDTO entity, bool isProduct);
         Task<ResponseAPI<string>> RemoveAsync(int reviewId, int userId);

@@ -22,6 +22,59 @@ namespace APIClothesEcommerceShop.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(54)
+                        .HasColumnType("nvarchar(54)");
+
+                    b.Property<string>("HoTen")
+                        .HasMaxLength(54)
+                        .HasColumnType("nvarchar(54)");
+
+                    b.Property<int?>("IdCombo")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IdSanPham")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LyDoHuy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaKh")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("NgayBinhLuan")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NoiDung")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("TrangThai")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdCombo");
+
+                    b.HasIndex("IdSanPham");
+
+                    b.HasIndex("MaKh");
+
+                    b.ToTable("BINHLUAN");
+                });
+
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
                 {
                     b.Property<int>("MaSp")
@@ -361,7 +414,7 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("Hoten");
 
-                    b.Property<int>("MaKh")
+                    b.Property<int?>("MaKh")
                         .HasColumnType("int");
 
                     b.Property<bool>("MacDinh")
@@ -673,7 +726,7 @@ namespace APIClothesEcommerceShop.Migrations
                         .HasColumnType("nvarchar(25)")
                         .HasDefaultValue("Đang hoạt động");
 
-                    b.Property<DateTime>("TruyCapLlanCuoi")
+                    b.Property<DateTime>("TruyCapLanCuoi")
                         .HasColumnType("datetime2");
 
                     b.HasKey("MaKh")
@@ -933,6 +986,29 @@ namespace APIClothesEcommerceShop.Migrations
                     b.ToTable("SANPHAMYEUTHICH", (string)null);
                 });
 
+            modelBuilder.Entity("APIClothesEcommerceShop.Models.BinhLuan", b =>
+                {
+                    b.HasOne("APIClothesEcommerceShop.Models.Combo", "Combo")
+                        .WithMany()
+                        .HasForeignKey("IdCombo");
+
+                    b.HasOne("APIClothesEcommerceShop.Models.Sanpham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("IdSanPham");
+
+                    b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "Khachhang")
+                        .WithMany()
+                        .HasForeignKey("MaKh")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Combo");
+
+                    b.Navigation("Khachhang");
+
+                    b.Navigation("SanPham");
+                });
+
             modelBuilder.Entity("APIClothesEcommerceShop.Models.Chitietcombo", b =>
                 {
                     b.HasOne("APIClothesEcommerceShop.Models.Combo", "MaComboNavigation")
@@ -1078,7 +1154,6 @@ namespace APIClothesEcommerceShop.Migrations
                     b.HasOne("APIClothesEcommerceShop.Models.Khachhang", "MaKhNavigation")
                         .WithMany("Diachis")
                         .HasForeignKey("MaKh")
-                        .IsRequired()
                         .HasConstraintName("FK__DiaChi__MaKH__6750009E");
 
                     b.Navigation("MaKhNavigation");

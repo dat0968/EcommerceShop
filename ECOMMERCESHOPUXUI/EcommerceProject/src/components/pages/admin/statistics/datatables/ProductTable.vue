@@ -13,11 +13,14 @@ import 'datatables.net-dt/css/dataTables.dataTables.css'
 import { formatCurrency } from '@/constants/formatCurrency'
 import pathReplaceImg from '@/utils/processPathImg'
 import NoDataMessage from '@/components/common/NoDataMessage.vue'
+import StarRating from '@/components/common/StarRating.vue';
+import { createApp } from 'vue';
 
 export default {
   name: 'ProductTable',
   components: {
     NoDataMessage,
+    StarRating
   },
   props: {
     products: {
@@ -29,23 +32,18 @@ export default {
     this.initDataTable()
   },
   methods: {
+    formatCurrency, // Make it available in the template if needed
     async initDataTable() {
       await this.$nextTick()
       const productMap = new Map(this.products.map((p) => [p.productId, p]))
-      const dataSet = this.products.map((product) => {
-        const totalReviewStar =
-          product.detailTopProducts && Array.isArray(product.detailTopProducts)
-            ? product.detailTopProducts.reduce((total, x) => total + x.soSao, 0)
-            : 0
-        return {
-          productId: product.productId,
-          productName: product.productName,
-          categoryName: product.categoryName,
-          revenue: product.revenue, // Keep as a number
-          count: product.count,
-          totalReviewStar: totalReviewStar,
-        }
-      })
+      const dataSet = this.products.map((product) => ({
+        productId: product.productId,
+        productName: product.productName,
+        categoryName: product.categoryName,
+        revenue: product.revenue,
+        count: product.count,
+        averageRating: product.averageRating, // Use the direct value from the API
+      }));
 
       const table = $('#productDatatable').DataTable({
         data: dataSet,
@@ -55,23 +53,30 @@ export default {
           { data: 'productId', title: 'Mã sản phẩm', className: 'text-center' },
           { data: 'productName', title: 'Tên sản phẩm' },
           {
-            data: 'totalReviewStar',
-            title: 'Đánh giá',
-            render: function (data, type, row) {
-              return `
-              <span class="star-rating">
-                ${Array.from({ length: data }, () => `<span class="star filled">★</span>`).join('')}
-                ${Array.from({ length: 5 - data }, () => `<span class="star">★</span>`).join('')}
-              </span>
-              `
-            },
+            data: 'averageRating',
+            title: 'Đánh giá TB',
+            className: 'text-center',
+            render: (data, type, row) => {
+              if (type === 'display') {
+                const container = document.createElement('div');
+                const app = createApp(StarRating, {
+                  rating: data, // data is now the correct averageRating
+                  readOnly: true,
+                  showRating: true,
+                  starSize: 20
+                });
+                app.mount(container);
+                return container.outerHTML;
+              }
+              return data;
+            }
           },
           { data: 'categoryName', title: 'Tên danh mục' },
           {
             data: 'revenue',
             title: 'Doanh thu',
             className: 'text-right',
-            render: function (data, type, row) {
+            render: (data, type, row) => {
               if (type === 'display') {
                 return formatCurrency(data)
               }
@@ -94,40 +99,54 @@ export default {
       const div = $('<div/>').addClass('loading').text('Loading...')
       const detailProduct = productMap.get(rowData.productId)
 
-      const detailsHtml = `
+      let detailsHtml = `
         <div class="container-fluid p-3">
-          <h6 class="mb-3 text-primary">Chi tiết sản phẩm: ${detailProduct.productName}</h6>
-          <div class="row g-3">
-            ${
-              detailProduct.detailTopProducts && detailProduct.detailTopProducts.length > 0
-                ? detailProduct.detailTopProducts
-                    .map(
-                      (detail) => `
-                        <div class="col-sm-12 col-md-6 col-lg-4">
-                          <div class="card h-100 shadow-sm border-0">
-                            <div class="card-body d-flex flex-column">
-                              <div class="d-flex align-items-center mb-3">
-                                <img src="${pathReplaceImg(undefined, 'HinhAnh/Products', detail.hinhAnh)}" class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;" alt="Hình ảnh sản phẩm">
-                                <div>
-                                  <h5 class="card-title mb-0">Màu: ${detail.mauSac || '-'}</h5>
-                                  <p class="card-subtitle text-muted">Size: ${detail.kichThuoc || '-'}</p>
-                                </div>
-                              </div>
-                              <p class="mb-1"><strong>Giá:</strong> <span class="text-danger">${formatCurrency(detail.donGia || 0)}</span></p>
-                              <p class="mb-1"><strong>Số lượng tồn:</strong> <span class="text-warning">${detail.soLuongTon}</span></p>
-                              <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge ${detail.isActive ? 'bg-success' : 'bg-danger'}">${detail.isActive ? 'Đang bán' : 'Ngừng bán'}</span></p>
-                            </div>
-                          </div>
-                        </div>
-                      `,
-                    )
-                    .join('')
-                : '<div class="col-12"><p class="text-center text-muted">Không có biến thể nào để hiển thị.</p></div>'
+          <h6 class="mb-3 text-primary">Chi tiết các biến thể: ${detailProduct.productName}</h6>`;
+
+      if (detailProduct.detailTopProducts && detailProduct.detailTopProducts.length > 0) {
+        detailsHtml += '<table class="table table-bordered table-sm">' +
+          '<thead class="table-light"><tr><th>Mã CTSP</th><th>Màu sắc</th><th>Kích thước</th><th>Đơn giá</th><th>Đánh giá</th></tr></thead>' +
+          '<tbody>';
+
+        detailProduct.detailTopProducts.forEach(detail => {
+          const ratingPlaceholderId = `rating-variant-${detail.maCtsp}`;
+          detailsHtml += `<tr>
+                          <td>${detail.maCtsp}</td>
+                          <td>${detail.mauSac || '-'}</td>
+                          <td>${detail.kichThuoc || '-'}</td>
+                          <td>${this.formatCurrency(detail.donGia || 0)}</td>
+                          <td><div id="${ratingPlaceholderId}"></div></td>
+                        </tr>`;
+        });
+
+        detailsHtml += '</tbody></table>';
+      } else {
+        detailsHtml += '<p class="text-center text-muted">Không có biến thể nào để hiển thị.</p>';
+      }
+
+      detailsHtml += '</div>';
+      div.html(detailsHtml);
+
+      // Mount Vue components after HTML is in the DOM
+      this.$nextTick(() => {
+        if (detailProduct.detailTopProducts && detailProduct.detailTopProducts.length > 0) {
+          detailProduct.detailTopProducts.forEach(detail => {
+            const ratingPlaceholderId = `rating-variant-${detail.maCtsp}`;
+            const container = div.find(`#${ratingPlaceholderId}`).get(0);
+            if (container) {
+              const app = createApp(StarRating, {
+                rating: detail.soSao, // Use the corrected average rating for the variant
+                readOnly: true,
+                showRating: true,
+                starSize: 16
+              });
+              app.mount(container);
             }
-          </div>
-        </div>`
-      div.html(detailsHtml)
-      return div
+          });
+        }
+      });
+
+      return div;
     },
   },
 }

@@ -37,6 +37,10 @@ import CustomerChat from '../views/customer/CustomerChat.vue'
 import StaffChat from '../views/admin/chat/StaffChat.vue'
 import Profile from '../views/accounts/Profile.vue'
 import MyAddresses from '../views/customer/Addresses.vue'
+import FAQ from '../views/customer/FAQ.vue'
+import Blog from '../views/customer/Blog.vue'
+import AboutUs from '../views/customer/AboutUs.vue'
+import MyComments from '../views/customer/MyComments.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -59,6 +63,10 @@ const router = createRouter({
         {path: 'chat/:id', name: 'CustomerChatDetail', component: CustomerChat}, 
         { path: 'Profile', name: 'Profile', component: Profile },
         { path: 'MyAddresses', name: 'MyAddresses', component: MyAddresses },
+        { path: 'faq', name: 'FAQ', component: FAQ },
+        { path: 'blog', name: 'Blog', component: Blog },
+        { path: 'about-us', name: 'AboutUs', component: AboutUs },
+        { path: 'my-comments', name: 'MyComments', component: MyComments },
       ],
     },
     {
@@ -77,6 +85,11 @@ const router = createRouter({
         { path: 'coupon', name: 'couponManagement', component: couponManagement },
         {path: 'chat', name: 'StaffChat', component: StaffChat},
         {path: 'chat/:id', name: 'StaffChatDetail', component: StaffChat},
+        {
+          path: 'comment-management',
+          name: 'AdminCommentManagement',
+          component: () => import('@/views/admin/CommentManagement.vue')
+        },
       ],
     },
     { path: '/VNPAYresponse/:orderId/:total', name: 'VNPAYresponse', component: VNPAYresponse },

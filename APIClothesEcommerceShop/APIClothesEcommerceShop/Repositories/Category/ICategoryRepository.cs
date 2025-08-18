@@ -20,12 +20,14 @@ namespace APIClothesEcommerceShop.Repositories.Category
         Task<ResponseAPI<CategoryParentResponseDTO>> GetCategoryByIdAsync(int id);
         Task<ResponseAPI<CategoryParentResponseDTO>> UpsertCategoryAsync(int id, CategoryParentRequestDTO categoryDto);
         Task<ResponseAPI<dynamic>> DeleteCategoryAsync(int id);
+        Task<ResponseAPI<dynamic>> ChangeStatusCategoryAsync(int id);
 
         // Danh mục con
         Task<ResponseAPI<List<CategoryChildResponseDTO>>> GetAllSubCategoriesAsync();
         Task<ResponseAPI<CategoryChildResponseDTO>> GetSubCategoryByIdAsync(int id);
         Task<ResponseAPI<CategoryChildResponseDTO>> UpsertSubCategoryAsync(int id, CategoryChildRequestDTO subCategoryDto);
         Task<ResponseAPI<dynamic>> DeleteSubCategoryAsync(int id);
+        Task<ResponseAPI<dynamic>> ChangeStatusSubCategoryAsync(int id);
 
         // Chi tiết danh mục
         Task<ResponseAPI<List<CategoryDetailResponseDTO>>> GetAllCategoryDetailsAsync();

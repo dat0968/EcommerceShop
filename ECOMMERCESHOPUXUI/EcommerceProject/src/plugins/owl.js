@@ -1,4 +1,2 @@
-import $ from 'jquery'
-import 'owl.carousel'
-
-window.$ = window.jQuery = $
+import $ from 'jquery';
+window.$ = window.jQuery = $;

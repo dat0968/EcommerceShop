@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using APIClothesEcommerceShop.DTO.WheelCoupon;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 
@@ -40,38 +41,6 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         /// <summary>
-        /// Over2MillionUse (GET): Kiểm tra người dùng đã sử dụng trên 2 triệu cho coupon riêng. Lấy userId từ token.
-        /// </summary>
-        [HttpGet("over-2-million-use")]
-        public async Task<IActionResult> Over2MillionUse()
-        {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.Over2MillionUse(userId);
-            return Ok(response);
-        }
-
-        /// <summary>
-        /// IsInWeekSteak (GET): Kiểm tra người dùng có đang ở chuỗi tuần thưởng không. Lấy userId từ token.
-        /// </summary>
-        [HttpGet("week-streak")]
-        public async Task<IActionResult> IsInWeekSteak()
-        {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.IsInWeekSteak(userId);
-            return Ok(response);
-        }
-
-        /// <summary>
-        /// CreatePrivateCoupon (POST): Tạo coupon riêng cho người dùng. Lấy userId từ token.
-        /// </summary>
-        [HttpPost("private-coupon")]
-        public async Task<IActionResult> CreatePrivateCoupon()
-        {
-            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.CreatePrivateCoupon(userId);
-            return Ok(response);
-        }
-        /// <summary>
         /// UpdateLastLoginAndStreak (PATCH): Cập nhật lần đăng nhập cuối và streak cho người dùng. Lấy userId từ token.
         /// </summary>
         [HttpPatch("update-last-login-streak")]
@@ -83,13 +52,34 @@ namespace APIClothesEcommerceShop.Controllers
         }
 
         /// <summary>
-        /// CreateBlankCoupon (POST): Tạo coupon rỗng cho người dùng khi quay vào ô "Chúc bạn may mắn lần sau". Lấy userId từ token.
+        /// SpinWheel (POST): Thực hiện quay vòng quay may mắn và tạo coupon (hoặc không). Lấy userId từ token.
         /// </summary>
-        [HttpPost("blank-coupon")]
-        public async Task<IActionResult> CreateBlankCoupon()
+        [HttpPost("spin")]
+        public async Task<IActionResult> SpinWheel(WheelCouponCreateRequest? request)
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var response = await _unit.WheelCoupon.CreateBlankCoupon(userId);
+            var response = await _unit.WheelCoupon.SpinWheelAndGenerateCoupon(userId, request);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// GenerateCouponPreset (GET): Tạo một danh sách các giá trị coupon được mã hóa để hiển thị trên vòng quay.
+        /// </summary>
+        [HttpGet("generate-preset")]
+        public async Task<IActionResult> GenerateCouponPreset()
+        {
+            var response = await _unit.WheelCoupon.GenerateCouponPreset();
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// ClaimPresetCoupon (POST): Xác thực token và tạo coupon thật dựa trên vị trí trúng thưởng.
+        /// </summary>
+        [HttpPost("claim-preset")]
+        public async Task<IActionResult> ClaimPresetCoupon(ClaimPresetCouponRequest request)
+        {
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var response = await _unit.WheelCoupon.ClaimPresetCoupon(userId, request);
             return Ok(response);
         }
     }

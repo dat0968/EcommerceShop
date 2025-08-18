@@ -1,45 +1,45 @@
-﻿using APIClothesEcommerceShop.Data;
+﻿using System.Reflection;
+using System.Text;
+using APIClothesEcommerceShop.Controllers;
+using APIClothesEcommerceShop.Data;
+using APIClothesEcommerceShop.Repositories.Account;
+using APIClothesEcommerceShop.Repositories.Address;
 using APIClothesEcommerceShop.Repositories.Cart;
 using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Category;
 using APIClothesEcommerceShop.Repositories.CategoryDetails;
+using APIClothesEcommerceShop.Repositories.Combo;
+using APIClothesEcommerceShop.Repositories.Combos;
 using APIClothesEcommerceShop.Repositories.Coupon;
 using APIClothesEcommerceShop.Repositories.Customer;
+using APIClothesEcommerceShop.Repositories.DbInitializer;
+using APIClothesEcommerceShop.Repositories.DetailCombo;
+using APIClothesEcommerceShop.Repositories.FavoriteProduct;
+using APIClothesEcommerceShop.Repositories.HashPassword;
+using APIClothesEcommerceShop.Repositories.Home;
 using APIClothesEcommerceShop.Repositories.ImageProduct;
+using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Repositories.OrderComboDetails;
 using APIClothesEcommerceShop.Repositories.OrderDetails;
-using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.Repositories.Product;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
-using APIClothesEcommerceShop.Services;
 using APIClothesEcommerceShop.Repositories.Staff;
 using APIClothesEcommerceShop.Repositories.Statistics;
-using APIClothesEcommerceShop.Repositories.UnitOfWork;
-using APIClothesEcommerceShop.Repositories.HashPassword;
 using APIClothesEcommerceShop.Repositories.Token;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
-using System.Text;
+using APIClothesEcommerceShop.Repositories.UnitOfWork;
+using APIClothesEcommerceShop.Repositories.ViewHistory;
+using APIClothesEcommerceShop.Services;
+using APIClothesEcommerceShop.Services.EmailService;
+using APIClothesEcommerceShop.Services.EmailService.GoogleSenderService;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using APIClothesEcommerceShop.Repositories.Account;
-using VNPAY.NET;
-using APIClothesEcommerceShop.Repositories.DbInitializer;
-using APIClothesEcommerceShop.Repositories.Home;
-using APIClothesEcommerceShop.Services.EmailService.GoogleSenderService;
-using APIClothesEcommerceShop.Services.EmailService;
-using APIClothesEcommerceShop.Repositories.Combo;
-using APIClothesEcommerceShop.Repositories.DetailCombo;
-using APIClothesEcommerceShop.Repositories.Address;
+using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
-using APIClothesEcommerceShop.Repositories.FavoriteProduct;
-using APIClothesEcommerceShop.Repositories.Combos;
-using APIClothesEcommerceShop.Controllers;
-using APIClothesEcommerceShop.Repositories.ViewHistory;
+using VNPAY.NET;
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
@@ -67,7 +67,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_PH"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
 });
 
 // Add services to the container.
@@ -121,7 +121,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyOrigin()
               .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
-              //.AllowCredentials();
+        //.AllowCredentials();
         //ops.WithOrigins("http://localhost:8080", "http://192.168.1.150:8080", "http://localhost:5173") // Thêm IP nội bộ
         //   .AllowAnyHeader()
         //   .AllowAnyMethod()
@@ -134,6 +134,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<IWebHostEnvironment>(builder.Environment);
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductDetailsRepository, ProductDetailsRepository>();
 builder.Services.AddScoped<ICategoryDetailsRepository, CategoryDetailsRepository>();
@@ -143,7 +144,6 @@ builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<MLRecommendationSystem>();
 builder.Services.AddScoped<ComboService>();
 builder.Services.AddScoped<CheckoutService>();
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IVnpay, Vnpay>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();
@@ -165,6 +165,9 @@ builder.Services.AddScoped<ITokenServices, TokenServices>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
+builder.Services.AddScoped<IGeminiAIService, GeminiAIService>();
+builder.Services.AddScoped<APIClothesEcommerceShop.Services.CloudinaryService.ICloudinaryService, APIClothesEcommerceShop.Services.CloudinaryService.CloudinaryService>();
+
 
 // Email Service
 builder.Services.AddScoped<GoogleSenderService>();

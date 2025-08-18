@@ -67,8 +67,7 @@
             </div>
 
             <div class="review-rating">
-              <span v-for="n in review.soSao" :key="n" class="star-filled">★</span>
-              <span v-for="n in 5 - review.soSao" :key="'empty-' + n" class="star-empty">☆</span>
+              <StarRating :rating="review.soSao" />
             </div>
 
             <div class="review-content">
@@ -98,7 +97,7 @@
             <div class="review-product-info">
               <img
                 v-if="review.tenHinhAnh"
-                :src="pathReplaceImg(undefined, 'HinhAnh/SanPham', review.tenHinhAnh)"
+                :src="pathReplaceImg(undefined, 'HinhAnh/Products', review.tenHinhAnh)"
                 alt="Ảnh sản phẩm"
                 class="product-thumbnail"
               />
@@ -175,6 +174,7 @@ import { formatDate } from '@/constants/formatDatetime'
 import ResponseAPI from '@/models/ResponseAPI'
 import VueEasyLightbox from 'vue-easy-lightbox'
 import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
+import StarRating from '@/components/common/StarRating.vue';
 import { debounce } from 'lodash'
 
 export default {
@@ -189,7 +189,7 @@ export default {
       default: true,
     },
   },
-  components: { VueEasyLightbox, EmptySuggestBox },
+  components: { VueEasyLightbox, EmptySuggestBox, StarRating },
   setup(props) {
     const reviews = ref([])
     const loading = ref(false)

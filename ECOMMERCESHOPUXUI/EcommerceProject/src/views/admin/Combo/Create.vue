@@ -480,10 +480,12 @@ const result = await response.json();
                 <tr v-else v-for="product in productList" :key="product.maSp">
                   <td>{{ product.maSp }}</td>
                   <td>{{ product.tenSanPham }}</td>
+                 
+                  
                   <td>
                     <img
-                       :src="`https://localhost:7217/HinhAnh/Products/${
-                          product.hinh
+                       :src="`${getApiUrl}/HinhAnh/Products/${
+                          product.anhDaiDien
                         }`"
                       alt="Product Image" width="50" height="50" style="object-fit: cover; border-radius: 5px" />
                   </td>

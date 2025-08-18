@@ -1049,6 +1049,7 @@ onMounted(() => {
     </section>
     <!-- Trend Section End -->
   </div>
+  
 </template>
 
 <style>

@@ -1,4 +1,4 @@
-export function formatCurrency(value, unit = 'VND') {
+export function formatCurrency(value, unit = 'VNĐ') {
   if (typeof value !== 'number') return ''
 
   const formatter = new Intl.NumberFormat('vi-VN', {

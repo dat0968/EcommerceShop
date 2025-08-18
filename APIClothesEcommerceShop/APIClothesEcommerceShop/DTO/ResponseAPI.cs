@@ -9,7 +9,7 @@ namespace APIClothesEcommerceShop.DTO
     {
         public bool Success { get; set; } = false;
         public int StatusCode { get; set; } = 500; // Mặc định là lỗi server
-        public string Message { get; set; } = "Phản hồi không xác định";
+        public string Message { get; set; } = "Hệ thống đang trục trặc, vui lòng thử lại sau";
         public T? Data { get; set; }
         public List<string> Errors { get; set; } = new List<string>();
 

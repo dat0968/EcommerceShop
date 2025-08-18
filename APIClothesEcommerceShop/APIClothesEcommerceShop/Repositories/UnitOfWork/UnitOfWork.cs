@@ -14,18 +14,22 @@ namespace APIClothesEcommerceShop.Repositories.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly EcommerceShopContext _context;
-
+        private readonly IGeminiAIService _ai;
+        private readonly IConfiguration _configuration;
         public ICategoryRepository Category { get; private set; }
         public IReviewRepository Review { get; private set; }
         public IWheelCouponRepository WheelCoupon { get; private set; }
-        // public ICommentRepository Comment { get; private set; }
+        public ICommentRepository Comment { get; private set; }
 
-        public UnitOfWork(EcommerceShopContext context)
+        public UnitOfWork(EcommerceShopContext context, IGeminiAIService ai, IConfiguration configuration)
         {
             _context = context;
+            _ai = ai;
+            _configuration = configuration;
             Category = new CategoryRepository(_context);
-            Review = new ReviewRepository(_context);
-            WheelCoupon = new WheelCouponRepository(_context);
+            Review = new ReviewRepository(_context, _ai);
+            WheelCoupon = new WheelCouponRepository(_context, _configuration);
+            Comment = new CommentRepository(_context);
         }
         public void Save()
         {

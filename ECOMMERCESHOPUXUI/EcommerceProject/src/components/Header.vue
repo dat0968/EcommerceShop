@@ -41,7 +41,6 @@ async function fetchCart() {
     const result = await response.json()
     numberCart.value = result.length
   }
-  
 }
 
 const handleLogout = () => {
@@ -87,6 +86,7 @@ onMounted(async () => {
             class="col-xl-3 col-lg-2"
             style="width: 300px; margin-right: 50px; padding-bottom: 20px"
           >
+            <!-- Logo SVG -->
             <svg
               viewBox="0 0 700 250"
               role="img"
@@ -120,7 +120,6 @@ onMounted(async () => {
                   </stop>
                 </linearGradient>
               </defs>
-              <!-- Left wing - smooth curves -->
               <path
                 class="wing left"
                 d="M160 130 C110 90, 90 180, 150 170 C130 150, 140 110, 160 130 Z"
@@ -130,7 +129,6 @@ onMounted(async () => {
                 d="M150 140 C120 120, 110 170, 150 160 C140 140, 130 120, 150 140 Z"
                 opacity="0.5"
               />
-              <!-- Right wing - smooth curves -->
               <path
                 class="wing right"
                 d="M540 130 C590 90, 610 180, 550 170 C570 150, 560 110, 540 130 Z"
@@ -140,7 +138,6 @@ onMounted(async () => {
                 d="M550 140 C580 120, 590 170, 550 160 C560 140, 570 120, 550 140 Z"
                 opacity="0.5"
               />
-              <!-- Angel text with soft cursive font -->
               <RouterLink to="/" style="text-decoration: none">
                 <text
                   x="50%"
@@ -154,24 +151,21 @@ onMounted(async () => {
               </RouterLink>
             </svg>
           </div>
+
           <div class="col-xl-6 col-lg-7">
             <nav class="header__menu">
               <ul>
-                <li>
-                  <RouterLink to="/">Trang Chủ</RouterLink>
-                </li>
-                <li>
-                  <RouterLink to="/Shop">Cửa Hàng</RouterLink>
-                </li>
-                <li>
-                  <RouterLink to="/chat">Liên Hệ</RouterLink>
-                </li>
+                <li><RouterLink to="/">Trang Chủ</RouterLink></li>
+                <li><RouterLink to="/Shop">Cửa Hàng</RouterLink></li>
+                <li><RouterLink to="/chat">Liên Hệ</RouterLink></li>
               </ul>
             </nav>
           </div>
+
           <div class="col-lg-3">
             <div class="header__right" style="margin-top: 10px">
               <div class="header__right__auth">
+                <!-- Chưa đăng nhập -->
                 <template v-if="!isLoggedIn">
                   <div class="dropdown">
                     <button
@@ -184,14 +178,32 @@ onMounted(async () => {
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
                       <li>
-                        <router-link to="/Login" class="dropdown-item">Đăng nhập</router-link>
+                        <router-link to="/Login" class="dropdown-item"
+                          ><i class="fa fa-user me-2"></i>Đăng nhập</router-link
+                        >
                       </li>
                       <li>
-                        <router-link to="/Register" class="dropdown-item">Đăng ký</router-link>
+                        <router-link to="/Register" class="dropdown-item"
+                          ><i class="fa fa-user-plus me-2"></i>Đăng ký</router-link
+                        >
                       </li>
+                      <!-- <li><hr class="dropdown-divider" /></li> -->
+                      <!-- <li>
+                        <router-link to="/favoriteproduct" class="dropdown-item">
+                          <i class="fa fa-heart me-2"></i>Yêu thích
+                        </router-link>
+                      </li>
+                      <li>
+                        <router-link to="/Cart" class="dropdown-item">
+                          <i class="fa fa-shopping-bag me-2"></i>Giỏ hàng
+                        </router-link>
+                      </li>
+                      <li><WheelRandomCode class="dropdown-item" /></li> -->
                     </ul>
                   </div>
                 </template>
+
+                <!-- Đã đăng nhập -->
                 <template v-else>
                   <div class="dropdown">
                     <button
@@ -214,59 +226,48 @@ onMounted(async () => {
                           >Đăng xuất</a
                         >
                       </li>
-                      <li class="dropdown-submenu position-relative">
-                        <a class="dropdown-item text-danger"> Tài khoản của tôi </a>
-                        <ul class="dropdown-menu">
-                          <li>
-                            <router-link to="/profile" class="dropdown-item"
-                              >Cập nhật thông tin</router-link
-                            >
-                          </li>
-                          <li>
-                            <router-link to="/MyAddresses" class="dropdown-item"
-                              >Địa chỉ</router-link
-                            >
-                          </li>
-                          <li>
-                            <router-link to="/Order" class="dropdown-item">Đơn hàng</router-link>
-                          </li>
-                        </ul>
+                      <li>
+                        <router-link to="/profile" class="dropdown-item"
+                          ><i class="fa fa-user me-2"></i>Cập nhật thông tin</router-link
+                        >
+                      </li>
+                      <li>
+                        <router-link to="/MyAddresses" class="dropdown-item">
+                          <i class="fa fa-map-marker-alt me-2"></i>Địa chỉ</router-link
+                        >
+                      </li>
+                      <li>
+                        <router-link to="/favoriteproduct" class="dropdown-item"
+                          ><i class="fa fa-heart me-2"></i>Yêu thích</router-link
+                        >
+                      </li>
+                      <li>
+                        <router-link to="/Cart" class="dropdown-item"
+                          ><i class="fa fa-shopping-bag me-2"></i>Giỏ hàng</router-link
+                        >
+                      </li>
+                      <li>
+                        <router-link to="/Order" class="dropdown-item"
+                          ><i class="fa fa-box me-2"></i>Đơn hàng</router-link
+                        >
+                      </li>
+                      <li>
+                        <router-link to="/my-comments" class="dropdown-item"
+                          ><i class="fa fa-comments me-2"></i>Bình luận của tôi</router-link
+                        >
+                      </li>
+                      <li><NavigationUserReview class="dropdown-item" /></li>
+                      <li><WheelRandomCode class="dropdown-item" /></li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li>
+                        <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"
+                          ><i class="fa fa-sign-out me-2"></i>Đăng xuất</a
+                        >
                       </li>
                     </ul>
                   </div>
                 </template>
               </div>
-              <ul class="header__right__widget">
-                <li>
-                  <router-link to="/favoriteproduct" class="position-relative">
-                    <i class="fa fa-heart fs-5"></i>
-                    <span
-                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    >
-                      2
-                      <span class="visually-hidden">sản phẩm yêu thích</span>
-                    </span>
-                  </router-link>
-                </li>
-                <li>
-                  <router-link to="/Cart" class="position-relative">
-                    <i class="fa fa-shopping-bag fs-5"></i>
-                    <span
-                      v-if="isLoggedIn"
-                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    >
-                      {{ numberCart }}
-                      <span class="visually-hidden">sản phẩm trong giỏ hàng</span>
-                    </span>
-                  </router-link>
-                </li>
-                <li v-if="isLoggedIn">
-                  <NavigationUserReview />
-                </li>
-                <li>
-                  <WheelRandomCode />
-                </li>
-              </ul>
             </div>
           </div>
         </div>
@@ -277,8 +278,103 @@ onMounted(async () => {
   </div>
 </template>
 
+<script>
+import { ref, onMounted } from 'vue'
+import { useRouter, RouterLink } from 'vue-router'
+import Cookies from 'js-cookie'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Swal from 'sweetalert2'
+import { emitter } from '@/stores/eventBus'
 
-<style scoped>
+export default {
+  components: {
+    NavigationUserReview,
+    WheelRandomCode,
+    RouterLink,
+  },
+  setup() {
+    const router = useRouter()
+    const accessToken = ref(Cookies.get('accessToken'))
+    const refreshToken = ref(Cookies.get('refreshToken'))
+    const isLoggedIn = ref(false)
+    const numberCart = ref(0)
+    const getUrlAPI = ref(GetApiUrl())
+
+    const checkLogin = async () => {
+      if (accessToken.value && refreshToken.value) {
+        const result = await validateToken(accessToken.value, refreshToken.value)
+        isLoggedIn.value = result.isValid
+        if (result.isValid) {
+          accessToken.value = result.newAccessToken
+          Cookies.set('accessToken', accessToken.value)
+        } else {
+          Cookies.remove('accessToken')
+          Cookies.remove('refreshToken')
+        }
+      } else {
+        isLoggedIn.value = false
+      }
+    }
+
+    const fetchCart = async () => {
+      const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+      if (validatetoken.isValid) {
+        accessToken.value = validatetoken.newAccessToken
+        const readToken = decodeToken(accessToken.value)
+        const response = await fetch(`${getUrlAPI.value}/api/Cart/${readToken.IdUser}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        })
+        if (!response.ok) throw new Error('Failed to fetchCart')
+        const result = await response.json()
+        numberCart.value = result.length
+      }
+    }
+
+    const handleLogout = () => {
+      Swal.fire({
+        title: 'Bạn có chắc chắn muốn đăng xuất?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Đăng xuất',
+        cancelButtonText: 'Hủy',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          Cookies.remove('accessToken')
+          Cookies.remove('refreshToken')
+          isLoggedIn.value = false
+          Swal.fire({
+            title: 'Đăng xuất thành công!',
+            icon: 'success',
+            confirmButtonColor: '#3085d6',
+            timer: 1500,
+          }).then(() => {
+            router.push('/Login')
+          })
+        }
+      })
+    }
+
+    onMounted(() => {
+      checkLogin()
+      fetchCart()
+      emitter.on('cart-updated', fetchCart)
+    })
+
+    return {
+      isLoggedIn,
+      numberCart,
+      handleLogout,
+    }
+  },
+}
+</script>
+
+
+<style>
 .header__menu {
   display: flex;
   justify-content: center;
@@ -330,33 +426,6 @@ onMounted(async () => {
 
 .header__right__auth .dropdown-item:hover {
   background-color: #f8f9fa;
-}
-
-.header__right__widget {
-  display: flex;
-  align-items: center;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.header__right__widget li {
-  margin-left: 15px;
-  position: relative;
-}
-
-.header__right__widget .tip {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ec4e79;
-  color: #fff;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  line-height: 16px;
-  text-align: center;
-  font-size: 12px;
 }
 
 .avatar-img {
