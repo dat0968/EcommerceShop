@@ -15,6 +15,8 @@ namespace APIClothesEcommerceShop.DTO.Product
         public int LuotYeuThich { get; set; }
         public int SoLuong { get; set; }
         public int SoLuongBan { get; set; }
+        public double? AverageRating { get; set; }
+        public int ReviewCount { get; set; }
         public string? AnhDaiDien { get; set; }
         public virtual ICollection<CategoryDetailsResponseDTO> CategoryDetails { get; set; } = new List<CategoryDetailsResponseDTO>();
         public virtual ICollection<ProductDetailResponseDTO> ProductDetails { get; set; } = new List<ProductDetailResponseDTO>();

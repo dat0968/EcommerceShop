@@ -63,6 +63,8 @@ namespace APIClothesEcommerceShop.Controllers
                     PriceRange = p.KhoangGia,
                     DiscountPercentage = null,
                     DiscountAmount = null,
+                    AverageRating = p.AverageRating,
+                    ReviewCount = p.ReviewCount
                 });
                 var comboQuery = ListCombo
                      .Where(c => c.NgayBatDau <= DateTime.Now && c.NgayKetThuc >= DateTime.Now)
@@ -75,6 +77,8 @@ namespace APIClothesEcommerceShop.Controllers
                          PriceRange = null,
                          DiscountPercentage = c.PhanTramGiam,
                          DiscountAmount = c.SoTienGiam,
+                         AverageRating = c.AverageRating,
+                         ReviewCount = c.ReviewCount
                      });
                 if (!isCombo)
                 {

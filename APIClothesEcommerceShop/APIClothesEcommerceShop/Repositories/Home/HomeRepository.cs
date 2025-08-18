@@ -31,6 +31,8 @@ namespace APIClothesEcommerceShop.Repositories.Home
                                    MaSp = g.Key.MaSp,
                                    TenSanPham = g.Key.TenSanPham,
                                    MoTa = g.Key.MoTa,
+                                   ReviewCount = g.Select(x => x.sp.DanhGias).First().Count(),
+                                   AverageRating = g.Select(x => x.sp.DanhGias).First().Any() ? g.Select(x => x.sp.DanhGias).First().Average(dg => dg.Rating) : 5,
                                    SoLuong = g.Sum(p => p.ctsp.SoLuongTon),
                                    SoLuongBan = g.Sum(p => p.ct.SoLuong),
                                    KhoangGia = g.Select(x => x.ctsp).Where(p => p.IsActive == true).Any()
@@ -72,6 +74,8 @@ namespace APIClothesEcommerceShop.Repositories.Home
                     MoTa = p.MoTa,
                     NgayTao = p.NgayTao,
                     LuotYeuThich = p.Sanphamyeuthichs.Count(),
+                    ReviewCount = p.DanhGias.Count(),
+                    AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.Rating) : 5,
                     KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
                         ? (p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia) == p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)
                             ? $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
@@ -117,6 +121,8 @@ namespace APIClothesEcommerceShop.Repositories.Home
                     TenSanPham = p.TenSanPham,
                     MoTa = p.MoTa,
                     NgayTao = p.NgayTao,
+                    ReviewCount = p.DanhGias.Count(),
+                    AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.Rating) : 5,
                     KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
                         ? (p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia) == p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)
                             ? $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"

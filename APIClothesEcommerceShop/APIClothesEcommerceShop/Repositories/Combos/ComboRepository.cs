@@ -45,6 +45,10 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                         NgayKetThuc = p.NgayKetThuc,
                         MoTa = p.MoTa,
                         IsActive = p.IsActive,
+                        ReviewCount = p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Count(),
+                        AverageRating = p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Any() 
+                                      ? p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Average(dg => dg.Rating) 
+                                      : 5,
                         Chitietcombos = p.Chitietcombos.Select(cc => new DetaisComboResponseDTO
                         {
                             MaSp = cc.MaSp,
@@ -90,12 +94,18 @@ namespace APIClothesEcommerceShop.Repositories.Combos
             var getCombobyID = await _context.Combos.AsNoTracking()
                 .Include(p => p.Chitietcombos)
                 .ThenInclude(p => p.MaSpNavigation)
+                .ThenInclude(p => p.DanhGias) // Include reviews for products in combo
+                .Include(p => p.Chitietcombos)
+                .ThenInclude(p => p.MaSpNavigation)
                 .ThenInclude(p => p.Chitietsanphams)
                 .FirstOrDefaultAsync(p => p.MaCombo == id);
             if (getCombobyID == null)
             {
                 throw new Exception("Not Found Combo");
             }
+
+            var allReviews = getCombobyID.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).ToList();
+
             var ResponseCombo = new ComboResponseDTO
             {
                 MaCombo = getCombobyID.MaCombo,
@@ -108,6 +118,8 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                 PhanTramGiam = getCombobyID.PhanTramGiam,
                 SoTienGiam = getCombobyID.SoTienGiam,
                 IsActive = getCombobyID.IsActive,
+                ReviewCount = allReviews.Count(),
+                AverageRating = allReviews.Any() ? allReviews.Average(dg => dg.Rating) : 5,
                 Chitietcombos = getCombobyID.Chitietcombos.Select(p => new DetaisComboResponseDTO
                 {
                     MaSp = p.MaSp,

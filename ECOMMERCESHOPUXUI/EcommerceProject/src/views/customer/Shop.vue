@@ -145,7 +145,15 @@ function selectedCombo(){
 onMounted(async () => {
   await fetchBigCategories()
   await fetchAPIProducts()
-})
+}
+const formatRating = (rating) => {
+  if (rating === null || rating === undefined) {
+    return '5.0'; // Default to 5 if no rating
+  }
+  // Round to nearest 0.5
+  const rounded = Math.round(rating * 2) / 2;
+  return rounded.toFixed(1);
+};)
 </script>
 
 <template>
@@ -337,6 +345,13 @@ onMounted(async () => {
                         </div>
                       </RouterLink>
                     </h6>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div class="product__rating">
+                            <i class="fa fa-star" style="color: #ffc107;"></i>
+                            <span>{{ formatRating(product.averageRating) }}</span>
+                            <span class="text-muted">({{ product.reviewCount }})</span>
+                        </div>
+                    </div>
                   </div>
                 </div>
               </div>

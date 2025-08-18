@@ -262,6 +262,15 @@ const tryOnProductData = computed(() => {
     products: productsForAI, // This is the array that LightXService and backend AI will use
   };
 });
+
+const formatRating = (rating) => {
+  if (rating === null || rating === undefined) {
+    return '5.0'; // Default to 5 if no rating
+  }
+  // Round to nearest 0.5
+  const rounded = Math.round(rating * 2) / 2;
+  return rounded.toFixed(1);
+};
 </script>
 <template>
   <div>
@@ -287,6 +296,13 @@ const tryOnProductData = computed(() => {
               <h3>
                 {{ combo.name }} <span>Còn: {{ combo.quantityCombo }} phần</span>
               </h3>
+              <div class="d-flex align-items-center mb-3">
+                <div class="product__rating">
+                    <i class="fa fa-star" style="color: #ffc107;"></i>
+                    <span>{{ formatRating(combo.averageRating) }}</span>
+                </div>
+                <span class="text-muted ms-2">({{ combo.reviewCount }} đánh giá)</span>
+              </div>
               <div class="product__details__price">
                 {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span>
               </div>

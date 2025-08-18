@@ -228,6 +228,15 @@ const formatPrice = (price) => {
   return price.toLocaleString('vi-VN') + ' Vnđ'
 }
 
+const formatRating = (rating) => {
+  if (rating === null || rating === undefined) {
+    return '5.0'; // Default to 5 if no rating
+  }
+  // Round to nearest 0.5
+  const rounded = Math.round(rating * 2) / 2;
+  return rounded.toFixed(1);
+};
+
 const currentSlide = ref(0)
 const slideWidth = 300
 const itemsPerView = 4
@@ -491,7 +500,7 @@ onMounted(() => {
                       ">
                       <div style="display: flex; align-items: center; color: #666">
                         <i class="fas fa-star" style="color: #ffc107; margin-right: 4px"></i>
-                        {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+                        {{ formatRating(item.averageRating) }} ({{ item.reviewCount }})
                       </div>
                       <div style="color: #28a745; font-weight: 600">
                         Đã bán {{ item.soLuongBan }}
@@ -664,7 +673,7 @@ onMounted(() => {
                           ">
                           <div style="display: flex; align-items: center; color: #666">
                             <i class="fas fa-star" style="color: #ffc107; margin-right: 4px"></i>
-                            {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+                            {{ formatRating(item.averageRating) }} ({{ item.reviewCount }})
                           </div>
                           <div style="color: #28a745; font-weight: 600">
                             Đã bán {{ item.soLuongBan }}
@@ -759,7 +768,7 @@ onMounted(() => {
                           ">
                           <div style="display: flex; align-items: center; color: #666">
                             <i class="fas fa-star" style="color: #ffc107; margin-right: 4px"></i>
-                            {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+                            {{ formatRating(item.averageRating) }} ({{ item.reviewCount }})
                           </div>
                           <div style="color: #28a745; font-weight: 600">
                             Đã bán {{ item.soLuongBan }}
@@ -936,7 +945,7 @@ onMounted(() => {
                           ">
                           <div style="display: flex; align-items: center; color: #666">
                             <i class="fas fa-star" style="color: #ffc107; margin-right: 4px"></i>
-                            {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+                            {{ formatRating(item.averageRating) }} ({{ item.reviewCount }})
                           </div>
                           <div style="color: #28a745; font-weight: 600">
                             Đã bán {{ item.soLuongBan }}
@@ -1031,7 +1040,7 @@ onMounted(() => {
                           ">
                           <div style="display: flex; align-items: center; color: #666">
                             <i class="fas fa-star" style="color: #ffc107; margin-right: 4px"></i>
-                            {{ item.rating || 4.8 }} ({{ item.reviews || 127 }})
+                            {{ formatRating(item.averageRating) }} ({{ item.reviewCount }})
                           </div>
                           <div style="color: #28a745; font-weight: 600">
                             Đã bán {{ item.soLuongBan }}
