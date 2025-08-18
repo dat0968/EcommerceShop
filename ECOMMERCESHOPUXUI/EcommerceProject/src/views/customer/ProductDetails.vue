@@ -769,7 +769,7 @@ watch(
                 @mouseover="isFavorited ? ($event.target.style.backgroundColor='#007bff', $event.target.style.color='white') : ($event.target.style.backgroundColor='red', $event.target.style.color='white')" 
                 @mouseout="isFavorited ? ($event.target.style.backgroundColor='transparent', $event.target.style.color='#007bff') : ($event.target.style.backgroundColor='transparent', $event.target.style.color='red')"> 
             <i class="fas fa-heart" style="margin-right: 4px; color: red;"></i> 
-            {{ isFavorited ? 'Đã thích' : 'Yêu thích' }} ({{ favoriteCount || 0 }}) 
+            {{ isFavorited ? 'Đã thích' : 'Yêu thích' }} 
         </button> 
         
         <!-- Nút So sánh -->
@@ -839,7 +839,7 @@ watch(
                                     <div class="card-body p-2">
                                         <h4 class="card-title mb-1" style="font-size: 0.8rem; padding-bottom: 5px;">
                                             <router-link :to="`/product/${item.maSp}`" class="text-decoration-none text-dark">
-                                                {{ item.tenSanPham }}  ({{ item.maSp }}) 
+                                                {{ item.tenSanPham }}  
                                             </router-link>
                                       
                                         </h4>
