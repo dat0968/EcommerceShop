@@ -21,39 +21,39 @@ namespace APIClothesEcommerceShop.Repositories.Home
             try
             {
                 var products = (from ct in db.Cthoadons
-                               join ctsp in db.Chitietsanphams on ct.MaCtsp equals ctsp.MaCtsp
-                               join sp in db.Sanphams on ctsp.MaSp equals sp.MaSp
-                               // group new là dữ liệu ta muốn gom, by new là khóa nhóm
-                               group new { sp, ctsp, ct } by new { sp.MaSp, sp.TenSanPham, sp.MoTa } into g
-                               orderby g.Sum(x => x.ct.SoLuong) descending
-                               select new ProductResponseDTO
-                               {
-                                   MaSp = g.Key.MaSp,
-                                   TenSanPham = g.Key.TenSanPham,
-                                   MoTa = g.Key.MoTa,
-                                   ReviewCount = g.Select(x => x.sp.DanhGias).First().Count(),
-                                   AverageRating = g.Select(x => x.sp.DanhGias).First().Any() ? g.Select(x => x.sp.DanhGias).First().Average(dg => dg.Rating) : 5,
-                                   SoLuong = g.Sum(p => p.ctsp.SoLuongTon),
-                                   SoLuongBan = g.Sum(p => p.ct.SoLuong),
-                                   KhoangGia = g.Select(x => x.ctsp).Where(p => p.IsActive == true).Any()
-                                    ? (g.Select(x => x.ctsp).Where(p => p.IsActive == true).Min(p => p.DonGia) == g.Select(x => x.ctsp).Where(p => p.IsActive == true).Max(p => p.DonGia)
-                                        ? $"{g.Select(x => x.ctsp).Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
-                                        : $"{g.Select(x => x.ctsp).Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ - {g.Select(x => x.ctsp).Where(p => p.IsActive == true).Max(p => p.DonGia)} VNĐ")
-                                    : "Chưa có giá",
-                                   ProductDetails = g.Select(x => x.ctsp).Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
-                                   {
-                                       MaCtsp = p.MaCtsp,
-                                       KichThuoc = p.KichThuoc,
-                                       MauSac = p.MauSac,
-                                       SoLuongTon = p.SoLuongTon,
-                                       DonGia = p.DonGia,
-                                       Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
-                                       {
-                                           MaCtsp = p.MaCtsp,
-                                           TenHinhAnh = p.TenHinhAnh
-                                       }).ToList(),
-                                   }).ToList(),
-                               }).Take(8).ToListAsync();
+                                join ctsp in db.Chitietsanphams on ct.MaCtsp equals ctsp.MaCtsp
+                                join sp in db.Sanphams on ctsp.MaSp equals sp.MaSp
+                                // group new là dữ liệu ta muốn gom, by new là khóa nhóm
+                                group new { sp, ctsp, ct } by new { sp.MaSp, sp.TenSanPham, sp.MoTa } into g
+                                orderby g.Sum(x => x.ct.SoLuong) descending
+                                select new ProductResponseDTO
+                                {
+                                    MaSp = g.Key.MaSp,
+                                    TenSanPham = g.Key.TenSanPham,
+                                    MoTa = g.Key.MoTa,
+                                    ReviewCount = g.Select(x => x.sp.DanhGias).First().Count(),
+                                    AverageRating = g.Select(x => x.sp.DanhGias).First().Any() ? g.Select(x => x.sp.DanhGias).First().Average(dg => dg.SoSao) : 5,
+                                    SoLuong = g.Sum(p => p.ctsp.SoLuongTon),
+                                    SoLuongBan = g.Sum(p => p.ct.SoLuong),
+                                    KhoangGia = g.Select(x => x.ctsp).Where(p => p.IsActive == true).Any()
+                                     ? (g.Select(x => x.ctsp).Where(p => p.IsActive == true).Min(p => p.DonGia) == g.Select(x => x.ctsp).Where(p => p.IsActive == true).Max(p => p.DonGia)
+                                         ? $"{g.Select(x => x.ctsp).Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
+                                         : $"{g.Select(x => x.ctsp).Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ - {g.Select(x => x.ctsp).Where(p => p.IsActive == true).Max(p => p.DonGia)} VNĐ")
+                                     : "Chưa có giá",
+                                    ProductDetails = g.Select(x => x.ctsp).Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
+                                    {
+                                        MaCtsp = p.MaCtsp,
+                                        KichThuoc = p.KichThuoc,
+                                        MauSac = p.MauSac,
+                                        SoLuongTon = p.SoLuongTon,
+                                        DonGia = p.DonGia,
+                                        Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                                        {
+                                            MaCtsp = p.MaCtsp,
+                                            TenHinhAnh = p.TenHinhAnh
+                                        }).ToList(),
+                                    }).ToList(),
+                                }).Take(8).ToListAsync();
                 return await products;
             }
             catch (Exception ex)
@@ -68,38 +68,38 @@ namespace APIClothesEcommerceShop.Repositories.Home
             {
                 var products = await db.Sanphams
                     .AsNoTracking().Select(p => new ProductResponseDTO
-                {
-                    MaSp = p.MaSp,
-                    TenSanPham = p.TenSanPham,
-                    MoTa = p.MoTa,
-                    NgayTao = p.NgayTao,
-                    LuotYeuThich = p.Sanphamyeuthichs.Count(),
-                    ReviewCount = p.DanhGias.Count(),
-                    AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.Rating) : 5,
-                    KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
+                    {
+                        MaSp = p.MaSp,
+                        TenSanPham = p.TenSanPham,
+                        MoTa = p.MoTa,
+                        NgayTao = p.NgayTao,
+                        LuotYeuThich = p.Sanphamyeuthichs.Count(),
+                        ReviewCount = p.DanhGias.Count(),
+                        AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.SoSao) : 5,
+                        KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
                         ? (p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia) == p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)
                             ? $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
                             : $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ - {p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)} VNĐ")
                         : "Chưa có giá",
-                    SoLuong = p.Chitietsanphams.Sum(p => p.SoLuongTon),
-                    //So luong ban
-                    SoLuongBan = p.Chitietsanphams
+                        SoLuong = p.Chitietsanphams.Sum(p => p.SoLuongTon),
+                        //So luong ban
+                        SoLuongBan = p.Chitietsanphams
                     .SelectMany(ctsp => ctsp.Cthoadons) // SelectMany giống select nhưng nó đưa tất cả các tập hợp con thành một tập cha
                     .Sum(ct => (int?)ct.SoLuong) ?? 0,
                         ProductDetails = p.Chitietsanphams.Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
-                    {
-                        MaCtsp = p.MaCtsp,
-                        KichThuoc = p.KichThuoc,
-                        MauSac = p.MauSac,
-                        SoLuongTon = p.SoLuongTon,
-                        DonGia = p.DonGia,
-                        Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
                         {
                             MaCtsp = p.MaCtsp,
-                            TenHinhAnh = p.TenHinhAnh
+                            KichThuoc = p.KichThuoc,
+                            MauSac = p.MauSac,
+                            SoLuongTon = p.SoLuongTon,
+                            DonGia = p.DonGia,
+                            Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                            {
+                                MaCtsp = p.MaCtsp,
+                                TenHinhAnh = p.TenHinhAnh
+                            }).ToList(),
                         }).ToList(),
-                    }).ToList(),
-                }).OrderByDescending(d => d.LuotYeuThich).Take(8).ToListAsync();
+                    }).OrderByDescending(d => d.LuotYeuThich).Take(8).ToListAsync();
                 return products;
             }
             catch (Exception ex)
@@ -116,43 +116,44 @@ namespace APIClothesEcommerceShop.Repositories.Home
                     .Include(p => p.Chitietsanphams)
                     .Include(p => p.Chitietsanphams)
                     .ThenInclude(ct => ct.Hinhanhs).Where(p => p.IsActive == true).Select(p => new ProductResponseDTO
-                {
-                    MaSp = p.MaSp,
-                    TenSanPham = p.TenSanPham,
-                    MoTa = p.MoTa,
-                    NgayTao = p.NgayTao,
-                    ReviewCount = p.DanhGias.Count(),
-                    AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.Rating) : 5,
-                    KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
+                    {
+                        MaSp = p.MaSp,
+                        TenSanPham = p.TenSanPham,
+                        MoTa = p.MoTa,
+                        NgayTao = p.NgayTao,
+                        ReviewCount = p.DanhGias.Count(),
+                        AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.SoSao) : 5,
+                        KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
                         ? (p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia) == p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)
                             ? $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
                             : $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ - {p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)} VNĐ")
                         : "Chưa có giá",
-                    SoLuong = p.Chitietsanphams.Sum(p => p.SoLuongTon),
-                    //So luong ban
-                    SoLuongBan = p.Chitietsanphams
+                        SoLuong = p.Chitietsanphams.Sum(p => p.SoLuongTon),
+                        //So luong ban
+                        SoLuongBan = p.Chitietsanphams
                     .SelectMany(ctsp => ctsp.Cthoadons) // SelectMany giống select nhưng nó đưa tất cả các tập hợp con thành một tập cha
                     .Sum(ct => (int?)ct.SoLuong) ?? 0,
                         ProductDetails = p.Chitietsanphams.Where(p => p.IsActive == true).Select(p => new ProductDetailResponseDTO
-                    {
-                        MaCtsp = p.MaCtsp,
-                        KichThuoc = p.KichThuoc,
-                        MauSac = p.MauSac,
-                        SoLuongTon = p.SoLuongTon,
-                        DonGia = p.DonGia,
-                        Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
                         {
                             MaCtsp = p.MaCtsp,
-                            TenHinhAnh = p.TenHinhAnh
+                            KichThuoc = p.KichThuoc,
+                            MauSac = p.MauSac,
+                            SoLuongTon = p.SoLuongTon,
+                            DonGia = p.DonGia,
+                            Images = p.Hinhanhs.Select(p => new ImageProductResponseDTO
+                            {
+                                MaCtsp = p.MaCtsp,
+                                TenHinhAnh = p.TenHinhAnh
+                            }).ToList(),
                         }).ToList(),
-                    }).ToList(),
-                }).OrderByDescending(d => d.NgayTao).Take(12).ToListAsync();
+                    }).OrderByDescending(d => d.NgayTao).Take(12).ToListAsync();
                 return products;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Error", ex);
             }
-            
+
         }
         public async Task<List<CategoryParentResponseDTO>> GetPublicCategories()
         {

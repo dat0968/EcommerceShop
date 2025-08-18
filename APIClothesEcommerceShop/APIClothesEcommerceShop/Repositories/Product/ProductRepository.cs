@@ -25,7 +25,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                 await db.SaveChangesAsync();
                 return model;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("Error", ex);
             }
@@ -105,7 +105,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                         MaSp = p.MaSp,
                         TenSanPham = p.TenSanPham,
                         ReviewCount = p.DanhGias.Count(),
-                        AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.Rating) : 5,
+                        AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.SoSao) : 5,
                         KhoangGia = p.Chitietsanphams.Where(p => p.IsActive == true).Any()
                         ? (p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia) == p.Chitietsanphams.Where(p => p.IsActive == true).Max(p => p.DonGia)
                             ? $"{p.Chitietsanphams.Where(p => p.IsActive == true).Min(p => p.DonGia)} VNĐ"
@@ -119,7 +119,8 @@ namespace APIClothesEcommerceShop.Repositories.Product
 
 
                 return GetProduct;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw new Exception("Error", ex);
             }
@@ -146,7 +147,7 @@ namespace APIClothesEcommerceShop.Repositories.Product
                     MoTa = GetProductById.MoTa,
                     NgayTao = GetProductById.NgayTao,
                     ReviewCount = GetProductById.DanhGias.Count(),
-                    AverageRating = GetProductById.DanhGias.Any() ? GetProductById.DanhGias.Average(dg => dg.Rating) : 5,
+                    AverageRating = GetProductById.DanhGias.Any() ? GetProductById.DanhGias.Average(dg => dg.SoSao) : 5,
                     HasVariants = GetProductById.Chitietsanphams.Where(p => p.IsActive == true && (string.IsNullOrEmpty(p.MauSac) == true && string.IsNullOrEmpty(p.KichThuoc) == true)).Count() > 0 ? false : true,
                     LuotYeuThich = GetProductById.Sanphamyeuthichs.Count(),
                     CategoryDetails = GetProductById.Chitietdanhmucs.Select(p => new CategoryDetailsResponseDTO

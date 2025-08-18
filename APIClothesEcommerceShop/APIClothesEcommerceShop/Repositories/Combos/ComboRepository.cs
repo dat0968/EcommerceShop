@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using APIClothesEcommerceShop.Models;
-using APIClothesEcommerceShop.DTO;
-using Microsoft.EntityFrameworkCore;
-using APIClothesEcommerceShop.DTO.Combos;
-using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Data;
-using APIClothesEcommerceShop.DTO.ProductDetails;
+using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.DTO.Combos;
 using APIClothesEcommerceShop.DTO.ImageProduct;
+using APIClothesEcommerceShop.DTO.ProductDetails;
+using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Combo;
+using Microsoft.EntityFrameworkCore;
 
 namespace APIClothesEcommerceShop.Repositories.Combos
 {
@@ -28,7 +28,7 @@ namespace APIClothesEcommerceShop.Repositories.Combos
             {
                 var query = _context.Combos
                     .AsNoTracking()
-                    .Where(p => p.IsActive == true )
+                    .Where(p => p.IsActive == true)
                     .Include(c => c.Chitietcombos)
                         .ThenInclude(cc => cc.MaComboNavigation)  // Giữ nguyên navigation property
                     .Include(c => c.Chitietcombos)
@@ -46,8 +46,8 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                         MoTa = p.MoTa,
                         IsActive = p.IsActive,
                         ReviewCount = p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Count(),
-                        AverageRating = p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Any() 
-                                      ? p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Average(dg => dg.Rating) 
+                        AverageRating = p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Any()
+                                      ? p.Chitietcombos.SelectMany(ct => ct.MaSpNavigation.DanhGias).Average(dg => dg.SoSao)
                                       : 5,
                         Chitietcombos = p.Chitietcombos.Select(cc => new DetaisComboResponseDTO
                         {
@@ -119,7 +119,7 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                 SoTienGiam = getCombobyID.SoTienGiam,
                 IsActive = getCombobyID.IsActive,
                 ReviewCount = allReviews.Count(),
-                AverageRating = allReviews.Any() ? allReviews.Average(dg => dg.Rating) : 5,
+                AverageRating = allReviews.Any() ? allReviews.Average(dg => dg.SoSao) : 5,
                 Chitietcombos = getCombobyID.Chitietcombos.Select(p => new DetaisComboResponseDTO
                 {
                     MaSp = p.MaSp,
