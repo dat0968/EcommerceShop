@@ -80,13 +80,14 @@
                 <h5 class="mb-3 text-center">Mã Giảm Giá Của Bạn</h5>
                 <div v-if="wheelInfo.privateCoupons && wheelInfo.privateCoupons.length > 0" class="coupon-list">
                   <ul class="list-group">
-                    <li v-for="coupon in wheelInfo.privateCoupons" :key="coupon.maCode" class="list-group-item">
+                    <li v-for="coupon in wheelInfo.privateCoupons" :key="coupon.maCode" class="list-group-item" :class="{'coupon-used': coupon.isUsed}">
                       <div>
-                        <strong class="coupon-code" @click="copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
+                        <strong class="coupon-code" :class="{'disabled-text': coupon.isUsed}" @click="coupon.isUsed ? null : copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
                         <span class="badge bg-info rounded-pill float-end">{{ getCouponValue(coupon) }}</span>
                       </div>
                       <small class="d-block text-muted mt-1">{{ coupon.moTa }}</small>
                       <small class="d-block text-danger fst-italic">Hạn dùng: {{ formatDate(coupon.ngayKetThuc) }}</small>
+                      <span v-if="coupon.isUsed" class="badge bg-secondary mt-2">Đã sử dụng</span>
                     </li>
                   </ul>
                   <transition name="fade">
@@ -207,5 +208,16 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.coupon-used {
+  background-color: #f8f9fa; /* Light gray background */
+  opacity: 0.6; /* Slightly faded */
+  pointer-events: none; /* Disable clicks */
+}
+
+.disabled-text {
+  color: #6c757d !important; /* Gray out the text */
+  cursor: not-allowed; /* Indicate it's not clickable */
 }
 </style>

@@ -329,7 +329,8 @@ namespace APIClothesEcommerceShop.Repositories.Account
                     Message = "false"
                 });
             }
-            if (findUser.MatKhau?.Trim().ToLower() != model.MatKhau.Trim().ToLower())
+            bool isPasswordValid = _hasher.VerifyPassword(model.MatKhau, findUser.MatKhau.Trim());
+            if (!isPasswordValid)
             {
                 return new OkObjectResult(new
                 {
@@ -578,7 +579,8 @@ namespace APIClothesEcommerceShop.Repositories.Account
                 });
             }
             // Cập nhật mật khẩu mới
-            checkEmail.MatKhau = newPassword; // Lưu ý: Mật khẩu nhân viên không mã hóa trong mã gốc
+            checkEmail.MatKhau = _hasher.HashPassword(newPassword);
+            // Lưu ý: Mật khẩu nhân viên không mã hóa trong mã gốc
             _db.Update(checkEmail);
             await _db.SaveChangesAsync();
 

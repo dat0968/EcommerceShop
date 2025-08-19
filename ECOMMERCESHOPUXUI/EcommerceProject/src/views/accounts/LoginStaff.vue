@@ -132,12 +132,13 @@ const handleLogin = async () => {
       return;
     }
   } catch (error) {
-    console.error('Lỗi trong handleLogin:', {
-      message: error.message,
-      name: error.name,
-      stack: error.stack,
-    })
-    errorMessage.value = error.message || 'Có lỗi xảy ra, vui lòng thử lại!'
+     await Swal.fire({
+        icon: 'error',
+        title: 'Đăng nhập thất bại!',
+        text: 'Tên tài khoản/email hoặc mật khẩu không chính xác.',
+        confirmButtonText: 'OK',
+      });
+     
   }
 }
 </script>
@@ -202,9 +203,7 @@ const handleLogin = async () => {
                       <div class="text-center mb-3">
                         <h4 class="text-black">Đăng nhập</h4>
                       </div>
-                      <div v-if="errorMessage" class="alert alert-danger text-center">
-                        {{ errorMessage }}
-                      </div>
+                      
                       <div class="form-group" style="margin-bottom: 20px;">
                         <input
                           v-model="emailOrUsername"

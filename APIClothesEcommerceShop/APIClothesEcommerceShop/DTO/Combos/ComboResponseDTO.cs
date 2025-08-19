@@ -14,7 +14,9 @@ namespace APIClothesEcommerceShop.DTO.Combos
         public DateTime? NgayKetThuc { get; set; }
         public float? PhanTramGiam { get; set; }
         public decimal? SoTienGiam { get; set; }
-        
+        public double? AverageRating { get; set; }
+        public int ReviewCount { get; set; }
+
         public List<DetaisComboResponseDTO> Chitietcombos { get; set; } = new List<DetaisComboResponseDTO>();
     }
     public class DetaisComboResponseDTO

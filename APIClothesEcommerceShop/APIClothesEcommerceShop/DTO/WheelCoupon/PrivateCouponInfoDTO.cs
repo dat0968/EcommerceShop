@@ -17,5 +17,6 @@ namespace APIClothesEcommerceShop.DTO.WheelCoupon
         public decimal? SoTienGiam { get; set; }
         public decimal? PhanTramGiam { get; set; }
         public DateTime NgayKetThuc { get; set; }
+        public bool IsUsed { get; set; }
     }
 }

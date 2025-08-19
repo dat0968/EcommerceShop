@@ -16,6 +16,7 @@ const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
 const id = route.params.id
 const combo = ref({})
+const comboExists = ref(true) // State for error handling
 const allImages = ref([])
 const currentSlider = ref(1)
 const colors = ref([])
@@ -28,54 +29,66 @@ const activeTab = ref('desc')
 
 const readToken = ref({})
 const fetchCombo = async () => {
-  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
-  if (validatetoken.isValid) {
-    accessToken.value = validatetoken.newAccessToken
-    readToken.value = decodeToken(accessToken.value)
-  }
-  const maKhachHang = readToken.value?.IdUser ?? null
-  let url = `${getUrlAPI.value}/api/Shop/Combo/${id}`
-  if (maKhachHang != null) {
-    url += `?maKh=${maKhachHang}`
-  }
-  const response = await fetch(
-    url,
-    {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  try {
+    const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid) {
+      accessToken.value = validatetoken.newAccessToken
+      readToken.value = decodeToken(accessToken.value)
     }
-  )
-  if (!response.ok) {
-    throw new Error('Error fetchAPI Combo')
-  }
-  const result = await response.json()
-  combo.value = {
-    id: result.maCombo,
-    name: result.tenCombo,
-    image: result.hinh,
-    quantityCombo: result.soLuong,
-    description: result.moTa || 'Chưa có mô tả',
-    phanTramGiam: result.phanTramGiam,
-    soTienGiam: result.soTienGiam,
-    chitietcombos: result.chitietcombos.map((ct) => ({
-      id: ct.maSp,
-      name: ct.tenSp,
-      image: ct.sanPhamCTs[0]?.images[0] || '/images/default-product.jpg',
-      quantity: ct.soLuongSp,
-      variants: ct.sanPhamCTs,
-      colors: [...new Set(ct.sanPhamCTs.map((pd) => pd.mauSac).filter(Boolean))],
-      sizes: [...new Set(ct.sanPhamCTs.map((pd) => pd.kichThuoc).filter(Boolean))],
-      category: ct.tenLoai, // Add category for each product in combo
-    })),
-  }
-  combo.value.chitietcombos.forEach((product, index) => {
-    selectedVariants.value[index] = {
-      color: product.colors[0] || '',
-      size: availableSizes.value[index]?.[0] || '',
+    const maKhachHang = readToken.value?.IdUser ?? null
+    let url = `${getUrlAPI.value}/api/Shop/Combo/${id}`
+    if (maKhachHang != null) {
+      url += `?maKh=${maKhachHang}`
     }
-  })
+    const response = await fetch(
+      url,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    if (!response.ok) {
+      comboExists.value = false;
+      return;
+    }
+    const result = await response.json()
+    if (!result || !result.maCombo) {
+      comboExists.value = false;
+      return;
+    }
+    combo.value = {
+      id: result.maCombo,
+      name: result.tenCombo,
+      image: result.hinh,
+      quantityCombo: result.soLuong,
+      description: result.moTa || 'Chưa có mô tả',
+      phanTramGiam: result.phanTramGiam,
+      soTienGiam: result.soTienGiam,
+      averageRating: result.averageRating,
+      reviewCount: result.reviewCount,
+      chitietcombos: result.chitietcombos.map((ct) => ({
+        id: ct.maSp,
+        name: ct.tenSp,
+        image: ct.sanPhamCTs[0]?.images[0] || '/images/default-product.jpg',
+        quantity: ct.soLuongSp,
+        variants: ct.sanPhamCTs,
+        colors: [...new Set(ct.sanPhamCTs.map((pd) => pd.mauSac).filter(Boolean))],
+        sizes: [...new Set(ct.sanPhamCTs.map((pd) => pd.kichThuoc).filter(Boolean))],
+        category: ct.tenLoai, // Add category for each product in combo
+      })),
+    }
+    combo.value.chitietcombos.forEach((product, index) => {
+      selectedVariants.value[index] = {
+        color: product.colors[0] || '',
+        size: availableSizes.value[index]?.[0] || '',
+      }
+    })
+  } catch (error) {
+    console.error('Error fetching combo:', error);
+    comboExists.value = false;
+  }
 }
 const availableSizes = computed(() => {
   return (
@@ -120,7 +133,7 @@ function selectedvariant(productIndex, type, value) {
     (v) =>
       v.mauSac === (selectedVariants.value[productIndex].color || product.colors[0]) &&
       v.kichThuoc ===
-        (selectedVariants.value[productIndex].size || availableSizes.value[productIndex]?.[0])
+      (selectedVariants.value[productIndex].size || availableSizes.value[productIndex]?.[0])
   )
   if (!variant || variant.soLuongTon <= 0) {
     Swal.fire('Lỗi', 'Biến thể này không có sẵn hoặc đã hết hàng!', 'error')
@@ -262,205 +275,172 @@ const tryOnProductData = computed(() => {
     products: productsForAI, // This is the array that LightXService and backend AI will use
   };
 });
+
+const formatRating = (rating) => {
+  if (rating === null || rating === undefined) {
+    return '5.0'; // Default to 5 if no rating
+  }
+  // Round to nearest 0.5
+  const rounded = Math.round(rating * 2) / 2;
+  return rounded.toFixed(1);
+};
 </script>
 <template>
   <div>
-    <!-- Combo Details Section Begin -->
-    <section class="product-details spad">
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-6">
-            <div class="product__details__pic">
-              <div style="position: relative" class="product__details__slider__content">
-                <div>
-                  <img
-                    class="product__big__img"
-                    :src="`${getUrlAPI}/HinhAnh/AnhCombo/${combo.image}`"
-                    alt=""
-                  />
+    <div v-if="comboExists">
+      <!-- Combo Details Section Begin -->
+      <section class="product-details spad">
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="product__details__pic">
+                <div style="position: relative" class="product__details__slider__content">
+                  <div>
+                    <img class="product__big__img" :src="`${getUrlAPI}/HinhAnh/AnhCombo/${combo.image}`" alt="" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="product__details__text">
-              <h3>
-                {{ combo.name }} <span>Còn: {{ combo.quantityCombo }} phần</span>
-              </h3>
-              <div class="product__details__price">
-                {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span>
-              </div>
-              <div class="product__details__button">
-                <div class="quantity">
-                  <span>Số lượng:</span>
-                  <div class="pro-qty">
-                    <input type="text" v-model="quantity" @input="validateQuantity" />
+            <div class="col-lg-6">
+              <div class="product__details__text">
+                <h3>
+                  {{ combo.name }} <span>Còn: {{ combo.quantityCombo }} phần</span>
+                </h3>
+                <div class="d-flex align-items-center mb-3">
+                  <div class="product__rating">
+                    <i class="fa fa-star" style="color: #ffc107;"></i>
+                    <span>{{ formatRating(combo.averageRating) }}</span>
                   </div>
+                  <span class="text-muted ms-2">({{ combo.reviewCount || 0 }} đánh giá)</span>
                 </div>
-                <div class="button-group">
-                  <button style="height: 50px" href="#" class="cart-btn" @click.prevent="addToCart">
-                    <span class="icon_bag_alt"></span> Thêm giỏ hàng
-                  </button>
-                  <button style="margin-bottom: 14px" class="action-buttons">
-                    <a
-                      href="#"
-                      style="border-radius: 50%; width: 50px; height: 50px"
-                      class="action-btn"
-                      ><span class="icon_heart_alt"></span
-                    ></a>
-                    <a
-                      href="#"
-                      style="
-                        height: 50px;
-                        background: #1976d2;
-                        color: #fff;
-                        border-radius: 50px;
-                        margin-left: 8px;
-                      "
-                      class="action-btn"
-                      @click.prevent="addComboToCompare"
-                      title="Thêm vào so sánh Combo"
-                      ><span class="icon_adjust-horiz"></span
-                    ></a>
-                  </button>
-                  <div style="margin-bottom: 14px" class="action-buttons">
-                    <a
-                      href="#"
-                      style="border-radius: 50%; width: 50px; height: 50px"
-                      class="action-btn"
-                      ><span class="icon_heart_alt"></span
-                    ></a>
-                    <a
-                      href="#"
-                      style="border-radius: 50%; width: 50px; height: 50px"
-                      class="action-btn"
-                      ><span class="icon_adjust-horiz"></span
-                    ></a>
-                  </div>
-                  <TryOnProduct :product="tryOnProductData" v-if="tryOnProductData" />
+                <div class="product__details__price">
+                  {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span>
                 </div>
-              </div>
-              <div class="product__details__widget">
-                <ul class="variant-list">
-                  <li
-                    v-for="(product, index) in combo.chitietcombos"
-                    :key="index"
-                    class="variant-section"
-                  >
-                    <div class="variant-title">
-                      <h4>{{ product.name }}</h4>
+                <div class="product__details__button">
+                  <div class="quantity">
+                    <span>Số lượng:</span>
+                    <div class="pro-qty">
+                      <input type="text" v-model="quantity" @input="validateQuantity" />
                     </div>
-                    <div class="variant-options">
-                      <div class="variant-group">
-                        <span class="variant-label">Màu sắc:</span>
-                        <div class="color__checkbox">
-                          <button
-                            v-for="(color, colorIndex) in product.colors"
-                            :key="colorIndex"
-                            :class="[
+                  </div>
+                  <div class="button-group">
+                    <button style="height: 50px" href="#" class="cart-btn" @click.prevent="addToCart">
+                      <span class="icon_bag_alt"></span> Thêm giỏ hàng
+                    </button>
+                    <button style="margin-bottom: 14px" class="action-buttons">
+                      <a href="#" style="border-radius: 50%; width: 50px; height: 50px" class="action-btn"><span
+                          class="icon_heart_alt"></span></a>
+                      <a href="#" style="
+                          height: 50px;
+                          background: #1976d2;
+                          color: #fff;
+                          border-radius: 50px;
+                          margin-left: 8px;
+                        " class="action-btn" @click.prevent="addComboToCompare" title="Thêm vào so sánh Combo"><span
+                          class="icon_adjust-horiz"></span></a>
+                    </button>
+                    <div style="margin-bottom: 14px" class="action-buttons">
+                      <a href="#" style="border-radius: 50%; width: 50px; height: 50px" class="action-btn"><span
+                          class="icon_heart_alt"></span></a>
+                      <a href="#" style="border-radius: 50%; width: 50px; height: 50px" class="action-btn"><span
+                          class="icon_adjust-horiz"></span></a>
+                    </div>
+                    <TryOnProduct :product="tryOnProductData" v-if="tryOnProductData" />
+                  </div>
+                </div>
+                <div class="product__details__widget">
+                  <ul class="variant-list">
+                    <li v-for="(product, index) in combo.chitietcombos" :key="index" class="variant-section">
+                      <div class="variant-title">
+                        <h4>{{ product.name }}</h4>
+                      </div>
+                      <div class="variant-options">
+                        <div class="variant-group">
+                          <span class="variant-label">Màu sắc:</span>
+                          <div class="color__checkbox">
+                            <button v-for="(color, colorIndex) in product.colors" :key="colorIndex" :class="[
                               'btn',
                               'btn-light',
                               { active: selectedVariants[index]['color'] === color },
-                            ]"
-                            @click="selectedvariant(index, 'color', color)"
-                          >
-                            {{ color }}
-                          </button>
+                            ]" @click="selectedvariant(index, 'color', color)">
+                              {{ color }}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      <div class="variant-group">
-                        <span class="variant-label">Kích thước:</span>
-                        <div class="size__checkbox">
-                          <button
-                            v-for="(size, sizeIndex) in availableSizes[index]"
-                            :key="sizeIndex"
-                            :class="[
+                        <div class="variant-group">
+                          <span class="variant-label">Kích thước:</span>
+                          <div class="size__checkbox">
+                            <button v-for="(size, sizeIndex) in availableSizes[index]" :key="sizeIndex" :class="[
                               'btn',
                               'btn-light',
                               { active: selectedVariants[index]['size'] === size },
-                            ]"
-                            @click="selectedvariant(index, 'size', size)"
-                          >
-                            {{ size }}
-                          </button>
+                            ]" @click="selectedvariant(index, 'size', size)">
+                              {{ size }}
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-12">
+              <div class="product__details__tab">
+                <ul class="nav nav-tabs" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'desc' }" href="#"
+                      @click.prevent="activeTab = 'desc'">Mô tả</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'review' }" href="#"
+                      @click.prevent="activeTab = 'review'">Đánh giá</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'comment' }" href="#"
+                      @click.prevent="activeTab = 'comment'">Bình luận</a>
                   </li>
                 </ul>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-12">
-            <div class="product__details__tab">
-              <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    :class="{ active: activeTab === 'desc' }"
-                    href="#"
-                    @click.prevent="activeTab = 'desc'"
-                    >Mô tả</a
-                  >
-                </li>
-                <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    :class="{ active: activeTab === 'review' }"
-                    href="#"
-                    @click.prevent="activeTab = 'review'"
-                    >Đánh giá</a
-                  >
-                </li>
-                <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    :class="{ active: activeTab === 'comment' }"
-                    href="#"
-                    @click.prevent="activeTab = 'comment'"
-                    >Bình luận</a
-                  >
-                </li>
-              </ul>
-              <div class="tab-content vh-100 overflow-auto">
-                <div
-                  v-show="activeTab == 'desc'"
-                  class="tab-pane"
-                  :class="{ active: activeTab === 'desc' }"
-                  id="tabs-1"
-                  role="tabpanel"
-                >
-                  <p>
-                    {{ combo.description }}
-                  </p>
-                </div>
-                <div
-                  v-show="activeTab == 'review'"
-                  class="tab-pane"
-                  :class="{ active: activeTab === 'review' }"
-                  id="tabs-2"
-                  role="tabpanel"
-                >
-                  <ReviewProductCombo :objectId="id" :isProduct="false" />
-                </div>
-                <div
-                  v-show="activeTab == 'comment'"
-                  class="tab-pane"
-                  :class="{ active: activeTab === 'comment' }"
-                  id="tabs-3"
-                  role="tabpanel"
-                >
-                  <CommentSection :objectId="combo.id" objectType="combo" />
+                <div class="tab-content vh-100 overflow-auto">
+                  <div v-show="activeTab == 'desc'" class="tab-pane" :class="{ active: activeTab === 'desc' }"
+                    id="tabs-1" role="tabpanel">
+                    <p>
+                      {{ combo.description }}
+                    </p>
+                  </div>
+                  <div v-show="activeTab == 'review'" class="tab-pane" :class="{ active: activeTab === 'review' }"
+                    id="tabs-2" role="tabpanel">
+                    <ReviewProductCombo :objectId="id" :isProduct="false" />
+                  </div>
+                  <div v-show="activeTab == 'comment'" class="tab-pane" :class="{ active: activeTab === 'comment' }"
+                    id="tabs-3" role="tabpanel">
+                    <CommentSection :objectId="combo.id" objectType="combo" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <RecomendationProduct />
+            <RecomendationProduct />
+          </div>
+        </div>
+      </section>
+      <!-- Combo Details Section End -->
+    </div>
+    <div v-else class="text-center py-5">
+      <div class="row justify-content-center align-items-center" style="height: 50vh;">
+        <div class="col-12"><i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+          <h3 class="text-muted">Combo không tồn tại</h3>
+          <p class="text-muted">Combo bạn tìm không tồn tại trong hệ thống hoặc hiện không được cửa hàng phục vụ.</p>
+          <router-link to="/shop" class="btn-primary mt-3"
+              style="border-radius: 3px;
+                    font-size: 14px;
+                    padding: 7px 18px;
+                    text-decoration: none;">
+                Quay lại cửa hàng
+          </router-link>
         </div>
       </div>
-    </section>
-    <!-- Combo Details Section End -->
+    </div>
   </div>
 </template>
 

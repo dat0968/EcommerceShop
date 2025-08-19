@@ -9,6 +9,8 @@
         public string? PriceRange { get; set; } 
         public float? DiscountPercentage { get; set; }
         public decimal? DiscountAmount { get; set; }
+        public double? AverageRating { get; set; }
+        public int ReviewCount { get; set; }
     }
     public class ShopResponseDto
     {

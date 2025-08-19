@@ -2,8 +2,8 @@
 <script setup>
 import { useRouter, RouterLink } from 'vue-router'
 import Cookies from 'js-cookie'
-import NavigationUserReview from './ui/navigationUserReview.vue'
-import WheelRandomCode from './specicals/WheelRandomCode.vue'
+import NavigationUserReview from '@/components/ui/NavigationUserReview.vue'
+import WheelRandomCode from '@/components/specicals/WheelRandomCode.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import { GetApiUrl } from '@/constants/api'
 import { decodeToken, validateToken } from '@/utils/auth'
@@ -222,11 +222,6 @@ onMounted(async () => {
                       <span></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
-                      <li>
-                        <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"
-                          >Đăng xuất</a
-                        >
-                      </li>
                       <li>
                         <router-link to="/profile" class="dropdown-item"
                           ><i class="fa fa-user me-2"></i>Cập nhật thông tin</router-link

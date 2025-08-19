@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using APIClothesEcommerceShop.Models;
-using APIClothesEcommerceShop.DTO;
-using Microsoft.EntityFrameworkCore;
-using APIClothesEcommerceShop.DTO.Combos;
-using APIClothesEcommerceShop.Repositories.Combo;
 using APIClothesEcommerceShop.Data;
-using APIClothesEcommerceShop.DTO.ProductDetails;
+using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.DTO.Combos;
 using APIClothesEcommerceShop.DTO.ImageProduct;
+using APIClothesEcommerceShop.DTO.ProductDetails;
+using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Combo;
+using Microsoft.EntityFrameworkCore;
 
 namespace APIClothesEcommerceShop.Repositories.Combos
 {
@@ -28,11 +28,12 @@ namespace APIClothesEcommerceShop.Repositories.Combos
             {
                 var query = _context.Combos
                     .AsNoTracking()
-                    .Where(p => p.IsActive == true )
+                    .Where(p => p.IsActive == true)
                     .Include(c => c.Chitietcombos)
-                        .ThenInclude(cc => cc.MaComboNavigation)  // Giữ nguyên navigation property
+                        .ThenInclude(cc => cc.MaComboNavigation) // Giữ nguyên navigation property
                     .Include(c => c.Chitietcombos)
                         .ThenInclude(cc => cc.MaSpNavigation)
+                    .Include(c => c.DanhGias)
                     .Select(p => new ComboResponseDTO
                     {
                         MaCombo = p.MaCombo,
@@ -45,6 +46,8 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                         NgayKetThuc = p.NgayKetThuc,
                         MoTa = p.MoTa,
                         IsActive = p.IsActive,
+                        ReviewCount = p.DanhGias.Count(dg => dg != null),
+                        AverageRating = p.DanhGias.Any() ? p.DanhGias.Average(dg => dg.SoSao) : 5,
                         Chitietcombos = p.Chitietcombos.Select(cc => new DetaisComboResponseDTO
                         {
                             MaSp = cc.MaSp,
@@ -89,13 +92,19 @@ namespace APIClothesEcommerceShop.Repositories.Combos
         {
             var getCombobyID = await _context.Combos.AsNoTracking()
                 .Include(p => p.Chitietcombos)
-                .ThenInclude(p => p.MaSpNavigation)
-                .ThenInclude(p => p.Chitietsanphams)
+                    .ThenInclude(p => p.MaSpNavigation)
+                .Include(p => p.Chitietcombos)
+                    .ThenInclude(p => p.MaSpNavigation)
+                        .ThenInclude(p => p.Chitietsanphams)
+                .Include(p => p.DanhGias) // Include reviews for products in combo
                 .FirstOrDefaultAsync(p => p.MaCombo == id);
             if (getCombobyID == null)
             {
                 throw new Exception("Not Found Combo");
             }
+
+            var allReviews = getCombobyID.DanhGias;
+
             var ResponseCombo = new ComboResponseDTO
             {
                 MaCombo = getCombobyID.MaCombo,
@@ -108,6 +117,8 @@ namespace APIClothesEcommerceShop.Repositories.Combos
                 PhanTramGiam = getCombobyID.PhanTramGiam,
                 SoTienGiam = getCombobyID.SoTienGiam,
                 IsActive = getCombobyID.IsActive,
+                ReviewCount = allReviews.Count(),
+                AverageRating = allReviews.Any() ? allReviews.Average(dg => dg.SoSao) : 5,
                 Chitietcombos = getCombobyID.Chitietcombos.Select(p => new DetaisComboResponseDTO
                 {
                     MaSp = p.MaSp,
