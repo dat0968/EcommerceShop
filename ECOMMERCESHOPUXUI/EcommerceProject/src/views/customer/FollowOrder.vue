@@ -81,7 +81,7 @@
                 <img :src="'/placeholder.svg'" :alt="item.tenSanPham" />
               </div>
               <div class="item-details" style="margin-left: 50px;">
-                <p class="item-name" style="font-size: 1.2rem;">{{ item.tenSanPham }}</p>
+                <p class="item-name" style="font-size: 1.2rem;">{{ item.tenSanPham }} {{ item.tenCombo }}</p>
                 <p class="item-variant" v-if="item.bienThe" style="font-size: 1.2rem;">{{ item.bienThe }}</p>
                 <p class="item-quantity" style="font-size: 1.2rem;">x{{ item.soLuong }}</p>
               </div>

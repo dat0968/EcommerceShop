@@ -116,6 +116,7 @@ onUnmounted(() => {
 
 // Xử lý sự kiện đóng modal
 onMounted(() => {
+  fetchProducts(1)
   const modalElement = document.getElementById('productModalEdit')
   if (modalElement) {
     modalElement.addEventListener('hidden.bs.modal', () => {
@@ -263,7 +264,7 @@ function openProductModal(index) {
       const editModal = document.getElementById(editModalId)
       if (editModal) {
         const modal = bootstrap.Modal.getInstance(editModal)
-        if (modal) modal.hide()
+        if(modal) modal.hide()
       } else {
         console.error(`Không tìm thấy modal chỉnh sửa với ID: ${editModalId}`)
         Swal.fire('Lỗi: Không tìm thấy modal chỉnh sửa', '', 'error')
@@ -520,7 +521,7 @@ async function UpdateCombo() {
 </script>
 
 <template>
-  <div class="modal fade" :id="`comboEditModal_${props.Combo.maCombo}`" tabindex="-1" data-bs-backdrop="static"
+  <div v-show="isEditModalVisible" class="modal fade" :id="`comboEditModal_${props.Combo.maCombo}`" tabindex="-1" data-bs-backdrop="static"
     data-bs-keyboard="false" aria-labelledby="comboEditModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl text-start">
       <div class="modal-content">
@@ -664,7 +665,7 @@ async function UpdateCombo() {
                   <td>{{ product.maSp }}</td>
                   <td>{{ product.tenSanPham }}</td>
                   <td>
-                    <img :src="`${getUrlAPI.value}/HinhAnh/Products/${product.hinh}`" alt="Product Image" width="50"
+                    <img :src="`${getUrlAPI}/HinhAnh/Products/${product.anhDaiDien}`" alt="Product Image" width="50"
                       height="50" style="object-fit: cover; border-radius: 5px" />
                   </td>
                   <td>

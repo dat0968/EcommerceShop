@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="ClosedXML" Version="0.104.2" />
     <PackageReference Include="CloudinaryDotNet" Version="1.27.6" />
     <PackageReference Include="FirebaseAdmin" Version="2.4.0" />

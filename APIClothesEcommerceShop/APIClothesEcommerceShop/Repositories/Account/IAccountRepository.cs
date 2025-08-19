@@ -46,5 +46,6 @@ namespace APIClothesEcommerceShop.Repositories.Account
         Task<IActionResult> MobileGoogleLogin(MobileGoogleLoginDTO model);
         Task LoginGoogleCustom(string redirectUri); // API đăng nhập Google mới
         Task<IActionResult> GoogleResponseCustom();
+        Task<bool> VerifyRecaptchaAsync(string recaptchaToken);
     }
 }
