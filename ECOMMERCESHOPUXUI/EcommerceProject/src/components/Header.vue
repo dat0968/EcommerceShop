@@ -157,7 +157,8 @@ onMounted(async () => {
               <ul>
                 <li><RouterLink to="/">Trang Chủ</RouterLink></li>
                 <li><RouterLink to="/Shop">Cửa Hàng</RouterLink></li>
-                <li><RouterLink to="/chat">Liên Hệ</RouterLink></li>
+                <li><RouterLink to="/Contact">Liên Hệ</RouterLink></li>
+                <li><RouterLink to="/Chat">Liên Hệ</RouterLink></li>
               </ul>
             </nav>
           </div>

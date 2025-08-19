@@ -6,10 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
     <PackageReference Include="ClosedXML" Version="0.104.2" />
     <PackageReference Include="CloudinaryDotNet" Version="1.27.6" />
     <PackageReference Include="FirebaseAdmin" Version="2.4.0" />

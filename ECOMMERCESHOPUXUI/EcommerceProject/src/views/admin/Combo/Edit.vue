@@ -79,6 +79,7 @@ const validateDiscount = (phanTramGiam, soTienGiam) => {
 
 // Khởi tạo dữ liệu và map tên sản phẩm
 onMounted(() => {
+
   if (!props.Combo || !props.Combo.maCombo) {
     console.error('Dữ liệu props.Combo không hợp lệ:', props.Combo);
     Swal.fire('Lỗi: Dữ liệu combo không hợp lệ', '', 'error');
@@ -447,7 +448,7 @@ async function UpdateCombo() {
 </script>
 
 <template>
-  <div class="modal fade" :id="`comboEditModal_${props.Combo.maCombo}`" tabindex="-1" data-bs-backdrop="static"
+  <div v-show="isEditModalVisible" class="modal fade" :id="`comboEditModal_${props.Combo.maCombo}`" tabindex="-1" data-bs-backdrop="static"
     data-bs-keyboard="false" aria-labelledby="comboEditModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl text-start">
       <div class="modal-content">
@@ -607,6 +608,7 @@ async function UpdateCombo() {
               </div>
             </form>
           </div>
+
         </div>
       </div>
     </div>

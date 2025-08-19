@@ -40,6 +40,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
 using VNPAY.NET;
+using APIClothesEcommerceShop.Repositories.Contact;
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
@@ -67,7 +68,7 @@ EcommerceShopConnect_Dot - Data Source=.;
  */
 builder.Services.AddDbContext<EcommerceShopContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_DockerSQL"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("EcommerceShopConnect_TD"));
 });
 
 // Add services to the container.
@@ -167,8 +168,7 @@ builder.Services.AddScoped<IAddressRepository, AddressRepository>();
 builder.Services.AddScoped<IViewHistoryRepository, ViewHistoryRepository>();
 builder.Services.AddScoped<IGeminiAIService, GeminiAIService>();
 builder.Services.AddScoped<APIClothesEcommerceShop.Services.CloudinaryService.ICloudinaryService, APIClothesEcommerceShop.Services.CloudinaryService.CloudinaryService>();
-
-
+builder.Services.AddScoped<IContactRepository, ContactRepository>();
 // Email Service
 builder.Services.AddScoped<GoogleSenderService>();
 var emailSettings = builder.Configuration.GetSection("GoogleEmailSetting");
