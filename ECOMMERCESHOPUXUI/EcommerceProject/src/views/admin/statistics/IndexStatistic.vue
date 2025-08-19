@@ -106,7 +106,6 @@ export default {
   watch: {},
   async mounted() {
     // Proactively ensure the API base URL is initialized before doing anything else.
-    await axiosConfig.initApiBaseUrl()
     // Now, proceed with waiting for the auth token and loading data.
     this.waitForAuthAndLoad()
   },
