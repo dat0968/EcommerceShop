@@ -386,7 +386,7 @@ watch(activeTab, () => {
                     class="btn btn-sm btn-warning">
                     Sửa
                   </button>
-                  <EditCombo :Combo="combo" :ListProduct="ListProduct" :validateDiscount="validateDiscount" :handleSave="handleSave" />
+                  <EditCombo :Combo="combo" :ListProduct="ListProduct" />
 
                   <button @click="removeCombo(combo.maCombo)" class="btn btn-danger btn-sm">
                     Xóa
