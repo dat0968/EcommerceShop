@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import { GetApiUrl } from '../../../../src/constants/api.js';
 import * as bootstrap from 'bootstrap';
 import Cookies from 'js-cookie';
-import { debounce } from 'lodash'; // Cần cài đặt: npm install lodash
+import { debounce } from 'lodash';
 
 let getApiUrl = GetApiUrl();
 const getUrlAPI = ref('https://localhost:7217');
@@ -33,8 +33,7 @@ const comboEdit = ref({
 });
 
 const initialCombo = ref(null);
-const selectedDetailIndex = ref(null);
-const isProductSidebarOpen = ref(false); // Thay cho modal sản phẩm
+const selectedDetailIndex = ref(null); // Index của chi tiết combo đang được chọn để thêm sản phẩm
 const toTalPages = ref(1);
 const pageSelected = ref(1);
 const productList = ref([]);
@@ -80,14 +79,12 @@ const validateDiscount = (phanTramGiam, soTienGiam) => {
 
 // Khởi tạo dữ liệu và map tên sản phẩm
 onMounted(() => {
-  // Kiểm tra dữ liệu đầu vào
   if (!props.Combo || !props.Combo.maCombo) {
     console.error('Dữ liệu props.Combo không hợp lệ:', props.Combo);
     Swal.fire('Lỗi: Dữ liệu combo không hợp lệ', '', 'error');
     return;
   }
 
-  // Khởi tạo dữ liệu
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -114,13 +111,11 @@ onMounted(() => {
     chitietcombos: [...initialCombo.value.chitietcombos],
   };
 
-  // Khởi tạo productMap từ chitietcombos
   comboEdit.value.chitietcombos.forEach(detail => {
     if (detail.maSp) {
       fetchProductName(detail.maSp);
     }
   });
-  console.log(comboEdit)
 });
 
 // Hàm lấy tên sản phẩm theo maSp
@@ -140,11 +135,9 @@ async function fetchProductName(maSp) {
       throw new Error(`Lỗi khi lấy sản phẩm ${maSp}: ${response.status}`);
     }
     const product = await response.json();
-    // console.log(product)
     if (product && product.data.tenSanPham) {
       productMap.value[maSp] = product.data.tenSanPham;
     }
-    // console.log(productMap)
   } catch (error) {
     console.error(`Lỗi khi lấy tên sản phẩm ${maSp}:`, error.message);
   }
@@ -173,7 +166,7 @@ async function fetchProducts(page) {
       } else if (response.status === 429) {
         throw new Error('Quá nhiều yêu cầu. Vui lòng thử lại sau.');
       }
-      throw new Error(`Lỗi khi lấy dữ liệu sản ph���m: ${response.status} - ${errorText}`);
+      throw new Error(`Lỗi khi lấy dữ liệu sản phẩm: ${response.status} - ${errorText}`);
     }
     const result = await response.json();
     if (!result.data || !Array.isArray(result.data)) {
@@ -198,41 +191,37 @@ const filterProducts = debounce(() => {
   fetchProducts(1);
 }, 500);
 
-// Sidebar chọn sản phẩm (thay vì modal phụ)
-function openProductSidebar(index) {
-  if (!Array.isArray(comboEdit.value.chitietcombos) || comboEdit.value.chitietcombos.length === 0) {
-    comboEdit.value.chitietcombos = [{ maSp: '', soLuongSp: 1 }];
+// Mở/đóng khu vực chọn sản phẩm
+function toggleProductSelection(index) {
+  if (selectedDetailIndex.value === index) {
+    selectedDetailIndex.value = null; // Đóng nếu đang mở
   }
-  if (index >= 0 && index < comboEdit.value.chitietcombos.length) {
-    selectedDetailIndex.value = index;
-    isProductSidebarOpen.value = true;
+  else {
+    selectedDetailIndex.value = index; // Mở cho mục được chọn
+    search.value = ''; // Reset search khi mở
     fetchProducts(1);
     nextTick(() => {
-      const cards = document.querySelectorAll('.left-pane .card');
-      const el = cards[index];
-      if (el && el.scrollIntoView) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const container = document.querySelector(`.product-selection-container[data-index="${index}"]`);
+      if (container) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const searchInput = container.querySelector('.product-search-input');
+        if (searchInput) searchInput.focus();
       }
-      const container = document.querySelector('#product-sidebar-search');
-      if (container) container.focus();
     });
-  } else {
-    Swal.fire('Lỗi: Chỉ số chi tiết combo không hợp lệ', '', 'error');
   }
 }
 
-function closeProductSidebar() {
-  isProductSidebarOpen.value = false;
+function closeProductSelection() {
   selectedDetailIndex.value = null;
 }
 
 function selectProduct(product) {
-  if (selectedDetailIndex.value != null && selectedDetailIndex.value < comboEdit.value.chitietcombos.length) {
+  if (selectedDetailIndex.value !== null) {
     comboEdit.value.chitietcombos[selectedDetailIndex.value].maSp = product.maSp;
     if (!productMap.value[product.maSp]) {
       productMap.value[product.maSp] = product.tenSanPham;
     }
-    closeProductSidebar();
+    closeProductSelection();
   } else {
     Swal.fire('Lỗi: Không thể chọn sản phẩm', '', 'error');
   }
@@ -261,7 +250,7 @@ watch(
       newcomboEdit.soLuong = 1;
     }
     if (!validateDiscount(newcomboEdit.phanTramGiam, newcomboEdit.soTienGiam)) {
-      // Không cần gán lại giá trị vì validateDiscount đã xử lý
+      // Xử lý lỗi đã được thực hiện trong validateDiscount
     }
     if (newcomboEdit.ngayBatDau && newcomboEdit.ngayKetThuc) {
       const startDate = new Date(newcomboEdit.ngayBatDau);
@@ -285,10 +274,10 @@ function resetPhanTramGiam() {
 }
 
 // Xử lý file ảnh
-function handleFileChange(comboEdit, event) {
+function handleFileChange(event) {
   const file = event.target.files[0];
   if (file) {
-    comboEdit.hinh = file;
+    comboEdit.value.hinh = file;
   }
 }
 
@@ -314,18 +303,29 @@ function closeModal() {
     const modal = bootstrap.Modal.getInstance(editModal);
     if (modal) {
       modal.hide();
+      // Re-introducing manual cleanup with a delay
       setTimeout(() => {
         const backdrops = document.querySelectorAll('.modal-backdrop');
         backdrops.forEach((backdrop) => backdrop.remove());
         document.body.classList.remove('modal-open');
         document.body.style.removeProperty('overflow');
         document.body.style.removeProperty('padding-right');
-      }, 100);
+      }, 100); // Small delay to allow Bootstrap's hide animation to start
     } else {
-      Swal.fire('Lỗi: Không thể đóng modal', '', 'error');
+      // Fallback: If Bootstrap instance is not found, force hide and clean up.
+      editModal.classList.remove('show');
+      editModal.style.display = 'none';
+      editModal.setAttribute('aria-hidden', 'true');
+      editModal.removeAttribute('aria-modal');
+      editModal.removeAttribute('role');
+
+      // Manual cleanup for backdrops and body classes
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      backdrops.forEach((backdrop) => backdrop.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
     }
-  } else {
-    Swal.fire('Lỗi: Không tìm thấy modal chỉnh sửa', '', 'error');
   }
 }
 
@@ -337,15 +337,13 @@ const cancelEdit = () => {
       title: 'Bạn có muốn lưu các thay đổi này không?',
       showDenyButton: true,
       showCancelButton: true,
-      confirmButtonText: 'Có',
-      denyButtonText: 'Tiếp tục chỉnh sửa',
-      cancelButtonText: 'Hủy',
+      confirmButtonText: 'Lưu',
+      denyButtonText: 'Không lưu',
+      cancelButtonText: 'Tiếp tục sửa',
     }).then((result) => {
       if (result.isConfirmed) {
         UpdateCombo();
       } else if (result.isDenied) {
-        // Tiếp tục chỉnh sửa, không làm gì
-      } else {
         closeModal();
       }
     });
@@ -371,14 +369,6 @@ async function UpdateCombo() {
       Swal.fire('Mã combo không hợp lệ', '', 'error');
       isValid = false;
     }
-
-    const form_input_combo = document.querySelectorAll('.data-editCombo .mb-3');
-    form_input_combo.forEach((element) => {
-      const messageErrorCombo = element.querySelector('.error-message');
-      if (messageErrorCombo) {
-        messageErrorCombo.textContent = '';
-      }
-    });
 
     comboEdit.value.chitietcombos.forEach((detail) => {
       if (!detail.maSp) {
@@ -448,7 +438,7 @@ async function UpdateCombo() {
     Swal.fire('Đã cập nhật thông tin combo sản phẩm', '', 'success');
     setTimeout(() => {
       window.location.reload();
-    }, 2000);
+    }, 1500);
   } catch (error) {
     console.error('Lỗi trong UpdateCombo:', error);
     Swal.fire('Lỗi khi cập nhật combo', error.message, 'error');
@@ -463,170 +453,159 @@ async function UpdateCombo() {
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title" id="comboEditModalLabel">Sửa thông tin combo</h5>
-          <button type="button" class="btn-close" @click="cancelEdit()" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" @click="cancelEdit()" aria-label="Close"></button>
         </div>
 
         <div class="modal-body p-4 data-editCombo">
-          <div class="row g-4 edit-layout">
-            <!-- Bên trái: Form chỉnh sửa -->
-            <div :class="['left-pane', isProductSidebarOpen ? 'col-lg-7 col-md-12' : 'col-12']">
-              <form @submit.prevent>
-                <div class="mb-3">
-                  <label class="form-label">Tên combo</label>
-                  <input type="text" class="form-control" v-model="comboEdit.tenCombo" placeholder="Nhập tên combo" />
-                  <label style="color: red" class="error-message"></label>
+          <div class="form-container">
+            <form @submit.prevent>
+              <div class="row">
+                <!-- Cột 1: Tên, Mô tả, Số lượng -->
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Tên combo</label>
+                    <input type="text" class="form-control" v-model="comboEdit.tenCombo" placeholder="Nhập tên combo" />
+                  </div>
+                  <div class="mb-3">
+                    <label for="moTa" class="form-label">Mô tả</label>
+                    <textarea v-model="comboEdit.moTa" class="form-control" id="moTa" rows="3"
+                      placeholder="Nhập mô tả combo"></textarea>
+                  </div>
+                   <div class="mb-3">
+                    <label class="form-label">Số lượng</label>
+                    <input @keydown="blockNegativeNumbers" v-model="comboEdit.soLuong" type="number" class="form-control"
+                      min="1" />
+                  </div>
                 </div>
 
-                <div class="mb-3">
-                  <label for="moTa" class="form-label">Mô tả</label>
-                  <textarea v-model="comboEdit.moTa" class="form-control" id="moTa" rows="3"
-                    placeholder="Nhập mô tả combo"></textarea>
-                  <label style="color: red" class="error-message"></label>
+                <!-- Cột 2: Ngày, Giảm giá, Hình ảnh -->
+                <div class="col-md-6">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Ngày bắt đầu</label>
+                      <input type="date" class="form-control" v-model="comboEdit.ngayBatDau" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Ngày kết thúc</label>
+                      <input type="date" class="form-control" v-model="comboEdit.ngayKetThuc" />
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Phần trăm giảm (%)</label>
+                      <input type="number" class="form-control" v-model="comboEdit.phanTramGiam" min="0" max="100"
+                        @input="resetSoTienGiam" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Số tiền giảm (VND)</label>
+                      <input type="number" class="form-control" v-model="comboEdit.soTienGiam" min="0"
+                        @input="resetPhanTramGiam" />
+                    </div>
+                  </div>
+                   <div class="mb-3">
+                    <label class="form-label">Hình ảnh</label>
+                    <input @change="handleFileChange" type="file" class="form-control" accept="image/*" />
+                    <div class="mt-2">
+                      <img v-if="comboEdit.hinh && typeof comboEdit.hinh === 'string'"
+                        :src="`${getUrlAPI}/HinhAnh/AnhCombo/${comboEdit.hinh}`" alt="Ảnh combo" class="img-thumbnail"
+                        @error="comboEdit.hinh = null" />
+                      <span v-else-if="!comboEdit.hinh">Không có ảnh</span>
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <div class="mb-3">
-                  <label class="form-label">Số lượng</label>
-                  <input @keydown="blockNegativeNumbers" v-model="comboEdit.soLuong" type="number" class="form-control"
-                    min="1" />
-                  <label style="color: red" class="error-message"></label>
-                </div>
+              <hr class="my-4" />
 
-                <div class="mb-3">
-                  <label class="form-label">Ngày bắt đầu</label>
-                  <input type="date" class="form-control" v-model="comboEdit.ngayBatDau" />
-                  <label style="color: red" class="error-message"></label>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Ngày kết thúc</label>
-                  <input type="date" class="form-control" v-model="comboEdit.ngayKetThuc" />
-                  <label style="color: red" class="error-message"></label>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label">Chi tiết combo</label>
-                  <div class="card mb-3" :class="{ 'selected-card': selectedDetailIndex === index && isProductSidebarOpen }" v-for="(detail, index) in comboEdit.chitietcombos" :key="index">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col-md-6">
-                          <label class="form-label">Sản phẩm</label>
-                          <div class="input-group">
-                            <input type="text" class="form-control" :value="productMap[detail.maSp] || 'Chọn sản phẩm'"
-                              readonly />
-                            <button class="btn btn-outline-primary" type="button" @click="openProductSidebar(index)">
-                              Chọn
-                            </button>
-                          </div>
-                        </div>
-                        <div class="col-md-4">
-                          <label class="form-label">Số lượng</label>
-                          <input type="number" class="form-control" v-model="detail.soLuongSp" min="1"
-                            @keydown="blockNegativeNumbers" />
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                          <button @click="removeDetailCombo(index)" type="button" class="btn btn-danger btn-sm">
-                            Xóa
+              <!-- Chi tiết combo -->
+              <div class="mb-3">
+                <h5 class="mb-3">Chi tiết combo</h5>
+                <div class="card mb-3 detail-card" v-for="(detail, index) in comboEdit.chitietcombos" :key="index"
+                  :class="{ 'highlighted-detail-card': selectedDetailIndex === index }">
+                  <div class="card-body">
+                    <div class="row align-items-end">
+                      <div class="col-md-6">
+                        <label class="form-label">Sản phẩm</label>
+                        <div class="input-group">
+                          <input type="text" class="form-control" :value="productMap[detail.maSp] || 'Chưa chọn sản phẩm'"
+                            readonly />
+                          <button class="btn btn-outline-primary" type="button" @click="toggleProductSelection(index)">
+                            {{ selectedDetailIndex === index ? 'Đóng' : 'Chọn' }}
                           </button>
                         </div>
                       </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Số lượng</label>
+                        <input type="number" class="form-control" v-model="detail.soLuongSp" min="1"
+                          @keydown="blockNegativeNumbers" />
+                      </div>
+                      <div class="col-md-2">
+                        <button @click="removeDetailCombo(index)" type="button" class="btn btn-danger w-100">
+                          Xóa
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <button @click="addDetailCombo()" type="button" class="btn btn-secondary"
-                    style="background-color: #4C7CF3; margin-bottom: 10px;">
-                    Thêm chi tiết combo
-                  </button>
-                </div>
 
-                <div class="mb-3">
-                  <label class="form-label">Phần trăm giảm</label>
-                  <input type="number" class="form-control" v-model="comboEdit.phanTramGiam" min="0"
-                    @input="resetSoTienGiam" />
-                  <label style="color: red" class="error-message"></label>
-                </div>
+                  <!-- Product Selection Area -->
+                  <div v-if="selectedDetailIndex === index" class="product-selection-container" :data-index="index">
+                    <div class="p-3 border-top">
+                       <div class="row g-3 mb-3">
+                          <div class="col-md">
+                            <input v-model="search" @input="filterProducts" type="text" class="form-control product-search-input" placeholder="Tìm kiếm sản phẩm theo tên..." />
+                          </div>
+                        </div>
 
-                <div class="mb-3">
-                  <label class="form-label">Số tiền giảm</label>
-                  <input type="number" class="form-control" v-model="comboEdit.soTienGiam" min="0"
-                    @input="resetPhanTramGiam" />
-                  <label style="color: red" class="error-message"></label>
-                </div>
+                      <div v-if="productList.length === 0" class="text-center p-3">
+                        Không tìm thấy sản phẩm nào.
+                      </div>
+                      <div v-else class="row row-cols-1 g-3 product-list-cards">
+                        <div class="col" v-for="product in productList" :key="product.maSp">
+                          <div class="card product-card-horizontal"
+                            :class="{ 'selected-product-card': selectedDetailIndex !== null && product.maSp === comboEdit.chitietcombos[selectedDetailIndex].maSp }">
+                            <div class="row g-0">
+                              <div class="col-auto">
+                                <img :src="`${getUrlAPI}/HinhAnh/Products/${product.anhDaiDien || 'default.png'}`"
+                                  class="img-fluid rounded-start product-card-img-horizontal" alt="Product Image" @error="product.anhDaiDien = null" />
+                              </div>
+                              <div class="col">
+                                <div class="card-body d-flex justify-content-between align-items-center">
+                                  <h6 class="card-title mb-0">{{ product.tenSanPham }}</h6>
+                                  <button class="btn btn-primary btn-sm" @click="selectProduct(product)">
+                                    Chọn
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
-                <div class="mb-3">
-                  <label class="form-label">Hình ảnh</label>
-                  <input @change="handleFileChange(comboEdit, $event)" type="file" class="form-control" accept="image/*" />
-                  <img v-if="comboEdit.hinh && typeof comboEdit.hinh == 'string'"
-                    :src="`${getUrlAPI}/HinhAnh/AnhCombo/${comboEdit.hinh}`" alt="Ảnh combo" class="img-fluid mt-2"
-                    style="max-width: 100px; height: auto" @error="comboEdit.hinh = null" />
-                  <span v-else>Không có ảnh</span>
-                  <label style="color: red" class="error-message imageMessage"></label>
+                      <nav v-if="toTalPages > 1" class="d-flex justify-content-center mt-4">
+                        <ul class="pagination mb-0">
+                          <li @click="ChangePage(1)" class="page-item" :class="{ 'disabled': pageSelected === 1 }"><a class="page-link" href="#">Đầu</a></li>
+                          <li @click="ChangePage(page)" v-for="page in toTalPages" :key="page"
+                            :class="['page-item', { active: page == pageSelected }]">
+                            <a class="page-link" href="#">{{ page }}</a>
+                          </li>
+                          <li @click="ChangePage(toTalPages)" class="page-item" :class="{ 'disabled': pageSelected === toTalPages }">
+                            <a class="page-link" href="#">Cuối</a>
+                          </li>
+                        </ul>
+                      </nav>
+                    </div>
+                  </div>
                 </div>
-
-                <div class="modal-footer p-0 pt-3">
-                  <button type="button" class="btn btn-secondary" @click="cancelEdit()">Hủy</button>
-                  <button type="button" @click="UpdateCombo()" class="btn btn-primary">Lưu thay đổi</button>
-                </div>
-              </form>
-            </div>
-
-            <!-- Bên phải: Sidebar chọn sản phẩm -->
-            <div class="col-lg-5 col-md-12 right-pane" v-if="isProductSidebarOpen">
-              <div class="d-flex align-items-center justify-content-between mb-3">
-                <h5 class="mb-0">Chọn sản phẩm</h5>
-                <button class="btn-close" @click="closeProductSidebar()" aria-label="Close"></button>
+                <button @click="addDetailCombo()" type="button" class="btn btn-secondary" style="background-color: #4C7CF3;">
+                  Thêm sản phẩm vào combo
+                </button>
               </div>
 
-              <div class="row g-3 mb-3">
-                <div class="col-md">
-                  <input id="product-sidebar-search" style="background-color: white" v-model="search" @click.stop @keydown.stop
-                    @input="filterProducts" type="text" class="form-control" placeholder="Tìm kiếm sản phẩm..." />
-                </div>
+              <div class="modal-footer p-0 pt-4">
+                <button type="button" class="btn btn-secondary" @click="cancelEdit()">Hủy</button>
+                <button type="button" @click="UpdateCombo()" class="btn btn-primary">Lưu thay đổi</button>
               </div>
-
-              <div class="table-responsive sidebar-table">
-                <table class="table table-bordered table-hover">
-                  <thead class="table-light">
-                    <tr>
-                      <th>Mã sản phẩm</th>
-                      <th>Tên sản phẩm</th>
-                      <th>Hình ảnh</th>
-                      <th>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-if="productList.length === 0">
-                      <td colspan="4" class="text-center">Không có sản phẩm nào</td>
-                    </tr>
-                    <tr v-else v-for="product in productList" :key="product.maSp">
-                      <td>{{ product.maSp }}</td>
-                      <td>{{ product.tenSanPham }}</td>
-                      <td>
-                        <img :src="`${getUrlAPI}/HinhAnh/Products/${product.anhDaiDien || 'default.png'}`"
-                          alt="Product Image" width="50" height="50" style="object-fit: cover; border-radius: 5px"
-                          @error="product.anhDaiDien = null" />
-                      </td>
-                      <td>
-                        <button class="btn btn-primary btn-sm" @click="selectProduct(product)">
-                          Chọn
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <nav class="d-flex justify-content-center mt-3">
-                <ul class="pagination mb-0">
-                  <li @click="ChangePage(1)" class="page-item"><a class="page-link" href="#">Đầu</a></li>
-                  <li @click="ChangePage(page)" v-for="page in toTalPages" :key="page"
-                    :class="['page-item', { active: page == pageSelected }]">
-                    <a class="page-link" href="#">{{ page }}</a>
-                  </li>
-                  <li @click="ChangePage(toTalPages)" class="page-item">
-                    <a class="page-link" href="#">Cuối</a>
-                  </li>
-                </ul>
-              </nav>
-            </div>
+            </form>
           </div>
         </div>
       </div>
@@ -635,48 +614,72 @@ async function UpdateCombo() {
 </template>
 
 <style scoped>
-.card {
-  border: 1px solid #ddd;
-}
-
 .modal-xl {
-  max-width: 60%;
+  max-width: 80%;
 }
 
-.btn-danger {
-  font-size: 12px;
-  padding: 2px 6px;
-}
-
-/* Bố cục 2 cột trong modal */
-.edit-layout {
-  min-height: 60vh;
-}
-.left-pane {
-  max-height: 70vh;
+.form-container {
+  max-height: 80vh;
   overflow-y: auto;
-  padding-right: 8px;
-}
-.right-pane {
-  border-left: 1px solid #e5e5e5;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-.sidebar-table {
-  max-height: calc(70vh - 160px);
-  overflow-y: auto;
+  padding: 5px;
 }
 
-.modal-body input.form-control {
-  pointer-events: auto;
-  user-select: auto;
-  z-index: 50;
+.detail-card {
+  border: 1px solid #ddd;
+  transition: all 0.3s ease;
 }
 
-/* Highlight card được chọn khi đang mở sidebar chọn sản phẩm */
-.selected-card {
-  border-color: #4C7CF3 !important;
-  box-shadow: 0 0 0 2px rgba(76, 124, 243, 0.2);
-  background: #f8faff;
+.product-selection-container {
+  background-color: #f8f9fa;
+}
+
+.product-list-cards {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 5px;
+}
+
+.product-card-horizontal {
+  margin-bottom: 10px;
+  border: 1px solid #e0e0e0; /* Default border */
+  transition: border-color 0.3s ease;
+}
+
+.product-card-img-horizontal {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.product-card-horizontal .card-body {
+  padding: 10px 15px;
+}
+
+.product-card-horizontal .card-title {
+  font-size: 1rem;
+  margin-right: 10px;
+  flex-grow: 1;
+}
+
+.img-thumbnail {
+  max-width: 120px;
+  height: auto;
+}
+
+.page-item {
+  cursor: pointer;
+}
+
+/* Highlight for selected product card in the selection list */
+.selected-product-card {
+  border-color: #007bff; /* Blue border for highlight */
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25); /* Optional: add a subtle shadow */
+}
+
+/* Highlight for the selected combo detail card */
+.highlighted-detail-card {
+  border-color: #0056b3; /* Darker blue border */
+  box-shadow: 0 0 0 0.25rem rgba(0, 86, 179, 0.25); /* Matching shadow */
 }
 </style>
