@@ -9,6 +9,7 @@ import Swal from 'sweetalert2'
 import { useCartStore } from '@/stores/cartStore'
 const cartStore = useCartStore()
 import { emitter } from '@/stores/eventBus'
+import { formatCurrency } from '@/constants/formatCurrency'
 const listCart = ref([])
 const router = useRouter()
 const getUrlAPI = ref(GetApiUrl())
@@ -201,7 +202,7 @@ function confirmCart() {
               <h6>Tổng giá trị</h6>
               <ul>
                 <li>
-                  Tổng <span>{{ tongTien }}</span>
+                  Tổng <span>{{ formatCurrency(tongTien) }}</span>
                 </li>
               </ul>
               <button

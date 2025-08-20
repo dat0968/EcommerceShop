@@ -2,7 +2,7 @@
 <template>
   <div>
     <br /><br /><br />
-    <div style="width: 1400px; margin-left: 500px; background-color: aliceblue;">
+    <div style="width: 1400px; margin-left:80px; background-color: aliceblue;">
       <div class="bg-white sticky-header border-b p-4 mb-6">
         <h1 class="mb-0 text-primary modern-title">← Chỉnh sửa thông tin</h1>
       </div>
@@ -21,7 +21,7 @@
       
       <div v-else-if="profile" class="row" >
       
-        <div class="col-md-3" style="margin-left: 20px;">
+        <div class="col-md-3" style="margin-left: 0px;">
           <br /><br />
           <div class="modern-card">
             <div class="card-body text-center p-6">
