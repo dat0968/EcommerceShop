@@ -66,8 +66,8 @@ onMounted(() => {
 
 const getProductImage = (maSp) => {
     const product = productMap.value[maSp];
-    if (product && product.anhDaiDien) {
-        return `${getApiUrl}/HinhAnh/Products/${product.anhDaiDien}`;
+    if (product && product.productDetails[0].images[0].tenHinhAnh) {
+        return `${getApiUrl}/HinhAnh/Products/${product.productDetails[0].images[0].tenHinhAnh}`;
     }
     // Fallback or placeholder image
     return 'https://via.placeholder.com/80';
