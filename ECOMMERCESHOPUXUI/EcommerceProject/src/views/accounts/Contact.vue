@@ -93,7 +93,7 @@
               <div class="info-item">
                  <i class="fas fa-envelope"></i>
                  <h5>Email:</h5>
-                <span style=" margin-left: 10px; margin-top: 3px;   font-size: 18px;"> pcbhoaanong@gmail.com</span>
+                <span style=" margin-left: 10px; margin-top: 3px;   font-size: 18px;">datntpk03691@gmail.com</span>
               </div>
              
               <div class="info-item">
@@ -120,8 +120,8 @@
     </div>
   </div>
 
-  <br>
-  <br>
+  <br><br>
+  
 </template>
 
 <script setup>

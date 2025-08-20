@@ -76,10 +76,10 @@ namespace APIClothesEcommerceShop.Repositories.Contact
 
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(
-                    _configuration["EmailSettings:SenderName"] ?? "DARK BEE FOOD",
+                    _configuration["EmailSettings:SenderName"] ?? "Angel Fashion",
                     _configuration["EmailSettings:SenderEmail"] ?? "khongbiet12kk@gmail.com"
                 ));
-                message.To.Add(new MailboxAddress("Admin", "pcbhoaanong@gmail.com"));
+                message.To.Add(new MailboxAddress("Admin", "datntpk03691@gmail.com"));
                 message.Subject = request.Subject;
 
                 message.ReplyTo.Add(new MailboxAddress(request.Name, userEmail));

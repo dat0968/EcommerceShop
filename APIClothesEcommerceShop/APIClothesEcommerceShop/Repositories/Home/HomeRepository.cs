@@ -31,8 +31,11 @@ namespace APIClothesEcommerceShop.Repositories.Home
                                     MaSp = g.Key.MaSp,
                                     TenSanPham = g.Key.TenSanPham,
                                     MoTa = g.Key.MoTa,
-                                    ReviewCount = g.Select(x => x.sp.DanhGias).First().Count(),
-                                    AverageRating = g.Select(x => x.sp.DanhGias).First().Any() ? g.Select(x => x.sp.DanhGias).First().Average(dg => dg.SoSao) : 5,
+                                    ReviewCount = g.SelectMany(x => x.sp.DanhGias).Count(),
+                                    AverageRating = g.SelectMany(x => x.sp.DanhGias).Any()
+                                    ? g.SelectMany(x => x.sp.DanhGias).Average(dg => dg.SoSao)
+                                    : 5,
+
                                     SoLuong = g.Sum(p => p.ctsp.SoLuongTon),
                                     SoLuongBan = g.Sum(p => p.ct.SoLuong),
                                     KhoangGia = g.Select(x => x.ctsp).Where(p => p.IsActive == true).Any()

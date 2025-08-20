@@ -794,7 +794,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
         private async Task SendEmailAsync(string email, string subject, string message)
         {
             var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress("DARK BEE FOOD", "khongbiet12kk@gmail.com"));
+            emailMessage.From.Add(new MailboxAddress("Angel Fashion", "khongbiet12kk@gmail.com"));
             emailMessage.To.Add(new MailboxAddress("", email));
             emailMessage.Subject = subject;
             emailMessage.Body = new TextPart("plain") { Text = message };

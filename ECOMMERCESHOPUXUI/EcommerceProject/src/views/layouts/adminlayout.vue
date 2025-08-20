@@ -134,60 +134,60 @@ onMounted(() => {
           <!-- Start XP Navigationbar -->
           <div class="xp-navigationbar">
             <ul class="xp-vertical-menu" style="color: black;">
-              <li>
-                <RouterLink to="/Admin" class="menu-link" active-class="menu-active">
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin' }">
+                <RouterLink to="/Admin" class="menu-link" :class="{ 'menu-active': $route.path.toLocaleLowerCase() === '/admin' }">
                   <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
                 </RouterLink>
               </li>
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/category' }">
                 <RouterLink to="/Admin/Category">
                   <i class="icon-list"></i><span class="font-color">Danh mục</span>
                 </RouterLink>
               </li>
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/product' }">
                 <RouterLink to="/Admin/Product">
                   <i class="icon-bag"></i><span class="font-color">Sản phẩm</span>
                 </RouterLink>
               </li>
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/combo' }">
                 <RouterLink to="/admin/combo">
                   <i class="icon-basket"></i><span class="font-color">Combo</span>
                 </RouterLink>
               </li>
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/coupon' }">
                 <RouterLink to="/admin/coupon">
                   <i class="icon-people"></i><span class="font-color">Coupon</span>
                 </RouterLink>
               </li>
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/order' }">
                 <RouterLink to="/Admin/Order">
                   <i class="icon-notebook"></i><span class="font-color">Đơn hàng</span>
                 </RouterLink>
               </li>
             
         
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/customer' }">
                 <RouterLink to="/admin/customer">
                   <i class="icon-people"></i><span class="font-color">Khách hàng</span>
                 </RouterLink>
               </li>
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/staff' }">
                 <RouterLink to="/admin/staff">
                   <i class="icon-people"></i><span class="font-color">Nhân viên</span>
                 </RouterLink>
               </li>
              
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/review' }">
                 <RouterLink to="/Admin/Review">
                   <i class="icon-star"></i><span class="font-color">Đánh giá</span>
                 </RouterLink>
               </li>
-              <li>
+              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/comment-management' }">
                 <RouterLink to="/admin/comment-management">
                   <i class="icon-speech"></i><span class="font-color">Bình luận</span>
                 </RouterLink>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" :class="{ active: $route.path.toLocaleLowerCase() === '/admin/chat' }">
                 <router-link to="/admin/chat">
                   <i class="bi bi-chat-dots"></i> <span class="font-color">Liên hệ </span>
                 </router-link>
