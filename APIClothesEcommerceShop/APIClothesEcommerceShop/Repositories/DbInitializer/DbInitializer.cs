@@ -156,8 +156,8 @@ namespace APIClothesEcommerceShop.Repositories.DbInitializer
             else
             {
                 var staff = _db.Nhanviens.FirstOrDefault(nv => nv.Email == "staff.demo@email.com");
-                // staff.MatKhau = new HashPassword.PasswordHasher().HashPassword("StaffDemo@123");
-                staff.MatKhau = "StaffDemo@123";
+                staff.MatKhau = new HashPassword.PasswordHasher().HashPassword("StaffDemo@123");
+                // staff.MatKhau = "StaffDemo@123";
                 _db.Nhanviens.Update(staff);
             }
 
