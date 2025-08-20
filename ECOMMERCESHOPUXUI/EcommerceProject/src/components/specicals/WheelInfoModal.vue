@@ -1,4 +1,3 @@
-
 <template>
   <teleport to="body">
     <div v-if="show" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5)" @click.self="close">
@@ -78,18 +77,44 @@
               <!-- Coupon Sidebar -->
               <div class="col-md-5 coupon-sidebar">
                 <h5 class="mb-3 text-center">Mã Giảm Giá Của Bạn</h5>
-                <div v-if="wheelInfo.privateCoupons && wheelInfo.privateCoupons.length > 0" class="coupon-list">
+                <div v-if="unusedCoupons.length > 0 || usedCoupons.length > 0" class="coupon-list">
                   <ul class="list-group">
-                    <li v-for="coupon in wheelInfo.privateCoupons" :key="coupon.maCode" class="list-group-item" :class="{'coupon-used': coupon.isUsed}">
+                    <!-- Unused Coupons -->
+                    <li v-for="coupon in unusedCoupons" :key="coupon.maCode" class="list-group-item">
                       <div>
-                        <strong class="coupon-code" :class="{'disabled-text': coupon.isUsed}" @click="coupon.isUsed ? null : copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
+                        <strong class="coupon-code" @click="copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
                         <span class="badge bg-info rounded-pill float-end">{{ getCouponValue(coupon) }}</span>
                       </div>
                       <small class="d-block text-muted mt-1">{{ coupon.moTa }}</small>
                       <small class="d-block text-danger fst-italic">Hạn dùng: {{ formatDate(coupon.ngayKetThuc) }}</small>
-                      <span v-if="coupon.isUsed" class="badge bg-secondary mt-2">Đã sử dụng</span>
                     </li>
                   </ul>
+
+                  <!-- Separator -->
+                  <div v-if="usedCoupons.length > 0 && unusedCoupons.length > 0" class="d-flex align-items-center my-3">
+                    <hr class="flex-grow-1">
+                    <span class="mx-2 text-muted small">Đã dùng</span>
+                    <hr class="flex-grow-1">
+                  </div>
+
+                  <!-- Used Coupons -->
+                  <ul class="list-group" v-if="usedCoupons.length > 0">
+                    <li v-for="coupon in visibleUsedCoupons" :key="coupon.maCode" class="list-group-item coupon-used">
+                      <div>
+                        <strong class="coupon-code disabled-text">{{ coupon.maCode }}</strong>
+                        <span class="badge bg-info rounded-pill float-end">{{ getCouponValue(coupon) }}</span>
+                      </div>
+                      <small class="d-block text-muted mt-1">{{ coupon.moTa }}</small>
+                      <small class="d-block text-danger fst-italic">Hạn dùng: {{ formatDate(coupon.ngayKetThuc) }}</small>
+                      <span class="badge bg-secondary mt-2">Đã sử dụng</span>
+                    </li>
+                  </ul>
+                  <div v-if="usedCoupons.length > 3" class="text-center mt-2">
+                      <button @click="showAllUsed = !showAllUsed" class="btn btn-link btn-sm">
+                          {{ showAllUsed ? 'Ẩn bớt' : 'Xem thêm' }}
+                      </button>
+                  </div>
+
                   <transition name="fade">
                     <div v-if="copied" class="text-success mt-2 text-center fw-bold">Đã sao chép!</div>
                   </transition>
@@ -120,6 +145,7 @@ export default {
   data() {
     return {
       copied: false,
+      showAllUsed: false,
     };
   },
   computed: {
@@ -135,6 +161,20 @@ export default {
         return 100;
       }
       return Math.floor(progress);
+    },
+    usedCoupons() {
+      if (!this.wheelInfo || !this.wheelInfo.privateCoupons) return [];
+      return this.wheelInfo.privateCoupons.filter(c => c.isUsed);
+    },
+    unusedCoupons() {
+      if (!this.wheelInfo || !this.wheelInfo.privateCoupons) return [];
+      return this.wheelInfo.privateCoupons.filter(c => !c.isUsed);
+    },
+    visibleUsedCoupons() {
+      if (this.showAllUsed) {
+        return this.usedCoupons;
+      }
+      return this.usedCoupons.slice(0, 3);
     }
   },
   methods: {
