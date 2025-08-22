@@ -139,8 +139,7 @@
   </div>
 </template>
 
-<script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+<script>
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 import ResponseAPI from '@/models/ResponseAPI'
@@ -148,174 +147,181 @@ import pathReplaceImg from '@/utils/processPathImg'
 import StarRating from '@/components/common/StarRating.vue';
 import { formatDate } from '@/constants/formatDatetime'
 
-const props = defineProps({
-  orderId: {
-    type: Number,
-    default: null,
+export default {
+  name: 'ReviewOrder',
+  props: {
+    orderId: {
+      type: Number,
+      default: null,
+    },
   },
-})
+  components: { StarRating },
+  data() {
+    return {
+      orderDetail: null,
+      loading: false,
+      error: null,
+    };
+  },
+  computed: {
+    orderItems() {
+      if (!this.orderDetail) return []
 
-const orderDetail = ref(null)
-const loading = ref(false)
-const error = ref(null)
+      const products = (this.orderDetail.products || []).map((p) => ({
+        ...p,
+        uniqueId: `prod-${p.id}`,
+        isProduct: true,
+        name: `SP: ${p.maSp}`,
+        rating: p.soSao || 5,
+        content: p.noiDung || '',
+        reviewId: p.maDanhGia,
+        shopReply: p.shopPhanHoi,
+        imageFiles: [],
+        imagePreviews: (p.hinhAnhs
+          ? Array.isArray(p.hinhAnhs)
+            ? p.hinhAnhs
+            : p.hinhAnhs.split(',')
+          : []
+        ).map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+        isSubmitting: false,
+      }))
 
-const isValidId = (id) => id !== null && id !== undefined && id > 0 && !isNaN(id)
+      const combos = (this.orderDetail.combos || []).map((c) => ({
+        ...c,
+        uniqueId: `combo-${c.id}`,
+        isProduct: false,
+        name: `Combo: ${c.maCombo}`,
+        rating: c.soSao || 5,
+        content: c.noiDung || '',
+        reviewId: c.maDanhGia,
+        shopReply: c.shopPhanHoi,
+        imageFiles: [],
+        imagePreviews: (c.hinhAnhs
+          ? Array.isArray(c.hinhAnhs)
+            ? c.hinhAnhs
+            : c.hinhAnhs.split(',')
+          : []
+        ).map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
+        isSubmitting: false,
+      }))
 
-const getOrderDetail = async () => {
-  if (!isValidId(props.orderId)) {
-    orderDetail.value = null
-    return
-  }
-
-  loading.value = true
-  error.value = null
-  orderDetail.value = null
-
-  try {
-    const res = await axiosConfig.getFromApi(
-      `/Review/orders/${props.orderId}`,
-      ConfigsRequest.takeAuth(),
-    )
-    if (res.success) {
-      orderDetail.value = res.data
-    } else {
-      error.value = res.message || 'Không thể tải thông tin đơn hàng.'
-    }
-  } catch (e) {
-    console.error(e)
-    error.value = 'Đã xảy ra lỗi khi tải chi tiết đơn hàng.'
-  } finally {
-    loading.value = false
-  }
-}
-
-const orderItems = computed(() => {
-  if (!orderDetail.value) return []
-
-  const products = (orderDetail.value.products || []).map((p) => ({
-    ...p,
-    uniqueId: `prod-${p.id}`,
-    isProduct: true,
-    name: `SP: ${p.maSp}`,
-    rating: p.soSao || 5,
-    content: p.noiDung || '',
-    reviewId: p.maDanhGia,
-    shopReply: p.shopPhanHoi,
-    imageFiles: [],
-    imagePreviews: (p.hinhAnhs
-      ? Array.isArray(p.hinhAnhs)
-        ? p.hinhAnhs
-        : p.hinhAnhs.split(',')
-      : []
-    ).map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
-    isSubmitting: false,
-  }))
-
-  const combos = (orderDetail.value.combos || []).map((c) => ({
-    ...c,
-    uniqueId: `combo-${c.id}`,
-    isProduct: false,
-    name: `Combo: ${c.maCombo}`,
-    rating: c.soSao || 5,
-    content: c.noiDung || '',
-    reviewId: c.maDanhGia,
-    shopReply: c.shopPhanHoi,
-    imageFiles: [],
-    imagePreviews: (c.hinhAnhs
-      ? Array.isArray(c.hinhAnhs)
-        ? c.hinhAnhs
-        : c.hinhAnhs.split(',')
-      : []
-    ).map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img)),
-    isSubmitting: false,
-  }))
-
-  return [...products, ...combos]
-})
-
-const handleImageSelection = (event, item) => {
-  item.imageFiles = Array.from(event.target.files)
-  item.imagePreviews = item.imageFiles.map((file) => URL.createObjectURL(file))
-}
-
-const submitReview = async (item) => {
-  item.isSubmitting = true
-  try {
-    const isUpdate = !!item.reviewId
-    const url = `/Review?isProduct=${item.isProduct}`
-    let res
-
-    if (isUpdate) {
-      const body = {
-        id: item.reviewId,
-        noiDung: item.content,
-        soSao: item.rating,
-        maSp: item.maSp,
-        maCtsp: item.maCtsp,
-        maCombo: item.maCombo,
-        maCtHd: item.id,
+      return [...products, ...combos]
+    },
+  },
+  watch: {
+    orderId: {
+      handler(newId) {
+        if (this.isValidId(newId)) {
+          this.getOrderDetail()
+        }
+      },
+      immediate: true,
+    },
+  },
+  methods: {
+    formatDate,
+    isValidId(id) {
+      return id !== null && id !== undefined && id > 0 && !isNaN(id)
+    },
+    async getOrderDetail() {
+      if (!this.isValidId(this.orderId)) {
+        this.orderDetail = null
+        return
       }
-      res = await axiosConfig.putToApi(url, body, ConfigsRequest.takeAuth())
-    } else {
-      const formData = new FormData()
-      formData.append('noiDung', item.content)
-      formData.append('soSao', item.rating)
-      formData.append('maCtHd', item.id)
-      if (item.isProduct) {
-        formData.append('maSp', item.maSp)
-        formData.append('maCtsp', item.maCtsp)
-      } else {
-        formData.append('maCombo', item.maCombo)
+
+      this.loading = true
+      this.error = null
+      this.orderDetail = null
+
+      try {
+        const res = await axiosConfig.getFromApi(
+          `/Review/orders/${this.orderId}`,
+          ConfigsRequest.takeAuth(),
+        )
+        if (res.success) {
+          this.orderDetail = res.data
+        } else {
+          this.error = res.message || 'Không thể tải thông tin đơn hàng.'
+        }
+      } catch (e) {
+        console.error(e)
+        this.error = 'Đã xảy ra lỗi khi tải chi tiết đơn hàng.'
+      } finally {
+        this.loading = false
       }
-      item.imageFiles.forEach((file) => formData.append('hinhAnhs', file))
+    },
+    handleImageSelection(event, item) {
+      item.imageFiles = Array.from(event.target.files)
+      item.imagePreviews = item.imageFiles.map((file) => URL.createObjectURL(file))
+    },
+    async submitReview(item) {
+      item.isSubmitting = true
+      try {
+        const isUpdate = !!item.reviewId
+        const url = `/Review?isProduct=${item.isProduct}`
+        let res
 
-      res = await axiosConfig.postToApi(url, formData, ConfigsRequest.takeAuth(true))
-    }
+        if (isUpdate) {
+          const body = {
+            id: item.reviewId,
+            noiDung: item.content,
+            soSao: item.rating,
+            maSp: item.maSp,
+            maCtsp: item.maCtsp,
+            maCombo: item.maCombo,
+            maCtHd: item.id,
+          }
+          res = await axiosConfig.putToApi(url, body, ConfigsRequest.takeAuth())
+        } else {
+          const formData = new FormData()
+          formData.append('noiDung', item.content)
+          formData.append('soSao', item.rating)
+          formData.append('maCtHd', item.id)
+          if (item.isProduct) {
+            formData.append('maSp', item.maSp)
+            formData.append('maCtsp', item.maCtsp)
+          } else {
+            formData.append('maCombo', item.maCombo)
+          }
+          item.imageFiles.forEach((file) => formData.append('hinhAnhs', file))
 
-    if (!ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
-      await getOrderDetail() // Refresh data on success
-    }
-  } catch (e) {
-    alert(`Lỗi: ${e.message}`)
-  } finally {
-    item.isSubmitting = false
-  }
-}
+          res = await axiosConfig.postToApi(url, formData, ConfigsRequest.takeAuth(true))
+        }
 
-const deleteReview = async (item) => {
-  if (!confirm('Bạn có chắc chắn muốn xóa đánh giá này không?')) return
+        if (!ResponseAPI.handleNotificationAndIsFailResponse(res, true)) {
+          await this.getOrderDetail() // Refresh data on success
+        }
+      } catch (e) {
+        alert(`Lỗi: ${e.message}`)
+      } finally {
+        item.isSubmitting = false
+      }
+    },
+    async deleteReview(item) {
+      if (!confirm('Bạn có chắc chắn muốn xóa đánh giá này không?')) return
 
-  item.isSubmitting = true
-  try {
-    const url = `/Review/${item.reviewId}?isProduct=${item.isProduct}`
-    const res = await axiosConfig.deleteFromApi(url, ConfigsRequest.takeAuth())
+      item.isSubmitting = true
+      try {
+        const url = `/Review/${item.reviewId}?isProduct=${item.isProduct}`
+        const res = await axiosConfig.deleteFromApi(url, ConfigsRequest.takeAuth())
 
-    if (!ResponseAPI.handleNotificationAndIsFailResponse(res)) {
-      alert('Đã xóa đánh giá!')
-      await getOrderDetail() // Refresh data
-    }
-  } catch (e) {
-    alert(`Lỗi: ${e.message}`)
-  } finally {
-    item.isSubmitting = false
-  }
-}
-
-watch(
-  () => props.orderId,
-  (newId) => {
-    if (isValidId(newId)) {
-      getOrderDetail()
+        if (!ResponseAPI.handleNotificationAndIsFailResponse(res)) {
+          alert('Đã xóa đánh giá!')
+          await this.getOrderDetail() // Refresh data
+        }
+      } catch (e) {
+        alert(`Lỗi: ${e.message}`)
+      } finally {
+        item.isSubmitting = false
+      }
+    },
+  },
+  mounted() {
+    if (this.isValidId(this.orderId)) {
+      this.getOrderDetail()
     }
   },
-  { immediate: true },
-)
-
-onMounted(() => {
-  if (isValidId(props.orderId)) {
-    getOrderDetail()
-  }
-})
+}
 </script>
 
 <style scoped>
