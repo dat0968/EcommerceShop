@@ -11,6 +11,7 @@ import ReviewProductCombo from '@/components/pages/customers/reviews/ReviewProdu
 import TryOnProduct from '@/components/specicals/TryOnProduct.vue' // Import TryOnProduct
 
 import { emitter } from '@/stores/eventBus'
+import { formatCurrency } from '@/constants/formatCurrency'
 import CommentSection from '@/components/comments/CommentSection.vue';
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
@@ -314,7 +315,7 @@ const formatRating = (rating) => {
                   <span class="text-muted ms-2">({{ combo.reviewCount || 0 }} đánh giá)</span>
                 </div>
                 <div class="product__details__price">
-                  {{ PriceCombo }} VNĐ<span>{{ OrginalPriceCombo }} VNĐ</span>
+                  {{ formatCurrency(PriceCombo) }} <span>{{ formatCurrency(OrginalPriceCombo) }}</span>
                 </div>
                 <div class="product__details__button">
                   <div class="quantity">

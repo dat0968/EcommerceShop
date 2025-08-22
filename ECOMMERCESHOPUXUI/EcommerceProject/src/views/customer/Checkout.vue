@@ -7,6 +7,7 @@ import { decodeToken, validateToken } from '@/utils/auth'
 import Cookies from 'js-cookie'
 import Swal from 'sweetalert2'
 import { read } from 'xlsx'
+import { formatCurrency } from '@/constants/formatCurrency'
 const cartStore = useCartStore()
 const selectedItems = ref([])
 const accessToken = ref(Cookies.get('accessToken'))
@@ -742,23 +743,23 @@ async function selectAddress(dc) {
                     </li>
                     <li v-for="item in selectedItems" :key="item.id">
                       {{ item.tenSanPham_TenCombo }}
-                      <span style="color: #ca1515">{{ item.donGia * item.soLuong }} VNĐ</span>
+                      <span style="color: #ca1515">{{ formatCurrency(item.donGia * item.soLuong) }} </span>
                     </li>
                   </ul>
                 </div>
                 <div class="checkout__order__total">
                   <ul>
                     <li>
-                      Tạm tính <span> {{ tongTien }} VNĐ</span>
+                      Tạm tính <span> {{ formatCurrency(tongTien) }} </span>
                     </li>
                     <li>
-                      Phí ship <span> {{ shippingFee }} VNĐ</span>
+                      Phí ship <span> {{ formatCurrency(shippingFee) }} </span>
                     </li>
                     <li>
-                      Giảm giá <span> {{ discount }} VNĐ</span>
+                      Giảm giá <span> {{ formatCurrency(discount) }} </span>
                     </li>
                     <li>
-                      Tổng tiền <span>{{ tongTien + shippingFee - discount }} VNĐ</span>
+                      Tổng tiền <span>{{ formatCurrency(tongTien + shippingFee - discount) }} </span>
                     </li>
                   </ul>
                 </div>

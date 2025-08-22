@@ -225,7 +225,7 @@ const parsePrice = (priceString) => {
 }
 
 const formatPrice = (price) => {
-  return price.toLocaleString('vi-VN') + ' Vnđ'
+  return price.toLocaleString('vi-VN') + ' VNĐ'
 }
 
 const formatRating = (rating) => {

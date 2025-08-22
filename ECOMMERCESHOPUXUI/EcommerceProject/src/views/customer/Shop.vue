@@ -4,6 +4,8 @@ import $ from 'jquery'
 import 'jquery-ui-dist/jquery-ui'
 import { RouterLink } from 'vue-router'
 import { GetApiUrl } from '@/constants/api'
+import { formatCurrency } from '@/constants/formatCurrency';
+
 const activeCategory = ref('collapseOne')
 const selectedPriceRange = ref(null)
 const listCategories = ref([])
@@ -337,7 +339,7 @@ const formatRating = (rating) => {
                         <div class="product__price text-muted fw-semibold fs-7 text-danger">
                           {{
                             product.type.toLowerCase() == 'product'
-                              ? product.priceRange
+                              ? (product.priceRange)
                               : product.discountPercentage != undefined &&
                                 product.discountPercentage > 0
                                 ? 'Giảm ' + product.discountPercentage + '%'
