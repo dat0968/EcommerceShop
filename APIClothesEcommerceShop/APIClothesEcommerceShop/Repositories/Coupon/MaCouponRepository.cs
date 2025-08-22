@@ -1,13 +1,13 @@
-﻿using APIClothesEcommerceShop.Data;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
+using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.DTO.Coupon;
 using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Macoupon;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
-using APIClothesEcommerceShop.Repositories.Macoupon;
-using APIClothesEcommerceShop.DTO.Coupon;
-using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.Repositories.Coupon
 {
@@ -78,7 +78,7 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
 
             if (!string.IsNullOrEmpty(keywords))
             {
-                listCouponCode = listCouponCode.Where(p => p.MaCode.Contains(keywords));
+                listCouponCode = listCouponCode.Where(p => p.MaCode.Contains(keywords) && (p.SoTienGiam != null || p.PhanTramGiam != null));
             }
 
             switch (status)
