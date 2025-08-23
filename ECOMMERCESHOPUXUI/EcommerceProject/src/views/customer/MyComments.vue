@@ -107,7 +107,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-<style scoped>
 .container {
   max-width: 900px;
   margin: 40px auto;
