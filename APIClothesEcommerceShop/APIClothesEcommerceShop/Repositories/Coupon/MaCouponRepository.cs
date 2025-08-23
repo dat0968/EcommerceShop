@@ -73,12 +73,13 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
         {
             var listCouponCode = db.Macoupons
                 .Include(c => c.KhachHang)
+                .Where(p => p.SoTienGiam != 0 || p.PhanTramGiam != 0)
                 .AsQueryable();
             var covertToListMaCouponVM = new List<CouponDTO>();
 
             if (!string.IsNullOrEmpty(keywords))
             {
-                listCouponCode = listCouponCode.Where(p => p.MaCode.Contains(keywords) && (p.SoTienGiam != null || p.PhanTramGiam != null));
+                listCouponCode = listCouponCode.Where(p => p.MaCode.Contains(keywords));
             }
 
             switch (status)
