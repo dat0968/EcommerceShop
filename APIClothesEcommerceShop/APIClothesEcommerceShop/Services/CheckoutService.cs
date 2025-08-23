@@ -4,13 +4,19 @@ using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Cart;
 using APIClothesEcommerceShop.Repositories.Cart_DetailCombo;
 using APIClothesEcommerceShop.Repositories.Combo;
+using APIClothesEcommerceShop.Repositories.Customer;
 using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.Repositories.Order;
 using APIClothesEcommerceShop.Repositories.OrderComboDetails;
 using APIClothesEcommerceShop.Repositories.OrderDetails;
 using APIClothesEcommerceShop.Repositories.ProductDetails;
 using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
+using MailKit.Security;
+using MimeKit;
+using System;
 using System.ComponentModel.Design;
+using System.Reactive.Subjects;
 
 namespace APIClothesEcommerceShop.Services
 {
@@ -26,7 +32,9 @@ namespace APIClothesEcommerceShop.Services
         private readonly IOrderComboDetails DetailComboOrderRepository;
         private readonly IProductDetailsRepository productDetailsRepository;
         private readonly IMaCouponRepository maCouponRepository;
-        public CheckoutService(ICartRepository cartRepository, EcommerceShopContext db, IOrderRepository orderRepository, IMaCouponRepository maCouponRepository, IProductDetailsRepository productDetailsRepository, IOrderComboDetails DetailComboOrderRepository, IOrderDetails orderDetailsRepository, IOrderComboDetails orderComboDetailsRepository, IComboRepository ComboRepository)
+        private readonly IConfiguration _configuration;
+        private readonly ICustomerRepository _customerRepository;
+        public CheckoutService(IConfiguration _configuration, ICustomerRepository _customerRepository, ICartRepository cartRepository, EcommerceShopContext db, IOrderRepository orderRepository, IMaCouponRepository maCouponRepository, IProductDetailsRepository productDetailsRepository, IOrderComboDetails DetailComboOrderRepository, IOrderDetails orderDetailsRepository, IOrderComboDetails orderComboDetailsRepository, IComboRepository ComboRepository)
         {
             this.db = db;
             this.orderRepository = orderRepository;
@@ -37,6 +45,8 @@ namespace APIClothesEcommerceShop.Services
             this.productDetailsRepository = productDetailsRepository;
             this.maCouponRepository = maCouponRepository;
             this.cartRepository = cartRepository;
+            this._configuration = _configuration;
+            this._customerRepository = _customerRepository;
         }
         public async Task<Hoadon> Checkout(OrderRequestDTO model)
         {
@@ -192,7 +202,42 @@ namespace APIClothesEcommerceShop.Services
                 {
                     await cartRepository.DeleteCart(cartid);
                 }
+                var customer = await _customerRepository.GetCustomerByIdAsync(model.MaKh);
+                
+                var emailMessage = new MimeMessage();
+                emailMessage.From.Add(new MailboxAddress(_configuration["GoogleEmailSetting:Username"], "datntpk03691@gmail.com"));
+                emailMessage.To.Add(new MailboxAddress("", customer.Email));
+                emailMessage.Subject = $"XÁC NHẬN ĐẶT HÀNG THÀNH CÔNG - MÃ ĐƠN {NewOrder.MaHd}";
+                emailMessage.Body = new TextPart("html")
+                {
+                    Text = $@"
+                    <h2>Cảm ơn quý khách đã đặt hàng tại <b>Angel Fashion</b>!</h2>
+                    <p>Đơn hàng của quý khách đã được tiếp nhận và đang chờ xử lý.</p>
+        
+                    <h3>Thông tin khách hàng</h3>
+                    <p><b>Họ tên người nhận:</b> {model.HoTen}</p>
+                    <p><b>Email người đặt:</b> {customer.Email}</p>
 
+                    <h3>Thông tin đơn hàng</h3>
+                    <p><b>Mã đơn hàng:</b> {NewOrder.MaHd}</p>
+                    <p><b>Ngày đặt:</b> {DateTime.Now:dd/MM/yyyy HH:mm}</p>
+
+                    <p>Chúng tôi sẽ sớm liên hệ để xác nhận và giao hàng trong thời gian sớm nhất.</p>
+                    <br/>
+                    <p>Trân trọng.</p>
+    "
+                };
+
+                using (var client = new MailKit.Net.Smtp.SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(
+                        _configuration["GoogleEmailSetting:Email"],
+                        _configuration["GoogleEmailSetting:Password"]
+                    );
+                    await client.SendAsync(emailMessage);
+                    await client.DisconnectAsync(true);
+                }
                 await db.Database.CommitTransactionAsync();
                 return NewOrder;
             }catch(Exception ex)

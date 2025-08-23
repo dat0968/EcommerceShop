@@ -39,6 +39,7 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
                     TrangThai = true,
                     DonHangToiThieu = maCoupon.DonHangToiThieu,
                     SoLuongDaDung = 0,
+                    MaKhachHang = maCoupon.MaKhachHang
                 };
 
                 db.Macoupons.Add(newCouponCode);

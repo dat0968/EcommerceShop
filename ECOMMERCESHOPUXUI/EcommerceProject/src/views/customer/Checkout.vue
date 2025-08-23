@@ -467,6 +467,7 @@ async function HandlePayment() {
 
   if (confirmResult.isConfirmed) {
     try {
+      loading.value = true;
       if (payment.value.toLowerCase() == 'cod') {
         const response = await fetch(`${getUrlAPI.value}/api/Checkout`, {
           method: 'POST',
@@ -512,6 +513,7 @@ async function HandlePayment() {
         window.location.href = responseVNPAY
       }
     } catch (error) {
+      loading.value = false;
       Swal.fire('Lỗi', error.message || 'Đã xảy ra lỗi khi xử lý thanh toán', 'error')
     }
   } else {

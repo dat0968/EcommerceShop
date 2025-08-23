@@ -1,20 +1,23 @@
 <template>
-  <div class="" style="margin-top: 20px; margin-left: 100px; margin-right: 100px;">
+  <div class="" style="margin-top: 20px; margin-left: 100px; margin-right: 100px">
     <!-- Header -->
     <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><router-link to="/" class="text-decoration-none text-muted">Trang chủ</router-link></li>
-                <li class="breadcrumb-item"><a href="/Shop" class="text-decoration-none text-muted">Sản phẩm</a></li>
-                <li class="breadcrumb-item active text-muted" aria-current="page">Sản phẩm yêu thích</li>
-            </ol>
-        </nav>
-      <div class="header-content">
-        <button class="back-btn d-none d-md-flex" @click="router.back()">
-          <i class="fas fa-arrow-left"></i>
-        </button>
-        <h1 class="orders-title">Đơn hàng của tôi</h1>
-      </div>
-
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <router-link to="/" class="text-decoration-none text-muted">Trang chủ</router-link>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="/Shop" class="text-decoration-none text-muted">Sản phẩm</a>
+        </li>
+        <li class="breadcrumb-item active text-muted" aria-current="page">Sản phẩm yêu thích</li>
+      </ol>
+    </nav>
+    <div class="header-content">
+      <button class="back-btn d-none d-md-flex" @click="router.back()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h1 class="orders-title">Đơn hàng của tôi</h1>
+    </div>
 
     <!-- Search and Filter -->
     <div class="search-filter-section">
@@ -51,11 +54,7 @@
 
       <!-- Orders List -->
       <div class="orders-list">
-        <div
-          v-for="order in filteredOrders"
-          :key="order.maHd"
-          class="order-card"
-        >
+        <div v-for="order in filteredOrders" :key="order.maHd" class="order-card">
           <!-- Order Header -->
           <div class="order-header">
             <div class="order-info">
@@ -77,19 +76,23 @@
               :key="index"
               class="order-item"
             >
-              <div class="item-image" style="width: 200px;height: 200px;">
+              <div class="item-image" style="width: 200px; height: 200px">
                 <img :src="'/placeholder.svg'" :alt="item.tenSanPham" />
               </div>
-              <div class="item-details" style="margin-left: 50px;">
-                <p class="item-name" style="font-size: 1.2rem;">{{ item.tenSanPham }} {{ item.tenCombo }}</p>
-                <p class="item-variant" v-if="item.bienThe" style="font-size: 1.2rem;">{{ item.bienThe }}</p>
-                <p class="item-quantity" style="font-size: 1.2rem;">x{{ item.soLuong }}</p>
+              <div class="item-details" style="margin-left: 50px">
+                <p class="item-name" style="font-size: 1.2rem">
+                  {{ item.tenSanPham }} {{ item.tenCombo }}
+                </p>
+                <p class="item-variant" v-if="item.bienThe" style="font-size: 1.2rem">
+                  {{ item.bienThe }}
+                </p>
+                <p class="item-quantity" style="font-size: 1.2rem">x{{ item.soLuong }}</p>
               </div>
-              <div class="item-price" style="font-size: 1.2rem;">
+              <div class="item-price" style="font-size: 1.2rem">
                 {{ formatCurrency(item.gia) }}
               </div>
             </div>
-            
+
             <!-- Show more items indicator -->
             <div v-if="order.cthoadons.length > 2" class="more-items">
               +{{ order.cthoadons.length - 2 }} sản phẩm khác
@@ -100,7 +103,7 @@
           <div class="order-footer">
             <div class="order-total">
               <span class="total-label">Tổng cộng:</span>
-              <span class="total-amount"style="font-size: 1.5rem;">
+              <span class="total-amount" style="font-size: 1.5rem">
                 {{ formatCurrency(order.tienGoc + order.phiVanChuyen - order.giamGiaCoupon) }}
               </span>
             </div>
@@ -125,12 +128,7 @@
               </button>
 
               <!-- View details button -->
-              <button
-                class="action-btn details-btn"
-                @click="openModal(order)"
-              >
-                Xem chi tiết
-              </button>
+              <button class="action-btn details-btn" @click="openModal(order)">Xem chi tiết</button>
             </div>
           </div>
         </div>
@@ -151,11 +149,7 @@
               Trước
             </button>
           </li>
-          <li
-            v-for="p in displayedPages"
-            :key="p"
-            :class="['page-item', { active: p === page }]"
-          >
+          <li v-for="p in displayedPages" :key="p" :class="['page-item', { active: p === page }]">
             <button class="page-link" @click="changePage(p)">{{ p }}</button>
           </li>
           <li :class="['page-item', { disabled: page === totalPage }]">
@@ -168,20 +162,15 @@
     </div>
 
     <!-- Order Details Modal -->
-    <div
-     
-      v-if="showModal && selectedOrder"
-      class="modal-overlay"
-      @click="closeModal"
-    >
-      <div class="modal-content" @click.stop style="width: 1000px;">
+    <div v-if="showModal && selectedOrder" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop style="width: 1000px">
         <div class="modal-header">
           <h2 class="modal-title">Chi tiết đơn hàng: {{ selectedOrder.maHd }}</h2>
           <button class="modal-close" @click="closeModal">
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <div class="modal-body">
           <!-- Order Summary -->
           <div class="order-summary-grid">
@@ -234,12 +223,20 @@
                 </div>
                 <div class="info-item">
                   <span class="label">Giảm giá:</span>
-                  <span class="value text-success">-{{ formatCurrency(selectedOrder.giamGiaCoupon) }}</span>
+                  <span class="value text-success"
+                    >-{{ formatCurrency(selectedOrder.giamGiaCoupon) }}</span
+                  >
                 </div>
                 <div class="info-item total-row">
                   <span class="label">Tổng thanh toán:</span>
                   <span class="value total-price">
-                    {{ formatCurrency(selectedOrder.tienGoc - selectedOrder.giamGiaCoupon + selectedOrder.phiVanChuyen) }}
+                    {{
+                      formatCurrency(
+                        selectedOrder.tienGoc -
+                          selectedOrder.giamGiaCoupon +
+                          selectedOrder.phiVanChuyen
+                      )
+                    }}
                   </span>
                 </div>
               </div>
@@ -306,7 +303,9 @@
                         class="combo-item"
                       >
                         {{ combo.tenSanPham }} ({{ combo.mauSac }}-{{ combo.kichThuoc }})
-                        <span class="combo-quantity">({{ combo.soLuong / comboItem.soLuong }} sản phẩm)</span>
+                        <span class="combo-quantity"
+                          >({{ combo.soLuong / comboItem.soLuong }} sản phẩm)</span
+                        >
                       </div>
                     </div>
                   </div>
@@ -325,11 +324,7 @@
     </div>
 
     <!-- Cancel Order Modal -->
-    <div
-      v-if="showCancelModal"
-      class="modal-overlay"
-      @click="closeCancelModal"
-    >
+    <div v-if="showCancelModal" class="modal-overlay" @click="closeCancelModal">
       <div class="cancel-modal-content" @click.stop>
         <div class="modal-header">
           <h3 class="modal-title">Hủy đơn hàng #{{ orderToCancel?.maHd }}</h3>
@@ -342,11 +337,7 @@
             Vui lòng cho chúng tôi biết lý do bạn muốn hủy đơn hàng này:
           </p>
           <div class="reason-options">
-            <label
-              v-for="reason in cancelReasons"
-              :key="reason"
-              class="reason-option"
-            >
+            <label v-for="reason in cancelReasons" :key="reason" class="reason-option">
               <input
                 type="radio"
                 :value="reason"
@@ -366,11 +357,10 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeCancelModal">
-            Hủy
-          </button>
-          <button class="btn btn-danger" @click="confirmCancelOrder">
-            Xác nhận hủy đơn
+          <button class="btn btn-secondary" @click="closeCancelModal">Hủy</button>
+          <button class="btn btn-danger" @click="confirmCancelOrder" :disabled="waitingCancel">
+            <span v-if="!waitingCancel">Xác nhận hủy đơn</span>
+            <span v-else> <i class="fas fa-spinner fa-spin"></i> Đang xử lý... </span>
           </button>
         </div>
       </div>
@@ -404,7 +394,7 @@ const search = ref('')
 const loading = ref(false)
 const filter = ref('')
 const activeTab = ref('all')
-
+const waitingCancel = ref(false)
 // Status options and tabs
 const statusOptions = [
   'Đang xử lý VNPAY',
@@ -422,7 +412,7 @@ const statusTabs = [
   { value: 'processing', label: 'Xử lý' },
   { value: 'shipping', label: 'Giao hàng' },
   { value: 'delivered', label: 'Đã giao' },
-  { value: 'cancelled', label: 'Đã hủy' }
+  { value: 'cancelled', label: 'Đã hủy' },
 ]
 
 const cancelReasons = [
@@ -430,7 +420,7 @@ const cancelReasons = [
   'Tìm được sản phẩm tương tự với giá tốt hơn',
   'Thời gian giao hàng quá lâu',
   'Tôi đặt nhầm sản phẩm/số lượng',
-  'Lý do khác'
+  'Lý do khác',
 ]
 
 // Computed properties
@@ -438,7 +428,7 @@ const filteredOrders = computed(() => {
   let filtered = orders.value
 
   if (activeTab.value !== 'all') {
-    filtered = filtered.filter(order => {
+    filtered = filtered.filter((order) => {
       const status = order.tinhTrang.toLowerCase()
       switch (activeTab.value) {
         case 'processing':
@@ -464,15 +454,15 @@ const displayedPages = computed(() => {
   const maxPages = 5
   let start = Math.max(1, page.value - Math.floor(maxPages / 2))
   let end = Math.min(totalPage.value, start + maxPages - 1)
-  
+
   if (end - start + 1 < maxPages) {
     start = Math.max(1, end - maxPages + 1)
   }
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 
@@ -490,7 +480,8 @@ function getStatusClass(status) {
   const statusLower = status.toLowerCase()
   if (statusLower.includes('chờ') || statusLower.includes('xử lý')) return 'status-processing'
   if (statusLower.includes('giao') && !statusLower.includes('đã nhận')) return 'status-shipping'
-  if (statusLower.includes('đã nhận') || statusLower.includes('đã thanh toán')) return 'status-delivered'
+  if (statusLower.includes('đã nhận') || statusLower.includes('đã thanh toán'))
+    return 'status-delivered'
   if (statusLower.includes('hủy') || statusLower.includes('hoàn trả')) return 'status-cancelled'
   return 'status-default'
 }
@@ -499,20 +490,26 @@ function getStatusIcon(status) {
   const statusLower = status.toLowerCase()
   if (statusLower.includes('chờ') || statusLower.includes('xử lý')) return 'fas fa-clock'
   if (statusLower.includes('giao') && !statusLower.includes('đã nhận')) return 'fas fa-truck'
-  if (statusLower.includes('đã nhận') || statusLower.includes('đã thanh toán')) return 'fas fa-check-circle'
+  if (statusLower.includes('đã nhận') || statusLower.includes('đã thanh toán'))
+    return 'fas fa-check-circle'
   if (statusLower.includes('hủy') || statusLower.includes('hoàn trả')) return 'fas fa-times-circle'
   return 'fas fa-box'
 }
 
 function canCancelOrder(order) {
   const status = order.tinhTrang.toLowerCase()
-  return status === 'chờ xác nhận' || 
-         (status === 'đã thanh toán' && Date.now() - new Date(order.ngayThanhToan).getTime() <= 3 * 24 * 60 * 60 * 1000)
+  return (
+    status === 'chờ xác nhận' ||
+    (status === 'đã thanh toán' &&
+      Date.now() - new Date(order.ngayThanhToan).getTime() <= 3 * 24 * 60 * 60 * 1000)
+  )
 }
 
 function getEmptyStateMessage() {
   if (activeTab.value === 'all') return 'Bạn chưa có đơn hàng nào'
-  return `Không có đơn hàng ${statusTabs.find(tab => tab.value === activeTab.value)?.label.toLowerCase()}`
+  return `Không có đơn hàng ${statusTabs
+    .find((tab) => tab.value === activeTab.value)
+    ?.label.toLowerCase()}`
 }
 
 // Tab functions
@@ -593,7 +590,8 @@ async function cancelOrder(order) {
     id: order.maHd,
     selectedCancelStatus:
       order.tinhTrang.toLowerCase() === 'chờ xác nhận' ? 'Đã hủy' : 'Hoàn trả/Hoàn tiền',
-    reasonCancel: selectedCancelReason.value === 'Lý do khác' ? cancelReason.value : selectedCancelReason.value,
+    reasonCancel:
+      selectedCancelReason.value === 'Lý do khác' ? cancelReason.value : selectedCancelReason.value,
   }
 
   try {
@@ -632,7 +630,10 @@ async function cancelOrder(order) {
 }
 
 async function confirmCancelOrder() {
-  if (!selectedCancelReason.value || (selectedCancelReason.value === 'Lý do khác' && !cancelReason.value.trim())) {
+  if (
+    !selectedCancelReason.value ||
+    (selectedCancelReason.value === 'Lý do khác' && !cancelReason.value.trim())
+  ) {
     Swal.fire('Vui lòng chọn lý do hủy đơn!', '', 'warning')
     return
   }
@@ -647,8 +648,15 @@ async function confirmCancelOrder() {
   })
 
   if (confirmResult.isConfirmed) {
-    await cancelOrder(orderToCancel.value)
-    closeCancelModal()
+    try {
+      waitingCancel.value = true
+      await cancelOrder(orderToCancel.value)
+      closeCancelModal()
+    } catch (error) {
+      console.log(error)
+    } finally {
+      waitingCancel.value = false
+    }
   }
 }
 
@@ -793,8 +801,12 @@ watch(search, () => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Orders Content */
@@ -1404,7 +1416,7 @@ watch(search, () => {
   background-color: #f9fafb;
 }
 
-.reason-option input[type="radio"] {
+.reason-option input[type='radio'] {
   margin: 0;
   accent-color: #3b82f6;
 }

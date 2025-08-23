@@ -1,8 +1,12 @@
 ﻿using APIClothesEcommerceShop.DTO.Order;
 using APIClothesEcommerceShop.Repositories.Macoupon;
 using APIClothesEcommerceShop.Services;
+using DocumentFormat.OpenXml.Spreadsheet;
+using MailKit.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MimeKit;
+using System.Reactive.Subjects;
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -12,10 +16,12 @@ namespace APIClothesEcommerceShop.Controllers
     {
         private readonly CheckoutService checkoutService;
         private readonly IMaCouponRepository maCouponRepository;
-        public CheckoutController(CheckoutService checkoutServic, IMaCouponRepository maCouponRepository)
+        private readonly IConfiguration _configuration;
+        public CheckoutController(CheckoutService checkoutServic, IMaCouponRepository maCouponRepository, IConfiguration configuration)
         {
             this.checkoutService = checkoutServic;
             this.maCouponRepository = maCouponRepository;
+            _configuration = configuration;
         }
         [HttpPost]
         public async Task<IActionResult> Checkout(OrderRequestDTO model)
@@ -27,6 +33,8 @@ namespace APIClothesEcommerceShop.Controllers
                 {
                     throw new Exception("Đặt hàng không thành công");
                 }
+               
+
                 return Ok(new
                 {
                     Success = true,

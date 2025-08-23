@@ -88,13 +88,39 @@ watch(discountType, () => {
 
 // Validate form
 const validateForm = () => {
-  if (!couponForm.value.soLuong || couponForm.value.soLuong < 1) {
-    Swal.fire('Lỗi', 'Số lượng phải lớn hơn 0', 'error')
-    return false
+
+  if (!couponForm.value.moTa) {
+    Swal.fire('Lỗi', 'Vui lòng nhập mô tả', 'error');
+    return false;
   }
-  if (!couponForm.value.ngayBatDau || !couponForm.value.ngayKetThuc) {
-    Swal.fire('Lỗi', 'Ngày bắt đầu và kết thúc là bắt buộc', 'error')
-    return false
+  if (!couponForm.value.ngayBatDau) {
+    Swal.fire('Lỗi', 'Vui lòng chọn ngày bắt đầu', 'error');
+    return false;
+  }
+  if (!couponForm.value.ngayKetThuc) {
+    Swal.fire('Lỗi', 'Vui lòng chọn ngày kết thúc', 'error');
+    return false;
+  }
+  if (!couponForm.value.soLuong || couponForm.value.soLuong < 1) {
+    Swal.fire('Lỗi', 'Vui lòng nhập số lượng', 'error');
+    return false;
+  }
+  if (couponForm.value.donHangToiThieu === null || couponForm.value.donHangToiThieu < 0) {
+    Swal.fire('Lỗi', 'Vui lòng nhập giá trị đơn hàng tối thiểu', 'error');
+    return false;
+  }
+  if (discountType.value === 'amount' && (couponForm.value.soTienGiam === null || couponForm.value.soTienGiam < 0)) {
+    Swal.fire('Lỗi', 'Vui lòng nhập số tiền giảm', 'error');
+    return false;
+  }
+  if (discountType.value === 'percent' && (couponForm.value.phanTramGiam === null || couponForm.value.phanTramGiam < 0 || couponForm.value.phanTramGiam > 50)) {
+    Swal.fire('Lỗi', 'Phần trăm giảm không được vượt quá 50%', 'error');
+    return false;
+  }
+  // Kiểm tra số tiền giảm không vượt quá 60% giá trị đơn hàng tối thiểu
+  if (discountType.value === 'amount' && couponForm.value.soTienGiam > 0.5 * couponForm.value.donHangToiThieu) {
+    Swal.fire('Lỗi', 'Số tiền giảm không được vượt quá 50% giá trị đơn hàng tối thiểu', 'error');
+    return false;
   }
   const startDate = new Date(couponForm.value.ngayBatDau)
   const endDate = new Date(couponForm.value.ngayKetThuc)
@@ -102,28 +128,10 @@ const validateForm = () => {
     Swal.fire('Lỗi', 'Ngày bắt đầu không được lớn hơn ngày kết thúc', 'error')
     return false
   }
-  if (couponForm.value.donHangToiThieu && couponForm.value.donHangToiThieu < 0) {
-    Swal.fire('Lỗi', 'Đơn hàng tối thiểu phải lớn hơn hoặc bằng 0', 'error')
-    return false
-  }
-  if (
-    discountType.value === 'amount' &&
-    (!couponForm.value.soTienGiam || couponForm.value.soTienGiam < 0)
-  ) {
-    Swal.fire('Lỗi', 'Số tiền giảm phải lớn hơn hoặc bằng 0', 'error')
-    return false
-  }
-  if (
-    discountType.value === 'percent' &&
-    (!couponForm.value.phanTramGiam ||
-      couponForm.value.phanTramGiam < 0 ||
-      couponForm.value.phanTramGiam > 100)
-  ) {
-    Swal.fire('Lỗi', 'Phần trăm giảm phải từ 0 đến 100', 'error')
-    return false
-  }
-  return true
-}
+
+  return true;
+};
+
 // Fetch all customers for dropdown
 const fetchCustomers = async () => {
   try {
@@ -280,18 +288,18 @@ const closeEditModal = () => {
 }
 
 // CRUD operations
+// CRUD operations
 const createCoupon = async () => {
   if (!validateForm()) return
 
   try {
     const content = {
       ...couponForm.value,
-      ngayBatDau: couponForm.value.ngayBatDau
-        ? new Date(couponForm.value.ngayBatDau).toISOString()
-        : null,
-      ngayKetThuc: couponForm.value.ngayKetThuc
-        ? new Date(couponForm.value.ngayKetThuc).toISOString()
-        : null,
+
+      maKhachHang: couponForm.value.maKhachHang ? parseInt(couponForm.value.maKhachHang) : null, // Chuyển thành số nguyên hoặc null
+      ngayBatDau: couponForm.value.ngayBatDau ? new Date(couponForm.value.ngayBatDau).toISOString() : null,
+      ngayKetThuc: couponForm.value.ngayKetThuc ? new Date(couponForm.value.ngayKetThuc).toISOString() : null,
+
       donHangToiThieu: couponForm.value.donHangToiThieu || null,
       soLuongDaDung: 0,
     }
@@ -338,6 +346,7 @@ const updateCoupon = async () => {
   try {
     const content = {
       ...couponForm.value,
+      maKhachHang: couponForm.value.maKhachHang ? parseInt(couponForm.value.maKhachHang) : null, // Chuyển thành số nguyên hoặc null
       soTienGiam: couponForm.value.soTienGiam || null,
       phanTramGiam: couponForm.value.phanTramGiam || null,
       ngayBatDau: couponForm.value.ngayBatDau
@@ -493,7 +502,9 @@ onMounted(() => {
             </th>
             <th>Hạn sử dụng</th>
             <th>Đơn tối thiểu</th>
-            <th>Đã dùng</th>
+
+            <th>Số lượng</th>
+            <!-- <th>Đã dùng</th> -->
             <th>Trạng thái</th>
             <th>Hành động</th>
           </tr>
@@ -512,7 +523,8 @@ onMounted(() => {
               {{ formatDate(coupon.ngayKetThuc) }}
             </td>
             <td>{{ coupon.donHangToiThieu || 0 }}</td>
-            <td>{{ coupon.soLuongDaDung }} / {{ coupon.soLuong }}</td>
+
+            <td>{{ coupon.soLuongDaDung }}/{{ coupon.soLuong }}</td>
             <td :style="{ color: getCouponStatus(coupon).color }">
               {{ getCouponStatus(coupon).text }}
             </td>
@@ -574,7 +586,7 @@ onMounted(() => {
       <div class="modal" :class="{ 'd-block': showAddModal }" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
-            <div class="modal-header" style="background-color: #4c7cf3">
+            <div class="modal-header" style="background-color:#4C7CF3">
               <h5 class="modal-title">Thêm Coupon</h5>
               <button type="button" class="btn-close" @click="closeAddModal"></button>
             </div>
@@ -583,7 +595,7 @@ onMounted(() => {
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Mô tả</label>
-                    <input v-model="couponForm.moTa" class="form-control" />
+                    <input v-model="couponForm.moTa" class="form-control" required>
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Loại giảm giá</label>

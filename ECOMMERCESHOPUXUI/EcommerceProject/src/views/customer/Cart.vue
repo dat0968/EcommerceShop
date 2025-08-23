@@ -43,7 +43,8 @@ onMounted(async () => {
 })
 
 const tongTien = computed(() => {
-  return listCart.value.reduce((total, item) => {
+  const selectedCartItems = listCart.value.filter((item) => selectedItems.value.includes(item.id))
+  return selectedCartItems.reduce((total, item) => {
     return total + item.donGia * item.soLuong
   }, 0)
 })

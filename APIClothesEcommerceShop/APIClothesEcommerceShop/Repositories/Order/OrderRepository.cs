@@ -3,7 +3,11 @@ using APIClothesEcommerceShop.DTO.ComboDetails_Orders;
 using APIClothesEcommerceShop.DTO.Order;
 using APIClothesEcommerceShop.DTO.OrderDetails;
 using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Customer;
+using DocumentFormat.OpenXml.Wordprocessing;
+using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +18,12 @@ namespace APIClothesEcommerceShop.Repositories.Order
     public class OrderRepository : IOrderRepository
     {
         private readonly EcommerceShopContext db;
-
-        public OrderRepository(EcommerceShopContext db)
+        private readonly ICustomerRepository _customerRepository;
+        private readonly IConfiguration _configuration;
+        public OrderRepository(EcommerceShopContext db, ICustomerRepository _customerRepository, IConfiguration _configuration)
         {
+            this._customerRepository = _customerRepository;
+            this._configuration = _configuration;
             this.db = db;
         }
 
@@ -90,6 +97,40 @@ namespace APIClothesEcommerceShop.Repositories.Order
                 }
 
                 await db.SaveChangesAsync();
+                var orderinfo = await GetbyId(orderId);
+                var customer = await _customerRepository.GetCustomerByIdAsync((int)orderinfo.MaKh);
+                var emailMessage = new MimeMessage();
+                emailMessage.From.Add(new MailboxAddress(_configuration["GoogleEmailSetting:Username"], "datntpk03691@gmail.com"));
+                emailMessage.To.Add(new MailboxAddress("", customer.Email));
+                emailMessage.Subject = $"XÁC NHẬN HỦY/HOÀN TRẢ THÀNH CÔNG - MÃ ĐƠN {orderId}";
+                emailMessage.Body = new TextPart("html")
+                {
+                    Text = $@"
+                    <h2>Quý khách đã hoàn tất hủy/hoàn trả cho đơn hàng mã {orderinfo.MaHd} tại <b>Angel Fashion</b>!</h2>
+
+                    <h3>Thông tin khách hàng</h3>
+                    <p><b>Họ tên người nhận:</b> {orderinfo.HoTen}</p>
+                    <p><b>Email người đặt:</b> {customer.Email}</p>
+
+                    <h3>Thông tin đơn hàng</h3>
+                    <p><b>Mã đơn hàng:</b> {orderinfo.MaHd}</p>
+                    <p><b>Ngày đặt:</b> {orderinfo.NgayTao:dd/MM/yyyy HH:mm}</p>
+                    <p><b>Ngày nhận:</b> {orderinfo.NgayNhan:dd/MM/yyyy HH:mm}</p>
+                    <br/>
+                    <p>Trân trọng.</p>
+                    "
+                };
+
+                using (var client = new MailKit.Net.Smtp.SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync(
+                        _configuration["GoogleEmailSetting:Email"],
+                        _configuration["GoogleEmailSetting:Password"]
+                    );
+                    await client.SendAsync(emailMessage);
+                    await client.DisconnectAsync(true);
+                }
                 await transaction.CommitAsync();
             }
             catch (Exception ex)
@@ -169,6 +210,44 @@ namespace APIClothesEcommerceShop.Repositories.Order
                 FindOrder.TinhTrang = status;
                 db.Hoadons.Update(FindOrder);
                 await db.SaveChangesAsync();
+                if(FindOrder.TinhTrang.ToLower() == "đã thanh toán")
+                {
+                    var orderinfo = await GetbyId(FindOrder.MaHd);
+                    var customer = await _customerRepository.GetCustomerByIdAsync((int)orderinfo.MaKh);
+                    var emailMessage = new MimeMessage();
+                    emailMessage.From.Add(new MailboxAddress(_configuration["GoogleEmailSetting:Username"], "datntpk03691@gmail.com"));
+                    emailMessage.To.Add(new MailboxAddress("", customer.Email));
+                    emailMessage.Subject = $"XÁC NHẬN THANH TOÁN THÀNH CÔNG - MÃ ĐƠN {FindOrder.MaHd}";
+                    emailMessage.Body = new TextPart("html")
+                    {
+                        Text = $@"
+                    <h2>Quý khách đã hoàn tất thanh toán cho đơn hàng mã {orderinfo.MaHd} tại <b>Angel Fashion</b>!</h2>
+                    <p>Cảm ơn quý khách đã tin tưởng và ủng hộ cửa hàng chúng tôi.</p>
+        
+                    <h3>Thông tin khách hàng</h3>
+                    <p><b>Họ tên người nhận:</b> {orderinfo.HoTen}</p>
+                    <p><b>Email người đặt:</b> {customer.Email}</p>
+
+                    <h3>Thông tin đơn hàng</h3>
+                    <p><b>Mã đơn hàng:</b> {orderinfo.MaHd}</p>
+                    <p><b>Ngày đặt:</b> {orderinfo.NgayTao:dd/MM/yyyy HH:mm}</p>
+                    <p><b>Ngày nhận:</b> {orderinfo.NgayNhan:dd/MM/yyyy HH:mm}</p>
+                    <br/>
+                    <p>Trân trọng.</p>
+                    "
+                    };
+
+                    using (var client = new MailKit.Net.Smtp.SmtpClient())
+                    {
+                        await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                        await client.AuthenticateAsync(
+                            _configuration["GoogleEmailSetting:Email"],
+                            _configuration["GoogleEmailSetting:Password"]
+                        );
+                        await client.SendAsync(emailMessage);
+                        await client.DisconnectAsync(true);
+                    }
+                }
             }
             catch (Exception ex)
             {
