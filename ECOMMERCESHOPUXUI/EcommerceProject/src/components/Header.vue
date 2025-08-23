@@ -253,7 +253,7 @@ onMounted(async () => {
                         >
                       </li>
                       <li><NavigationUserReview class="dropdown-item" /></li>
-                      <li><WheelRandomCode class="dropdown-item" /></li>
+                      <WheelRandomCode class="dropdown-item" />
                       <li><hr class="dropdown-divider" /></li>
                       <li>
                         <a href="#" @click.prevent="handleLogout" class="dropdown-item text-danger"

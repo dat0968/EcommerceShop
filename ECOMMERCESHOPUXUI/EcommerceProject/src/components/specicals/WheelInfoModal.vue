@@ -95,8 +95,15 @@
                     <!-- Unused Coupons -->
                     <li v-for="coupon in unusedCoupons" :key="coupon.maCode" class="list-group-item">
                       <div>
-                        <strong class="coupon-code" @click="copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
-                        <strong class="badge bg-danger text-light rounded-pill float-end px-2 py-1 fs-20 shadow">
+                        <span class="coupon-wrapper">
+                          <strong class="coupon-code" @click="copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
+                          <transition name="tooltip-fade">
+                            <div v-if="copiedCode === coupon.maCode" class="copy-tooltip">
+                              <i class="bi bi-check-circle-fill me-1"></i>Đã sao chép!
+                            </div>
+                          </transition>
+                        </span>
+                        <strong class="badge bg-success rounded-pill float-end px-2 py-1 fs-p">
                           {{ getCouponValue(coupon) }}
                         </strong>
                       </div>
@@ -122,7 +129,7 @@
                     <li v-for="coupon in visibleUsedCoupons" :key="coupon.maCode" class="list-group-item coupon-used">
                       <div>
                         <strong class="coupon-code disabled-text">{{ coupon.maCode }}</strong>
-                        <span class="badge bg-info rounded-pill float-end">{{ getCouponValue(coupon) }}</span>
+                        <span class="badge bg-secondary rounded-pill float-end">{{ getCouponValue(coupon) }}</span>
                       </div>
 
                       <div class="d-flex justify-content-between align-items-center">
@@ -141,9 +148,6 @@
                     </button>
                   </div>
 
-                  <transition name="fade">
-                    <div v-if="copied" class="text-success mt-2 text-center fw-bold">Đã sao chép!</div>
-                  </transition>
                 </div>
                 <div v-else class="alert alert-secondary text-center mt-3">
                   Bạn chưa có mã giảm giá cá nhân nào.
@@ -172,7 +176,7 @@ export default {
   emits: ['close', 'streak-updated'],
   data() {
     return {
-      copied: false,
+      copiedCode: null,
       showAllUsed: false,
       isMarking: false,
       localStreak: null,
@@ -224,8 +228,8 @@ export default {
     copyCode(code) {
       if (!code || !navigator.clipboard) return;
       navigator.clipboard.writeText(code).then(() => {
-        this.copied = true;
-        setTimeout(() => { this.copied = false; }, 1500);
+        this.copiedCode = code;
+        setTimeout(() => { this.copiedCode = null; }, 1500);
       }).catch(err => {
         console.error('Failed to copy code:', err);
         Swal.fire({ title: 'Lỗi', text: 'Không thể sao chép mã.', icon: 'error' });
@@ -300,13 +304,41 @@ export default {
   color: #d63384;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
+.copy-tooltip {
+  position: absolute;
+  bottom: 100%; /* Position it above the element */
+  left: 20%;
+  transform: translateX(-50%);
+  background-color: #333; /* Dark background like many tooltips */
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 20;
+  opacity: 0.9;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+/* The little arrow */
+.copy-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+/* The transition will be simpler, just fade */
+.tooltip-fade-enter-active,
+.tooltip-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.tooltip-fade-enter-from,
+.tooltip-fade-leave-to {
   opacity: 0;
 }
 
