@@ -1,6 +1,26 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import Swal from 'sweetalert2'
+import { GetApiUrl } from '@/constants/api'
+import { decodeToken, validateToken } from '@/utils/auth'
+import Cookies from 'js-cookie'
+import { useRouter } from 'vue-router'
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+const readToken = ref({})
+const roleUser = ref('')
+const router = useRouter()
+onMounted(async () => {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+  if (validatetoken.isValid == false) {
+    router.push('/LoginStaff')
+    return
+  }
+  accessToken.value = validatetoken.newAccessToken
+  readToken.value = decodeToken(accessToken.value)
+  roleUser.value = readToken.value.Role
+})
+
 // Hàm kiểm tra và cập nhật trạng thái coupon hết hạn
 const checkAndUpdateExpiredCoupons = async (couponsList) => {
   const today = new Date()
@@ -37,7 +57,7 @@ const checkAndUpdateExpiredCoupons = async (couponsList) => {
   }
 }
 
-const getApiUrl = 'https://localhost:7217'
+const getApiUrl = ref(GetApiUrl())
 const coupons = ref([])
 const customers = ref([])
 const showAddModal = ref(false)
@@ -67,7 +87,7 @@ const itemsPerPage = ref(5)
 const totalItems = ref(0)
 const totalPages = ref(1)
 
-const baseUrl = `${getApiUrl}/api/Coupon`
+const baseUrl = `${getApiUrl.value}/api/Coupon`
 
 // Track discount type for add/edit modal (amount or percentage)
 const discountType = ref('amount') // 'amount' for soTienGiam, 'percent' for phanTramGiam
@@ -88,39 +108,49 @@ watch(discountType, () => {
 
 // Validate form
 const validateForm = () => {
-
   if (!couponForm.value.moTa) {
-    Swal.fire('Lỗi', 'Vui lòng nhập mô tả', 'error');
-    return false;
+    Swal.fire('Lỗi', 'Vui lòng nhập mô tả', 'error')
+    return false
   }
   if (!couponForm.value.ngayBatDau) {
-    Swal.fire('Lỗi', 'Vui lòng chọn ngày bắt đầu', 'error');
-    return false;
+    Swal.fire('Lỗi', 'Vui lòng chọn ngày bắt đầu', 'error')
+    return false
   }
   if (!couponForm.value.ngayKetThuc) {
-    Swal.fire('Lỗi', 'Vui lòng chọn ngày kết thúc', 'error');
-    return false;
+    Swal.fire('Lỗi', 'Vui lòng chọn ngày kết thúc', 'error')
+    return false
   }
   if (!couponForm.value.soLuong || couponForm.value.soLuong < 1) {
-    Swal.fire('Lỗi', 'Vui lòng nhập số lượng', 'error');
-    return false;
+    Swal.fire('Lỗi', 'Vui lòng nhập số lượng', 'error')
+    return false
   }
   if (couponForm.value.donHangToiThieu === null || couponForm.value.donHangToiThieu < 0) {
-    Swal.fire('Lỗi', 'Vui lòng nhập giá trị đơn hàng tối thiểu', 'error');
-    return false;
+    Swal.fire('Lỗi', 'Vui lòng nhập giá trị đơn hàng tối thiểu', 'error')
+    return false
   }
-  if (discountType.value === 'amount' && (couponForm.value.soTienGiam === null || couponForm.value.soTienGiam < 0)) {
-    Swal.fire('Lỗi', 'Vui lòng nhập số tiền giảm', 'error');
-    return false;
+  if (
+    discountType.value === 'amount' &&
+    (couponForm.value.soTienGiam === null || couponForm.value.soTienGiam < 0)
+  ) {
+    Swal.fire('Lỗi', 'Vui lòng nhập số tiền giảm', 'error')
+    return false
   }
-  if (discountType.value === 'percent' && (couponForm.value.phanTramGiam === null || couponForm.value.phanTramGiam < 0 || couponForm.value.phanTramGiam > 50)) {
-    Swal.fire('Lỗi', 'Phần trăm giảm không được vượt quá 50%', 'error');
-    return false;
+  if (
+    discountType.value === 'percent' &&
+    (couponForm.value.phanTramGiam === null ||
+      couponForm.value.phanTramGiam < 0 ||
+      couponForm.value.phanTramGiam > 50)
+  ) {
+    Swal.fire('Lỗi', 'Phần trăm giảm không được vượt quá 50%', 'error')
+    return false
   }
   // Kiểm tra số tiền giảm không vượt quá 60% giá trị đơn hàng tối thiểu
-  if (discountType.value === 'amount' && couponForm.value.soTienGiam > 0.5 * couponForm.value.donHangToiThieu) {
-    Swal.fire('Lỗi', 'Số tiền giảm không được vượt quá 50% giá trị đơn hàng tối thiểu', 'error');
-    return false;
+  if (
+    discountType.value === 'amount' &&
+    couponForm.value.soTienGiam > 0.5 * couponForm.value.donHangToiThieu
+  ) {
+    Swal.fire('Lỗi', 'Số tiền giảm không được vượt quá 50% giá trị đơn hàng tối thiểu', 'error')
+    return false
   }
   const startDate = new Date(couponForm.value.ngayBatDau)
   const endDate = new Date(couponForm.value.ngayKetThuc)
@@ -129,13 +159,13 @@ const validateForm = () => {
     return false
   }
 
-  return true;
-};
+  return true
+}
 
 // Fetch all customers for dropdown
 const fetchCustomers = async () => {
   try {
-    const response = await fetch(`${getApiUrl}/api/C/GetAll`)
+    const response = await fetch(`${getApiUrl.value}/api/C/GetAll`)
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
@@ -297,8 +327,12 @@ const createCoupon = async () => {
       ...couponForm.value,
 
       maKhachHang: couponForm.value.maKhachHang ? parseInt(couponForm.value.maKhachHang) : null, // Chuyển thành số nguyên hoặc null
-      ngayBatDau: couponForm.value.ngayBatDau ? new Date(couponForm.value.ngayBatDau).toISOString() : null,
-      ngayKetThuc: couponForm.value.ngayKetThuc ? new Date(couponForm.value.ngayKetThuc).toISOString() : null,
+      ngayBatDau: couponForm.value.ngayBatDau
+        ? new Date(couponForm.value.ngayBatDau).toISOString()
+        : null,
+      ngayKetThuc: couponForm.value.ngayKetThuc
+        ? new Date(couponForm.value.ngayKetThuc).toISOString()
+        : null,
 
       donHangToiThieu: couponForm.value.donHangToiThieu || null,
       soLuongDaDung: 0,
@@ -477,6 +511,7 @@ onMounted(() => {
             class="btn btn-primary w-100"
             @click="openAddModal"
             style="font-weight: 700; color: #fff"
+            v-if="roleUser.toLowerCase() == 'admin'"
           >
             Thêm mới
           </button>
@@ -506,7 +541,7 @@ onMounted(() => {
             <th>Số lượng</th>
             <!-- <th>Đã dùng</th> -->
             <th>Trạng thái</th>
-            <th>Hành động</th>
+            <th v-if="roleUser.toLowerCase() == 'admin'">Hành động</th>
           </tr>
         </thead>
         <tbody>
@@ -528,7 +563,7 @@ onMounted(() => {
             <td :style="{ color: getCouponStatus(coupon).color }">
               {{ getCouponStatus(coupon).text }}
             </td>
-            <td>
+            <td v-if="roleUser.toLowerCase() == 'admin'">
               <div
                 v-if="
                   !isCouponUsedUp(coupon) &&
@@ -540,6 +575,7 @@ onMounted(() => {
                   class="btn btn-warning btn-sm mb-2"
                   style="width: 60px"
                   @click="openEditModal(coupon)"
+                  
                 >
                   Sửa
                 </button>
@@ -547,6 +583,7 @@ onMounted(() => {
                   class="btn btn-danger btn-sm"
                   style="width: 60px"
                   @click="deleteCoupon(coupon.maCode)"
+                  
                 >
                   Hủy
                 </button>
@@ -586,7 +623,7 @@ onMounted(() => {
       <div class="modal" :class="{ 'd-block': showAddModal }" tabindex="-1">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
-            <div class="modal-header" style="background-color:#4C7CF3">
+            <div class="modal-header" style="background-color: #4c7cf3">
               <h5 class="modal-title">Thêm Coupon</h5>
               <button type="button" class="btn-close" @click="closeAddModal"></button>
             </div>
@@ -595,7 +632,7 @@ onMounted(() => {
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Mô tả</label>
-                    <input v-model="couponForm.moTa" class="form-control" required>
+                    <input v-model="couponForm.moTa" class="form-control" required />
                   </div>
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Loại giảm giá</label>

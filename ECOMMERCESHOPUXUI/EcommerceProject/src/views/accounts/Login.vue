@@ -5,7 +5,6 @@ import { RouterLink, useRouter } from 'vue-router'
 import Swal from 'sweetalert2'
 import Cookies from 'js-cookie'
 import { GetApiUrl } from '../../constants/api.js'
-const api = 'https://localhost:7217'
 const emailOrUsername = ref('')
 const password = ref('')
 const errorMessage = ref('')
@@ -79,7 +78,7 @@ const handleLogin = async () => {
       Email_TenTaiKhoan: emailOrUsername.value.trim(),
       MatKhau: password.value,
     }
-    const response = await fetch(api + '/api/Account/LoginCustomer', {
+    const response = await fetch(getApiUrl + '/api/Account/LoginCustomer', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

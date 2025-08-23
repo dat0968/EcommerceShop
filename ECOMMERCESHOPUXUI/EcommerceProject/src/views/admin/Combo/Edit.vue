@@ -6,8 +6,8 @@ import * as bootstrap from 'bootstrap';
 import Cookies from 'js-cookie';
 import { debounce } from 'lodash';
 
-let getApiUrl = GetApiUrl();
-const getUrlAPI = ref('https://localhost:7217');
+
+const getUrlAPI = ref(GetApiUrl());
 
 const props = defineProps({
   Combo: Object,
@@ -125,7 +125,7 @@ async function fetchProductName(maSp) {
     if (!token) {
       throw new Error('Không tìm thấy accessToken');
     }
-    const response = await fetch(`${getApiUrl}/api/Products/${maSp}`, {
+    const response = await fetch(`${getUrlAPI.value}/api/Products/${maSp}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ async function fetchProducts(page) {
       throw new Error('Không tìm thấy accessToken. Vui lòng đăng nhập lại.');
     }
     const response = await fetch(
-      `${getApiUrl}/api/Products?search=${encodeURIComponent(search.value)}&page=${page}`,
+      `${getUrlAPI.value}/api/Products?search=${encodeURIComponent(search.value)}&page=${page}`,
       {
         method: 'GET',
         headers: {

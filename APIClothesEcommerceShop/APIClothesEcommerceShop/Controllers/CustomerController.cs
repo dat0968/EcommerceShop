@@ -27,7 +27,7 @@ public class CustomerController : ControllerBase
         _webHostEnvironment = webHostEnvironment;
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet]
     public async Task<IActionResult> GetAllCustomers(
         [FromQuery] int pageSize = 10,
@@ -51,7 +51,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet("count")]
     public async Task<IActionResult> GetCustomersCount(
         [FromQuery] string hoTen = null,
@@ -68,7 +68,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet("{maKH}")]
     public async Task<IActionResult> GetCustomerById(int maKH)
     {
@@ -83,7 +83,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpPost]
     public async Task<IActionResult> AddCustomer([FromForm] CustomerDto customerDto)
     {
@@ -99,7 +99,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpGet("search")]
     public async Task<IActionResult> SearchCustomers(
         [FromQuery] int pageSize = 10,
@@ -125,7 +125,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpPut("{maKH}")]
     public async Task<IActionResult> UpdateCustomer(int maKH, [FromForm] CustomerDto customerDto)
     {
@@ -141,7 +141,7 @@ public class CustomerController : ControllerBase
             return StatusCode(500, $"Lỗi server: {ex.Message}");
         }
     }
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin, Nhân viên")]
     [HttpDelete("{maKH}")]
     public async Task<IActionResult> DeleteCustomer(int maKH)
     {

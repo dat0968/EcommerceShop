@@ -4,7 +4,7 @@ import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import Swal from 'sweetalert2';
 import { decodeToken, validateToken } from '@/utils/auth';
-
+import { GetApiUrl } from '@/constants/api'
 function ReadToken(token) {
   if (token) {
     const decoded = jwtDecode(token);
@@ -30,7 +30,7 @@ export default {
     const favorites = ref({});
     const message = ref('');
     const success = ref(false);
-    const getApiUrl = ref('https://localhost:7217'); // URL cơ sở cho API
+    const getApiUrl = ref(GetApiUrl()); // URL cơ sở cho API
 
     // Modal state
     const showModal = ref(false);

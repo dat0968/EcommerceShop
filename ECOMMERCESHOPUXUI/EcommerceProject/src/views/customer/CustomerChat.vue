@@ -41,7 +41,7 @@ const chatsListener = ref(null);
 const emojiList = ref(['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘']);
 const isOnline = ref(navigator.onLine);
 const staffList = ref([]);
-const apiUrl = 'https://localhost:7217';
+const apiUrl = GetApiUrl();
 // Notification states
 const lastMessageCount = ref(0);
 const notificationEnabled = ref(true);

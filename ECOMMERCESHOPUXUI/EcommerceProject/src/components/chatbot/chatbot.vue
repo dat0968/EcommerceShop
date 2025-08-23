@@ -37,7 +37,8 @@
 <script setup>
 import { ref, nextTick } from 'vue'
 import axios from 'axios'
-
+import { GetApiUrl } from '@/constants/api'
+const getUrlAPI = ref(GetApiUrl())
 const isOpen = ref(false)
 const userInput = ref('')
 const messages = ref([
@@ -63,7 +64,7 @@ const sendMessage = async () => {
   scrollToBottom()
 
   try {
-    const res = await axios.get(`https://localhost:7217/api/Chatbot?request=${encodeURIComponent(input)}`)
+    const res = await axios.get(`${getUrlAPI.value}/api/Chatbot?request=${encodeURIComponent(input)}`)
     messages.value.push({ sender: 'bot', text: res.data })
   } catch (e) {
     messages.value.push({ sender: 'bot', text: '❌ Lỗi khi kết nối chatbot.' })

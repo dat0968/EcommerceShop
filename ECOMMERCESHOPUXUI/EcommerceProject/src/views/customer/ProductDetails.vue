@@ -494,7 +494,7 @@ const checkFavoriteStatus = async () => {
   }
 
   try {
-    const response = await fetch('https://localhost:7217/api/Favorite/CheckFavoriteProduct', {
+    const response = await fetch(getUrlAPI + '/api/Favorite/CheckFavoriteProduct', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

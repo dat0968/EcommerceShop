@@ -17,10 +17,23 @@ import '@/assets/Admin/js/main.js'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Cookies from 'js-cookie'
-
+import { decodeToken, validateToken } from '@/utils/auth'
+const accessToken = ref(Cookies.get('accessToken'))
+const refreshToken = ref(Cookies.get('refreshToken'))
+const readToken = ref({})
+const roleUser = ref('')
 const router = useRouter()
 const isLoggedIn = ref(false)
-
+onMounted(async () => {
+  const validatetoken = await validateToken(accessToken.value, refreshToken.value)
+    if (validatetoken.isValid == false) {
+      router.push('/LoginStaff')
+      return
+    }
+    accessToken.value = validatetoken.newAccessToken
+    readToken.value = decodeToken(accessToken.value)
+    roleUser.value = readToken.value.Role
+})
 // Hàm logout
 const handleLogout = () => {
   Cookies.remove('accessToken')
@@ -134,7 +147,7 @@ onMounted(() => {
           <!-- Start XP Navigationbar -->
           <div class="xp-navigationbar">
             <ul class="xp-vertical-menu" style="color: black;">
-              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin' }">
+              <li v-if="roleUser.toLowerCase() == 'admin'" :class="{ active: $route.path.toLocaleLowerCase() === '/admin' }">
                 <RouterLink to="/Admin" class="menu-link" :class="{ 'menu-active': $route.path.toLocaleLowerCase() === '/admin' }">
                   <i class="icon-speedometer"></i><span class="font-color">Thống kê</span>
                 </RouterLink>
@@ -171,7 +184,7 @@ onMounted(() => {
                   <i class="icon-people"></i><span class="font-color">Khách hàng</span>
                 </RouterLink>
               </li>
-              <li :class="{ active: $route.path.toLocaleLowerCase() === '/admin/staff' }">
+              <li v-if="roleUser.toLowerCase() == 'admin'" :class="{ active: $route.path.toLocaleLowerCase() === '/admin/staff' }">
                 <RouterLink to="/admin/staff">
                   <i class="icon-people"></i><span class="font-color">Nhân viên</span>
                 </RouterLink>

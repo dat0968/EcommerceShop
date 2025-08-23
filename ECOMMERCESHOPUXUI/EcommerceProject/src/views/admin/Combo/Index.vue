@@ -7,8 +7,8 @@ import Swal from 'sweetalert2'
 import { GetApiUrl } from '../../../../src/constants/api.js'
 import Cookies from 'js-cookie'
 import { useRouter } from 'vue-router'
+import { decodeToken, validateToken } from '@/utils/auth'
 const router = useRouter()
-let getApiUrl = GetApiUrl()
 const listCombo = ref([])
 const filteredCombos = ref([]) // Danh sách combo đã lọc và sắp xếp
 const ListProduct = ref([])
@@ -19,8 +19,22 @@ const discountFilter = ref('all') // Bộ lọc mức giảm giá
 const sortOrder = ref('default') // Thứ tự sắp xếp (asc: A-Z, desc: Z-A)
 let accesstoken = Cookies.get('accessToken')
 let refreshtoken = Cookies.get('refreshToken')
+const readToken = ref({})
+const roleUser = ref('')
+onMounted(async () => {
+  const validatetoken = await validateToken(accesstoken, refreshtoken)
+    if (validatetoken.isValid == false) {
+      router.push('/LoginStaff')
+      return
+    }
+    accesstoken = validatetoken.newAccessToken
+    readToken.value = decodeToken(accesstoken)
+    roleUser.value = readToken.value.Role
+})
+
+
 const role = ref('')
-const getUrlAPI = ref('https://localhost:7217')
+const getUrlAPI = ref(GetApiUrl())
 const activeTab = ref('all') // Tab mặc định là 'all'
 
 // Hàm kiểm tra validation
@@ -321,7 +335,7 @@ watch(activeTab, () => {
 
     <!-- Nút thêm combo -->
     <div class="mb-4">
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      <button v-if="roleUser.toLowerCase() == 'admin'" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
         ➕ Thêm combo
       </button>
     </div>
@@ -364,7 +378,7 @@ watch(activeTab, () => {
             <td class="text-center">{{ combo.maCombo }}</td>
             <td class="text-center">{{ combo.tenCombo }}</td>
             <td class="text-center">
-              <img :src="getApiUrl + '/HinhAnh/AnhCombo/' + combo.hinh" alt="Combo Image" width="50" height="50"
+              <img :src="getUrlAPI + '/HinhAnh/AnhCombo/' + combo.hinh" alt="Combo Image" width="50" height="50"
                 style="object-fit: cover; border-radius: 5px" />
             </td>
             <td class="text-center">{{ combo.soLuong }}</td>
@@ -383,12 +397,12 @@ watch(activeTab, () => {
               <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
                 <template v-if="combo.ngayKetThuc && new Date(combo.ngayKetThuc) >= new Date()">
                   <button type="button" data-bs-toggle="modal" :data-bs-target="`#comboEditModal_${combo.maCombo}`"
-                    class="btn btn-sm btn-warning">
+                    class="btn btn-sm btn-warning" v-if="roleUser.toLowerCase() == 'admin'">
                     Sửa
                   </button>
                   <EditCombo :Combo="combo" :ListProduct="ListProduct" />
 
-                  <button @click="removeCombo(combo.maCombo)" class="btn btn-danger btn-sm">
+                  <button v-if="roleUser.toLowerCase() == 'admin'" @click="removeCombo(combo.maCombo)" class="btn btn-danger btn-sm">
                     Xóa
                   </button>
                 </template>

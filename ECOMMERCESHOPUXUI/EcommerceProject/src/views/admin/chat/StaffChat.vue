@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Cookies from 'js-cookie';
 import Swal from 'sweetalert2';
-
+import { GetApiUrl } from '@/constants/api'
 import {
   rtdb,
   dbRef,
@@ -29,6 +29,7 @@ import { formatCurrency } from '@/constants/formatCurrency';
 
 
 // ==================== STATES ====================
+const getUrlAPI = ref(GetApiUrl())
 const accessToken = ref(Cookies.get('accessToken'));
 const staffId = ref(null);
 const staffName = ref('');
@@ -52,7 +53,6 @@ const emojiList = ref(['😀', '😃', '😄', '😁', '😆', '😅', '😂', '
 const customerInfo = ref(null);
 const chatFilter = ref('all');
 const isOnline = ref(navigator.onLine);
-const apiUrl = 'https://localhost:7217';
 
 // State cho modal chuyển giao
 const isTransferModalVisible = ref(false);
@@ -84,7 +84,7 @@ const orderHistories = ref({});
 
 const loadOrderHistories = async (customerIds) => {
   try {
-    const response = await fetchWithAuth(`${apiUrl}/api/Chat/GetOrderHistories`, {
+    const response = await fetchWithAuth(`${getUrlAPI.value}/api/Chat/GetOrderHistories`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -356,9 +356,9 @@ const getImageUrl = (relativePath) => {
   if (!relativePath) return '/default-avatar.png';
   const fileName = relativePath.split('/').pop();
   if (relativePath.includes('AnhKhachHang') || relativePath.includes('AnhNhanVien')) {
-    return `${apiUrl}/api/Customer/image/${fileName}`;
+    return `${getUrlAPI.value}/api/Customer/image/${fileName}`;
   }
-  return `${apiUrl}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
+  return `${getUrlAPI.value}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
 };
 
 const formatTime = (timestamp) => {
@@ -713,7 +713,7 @@ const checkAuth = async () => {
   }
 
   try {
-    const response = await fetch(`${apiUrl}/api/Chat/GetStaffInfo`, {
+    const response = await fetch(`${getUrlAPI.value}/api/Chat/GetStaffInfo`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken.value}`
@@ -904,7 +904,7 @@ const debouncedLoadActiveChats = debounce(loadActiveChats, 1000);
 
 const loadCustomerInfo = async (customerId) => {
   try {
-    const response = await fetchWithAuth(`${apiUrl}/api/Chat/GetCustomerById?id=${customerId}`);
+    const response = await fetchWithAuth(`${getUrlAPI.value}/api/Chat/GetCustomerById?id=${customerId}`);
     if (!response.ok) {
       throw new Error('Không thể tải thông tin khách hàng');
     }
@@ -1235,7 +1235,7 @@ const transferChat = async (newStaffId, newStaffName) => {
 
 const loadAvailableStaff = async () => {
   try {
-    const response = await fetchWithAuth(`${apiUrl}/api/Chat/GetAllStaff`);
+    const response = await fetchWithAuth(`${getUrlAPI.value}/api/Chat/GetAllStaff`);
     const result = await response.json();
     if (result.success) {
       availableStaff.value = result.data.filter(staff => staff.id !== staffId.value);
