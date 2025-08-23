@@ -262,8 +262,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     return p.Type switch
                     {
-                        PrizeType.Percent => $"{p.Value}%",
-                        PrizeType.Amount => p.Value.ToString("N0") + "VNĐ",
+                        PrizeType.Percent => $"Giảm {p.Value}%",
+                        PrizeType.Amount => "Giảm " + p.Value.ToString("N0") + "VNĐ",
                         PrizeType.Marks => $"+ {p.Value} đánh dấu",
                         _ => "?"
                     };
