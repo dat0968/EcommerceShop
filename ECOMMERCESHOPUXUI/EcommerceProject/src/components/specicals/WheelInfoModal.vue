@@ -1,7 +1,7 @@
-
 <template>
   <teleport to="body">
-    <div v-if="show" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5)" @click.self="close">
+    <div v-if="show" class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5)"
+      @click.self="close">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -46,13 +46,18 @@
                       </div>
                       <div class="flex-grow-1">
                         <h6 class="mb-1">Mua sắm tích lũy</h6>
-                        <p class="mb-1 text-muted small">Nhận <strong>1</strong> lượt quay cho mỗi <strong>{{ formatCurrency(2000000) }}</strong> chi tiêu.</p>
+                        <p class="mb-1 text-muted small">Nhận <strong>1</strong> lượt quay cho mỗi <strong>{{
+                            formatCurrency(2000000) }}</strong> chi tiêu.</p>
                         <div class="progress" style="height: 10px;">
-                          <div class="progress-bar bg-success" role="progressbar" :style="{ width: spendingProgress + '%' }" :aria-valuenow="spendingProgress" aria-valuemin="0" aria-valuemax="100"></div>
+                          <div class="progress-bar bg-success" role="progressbar"
+                            :style="{ width: spendingProgress + '%' }" :aria-valuenow="spendingProgress"
+                            aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
-                        <small class="text-muted">{{ formatCurrency((wheelInfo.totalOrderValue || 0) % 2000000) }} / {{ formatCurrency(2000000) }}</small>
+                        <small class="text-muted">{{ formatCurrency((wheelInfo.totalOrderValue || 0) % 2000000) }} / {{
+                          formatCurrency(2000000) }}</small>
                         <hr>
-                        <strong>Tổng chi tiêu: </strong><small class="text-muted">{{ formatCurrency(wheelInfo.totalOrderValue) }}</small>
+                        <strong>Tổng chi tiêu: </strong><small class="text-muted">{{
+                          formatCurrency(wheelInfo.totalOrderValue) }}</small>
                       </div>
                     </div>
                   </div>
@@ -64,11 +69,18 @@
                       </div>
                       <div class="flex-grow-1">
                         <h6 class="mb-1">Đăng nhập mỗi ngày</h6>
-                        <p class="mb-1 text-muted small">Nhận <strong>1</strong> lượt quay thưởng khi đạt mốc <strong>7</strong> ngày.</p>
-                        <div class="progress" style="height: 10px;">
-                          <div class="progress-bar bg-primary" role="progressbar" :style="{ width: streakProgress + '%' }" :aria-valuenow="streakProgress" aria-valuemin="0" aria-valuemax="100"></div>
+                        <p class="mb-1 text-muted small">Nhận 1 lượt quay thưởng khi đạt mốc 10 lần đánh dấu.</p>
+                        <div class="streak-marks d-flex gap-2 mt-2">
+                          <span v-for="n in 10" :key="'streak-mark-' + n"
+                            :class="['streak-mark', { active: n <= streakCycleCount }]"></span>
                         </div>
-                        <small class="text-muted">{{ (wheelInfo.streak > 0 && wheelInfo.streak % 7 === 0) ? 7 : (wheelInfo.streak || 0) % 7 }} / 7 ngày</small>
+                        <small class="text-muted">Chuỗi đánh dấu: {{ streakCycleCount }} / 10</small>
+                        <div class="mt-3">
+                          <button class="btn btn-outline-primary btn-sm" :disabled="isMarking" @click="markStreak">
+                            <span v-if="isMarking">Đang đánh dấu...</span>
+                            <span v-else>Đánh dấu hôm nay</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -78,18 +90,57 @@
               <!-- Coupon Sidebar -->
               <div class="col-md-5 coupon-sidebar">
                 <h5 class="mb-3 text-center">Mã Giảm Giá Của Bạn</h5>
-                <div v-if="wheelInfo.privateCoupons && wheelInfo.privateCoupons.length > 0" class="coupon-list">
+                <div v-if="unusedCoupons.length > 0 || usedCoupons.length > 0" class="coupon-list">
                   <ul class="list-group">
-                    <li v-for="coupon in wheelInfo.privateCoupons" :key="coupon.maCode" class="list-group-item" :class="{'coupon-used': coupon.isUsed}">
+                    <!-- Unused Coupons -->
+                    <li v-for="coupon in unusedCoupons" :key="coupon.maCode" class="list-group-item">
                       <div>
-                        <strong class="coupon-code" :class="{'disabled-text': coupon.isUsed}" @click="coupon.isUsed ? null : copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
-                        <span class="badge bg-info rounded-pill float-end">{{ getCouponValue(coupon) }}</span>
+                        <strong class="coupon-code" @click="copyCode(coupon.maCode)">{{ coupon.maCode }}</strong>
+                        <strong class="badge bg-danger text-light rounded-pill float-end px-2 py-1 fs-20 shadow">
+                          {{ getCouponValue(coupon) }}
+                        </strong>
                       </div>
-                      <small class="d-block text-muted mt-1">{{ coupon.moTa }}</small>
-                      <small class="d-block text-danger fst-italic">Hạn dùng: {{ formatDate(coupon.ngayKetThuc) }}</small>
-                      <span v-if="coupon.isUsed" class="badge bg-secondary mt-2">Đã sử dụng</span>
+                      <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-danger fst-italic">
+                          Hạn dùng: 
+                          {{ formatDate(coupon.ngayKetThuc)}}
+                        </small>
+                        <small class="text-muted icon-info" :title="'Mô tả: \n' + coupon.moTa"></small>
+                      </div>
                     </li>
                   </ul>
+
+                  <!-- Separator -->
+                  <div v-if="usedCoupons.length > 0 && unusedCoupons.length > 0" class="d-flex align-items-center my-3">
+                    <hr class="flex-grow-1">
+                    <span class="mx-2 text-muted small">Đã dùng</span>
+                    <hr class="flex-grow-1">
+                  </div>
+
+                  <!-- Used Coupons -->
+                  <ul class="list-group" v-if="usedCoupons.length > 0">
+                    <li v-for="coupon in visibleUsedCoupons" :key="coupon.maCode" class="list-group-item coupon-used">
+                      <div>
+                        <strong class="coupon-code disabled-text">{{ coupon.maCode }}</strong>
+                        <span class="badge bg-info rounded-pill float-end">{{ getCouponValue(coupon) }}</span>
+                      </div>
+
+                      <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-danger fst-italic">
+                          Hạn dùng: 
+                          {{ formatDate(coupon.ngayKetThuc)}}
+                        </small>
+                        <small class="text-muted icon-info" :title="'Mô tả: \n' + coupon.moTa"></small>
+                      </div>
+                      <span class="badge bg-secondary mt-2">Đã sử dụng</span>
+                    </li>
+                  </ul>
+                  <div v-if="usedCoupons.length > 3" class="text-center mt-2">
+                    <button @click="showAllUsed = !showAllUsed" class="btn btn-link btn-sm">
+                      {{ showAllUsed ? 'Ẩn bớt' : 'Xem thêm' }}
+                    </button>
+                  </div>
+
                   <transition name="fade">
                     <div v-if="copied" class="text-success mt-2 text-center fw-bold">Đã sao chép!</div>
                   </transition>
@@ -109,6 +160,8 @@
 <script>
 import { formatCurrency } from '@/constants/formatCurrency';
 import Swal from 'sweetalert2';
+import ConfigsRequest from '@/models/ConfigsRequest';
+import { patchToApi } from '@/utils/axiosClient';
 
 export default {
   name: 'WheelInfoModal',
@@ -116,10 +169,13 @@ export default {
     show: { type: Boolean, required: true },
     wheelInfo: { type: Object, default: () => ({}) }
   },
-  emits: ['close'],
+  emits: ['close', 'streak-updated'],
   data() {
     return {
       copied: false,
+      showAllUsed: false,
+      isMarking: false,
+      localStreak: null,
     };
   },
   computed: {
@@ -128,13 +184,27 @@ export default {
       const progress = (this.wheelInfo.totalOrderValue % 2000000) / 2000000 * 100;
       return Math.floor(progress);
     },
-    streakProgress() {
-      if (!this.wheelInfo || !this.wheelInfo.streak) return 0;
-      const progress = (this.wheelInfo.streak % 7) / 7 * 100;
-       if (this.wheelInfo.streak > 0 && this.wheelInfo.streak % 7 === 0) {
-        return 100;
+    streakCycleCount() {
+      const base = (this.localStreak !== null && this.localStreak !== undefined)
+        ? this.localStreak
+        : (this.wheelInfo && this.wheelInfo.streak ? this.wheelInfo.streak : 0);
+      if (!base) return 0;
+      const rem = base % 10;
+      return (base > 0 && rem === 0) ? 10 : rem;
+    },
+    usedCoupons() {
+      if (!this.wheelInfo || !this.wheelInfo.privateCoupons) return [];
+      return this.wheelInfo.privateCoupons.filter(c => c.isUsed);
+    },
+    unusedCoupons() {
+      if (!this.wheelInfo || !this.wheelInfo.privateCoupons) return [];
+      return this.wheelInfo.privateCoupons.filter(c => !c.isUsed);
+    },
+    visibleUsedCoupons() {
+      if (this.showAllUsed) {
+        return this.usedCoupons;
       }
-      return Math.floor(progress);
+      return this.usedCoupons.slice(0, 3);
     }
   },
   methods: {
@@ -161,14 +231,42 @@ export default {
         Swal.fire({ title: 'Lỗi', text: 'Không thể sao chép mã.', icon: 'error' });
       });
     },
+    async markStreak() {
+      if (this.isMarking) return;
+      this.isMarking = true;
+      try {
+        const prevStreak = (this.localStreak !== null && this.localStreak !== undefined)
+          ? this.localStreak
+          : (this.wheelInfo && typeof this.wheelInfo.streak === 'number' ? this.wheelInfo.streak : 0);
+        const res = await patchToApi('/WheelCoupon/update-last-login-streak', {}, ConfigsRequest.takeAuth());
+        if (res && res.success) {
+          const newStreak = res.data?.streak ?? null;
+          if (typeof newStreak === 'number') {
+            this.localStreak = newStreak; // update UI immediately
+            this.$emit('streak-updated', newStreak); // notify parent if needed
+          }
+          const message = (prevStreak === 0 && typeof newStreak === 'number' && newStreak >= 5)
+            ? 'Chúc mừng! Bạn được thưởng 5 mốc điểm danh cho lần đánh dấu đầu tiên.'
+            : 'Đã điểm danh hôm nay!';
+          Swal.fire({ title: 'Thành công', text: message, icon: 'success', timer: 1800, showConfirmButton: false });
+        } else {
+          Swal.fire({ title: 'Thông tin', text: res?.message || 'Không thể điểm danh.', icon: 'info' });
+        }
+      } catch (error) {
+        console.error('Mark streak failed:', error);
+        Swal.fire({ title: 'Lỗi', text: 'Không thể kết nối đến máy chủ.', icon: 'error' });
+      } finally {
+        this.isMarking = false;
+      }
+    },
     formatDate(dateString) {
-        if (!dateString) return 'Không thời hạn';
-        const date = new Date(dateString);
-        if (date.getFullYear() > 9000) return 'Không thời hạn'; // Check for 'MaxValue'
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
+      if (!dateString) return 'Không thời hạn';
+      const date = new Date(dateString);
+      if (date.getFullYear() > 9000) return 'Không thời hạn'; // Check for 'MaxValue'
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
     }
   }
 };
@@ -181,17 +279,19 @@ export default {
 }
 
 .coupon-list {
-  max-height: 40rem; /* Adjust height as needed */
+  max-height: 40rem;
+  /* Adjust height as needed */
   overflow-y: auto;
-  padding-right: 10px; /* For scrollbar spacing */
+  padding-right: 10px;
+  /* For scrollbar spacing */
 }
 
 .icon-container {
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .coupon-code {
@@ -211,13 +311,38 @@ export default {
 }
 
 .coupon-used {
-  background-color: #f8f9fa; /* Light gray background */
-  opacity: 0.6; /* Slightly faded */
-  pointer-events: none; /* Disable clicks */
+  background-color: #f8f9fa;
+  /* Light gray background */
+  opacity: 0.6;
+  /* Slightly faded */
+  pointer-events: none;
+  /* Disable clicks */
 }
 
 .disabled-text {
-  color: #6c757d !important; /* Gray out the text */
-  cursor: not-allowed; /* Indicate it's not clickable */
+  color: #6c757d !important;
+  /* Gray out the text */
+  cursor: not-allowed;
+  /* Indicate it's not clickable */
+}
+
+.streak-marks {
+  display: flex;
+  align-items: center;
+}
+
+.streak-mark {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  border: 1px solid #bdbdbd;
+  display: inline-block;
+}
+
+.streak-mark.active {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.2);
 }
 </style>

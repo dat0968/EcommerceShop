@@ -2,10 +2,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace APIClothesEcommerceShop.DTO.WheelCoupon
 {
-    public class CouponValue
+    public enum PrizeType
+    {
+        Percent = 0,
+        Amount = 1,
+        Marks = 2
+    }
+
+    public class PrizeValue
     {
         public int Value { get; set; }
-        public bool IsPercent { get; set; }
+        public PrizeType Type { get; set; }
     }
 
     public class CouponPresetDTO

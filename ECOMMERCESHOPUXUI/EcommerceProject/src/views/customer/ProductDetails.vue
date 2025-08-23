@@ -13,6 +13,8 @@ import { jwtDecode } from 'jwt-decode'
 import { emitter } from '@/stores/eventBus'
 import TryOnProduct from '@/components/specicals/TryOnProduct.vue' // Import TryOnProduct
 import CommentSection from '@/components/comments/CommentSection.vue'
+import { formatCurrency } from '@/constants/formatCurrency';
+
 
 const route = useRoute()
 const getUrlAPI = ref(GetApiUrl())
@@ -599,16 +601,7 @@ const addToCart = async () => {
   }
 }
 
-// Format price function
-const formatPrice = (price) => {
-  if (typeof price === 'string') {
-    return price
-  }
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-  }).format(price)
-}
+
 
 const formatRating = (rating) => {
   if (rating === null || rating === undefined) {
@@ -754,7 +747,7 @@ watch(
 
                 <!-- Price -->
                 <div class="mb-4">
-                  <div class="h4 text-danger fw-bold mb-1">{{ formatPrice(originalPrice) }}</div>
+                  <div class="h4 text-danger fw-bold mb-1">{{ formatCurrency(originalPrice) }}</div>
                 </div>
 
                 <!-- Color Selection -->
@@ -939,8 +932,7 @@ watch(
                             </h4>
                             <h6 style="padding-bottom: 5px;"> </h6>
                             <div class="d-flex align-items-center justify-content-between">
-                              <span class="text-danger fw-bold" style="font-size: 1rem;">{{ formatPrice(item.khoangGia)
-                                }}</span>
+                              <span class="text-danger fw-bold" style="font-size: 1rem;">{{ formatCurrency(item.khoangGia) }}</span>
 
                             </div>
                           </div>

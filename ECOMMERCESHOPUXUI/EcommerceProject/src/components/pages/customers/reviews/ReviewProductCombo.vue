@@ -112,7 +112,7 @@
                 >
                 <span v-if="review.mauSac" class="product-variant">Màu: {{ review.mauSac }}</span>
                 <span v-if="review.donGia" class="product-price"
-                  >Giá: {{ review.donGia.toLocaleString() }}₫</span
+                  >Giá: {{ formatCurrency(review.donGia) }}</span
                 >
               </div>
             </div>
@@ -166,7 +166,6 @@
 </template>
 
 <script>
-import { ref, watch, computed, onMounted } from 'vue'
 import ConfigsRequest from '@/models/ConfigsRequest'
 import * as axiosConfig from '@/utils/axiosClient'
 import pathReplaceImg from '@/utils/processPathImg'
@@ -176,6 +175,7 @@ import VueEasyLightbox from 'vue-easy-lightbox'
 import EmptySuggestBox from '@/components/common/EmptySuggestBox.vue'
 import StarRating from '@/components/common/StarRating.vue';
 import { debounce } from 'lodash'
+import { formatCurrency } from '@/constants/formatCurrency';
 
 export default {
   name: 'ReviewProductCombo',
@@ -190,88 +190,35 @@ export default {
     },
   },
   components: { VueEasyLightbox, EmptySuggestBox, StarRating },
-  setup(props) {
-    const reviews = ref([])
-    const loading = ref(false)
-    const errorMessage = ref(null)
-
-    const filterStar = ref('')
-    const filterHasImage = ref('')
-    const searchText = ref('')
-    const debouncedSearchText = ref('')
-
-    const isLightboxOpen = ref(false)
-    const lightboxImages = ref([])
-    const lightboxIndex = ref(0)
-
-    const currentPage = ref(1)
-    const itemsPerPage = ref(5)
-
-    const isValidId = (id) => id !== null && id !== undefined && id !== 0 && !isNaN(id)
-
-    const fetchReviews = async () => {
-      if (!isValidId(props.objectId)) return
-      loading.value = true
-      reviews.value = []
-      errorMessage.value = null
-      try {
-        const url = props.isProduct
-          ? `/review/products/${props.objectId}`
-          : `/review/combos/${props.objectId}`
-        const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig())
-
-        if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
-          errorMessage.value = res.data?.message || 'Không thể có đánh giá.'
-          reviews.value = []
-          return
-        }
-        reviews.value = res?.data || []
-      } catch (e) {
-        reviews.value = []
-        errorMessage.value = 'Đã xảy ra lỗi khi tải danh sách đánh giá.'
-        console.error(e)
-      } finally {
-        loading.value = false
-      }
-    }
-
-    watch(
-      () => props.objectId,
-      (newId) => {
-        if (isValidId(newId)) fetchReviews()
-        else reviews.value = []
-      },
-      { immediate: true },
-    )
-
-    watch(
-      () => props.isProduct,
-      () => {
-        if (isValidId(props.objectId)) fetchReviews()
-        else reviews.value = []
-      },
-    )
-
-    watch(
-      searchText,
-      debounce((newValue) => {
-        debouncedSearchText.value = newValue
-        currentPage.value = 1 // Reset page when search text changes
-      }, 300),
-    )
-
-    const filteredReviews = computed(() => {
-      return reviews.value.filter((r) => {
+  data() {
+    return {
+      reviews: [],
+      loading: false,
+      errorMessage: null,
+      filterStar: '',
+      filterHasImage: '',
+      searchText: '',
+      debouncedSearchText: '',
+      isLightboxOpen: false,
+      lightboxImages: [],
+      lightboxIndex: 0,
+      currentPage: 1,
+      itemsPerPage: 5,
+    };
+  },
+  computed: {
+    filteredReviews() {
+      return this.reviews.filter((r) => {
         // Filter by star rating
-        if (filterStar.value && r.soSao != filterStar.value) return false
+        if (this.filterStar && r.soSao != this.filterStar) return false
 
         // Filter by presence of images
         const hasImg = r.hinhAnhs && r.hinhAnhs.length > 0
-        if (filterHasImage.value === '1' && !hasImg) return false
-        if (filterHasImage.value === '0' && hasImg) return false
+        if (this.filterHasImage === '1' && !hasImg) return false
+        if (this.filterHasImage === '0' && hasImg) return false
 
         // Filter by search text
-        const text = debouncedSearchText.value.trim().toLowerCase()
+        const text = this.debouncedSearchText.trim().toLowerCase()
         if (text) {
           const inContent =
             (r.noiDung && r.noiDung.toLowerCase().includes(text)) ||
@@ -281,72 +228,88 @@ export default {
         }
         return true
       })
-    })
+    },
+    totalPages() {
+      return Math.ceil(this.filteredReviews.length / this.itemsPerPage)
+    },
+    paginatedReviews() {
+      const start = (this.currentPage - 1) * this.itemsPerPage
+      const end = start + this.itemsPerPage
+      return this.filteredReviews.slice(start, end)
+    },
+  },
+  watch: {
+    objectId(newId) {
+      if (this.isValidId(newId)) this.fetchReviews()
+      else this.reviews = []
+    },
+    isProduct() {
+      if (this.isValidId(this.objectId)) this.fetchReviews()
+      else this.reviews = []
+    },
+    searchText: debounce(function (newValue) {
+      this.debouncedSearchText = newValue
+      this.currentPage = 1 // Reset page when search text changes
+    }, 300),
+  },
+  methods: {
+    formatCurrency,
+    pathReplaceImg,
+    formatDate,
+    isValidId(id) {
+      return id !== null && id !== undefined && id !== 0 && !isNaN(id)
+    },
+    async fetchReviews() {
+      if (!this.isValidId(this.objectId)) return
+      this.loading = true
+      this.reviews = []
+      this.errorMessage = null
+      try {
+        const url = this.isProduct
+          ? `/review/products/${this.objectId}`
+          : `/review/combos/${this.objectId}`
+        const res = await axiosConfig.getFromApi(url, ConfigsRequest.getSkipAuthConfig())
 
-    const totalPages = computed(() => {
-      return Math.ceil(filteredReviews.value.length / itemsPerPage.value)
-    })
-
-    const paginatedReviews = computed(() => {
-      const start = (currentPage.value - 1) * itemsPerPage.value
-      const end = start + itemsPerPage.value
-      return filteredReviews.value.slice(start, end)
-    })
-
-    const changePage = (page) => {
-      if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page
+        if (ResponseAPI.handleNotificationAndIsFailResponse(res, false)) {
+          this.errorMessage = res.data?.message || 'Không thể có đánh giá.'
+          this.reviews = []
+          return
+        }
+        this.reviews = res?.data || []
+      } catch (e) {
+        this.reviews = []
+        this.errorMessage = 'Đã xảy ra lỗi khi tải danh sách đánh giá.'
+        console.error(e)
+      } finally {
+        this.loading = false
       }
-    }
-
-    const openLightbox = (imgs, idx = 0) => {
-      lightboxImages.value = imgs
-      lightboxIndex.value = idx
-      isLightboxOpen.value = true
-    }
-
-    const closeLightbox = () => {
-      isLightboxOpen.value = false
-    }
-
-    const getReviewImages = (item) => {
+    },
+    changePage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page
+      }
+    },
+    openLightbox(imgs, idx = 0) {
+      this.lightboxImages = imgs
+      this.lightboxIndex = idx
+      this.isLightboxOpen = true
+    },
+    closeLightbox() {
+      this.isLightboxOpen = false
+    },
+    getReviewImages(item) {
       if (!item.hinhAnhs) return []
       return Array.isArray(item.hinhAnhs)
         ? item.hinhAnhs
         : item.hinhAnhs.split(',').filter((img) => img)
-    }
-
-    const getReviewImagesFullPath = (item) => {
-      return getReviewImages(item).map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img))
-    }
-
-    onMounted(() => {
-      if (isValidId(props.objectId)) {
-        fetchReviews()
-      }
-    })
-
-    return {
-      reviews,
-      loading,
-      errorMessage,
-      filterStar,
-      filterHasImage,
-      searchText,
-      isLightboxOpen,
-      lightboxImages,
-      lightboxIndex,
-      paginatedReviews,
-      currentPage,
-      totalPages,
-      pathReplaceImg,
-      formatDate,
-      fetchReviews,
-      openLightbox,
-      closeLightbox,
-      getReviewImages,
-      getReviewImagesFullPath,
-      changePage,
+    },
+    getReviewImagesFullPath(item) {
+      return this.getReviewImages(item).map((img) => pathReplaceImg(undefined, 'HinhAnh/Reviews', img))
+    },
+  },
+  mounted() {
+    if (this.isValidId(this.objectId)) {
+      this.fetchReviews()
     }
   },
 }

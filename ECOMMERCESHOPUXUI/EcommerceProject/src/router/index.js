@@ -29,7 +29,6 @@ import Review from '@/views/admin/reviews/IndexReview.vue'
 import CustomerReview from '@/views/customer/CustomerReview.vue'
 import VNPAYresponse from '../views/customer/VNPaySuccess.vue'
 import order from '../views/customer/FollowOrder.vue'
-import ContactUs from '@/views/customer/ContactUs.vue'
 import error from '../views/error/Error.vue'
 import Cookies from 'js-cookie'
 import { decodeToken, validateToken } from '@/utils/auth'
@@ -58,7 +57,6 @@ const router = createRouter({
         { path: 'customer', name: 'CustomerManagement', component: customerManagement },
         { path: 'order', name: 'order', component: order },
         { path: 'review', name: CustomerReview, component: CustomerReview },
-        { path: 'contactus', name: ContactUs, component: ContactUs },
         { path: 'favoriteproduct', name: 'favoriteproduct', component: FavoriteProduct },   
         {path: 'chat', name: 'CustomerChat', component: CustomerChat},
         {path: 'chat/:id', name: 'CustomerChatDetail', component: CustomerChat}, 

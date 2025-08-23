@@ -25,6 +25,8 @@ import { storage } from '../../../firebase/rtdb-config.js';
 
 import { fetchWithAuth } from '@/services/authService.js';
 import ConnectionStatus from '../../../components/ConnectionStatus.vue';
+import { formatCurrency } from '@/constants/formatCurrency';
+
 
 // ==================== STATES ====================
 const accessToken = ref(Cookies.get('accessToken'));
@@ -1765,7 +1767,7 @@ if (import.meta.env.DEV) {
           <div class="mb-3">
             <p><strong>Ngày đặt hàng: </strong>{{ formatTime(selectedOrder.orderDate) }}</p>
             <p><strong>Trạng thái: </strong>{{ selectedOrder.status }}</p>
-            <p><strong>Tổng tiền: </strong>{{ selectedOrder.totalAmount.toLocaleString('vi-VN') }} VND</p>
+            <p><strong>Tổng tiền: </strong>{{ formatCurrency(selectedOrder.totalAmount) }}</p>
           </div>
           <h6>Danh sách sản phẩm</h6>
           <table class="table table-bordered">
@@ -1781,8 +1783,8 @@ if (import.meta.env.DEV) {
               <tr v-for="(item, index) in selectedOrder.items" :key="index">
                 <td>{{ item.productName }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.price.toLocaleString('vi-VN') }} VND</td>
-                <td>{{ (item.quantity * item.price).toLocaleString('vi-VN') }} VND</td>
+                <td>{{ formatCurrency(item.price) }}</td>
+                <td>{{ formatCurrency(item.quantity * item.price) }}</td>
               </tr>
             </tbody>
           </table>

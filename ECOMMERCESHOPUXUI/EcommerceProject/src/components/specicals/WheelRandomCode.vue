@@ -216,9 +216,22 @@ export default {
                     this.resultIsWin = false;
                     this.resultMessage = "Chúc bạn may mắn lần sau!";
                 } else {
+                    // Handle prize types: coupon or marks
                     this.resultIsWin = true;
-                    this.couponCode = res.data.maCode;
-                    this.resultMessage = res.data.isPercent ? `Giảm ${res.data.phanTramGiam}%` : `Giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(res.data.soTienGiam)}`;
+                    if (res.data.rewardType === 'marks') {
+                        this.couponCode = null;
+                        const added = res.data.marksAdded || 0;
+                        const newStreak = res.data.newStreak;
+                        this.resultMessage = `Bạn nhận được +${added} đánh dấu! Streak hiện tại: ${newStreak}`;
+                        if (this.wheelInfo && typeof newStreak === 'number') {
+                          this.wheelInfo = { ...this.wheelInfo, streak: newStreak };
+                        }
+                    } else {
+                        this.couponCode = res.data.maCode;
+                        this.resultMessage = res.data.isPercent
+                          ? `Giảm ${res.data.phanTramGiam}%`
+                          : `Giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(res.data.soTienGiam)}`;
+                    }
                     this.triggerFireworks();
                 }
             } else {

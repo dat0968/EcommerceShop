@@ -5,12 +5,14 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using APIClothesEcommerceShop.DTO.WheelCoupon;
 using APIClothesEcommerceShop.Repositories.UnitOfWork;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIClothesEcommerceShop.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Customer")]
     public class WheelCouponController : ControllerBase
     {
         private readonly IUnitOfWork _unit;

@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container mt-4 vh-100">
     <h2 class="text-center mb-4">Bình luận của tôi</h2>
 
     <div v-if="loading" class="text-center">
@@ -106,7 +106,6 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
 <style scoped>
 .container {
   max-width: 900px;

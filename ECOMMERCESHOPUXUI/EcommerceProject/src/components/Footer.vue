@@ -94,7 +94,7 @@
               <ul>
                 <li><RouterLink to="/about-us">Giới thiệu</RouterLink></li>
                 <li><RouterLink to="/blog">Blog</RouterLink></li>
-                <li><RouterLink to="/contactus">Liên hệ</RouterLink></li>
+                <li><RouterLink to="/contact">Liên hệ</RouterLink></li>
                 <li><RouterLink to="/faq">Câu hỏi thường gặp</RouterLink></li>
               </ul>
             </div>

@@ -1,6 +1,8 @@
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -95,20 +97,28 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
                 }
+
                 var customer = await _db.Khachhangs
-                        .Include(kh => kh.Hoadons)
-                        .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+                    .Include(kh => kh.Hoadons)
+                    .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+
                 if (customer == null)
                 {
                     throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
                 }
-                bool isInWeekSteak = customer.Streak > 0 && customer.Streak % 7 == 0;
 
-                int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
+                // Bonus spin: cứ 10 streak thì được 1 lượt
+                int bonusFromStreak = customer.Streak / 10;
+
                 decimal totalCompleted = customer.Hoadons
                     .Where(x => filterStatusOrder.Contains(x.TinhTrang.ToLower()))
                     .Sum(x => x.TienGoc - x.PhiVanChuyen);
-                int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
+
+                int spinFromOrders = (int)(totalCompleted / 2000000);
+
+                int totalSpin = spinFromOrders + bonusFromStreak;
+
+                int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
 
                 int spinsLeft = totalSpin - numPrivateCoupon;
                 if (spinsLeft < 0) spinsLeft = 0;
@@ -128,32 +138,43 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             var response = new ResponseAPI<WheelCouponCustomerStreakResponse>();
             try
             {
-                if (userId == 0 || userId == null)
+                if (userId == null || userId == 0)
                 {
                     throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
                 }
+
                 var customer = await _db.Khachhangs.FirstOrDefaultAsync(x => x.MaKh == userId.Value);
                 if (customer == null)
                 {
                     throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
                 }
+
                 var now = DateTime.Now;
-                var lastLogin = customer.TruyCapLanCuoi.Date;
                 var today = now.Date;
+
+                // Trường hợp lần đầu tiên điểm danh
+                if (customer.Streak == 0 && customer.TruyCapLanCuoi == default)
+                {
+                    customer.Streak = 5; // thưởng 5 streak khi điểm danh lần đầu
+                    customer.TruyCapLanCuoi = now;
+                    await _db.SaveChangesAsync();
+                    response.SetSuccessResponse(data: customer.ToWheelCouponCustomerStreakResponse());
+                    return response;
+                }
+
+                var lastLogin = customer.TruyCapLanCuoi.Date;
+
                 if (lastLogin == today)
                 {
-                    throw new Exception("Đã đăng nhập hôm nay, không tăng streak");
+                    throw new Exception("Hôm nay đã điểm danh rồi");
                 }
-                else if (lastLogin == today.AddDays(-1))
-                {
-                    customer.Streak += 1;
-                }
-                else
-                {
-                    customer.Streak = 1;
-                }
+
+                // Sau khi đã có streak ban đầu thì cộng dồn thêm
+                customer.Streak += 1;
                 customer.TruyCapLanCuoi = now;
+
                 await _db.SaveChangesAsync();
+
                 response.SetSuccessResponse(data: customer.ToWheelCouponCustomerStreakResponse());
             }
             catch (Exception ex)
@@ -196,15 +217,39 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             var response = new ResponseAPI<CouponPresetDTO>();
             try
             {
-                var presets = new List<CouponValue>();
+                var presets = new List<PrizeValue>();
                 for (int i = 0; i < 9; i++)
                 {
-                    bool isPercent = _random.NextDouble() > 0.5;
-                    presets.Add(new CouponValue
+                    // 25% cơ hội là phần thưởng cộng đánh dấu; còn lại là giảm giá (tỷ lệ/tiền)
+                    double kindRoll = _random.NextDouble();
+                    if (kindRoll < 0.25)
                     {
-                        IsPercent = isPercent,
-                        Value = isPercent ? _random.Next(5, 21) : _random.Next(5, 21) * 10000 // 5-20% or 50k-210k
-                    });
+                        presets.Add(new PrizeValue
+                        {
+                            Type = PrizeType.Marks,
+                            Value = _random.Next(2, 7) // +2 đến +6 đánh dấu
+                        });
+                    }
+                    else
+                    {
+                        bool isPercent = _random.NextDouble() > 0.5;
+                        if (isPercent)
+                        {
+                            presets.Add(new PrizeValue
+                            {
+                                Type = PrizeType.Percent,
+                                Value = _random.Next(10, 41) // 10-40%
+                            });
+                        }
+                        else
+                        {
+                            presets.Add(new PrizeValue
+                            {
+                                Type = PrizeType.Amount,
+                                Value = _random.Next(10, 21) * 10000 // 100k-200k
+                            });
+                        }
+                    }
                 }
 
                 var payload = JsonSerializer.Serialize(presets);
@@ -213,7 +258,16 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
 
                 var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload)) + "." + Convert.ToBase64String(signature);
 
-                var displayValues = presets.Select(p => p.IsPercent ? $"{p.Value}%" : p.Value.ToString("N0") + "₫").ToList();
+                var displayValues = presets.Select(p =>
+                {
+                    return p.Type switch
+                    {
+                        PrizeType.Percent => $"{p.Value}%",
+                        PrizeType.Amount => p.Value.ToString("N0") + "VNĐ",
+                        PrizeType.Marks => $"+ {p.Value} đánh dấu",
+                        _ => "?"
+                    };
+                }).ToList();
 
                 response.SetSuccessResponse(data: new CouponPresetDTO { PresetToken = token, DisplayValues = displayValues });
             }
@@ -251,25 +305,50 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     throw new UnauthorizedAccessException("Phát hiện hoạt động của bạn không được xác thực, vui lòng thử lại sau.");
                 }
 
-                var presets = JsonSerializer.Deserialize<List<CouponValue>>(payloadJson);
+                var presets = JsonSerializer.Deserialize<List<PrizeValue>>(payloadJson);
                 if (presets == null || request.WonIndex >= presets.Count || request.WonIndex < 0)
                 {
                     throw new ArgumentException("Tải trọng hoặc chỉ mục không hợp lệ.");
                 }
 
-                var wonCoupon = presets[request.WonIndex];
+                var wonPrize = presets[request.WonIndex];
 
                 // Decide if this spin is a winning one
                 bool isWin = _random.Next(1, 101) <= 90; // 90% chance to win
 
                 if (isWin)
                 {
-                    var createRequest = new WheelCouponCreateRequest
+                    if (wonPrize.Type == PrizeType.Marks)
                     {
-                        IsPercent = wonCoupon.IsPercent,
-                        DecreaseValue = wonCoupon.Value
-                    };
-                    return await CreatePrivateCoupon(userId, createRequest);
+                        if (!userId.HasValue || userId.Value == 0)
+                        {
+                            throw new KeyNotFoundException("Dữ liệu yêu cầu không hợp lệ.");
+                        }
+                        var customer = await _db.Khachhangs.FirstOrDefaultAsync(x => x.MaKh == userId.Value);
+                        if (customer == null)
+                        {
+                            throw new KeyNotFoundException("Không tìm thấy người dùng trong hệ thống");
+                        }
+
+                        customer.Streak += wonPrize.Value;
+                        customer.TruyCapLanCuoi = DateTime.Now;
+
+                        await CreateBlankCoupon(userId);
+
+                        await _db.SaveChangesAsync();
+
+                        response.SetSuccessResponse(data: new { isWin = true, rewardType = "marks", marksAdded = wonPrize.Value, newStreak = customer.Streak });
+                        return response;
+                    }
+                    else
+                    {
+                        var createRequest = new WheelCouponCreateRequest
+                        {
+                            IsPercent = wonPrize.Type == PrizeType.Percent,
+                            DecreaseValue = wonPrize.Value
+                        };
+                        return await CreatePrivateCoupon(userId, createRequest);
+                    }
                 }
                 else
                 {
@@ -412,24 +491,36 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
             {
                 return false;
             }
+
             var customer = await _db.Khachhangs
-                    .Include(kh => kh.Hoadons)
-                    .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+                .Include(kh => kh.Hoadons)
+                .FirstOrDefaultAsync(x => x.MaKh == userId!.Value);
+
             if (customer == null)
             {
                 return false;
             }
-            bool isInWeekSteak = customer.Streak > 0 && customer.Streak % 7 == 0;
 
-            int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
+            // Bonus spin: cứ 10 streak thì được 1 lượt
+            int bonusFromStreak = customer.Streak / 10;
+
+            // Doanh thu tính lượt quay
             decimal totalCompleted = customer.Hoadons
                 .Where(x => filterStatusOrder.Contains(x.TinhTrang.ToLower()))
                 .Sum(x => x.TienGoc - x.PhiVanChuyen);
-            int totalSpin = (int)(totalCompleted / 2000000) + (isInWeekSteak ? 1 : 0);
+
+            int spinFromOrders = (int)(totalCompleted / 2000000);
+
+            int totalSpin = spinFromOrders + bonusFromStreak;
+
+            // Đếm số coupon đã có
+            int numPrivateCoupon = await _db.Macoupons.CountAsync(dg => dg.MaKhachHang == userId!.Value);
 
             int spinsLeft = totalSpin - numPrivateCoupon;
+
             return spinsLeft > 0;
         }
+
         #endregion
     }
 }

@@ -1,13 +1,13 @@
-﻿using APIClothesEcommerceShop.Data;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
+using APIClothesEcommerceShop.Data;
 using APIClothesEcommerceShop.DTO;
+using APIClothesEcommerceShop.DTO.Coupon;
 using APIClothesEcommerceShop.Models;
+using APIClothesEcommerceShop.Repositories.Macoupon;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
-using APIClothesEcommerceShop.Repositories.Macoupon;
-using APIClothesEcommerceShop.DTO.Coupon;
-using System.Threading.Tasks;
 
 namespace APIClothesEcommerceShop.Repositories.Coupon
 {
@@ -74,6 +74,7 @@ namespace APIClothesEcommerceShop.Repositories.Coupon
         {
             var listCouponCode = db.Macoupons
                 .Include(c => c.KhachHang)
+                .Where(p => p.SoTienGiam != 0 || p.PhanTramGiam != 0)
                 .AsQueryable();
             var covertToListMaCouponVM = new List<CouponDTO>();
 

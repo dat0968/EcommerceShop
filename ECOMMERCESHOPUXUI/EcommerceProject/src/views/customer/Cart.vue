@@ -179,7 +179,7 @@ function confirmCart() {
                         </div>
                       </div>
                     </td>
-                    <td class="cart__price">{{ item.donGia }} VNĐ</td>
+                    <td class="cart__price">{{ formatCurrency(item.donGia) }}</td>
                     <td class="cart__quantity">
                       <div class="pro-qty">
                         <input
@@ -189,7 +189,7 @@ function confirmCart() {
                         />
                       </div>
                     </td>
-                    <td class="cart__total">{{ item.donGia * item.soLuong }} VNĐ</td>
+                    <td class="cart__total">{{ formatCurrency(item.donGia * item.soLuong) }}</td>
                     <td class="cart__close">
                       <span @click="removeCart(item.id)" class="icon_close"></span>
                     </td>
