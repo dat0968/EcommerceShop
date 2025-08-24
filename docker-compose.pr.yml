@@ -1,0 +1,41 @@
+version: '3.9'
+services:
+  api:
+    image: phamquangvinh/ecommerceshop-api:1.0.0
+    container_name: ecommerceshop-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:7218"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/https.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password!
+      ConnectionStrings__EcommerceShopConnect_TD: "Server=sql;Database=EcommerceShop;User Id=sa;Password=123Pa$$$$word!;TrustServerCertificate=True;"
+      Cors__AllowedOrigins__0: "https://angelfashion.io.vn"
+      Cors__AllowedOrigins__1: "https://api.angelfashion.io.vn"
+      Vnpay__ReturnUrl: "https://api.angelfashion.io.vn/api/VNPAY/Callback"
+      Vnpay__MobileReturnUrl: "https://api.angelfashion.io.vn/api/MobileVNPAY/MobileCallback"
+      JWT__SecretKey: h8jnqw4mP&R[rFE57_%kvD~.2!HydJ^U
+      # ... các biến khác tương tự .env
+    volumes:
+      - ~/.aspnet/https:/https:ro
+    ports:
+      - "7218:7218"
+      - "7217:7217"
+    depends_on:
+      - sql
+    restart: unless-stopped
+
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ecommerceshop-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: 123Pa$$$$word!
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    restart: unless-stopped
+
+volumes:
+  mssql_data:

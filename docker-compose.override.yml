@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+  api:
+    environment:
+      # Mount a development certificate if you have one; otherwise keep HTTPS disabled locally.
+      # ASPNETCORE_Kestrel__Certificates__Default__Path and Password will enable HTTPS listener on 7217.
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/https.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: ${HTTPS_CERT_PASSWORD:-changeit}
+      Logging__LogLevel__Default: Information
+      Logging__LogLevel__Microsoft.AspNetCore: Warning
+    volumes:
+      - ./certs:/https:ro
+      - ./APIClothesEcommerceShop/APIClothesEcommerceShop/wwwroot:/app/wwwroot
+    ports:
+      - "7218:7218"
+      - "7217:7217"
+
+  sql:
+    volumes:
+      - mssql_data:/var/opt/mssql
+    ports:
+      - "1433:1433"
+
+  redis:
+    ports:
+      - "6379:6379"

@@ -113,21 +113,26 @@ builder.Services.AddSwaggerGen(c =>
     #endregion
 });
 
-// Configure CORS for web and mobile
+// Configure CORS for web and mobile (config-driven)
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyPolicy", policy =>
     {
         policy.AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowAnyOrigin()
-              .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
-        //.AllowCredentials();
-        //ops.WithOrigins("http://localhost:8080", "http://192.168.1.150:8080", "http://localhost:5173") // Thêm IP nội bộ
-        //   .AllowAnyHeader()
-        //   .AllowAnyMethod()
-        //   .AllowCredentials()
-        //   .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+              .AllowAnyMethod();
+
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                  .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        }
+        else
+        {
+            policy.AllowAnyOrigin()
+                  .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+        }
+        // .AllowCredentials() // enable if you need cookies/credentials
     });
 });
 
@@ -183,8 +188,8 @@ builder.Services.Configure<GoogleEmailSetting>(emailSettings);
 
 
 #region JWT Authentication
-var SecretKey = builder.Configuration["JWT:SecretKey"];
-var SecretKeyBytes = Encoding.UTF8.GetBytes(SecretKey);
+var secretKey = builder.Configuration["JWT:SecretKey"] ?? throw new InvalidOperationException("JWT:SecretKey is not configured.");
+var secretKeyBytes = Encoding.UTF8.GetBytes(secretKey);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -197,15 +202,15 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
+    IssuerSigningKey = new SymmetricSecurityKey(secretKeyBytes),
         ClockSkew = TimeSpan.Zero
     };
 }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
 .AddGoogle(options =>
 {
     var googleAuth = builder.Configuration.GetSection("Authentication:Google");
-    options.ClientId = googleAuth["ClientId"];
-    options.ClientSecret = googleAuth["ClientSecret"];
+    options.ClientId = googleAuth["ClientId"] ?? string.Empty;
+    options.ClientSecret = googleAuth["ClientSecret"] ?? string.Empty;
 });
 #endregion
 
@@ -219,11 +224,13 @@ builder.Services.AddLogging(logging =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSwagger();
+//     app.UseSwaggerUI();
+// }
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
@@ -252,10 +259,18 @@ app.Use(async (context, next) =>
         logger.LogInformation($"Origin: {origin}");
     }
 
-    // Ensure CORS headers are properly set for mobile
+    // Ensure CORS headers are present only if not already added by UseCors
     if (!context.Response.Headers.ContainsKey("Access-Control-Allow-Origin"))
     {
-        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        var allowed = new HashSet<string>(allowedOrigins, StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrEmpty(origin) && (allowed.Count == 0 || allowed.Contains(origin)))
+        {
+            context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
+        }
+        else
+        {
+            context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        }
     }
 
     context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");

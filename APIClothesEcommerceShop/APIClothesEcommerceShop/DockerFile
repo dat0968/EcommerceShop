@@ -1,0 +1,48 @@
+##########
+# APIClothesEcommerceShop Dockerfile (multi-stage, .NET 8)
+# - Publishes linux-x64 despite csproj RID (win-x64) by overriding at restore/publish
+# - Exposes HTTP (7218) and HTTPS (7217) as configured in Program.cs
+# - HTTPS requires a certificate; set via env vars and mount in Compose
+##########
+
+# 1) Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files first to leverage Docker layer caching
+COPY ./APIClothesEcommerceShop/APIClothesEcommerceShop.sln ./
+COPY ./APIClothesEcommerceShop/APIClothesEcommerceShop/APIClothesEcommerceShop.csproj ./APIClothesEcommerceShop/APIClothesEcommerceShop/
+
+# Restore with linux-x64 RID to avoid win-x64 RID from csproj
+RUN dotnet restore ./APIClothesEcommerceShop/APIClothesEcommerceShop/APIClothesEcommerceShop.csproj -r linux-x64
+
+# Copy the rest of the source
+COPY ./APIClothesEcommerceShop/ ./APIClothesEcommerceShop/
+
+# Publish (framework-dependent) for linux-x64 without app host
+WORKDIR /src/APIClothesEcommerceShop/APIClothesEcommerceShop
+RUN dotnet publish APIClothesEcommerceShop.csproj -c Release -o /app/publish -r linux-x64 --no-restore /p:UseAppHost=false
+
+
+# 2) Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+
+# Expose ports configured in Kestrel (Program.cs)
+EXPOSE 7218
+EXPOSE 7217
+
+# Environment defaults (can be overridden in Compose)
+ENV ASPNETCORE_ENVIRONMENT=Production \
+	ASPNETCORE_URLS=http://+:7218 \
+	DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+# Configure default HTTPS certificate via env (file mounted at runtime)
+# - Example (Compose):
+#   ASPNETCORE_Kestrel__Certificates__Default__Path=/https/https.pfx
+#   ASPNETCORE_Kestrel__Certificates__Default__Password=changeit
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "APIClothesEcommerceShop.dll"]
+

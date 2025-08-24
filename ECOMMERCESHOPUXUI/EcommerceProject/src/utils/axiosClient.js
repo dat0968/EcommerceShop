@@ -12,7 +12,7 @@ export const onAuthFailure = (callback) => {
 
 // --- Singleton Axios Instance ---
 const axiosClient = axios.create({
-  baseURL: 'https://localhost:7217/api', // Set base URL directly
+  baseURL: 'https://api.angelfashion.io.vn/api', // Set base URL directly
   timeout: 500000,
 });
 

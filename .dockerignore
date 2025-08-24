@@ -1,0 +1,25 @@
+# Ignore build outputs and local tooling caches
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/node_modules/
+
+# User/secrets and local settings
+**/*.user
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/secrets.json
+**/*.pfx
+
+# Git
+.git
+.gitignore
+
+# OS junk
+Thumbs.db
+.DS_Store
+
+# Logs
+**/*.log
+**/logs/

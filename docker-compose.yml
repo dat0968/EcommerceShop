@@ -1,0 +1,95 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: APIClothesEcommerceShop/APIClothesEcommerceShop/DockerFile
+    image: ecommerceshop/api:latest
+    container_name: ecommerceshop-api
+    depends_on:
+      - sql
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Kestrel HTTPS cert defaults are supplied in override/prod files
+      ASPNETCORE_URLS: "http://+:7218"
+      # DB password and connection string to the sql service
+      SA_PASSWORD: "123Pa$$$$$$$$word!"  # renders as 123Pa$$$$word! in the container
+      ConnectionStrings__EcommerceShopConnect_TD: "Server=sql;Database=EcommerceShop;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+      # CORS origins (array-style keys)
+      Cors__AllowedOrigins__0: "https://angelfashion.io.vn"
+      Cors__AllowedOrigins__1: "https://api.angelfashion.io.vn"
+      Cors__AllowedOrigins__2: "capacitor://localhost"
+      # VNPAY URLs pointed to production API host
+      Vnpay__ReturnUrl: "https://api.angelfashion.io.vn/api/VNPAY/Callback"
+      Vnpay__MobileReturnUrl: "https://api.angelfashion.io.vn/api/MobileVNPAY/MobileCallback"
+      App__MobileFrontendUrl: "capacitor://localhost"
+      # Secrets and third-party configs taken from appsettings.json; consider moving to .env in production
+      JWT__SecretKey: "h8jnqw4mP&R[rFE57_%kvD~.2!HydJ^U"
+      Authentication__Google__ClientId: "977596557785-08qrpf53cqpg093qpivgnim0i0acc530.apps.googleusercontent.com"
+      Authentication__Google__ClientSecret: "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"
+      Recaptcha__SecretKey: "6LdIA0orAAAAANC8gOmzCVK_-Pz3gLksEyH5A1U4"
+      Cloudinary__CloudName: "dofrp33ye"
+      Cloudinary__ApiKey: "852856595539475"
+      Cloudinary__ApiSecret: "mgtxIAbLqQJZWx0aAvSiwjv_uns"
+      Cloudinary__UploadPreset: "tamp_DAtn"
+      Chatbot__Gemini__GeminiAPIKey: "AIzaSyCgIpcqxhJdK3ejOMXwe7laLtpL6LRd1fk"
+      GoogleEmailSetting__Username: "Angel Fashion"
+      GoogleEmailSetting__Email: "khongbiet12kk@gmail.com"
+      GoogleEmailSetting__Password: "vupb omuo wppx iccu"
+      GoogleEmailSetting__Host: "smtp.gmail.com"
+      GoogleEmailSetting__Displayname: "Nihira Techiees"
+      GoogleEmailSetting__Port: "587"
+      Redis__Configuration: "redis:6379,abortConnect=false"
+      Redis__InstanceName: "apiTestREdis_"
+      LightX__ApiKey: "YOUR_LIGHTX_API_KEY"
+      TokenSettings__SecretKey: "Mql-wt8_bU1ibegJPIXgpPUJn4aMGFRa"
+      Vnpay__TmnCode: "N14NQQ9O"
+      Vnpay__HashSecret: "V6OANE04LYY6CRPLRTRLA3VD8GP5UDXZ"
+      Vnpay__BaseUrl: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+      Vnpay__Command: "pay"
+      Vnpay__CurrCode: "VND"
+      Vnpay__Version: "2.1.0"
+      Vnpay__Locale: "vn"
+      Vnpay__TimeZoneId: "SE Asia Standard Time"
+    ports:
+      - "7218:7218"   # HTTP
+      - "7217:7217"   # HTTPS (enabled with override/prod)
+    networks:
+      - ecom
+    restart: unless-stopped
+
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ecommerceshop-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "123Pa$$$$$$$$word!"  # renders as 123Pa$$$$word!
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+    networks:
+      - ecom
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerceshop-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecom
+    restart: unless-stopped
+
+networks:
+  ecom:
+    driver: bridge
+
+volumes:
+  mssql_data:
+  redis_data:

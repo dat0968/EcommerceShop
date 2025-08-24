@@ -211,7 +211,7 @@ class LightXService {
         const blob = dataURLtoBlob(modelImageUrl);
         if (!blob) throw new Error('Không thể chuyển đổi ảnh người mẫu sang định dạng có thể xử lý.');
         finalModelImageUrl = await this.uploadImageToCloudinary(blob);
-      } else if (modelImageUrl.includes('localhost')) { // If it's a localhost URL
+      } else if (modelImageUrl.includes('angelfashion.io.vn')) { // If it's a angelfashion.io.vn URL
         finalModelImageUrl = await this.uploadImageFromUrlToCloudinary(modelImageUrl);
       }
 
@@ -220,7 +220,7 @@ class LightXService {
       for (const item of products) {
         let imgUrl = item.image || (item.products && item.products[0]?.image);
         if (imgUrl) {
-          if (imgUrl.includes('localhost')) {
+          if (imgUrl.includes('	angelfashion.io.vn')) {
             imgUrl = await this.uploadImageFromUrlToCloudinary(imgUrl);
           }
           productPublicUrls.push({ url: imgUrl, category: this.getClothingCategory(item.name) });

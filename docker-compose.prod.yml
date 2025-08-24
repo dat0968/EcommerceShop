@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:7218"
+      # Enable HTTPS with mounted cert in production
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/https.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: ${HTTPS_CERT_PASSWORD}
+      # Ensure API uses containerized SQL, not localhost
+      ConnectionStrings__EcommerceShopConnect_TD: "Server=sql;Database=EcommerceShop;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;"
+      # CORS and domain-specific URLs
+      Cors__AllowedOrigins__0: "https://angelfashion.io.vn"
+      Cors__AllowedOrigins__1: "https://api.angelfashion.io.vn"
+      Vnpay__ReturnUrl: "https://api.angelfashion.io.vn/api/VNPAY/Callback"
+      Vnpay__MobileReturnUrl: "https://api.angelfashion.io.vn/api/MobileVNPAY/MobileCallback"
+    volumes:
+      - ./certs:/https:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  sql:
+    environment:
+      - MSSQL_PID=Express
+      - SA_PASSWORD=${SA_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2048M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+  redis:
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 128M
