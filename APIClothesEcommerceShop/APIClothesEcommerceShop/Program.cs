@@ -41,6 +41,7 @@ using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
 using VNPAY.NET;
 using APIClothesEcommerceShop.Repositories.Contact;
+using APIClothesEcommerceShop.Repositories.VNPAY;
 var builder = WebApplication.CreateBuilder(args);
 QuestPDF.Settings.License = LicenseType.Community;
 // Configure Kestrel to support both HTTP and HTTPS
@@ -146,7 +147,7 @@ builder.Services.AddScoped<MLRecommendationSystem>();
 builder.Services.AddScoped<ComboService>();
 builder.Services.AddScoped<CheckoutService>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddScoped<IVnpay, Vnpay>();
+builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddScoped<IOrderDetails, OrderDetails>();
 builder.Services.AddScoped<IOrderComboDetails, OrderComboDetails>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();

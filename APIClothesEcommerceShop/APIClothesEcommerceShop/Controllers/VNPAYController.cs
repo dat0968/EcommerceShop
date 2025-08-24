@@ -1,16 +1,15 @@
 ﻿using APIClothesEcommerceShop.DTO.Order;
+using APIClothesEcommerceShop.DTO.VNPAY;
 using APIClothesEcommerceShop.Models;
 using APIClothesEcommerceShop.Repositories.Order;
+using APIClothesEcommerceShop.Repositories.VNPAY;
 using APIClothesEcommerceShop.Services;
 using Azure;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using VNPAY.NET;
-using VNPAY.NET.Enums;
-using VNPAY.NET.Models;
-using VNPAY.NET.Utilities;
+
 
 namespace APIClothesEcommerceShop.Controllers
 {
@@ -18,17 +17,16 @@ namespace APIClothesEcommerceShop.Controllers
     [ApiController]
     public class VNPAYController : ControllerBase
     {
-        private readonly IVnpay _vnpay;
+        private readonly IVnPayService _vnpay;
         private readonly IConfiguration _configuration;
         private readonly CheckoutService checkoutService;
         private readonly IOrderRepository orderRepository;
-        public VNPAYController(IVnpay vnpay, IConfiguration configuration, IOrderRepository orderRepository, CheckoutService checkoutService)
+        public VNPAYController(IVnPayService vnpay, IConfiguration configuration, IOrderRepository orderRepository, CheckoutService checkoutService)
         {
             this.checkoutService = checkoutService;
             this.orderRepository = orderRepository;
             _vnpay = vnpay;
             _configuration = configuration;
-            _vnpay.Initialize(_configuration["Vnpay:TmnCode"], _configuration["Vnpay:HashSecret"], _configuration["Vnpay:BaseUrl"], _configuration["Vnpay:ReturnUrl"]);
         }
         [HttpPost("CreatePaymentUrl")]
         public async Task<ActionResult<string>> CreatePaymentUrl(OrderRequestDTO model)
@@ -37,21 +35,16 @@ namespace APIClothesEcommerceShop.Controllers
             try
             {
                 NewOrder = await checkoutService.Checkout(model);
-                var ipAddress = NetworkHelper.GetIpAddress(HttpContext); // Lấy địa chỉ IP của thiết bị thực hiện giao dịch
 
-                var request = new PaymentRequest
+                var request = new PaymentInformationModel
                 {
-                    PaymentId = NewOrder.MaHd,
-                    Money = (double)(model.TienGoc + model.PhiVanChuyen - model.GiamGia),
-                    Description = $"{(double)(model.TienGoc + model.PhiVanChuyen - model.GiamGia)}",
-                    IpAddress = ipAddress,
-                    BankCode = BankCode.ANY, // Tùy chọn. Mặc định là tất cả phương thức giao dịch
-                    CreatedDate = DateTime.Now, // Tùy chọn. Mặc định là thời điểm hiện tại
-                    Currency = Currency.VND, // Tùy chọn. Mặc định là VND (Việt Nam đồng)
-                    Language = DisplayLanguage.Vietnamese // Tùy chọn. Mặc định là tiếng Việt
+                    ID = NewOrder.MaHd.ToString(),
+                    Amount = (double)(model.TienGoc + model.PhiVanChuyen - model.GiamGia),
+                    OrderDescription = $"{(double)(model.TienGoc + model.PhiVanChuyen - model.GiamGia)}",
+                    OrderType = "VNPAY"
                 };
 
-                var paymentUrl = _vnpay.GetPaymentUrl(request);
+                var paymentUrl = _vnpay.CreatePaymentUrl(request, HttpContext);
 
                 return Created(paymentUrl, paymentUrl);
             }
@@ -67,33 +60,33 @@ namespace APIClothesEcommerceShop.Controllers
         [HttpGet("Callback")]
         public async Task<ActionResult<string>> Callback()
         {
-            var paymentResult = _vnpay.GetPaymentResult(Request.Query);
+            var paymentResult = _vnpay.PaymentExecute(Request.Query);
             if (Request.QueryString.HasValue)
             {
                 try
                 {
-                    var resultDescription = $"{paymentResult.PaymentResponse.Description}. {paymentResult.TransactionStatus.Description}.";
+                    var resultDescription = $"{paymentResult.OrderDescription}. {paymentResult.OrderDescription}.";
 
-                    if (paymentResult.IsSuccess)
+                    if (paymentResult.Success)
                     {
-                        var FindOrder = await orderRepository.GetbyId((int)paymentResult.PaymentId);
+                        var FindOrder = await orderRepository.GetbyId(int.Parse(paymentResult.OrderId));
                         if (FindOrder == null)
                         {
                             throw new Exception("Order Not Found");
                         }
-                        await orderRepository.UpdateStatusOrders((int)paymentResult.PaymentId, "Chờ xác nhận", null, "VNPAY", null);
-                        return Redirect($"http://localhost:5173/VNPAYresponse/{paymentResult.PaymentId}/{paymentResult.Description}");
+                        await orderRepository.UpdateStatusOrders(int.Parse(paymentResult.OrderId), "Chờ xác nhận", null, "VNPAY", null);
+                        return Redirect($"http://localhost:5173/VNPAYresponse/{paymentResult.OrderId}/{paymentResult.OrderDescription}");
                     }
-                    await orderRepository.CancelOrders((int)paymentResult.PaymentId, "Đã hủy", "Khách hủy giao dịch VNPAY");
+                    await orderRepository.CancelOrders(int.Parse(paymentResult.OrderId), "Đã hủy", "Khách hủy giao dịch VNPAY");
                     return BadRequest(resultDescription);
                 }
                 catch (Exception ex)
                 {
-                    await orderRepository.CancelOrders((int)paymentResult.PaymentId, "Đã hủy", "Khách hủy giao dịch VNPAY");
+                    await orderRepository.CancelOrders(int.Parse(paymentResult.OrderId), "Đã hủy", "Khách hủy giao dịch VNPAY");
                     return BadRequest(ex.Message);
                 }
             }
-            await orderRepository.CancelOrders((int)paymentResult.PaymentId, "Đã hủy", "Khách hủy giao dịch VNPAY");
+            await orderRepository.CancelOrders(int.Parse(paymentResult.OrderId), "Đã hủy", "Khách hủy giao dịch VNPAY");
             return NotFound("Không tìm thấy thông tin thanh toán.");
         }
     }

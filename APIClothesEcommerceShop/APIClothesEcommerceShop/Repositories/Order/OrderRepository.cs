@@ -365,6 +365,9 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     .ThenInclude(ct => ct.MaCtspNavigation)
                         .ThenInclude(ctsp => ctsp.MaSpNavigation)
                 .Include(p => p.Cthoadons)
+                    .ThenInclude(ct => ct.MaCtspNavigation)
+                    .ThenInclude(img => img.Hinhanhs)
+                .Include(p => p.Cthoadons)
                     .ThenInclude(p => p.MaComboNavigation);
         }
 
@@ -422,6 +425,7 @@ namespace APIClothesEcommerceShop.Repositories.Order
                     Gia = cthd.Gia,
                     GiamGia = cthd.GiamGia,
                     GiaGoc = cthd.Gia + (cthd.GiamGia ?? 0),
+                    Hinh = cthd.MaCtsp != null ? cthd.MaCtspNavigation?.Hinhanhs.FirstOrDefault(p => p.MaCtsp == cthd.MaCtsp)?.TenHinhAnh : cthd.MaComboNavigation?.Hinh,
                 }).ToList()
             };
         }
