@@ -462,7 +462,7 @@ const addToCompare = () => {
   const productToAdd = {
     id: product.value.maSp,
     name: product.value.tenSanPham,
-    image: `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${allImages.value[currentImage.value - 1]?.tenHinhAnh}`,
+    image: `${getUrlAPI.value.replace('api/', '')}/HinhAnh/Products/${allImages.value[currentImage.value - 1]?.tenHinhAnh}`,
     type: 'single',
     category: product.value.tenLoai,
     description: product.value.moTa,
@@ -628,7 +628,7 @@ const productForTryOn = computed(() => {
   if (!product.value || !product.value.maSp) return null
 
   const imageUrls = allImages.value.map(
-    (img) => `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${img.tenHinhAnh}`,
+    (img) => `${getUrlAPI.value.replace('api/', '')}/HinhAnh/Products/${img.tenHinhAnh}`,
   )
 
   return {
@@ -642,7 +642,7 @@ const productForTryOn = computed(() => {
       ...detail,
       image:
         detail.images.length > 0
-          ? `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${detail.images[0].tenHinhAnh}`
+          ? `${getUrlAPI.value.replace('api/', '')}/HinhAnh/Products/${detail.images[0].tenHinhAnh}`
           : '',
     })),
   }
@@ -701,7 +701,7 @@ watch(
                 <!-- Main Product Image -->
                 <div class="mb-3 text-center">
                   <img v-if="allImages.length > 0 && currentImage > 0"
-                    :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${allImages[currentImage - 1]?.tenHinhAnh}`"
+                    :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${allImages[currentImage - 1]?.tenHinhAnh}`"
                     :alt="product.tenSanPham" class="img-fluid"
                     style="max-height: 500px; object-fit: contain; border-radius: 12px" />
                 </div>
@@ -709,7 +709,7 @@ watch(
                 <!-- Thumbnail Images -->
                 <div class="row g-2" v-if="allImages.length > 0">
                   <div class="col-3" v-for="(image, index) in allImages.slice(0, 4)" :key="index">
-                    <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
+                    <img :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${image.tenHinhAnh}`"
                       :alt="`Thumbnail ${index + 1}`" class="img-fluid w-100 rounded-2 border"
                       :class="{ 'border-2 border-danger': currentImage === index + 1 }"
                       style="height: 80px; object-fit: contain; cursor: pointer" @click="changeImage(index + 1)" />
@@ -918,7 +918,7 @@ watch(
                       <div class="row g-0">
                         <div class="col-4">
                           <img
-                            :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                            :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                             :alt="item.tenSanPham" class="img-fluid rounded-start"
                             style="height: 90px; width: 100%; object-fit: contain;">
                         </div>
@@ -1009,7 +1009,7 @@ watch(
         <!-- Product Details Section End -->
       </div>
       <div v-else class="text-center py-5 ">
-        <div class="row justify-content-center align-items-center" style="height: 50vh;">          
+        <div class="row justify-content-center align-items-center" style="height: 50vh;">
           <div class="col-12">
             <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
             <h3 class="text-muted">Sản phẩm không tồn tại</h3>

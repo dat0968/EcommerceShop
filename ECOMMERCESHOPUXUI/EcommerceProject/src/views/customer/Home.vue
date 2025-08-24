@@ -432,7 +432,7 @@ onMounted(() => {
                 ">
                 <div class="product__item" style="border-radius: 12px; position: relative">
                   <div class="product__item__pic position-relative animated-product" style="height: 320px">
-                    <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                    <img :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                       :alt="item.tenSanPham" class="w-100 h-100"
                       style="object-fit: cover; border-radius: 12px 12px 0 0" />
                     <div class="discount-badge position-absolute top-0 start-0 m-2">
@@ -605,7 +605,7 @@ onMounted(() => {
                     ">
                     <div class="product__item" style="border-radius: 12px; position: relative">
                       <div class="product__item__pic position-relative animated-product" style="height: 320px">
-                        <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                        <img :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                           :alt="item.tenSanPham" class="w-100 h-100"
                           style="object-fit: cover; border-radius: 12px 12px 0 0" />
                         <div class="discount-badge position-absolute top-0 start-0 m-2">
@@ -700,7 +700,7 @@ onMounted(() => {
                     ">
                     <div class="product__item" style="border-radius: 12px; position: relative">
                       <div class="product__item__pic position-relative animated-product" style="height: 320px">
-                        <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                        <img :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                           :alt="item.tenSanPham" class="w-100 h-100"
                           style="object-fit: cover; border-radius: 12px 12px 0 0" />
                         <div class="discount-badge position-absolute top-0 start-0 m-2">
@@ -829,7 +829,7 @@ onMounted(() => {
                     ">
                     <div class="product__item" style="border-radius: 12px; position: relative">
                       <div class="product__item__pic position-relative animated-product" style="height: 320px">
-                        <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                        <img :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                           :alt="item.tenSanPham" class="w-100 h-100"
                           style="object-fit: cover; border-radius: 12px 12px 0 0" />
                         <div v-if="index === 0" style="
@@ -972,7 +972,7 @@ onMounted(() => {
                     ">
                     <div class="product__item" style="border-radius: 12px; position: relative">
                       <div class="product__item__pic position-relative animated-product" style="height: 320px">
-                        <img :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
+                        <img :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.productDetails[0].images[0].tenHinhAnh}`"
                           :alt="item.tenSanPham" class="w-100 h-100"
                           style="object-fit: cover; border-radius: 12px 12px 0 0" />
                         <div v-if="index === 0" style="
@@ -1058,7 +1058,7 @@ onMounted(() => {
     </section>
     <!-- Trend Section End -->
   </div>
-  
+
 </template>
 
 <style>

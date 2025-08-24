@@ -3,7 +3,7 @@ import { getEndpoint } from '@/utils/axiosClient'
 export default function pathReplaceImg(pathSource = getEndpoint(), pathFolder = '', imgName = '') {
   if (!pathSource) return ''
   if (!imgName || imgName.trim().length === 0) return ''
-  let base = pathSource.replace('api', '')
+  let base = pathSource.replace('api/', '')
   if (!pathFolder) {
     return base + imgName
   }

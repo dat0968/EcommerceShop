@@ -77,7 +77,14 @@
               class="order-item"
             >
               <div class="item-image" style="width: 200px; height: 200px">
-                <img :src="'/placeholder.svg'" :alt="item.tenSanPham" />
+                <img
+                  :src="
+                    item.maCtsp
+                      ? `${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.hinh}`
+                      : `${getUrlAPI.replace('api/', '')}/HinhAnh/AnhCombo/${item.hinh}`
+                  "
+                  :alt="item.tenSanPham"
+                />
               </div>
               <div class="item-details" style="margin-left: 50px">
                 <p class="item-name" style="font-size: 1.2rem">

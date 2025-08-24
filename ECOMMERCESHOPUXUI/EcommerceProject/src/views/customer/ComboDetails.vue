@@ -255,7 +255,7 @@ const tryOnProductData = computed(() => {
       v.kichThuoc === (selectedVariants.value[index]?.size || availableSizes.value[index]?.[0])
     );
     const imageUrl = selectedVariant?.images[0]?.tenHinhAnh
-      ? `${getUrlAPI.value.replace('/api', '')}/HinhAnh/Products/${selectedVariant.images[0].tenHinhAnh}`
+      ? `${getUrlAPI.value.replace('api/', '')}/HinhAnh/Products/${selectedVariant.images[0].tenHinhAnh}`
       : '';
     return {
       image: imageUrl,
@@ -266,7 +266,7 @@ const tryOnProductData = computed(() => {
   return {
     id: combo.value.id,
     name: combo.value.name,
-    image: `${getUrlAPI.value.replace('/api', '')}/HinhAnh/AnhCombo/${combo.value.hinh}`, // Main combo image
+    image: `${getUrlAPI.value.replace('api/', '')}/HinhAnh/AnhCombo/${combo.value.hinh}`, // Main combo image
     type: 'combo',
     category: 'combo', // Generic category for the combo itself
     description: combo.value.description,

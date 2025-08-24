@@ -20,5 +20,6 @@ namespace APIClothesEcommerceShop.DTO.OrderDetails
         public int Gia { get; set; }
         public decimal? GiamGia { get; set; }
         public decimal GiaGoc { get; set; }
+        public string? Hinh { get; set; }
     }
 }

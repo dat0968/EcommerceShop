@@ -130,7 +130,7 @@ onMounted(async () => {
           <div class="product-image-container">
             <div class="product-image">
               <img
-                :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${
+                :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${
                   item.productDetails[0].images[0].tenHinhAnh
                 }`"
                 :alt="item.tenSanPham"

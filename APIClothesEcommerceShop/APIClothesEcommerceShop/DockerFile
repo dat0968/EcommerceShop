@@ -1,10 +1,3 @@
-##########
-# APIClothesEcommerceShop Dockerfile (multi-stage, .NET 8)
-# - Publishes linux-x64 despite csproj RID (win-x64) by overriding at restore/publish
-# - Exposes HTTP (7218) and HTTPS (7217) as configured in Program.cs
-# - HTTPS requires a certificate; set via env vars and mount in Compose
-##########
-
 # 1) Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
@@ -36,11 +29,6 @@ EXPOSE 7217
 ENV ASPNETCORE_ENVIRONMENT=Production \
 	ASPNETCORE_URLS=http://+:7218 \
 	DOTNET_PRINT_TELEMETRY_MESSAGE=false
-
-# Configure default HTTPS certificate via env (file mounted at runtime)
-# - Example (Compose):
-#   ASPNETCORE_Kestrel__Certificates__Default__Path=/https/https.pfx
-#   ASPNETCORE_Kestrel__Certificates__Default__Password=changeit
 
 COPY --from=build /app/publish .
 

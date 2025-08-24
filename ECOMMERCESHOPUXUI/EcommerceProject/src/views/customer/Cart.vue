@@ -152,8 +152,8 @@ function confirmCart() {
                       <img
                         :src="
                           item.maCombo == null
-                            ? `${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${item.tenHinhAnh}`
-                            : `${getUrlAPI.replace('/api', '')}/HinhAnh/AnhCombo/${item.tenHinhAnh}`
+                            ? `${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${item.tenHinhAnh}`
+                            : `${getUrlAPI.replace('api/', '')}/HinhAnh/AnhCombo/${item.tenHinhAnh}`
                         "
                         alt=""
                         class="cart-product-image"

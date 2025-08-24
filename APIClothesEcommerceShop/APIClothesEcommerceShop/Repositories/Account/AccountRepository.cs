@@ -676,14 +676,14 @@ namespace APIClothesEcommerceShop.Repositories.Account
             var result = await _httpContextAccessor.HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
             if (!result.Succeeded || result.Principal == null)
             {
-                return new RedirectResult($"http://localhost:5173/GoogleLoginSuccess?error={HttpUtility.UrlEncode("Xác thực Google thất bại. Vui lòng thử lại!")}");
+                return new RedirectResult($"https://angelfashion.io.vn/GoogleLoginSuccess?error={HttpUtility.UrlEncode("Xác thực Google thất bại. Vui lòng thử lại!")}");
             }
             var email = result.Principal.FindFirstValue(ClaimTypes.Email);
             var name = result.Principal.FindFirstValue(ClaimTypes.Name);
             var existingUser = await _db.Khachhangs.FirstOrDefaultAsync(u => u.Email == email);
             if (existingUser != null && (string.IsNullOrWhiteSpace(existingUser.TinhTrang) || existingUser.TinhTrang.Trim().ToLower() != "đang hoạt động"))
             {
-                return new RedirectResult($"http://localhost:5173/GoogleLoginSuccess?error={HttpUtility.UrlEncode("Tài khoản đang bị tạm khóa hoặc không hợp lệ")}");
+                return new RedirectResult($"https://angelfashion.io.vn/GoogleLoginSuccess?error={HttpUtility.UrlEncode("Tài khoản đang bị tạm khóa hoặc không hợp lệ")}");
             }
             if (existingUser == null)
             {
@@ -716,7 +716,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
             };
             _db.Refreshtokens.Add(addRefreshTokenDb);
             await _db.SaveChangesAsync();
-            return new RedirectResult($"http://localhost:5173/GoogleLoginSuccess?access_token={accessToken}&refresh_token={refreshToken}");
+            return new RedirectResult($"https://angelfashion.io.vn/GoogleLoginSuccess?access_token={accessToken}&refresh_token={refreshToken}");
         }
 
         public async Task<IActionResult> CheckCCCD(string cccd)
@@ -802,7 +802,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
             using (var client = new MailKit.Net.Smtp.SmtpClient())
             {
                 await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await client.AuthenticateAsync("khongbiet12kk@gmail.com", "vupb omuo wppx iccu");
+                await client.AuthenticateAsync("khongbiet12kk@gmail.com", "baey jlku ooat epom");
                 await client.SendAsync(emailMessage);
                 await client.DisconnectAsync(true);
             }

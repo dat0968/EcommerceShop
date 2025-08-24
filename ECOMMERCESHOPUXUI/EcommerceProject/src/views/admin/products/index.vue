@@ -319,7 +319,7 @@ async function openUpdateModal(maSp) {
             <td>{{ product.tenSanPham }}</td>
             <td>
               <img
-                :src="`${getUrlAPI.replace('/api', '')}/HinhAnh/Products/${product.anhDaiDien}`"
+                :src="`${getUrlAPI.replace('api/', '')}/HinhAnh/Products/${product.anhDaiDien}`"
                 alt="Hình ảnh sản phẩm"
                 style="width: 60px; height: 60px; object-fit: cover"
                 v-if="product.anhDaiDien != ''"

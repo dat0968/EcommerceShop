@@ -104,7 +104,7 @@ namespace APIClothesEcommerceShop.Repositories.Contact
                     );
                     await client.AuthenticateAsync(
                         _configuration["EmailSettings:Username"] ?? "khongbiet12kk@gmail.com",
-                        _configuration["EmailSettings:Password"] ?? "vupb omuo wppx iccu"
+                        _configuration["EmailSettings:Password"] ?? "baey jlku ooat epom"
                     );
                     await client.SendAsync(message);
                     await client.DisconnectAsync(true);

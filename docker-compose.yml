@@ -36,7 +36,7 @@ services:
       Chatbot__Gemini__GeminiAPIKey: "AIzaSyCgIpcqxhJdK3ejOMXwe7laLtpL6LRd1fk"
       GoogleEmailSetting__Username: "Angel Fashion"
       GoogleEmailSetting__Email: "khongbiet12kk@gmail.com"
-      GoogleEmailSetting__Password: "vupb omuo wppx iccu"
+      GoogleEmailSetting__Password: "baey jlku ooat epom"
       GoogleEmailSetting__Host: "smtp.gmail.com"
       GoogleEmailSetting__Displayname: "Nihira Techiees"
       GoogleEmailSetting__Port: "587"
