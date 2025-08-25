@@ -46,7 +46,7 @@ namespace APIClothesEcommerceShop.Controllers
             try
             {
                 var imageUrl = await _cloudinaryService.UploadImageAsync(file, "user-models");
-                res.Data = new UploadImageResponse { ImageUrl = imageUrl };
+                res.SetSuccessResponse(data: new UploadImageResponse { ImageUrl = imageUrl });
                 return Ok(res);
             }
             catch (Exception ex)
