@@ -802,7 +802,7 @@ namespace APIClothesEcommerceShop.Repositories.Account
             using (var client = new MailKit.Net.Smtp.SmtpClient())
             {
                 await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await client.AuthenticateAsync("khongbiet12kk@gmail.com", "vupb omuo wppx iccu");
+                await client.AuthenticateAsync("khongbiet12kk@gmail.com", "baey jlku ooat epom");
                 await client.SendAsync(emailMessage);
                 await client.DisconnectAsync(true);
             }

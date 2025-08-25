@@ -36,6 +36,57 @@ const userInfo = ref({
   districtId: '',
   wardCode: '',
 })
+const CalculateFee = async () => {
+  let service = 0
+  const fetchService = await fetch(
+    `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+        Token: `${token}`,
+      },
+      body: JSON.stringify({
+        Token: `${token}`,
+        from_district: 1552,
+        to_district: userInfo.value.districtId,
+        shop_id: 5715364,
+      }),
+    }
+  )
+  const resultService = await fetchService.json()
+  if (resultService.code === 200) {
+    service = resultService.data[0].service_id
+  }
+
+  const content = {
+    from_district_id: 1552,
+    from_ward_code: '400103', // 400103 là WardCode của phường Tân An - BMT, đây là địa điểm của cửa hàng
+    service_id: service,
+    service_type_id: null,
+    to_district_id: userInfo.value.districtId,
+    to_ward_code: userInfo.value.wardCode,
+    weight: 200,
+    insurance_value: 10000,
+    cod_failed_amount: 2000,
+  }
+  const fetchAPIFee = await fetch(
+    `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-type': 'application/json',
+        Token: `${token}`,
+        ShopId: '5715364',
+      },
+      body: JSON.stringify(content),
+    }
+  )
+  const result = await fetchAPIFee.json()
+  if (result.code === 200) {
+    shippingFee.value = result.data.total
+  }
+}
 async function fetchMyaddress() {
   try {
     loading.value = true
@@ -84,6 +135,7 @@ async function fetchMyaddress() {
           (p) => p.WardName.toLowerCase() === element.xaPhuong.toLowerCase()
         )
         userInfo.value.wardCode = ward?.WardCode || ''
+        await CalculateFee()
       }
     })
   } catch (error) {
@@ -229,57 +281,7 @@ async function saveAddress() {
     loading.value = false;
   }
 }
-const CalculateFee = async () => {
-  let service = 0
-  const fetchService = await fetch(
-    `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/available-services`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-        Token: `${token}`,
-      },
-      body: JSON.stringify({
-        Token: `${token}`,
-        from_district: 1552,
-        to_district: userInfo.value.districtId,
-        shop_id: 5715364,
-      }),
-    }
-  )
-  const resultService = await fetchService.json()
-  if (resultService.code === 200) {
-    service = resultService.data[0].service_id
-  }
 
-  const content = {
-    from_district_id: 1552,
-    from_ward_code: '400103', // 400103 là WardCode của phường Tân An - BMT, đây là địa điểm của cửa hàng
-    service_id: service,
-    service_type_id: null,
-    to_district_id: userInfo.value.districtId,
-    to_ward_code: userInfo.value.wardCode,
-    weight: 200,
-    insurance_value: 10000,
-    cod_failed_amount: 2000,
-  }
-  const fetchAPIFee = await fetch(
-    `https://online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-        Token: `${token}`,
-        ShopId: '5715364',
-      },
-      body: JSON.stringify(content),
-    }
-  )
-  const result = await fetchAPIFee.json()
-  if (result.code === 200) {
-    shippingFee.value = result.data.total
-  }
-}
 
 const applyCoupon = async () => {
   try {

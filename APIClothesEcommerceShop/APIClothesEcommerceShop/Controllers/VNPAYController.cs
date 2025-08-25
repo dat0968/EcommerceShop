@@ -75,7 +75,7 @@ namespace APIClothesEcommerceShop.Controllers
                             throw new Exception("Order Not Found");
                         }
                         await orderRepository.UpdateStatusOrders(int.Parse(paymentResult.OrderId), "Chờ xác nhận", null, "VNPAY", null);
-                        return Redirect($"http://localhost:5173/VNPAYresponse/{paymentResult.OrderId}/{paymentResult.OrderDescription}");
+                        return Redirect($"http://localhost:5173/VNPAYresponse/{paymentResult.OrderId}/{float.Parse(paymentResult.Price)/100}");
                     }
                     await orderRepository.CancelOrders(int.Parse(paymentResult.OrderId), "Đã hủy", "Khách hủy giao dịch VNPAY");
                     return BadRequest(resultDescription);
