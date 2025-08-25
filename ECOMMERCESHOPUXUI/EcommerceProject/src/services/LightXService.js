@@ -184,10 +184,25 @@ class LightXService {
   }
 
   async uploadImageToCloudinary(file) {
+    console.log('[DEBUG] 1. Preparing to upload user image to backend.', { file });
     const formData = new FormData();
-    formData.append('file', file);
+    const extension = file.type.split('/')[1] || 'jpg';
+    const fileName = `user-model-upload.${extension}`;
+    formData.append('file', file, fileName);
+
+    console.log('[DEBUG] 2. Sending FormData to /api/TryOn/UploadImage.', { formDataContent: { name: fileName, type: file.type, size: file.size } });
+    
     const response = await axiosConfig.postToApi('/TryOn/UploadImage', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-    if (!response.success) throw new Error(response.message || 'Không thể tải ảnh lên Cloudinary.');
+    
+    console.log('[DEBUG] 3. Received response from backend.', { response });
+
+    // IMPORTANT: Check for success AND the actual URL
+    if (!response.success || !response.data?.imageUrl) {
+      console.error('[DEBUG] Backend indicated success, but imageUrl is missing.', response);
+      throw new Error(response.message || 'Không thể lấy URL hình ảnh từ máy chủ sau khi upload.');
+    }
+    
+    console.log('[DEBUG] 4. Backend upload successful. Public URL:', response.data.imageUrl);
     return response.data.imageUrl;
   }
 
@@ -204,28 +219,40 @@ class LightXService {
   }
 
   async processWithLightX(apiKey, modelImageUrl, products) {
+    console.log('[DEBUG] processWithLightX: Starting...', { modelImageUrl, products });
     try {
       // Step 1: Ensure model image is publicly accessible
       let finalModelImageUrl = modelImageUrl;
       if (modelImageUrl.startsWith('data:')) { // If it's a data URL (user uploaded)
+        console.log('[DEBUG] processWithLightX: User model is a data URL. Converting to blob.');
         const blob = dataURLtoBlob(modelImageUrl);
-        if (!blob) throw new Error('Không thể chuyển đổi ảnh người mẫu sang định dạng có thể xử lý.');
+        if (!blob) {
+          console.error('[DEBUG] processWithLightX: dataURLtoBlob failed.');
+          throw new Error('Không thể chuyển đổi ảnh người mẫu sang định dạng có thể xử lý.');
+        }
         finalModelImageUrl = await this.uploadImageToCloudinary(blob);
       } else if (modelImageUrl.includes('localhost')) { // If it's a localhost URL
+        console.log('[DEBUG] processWithLightX: Model is a localhost URL. Uploading to Cloudinary.');
         finalModelImageUrl = await this.uploadImageFromUrlToCloudinary(modelImageUrl);
       }
+      console.log('[DEBUG] processWithLightX: Final model public URL:', finalModelImageUrl);
+
 
       // Step 2: Ensure product images are publicly accessible
       const productPublicUrls = [];
+      console.log('[DEBUG] processWithLightX: Processing product images...');
       for (const item of products) {
         let imgUrl = item.image || (item.products && item.products[0]?.image);
         if (imgUrl) {
           if (imgUrl.includes('localhost')) {
+            console.log('[DEBUG] processWithLightX: Product image is a localhost URL. Uploading:', imgUrl);
             imgUrl = await this.uploadImageFromUrlToCloudinary(imgUrl);
           }
           productPublicUrls.push({ url: imgUrl, category: this.getClothingCategory(item.name) });
         }
       }
+      console.log('[DEBUG] processWithLightX: Final product public URLs:', productPublicUrls);
+
 
       const topImageUrl = productPublicUrls.find(p => p.category === 'top')?.url;
       const bottomImageUrl = productPublicUrls.find(p => p.category === 'bottom')?.url;
@@ -235,14 +262,20 @@ class LightXService {
       }
 
       // Step 3: Start the job with appropriate parameters
+      const payload = { apiKey, finalModelImageUrl, topImageUrl, bottomImageUrl };
+      console.log('[DEBUG] processWithLightX: Starting LightX job with payload:', payload);
       const orderId = await this.startLightXJob(apiKey, finalModelImageUrl, topImageUrl, bottomImageUrl);
+      console.log('[DEBUG] processWithLightX: LightX job started. Order ID:', orderId);
+
 
       // Step 4: Poll for the result
+      console.log('[DEBUG] processWithLightX: Polling for LightX result...');
       const resultUrl = await this.pollLightXJob(apiKey, orderId);
+      console.log('[DEBUG] processWithLightX: LightX job finished. Result URL:', resultUrl);
       return resultUrl;
 
     } catch (error) {
-      console.error('Error processing with LightX API:', error);
+      console.error('[DEBUG] processWithLightX: An error occurred in the process.', error); // ! ERROR
       let userMessage = 'Đã có lỗi không xác định xảy ra.'; // Default generic message
 
       if (error instanceof Error) {

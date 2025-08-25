@@ -112,7 +112,7 @@
                           Hạn dùng: 
                           {{ formatDate(coupon.ngayKetThuc)}}
                         </small>
-                        <small class="text-muted icon-info" :title="'Mô tả: \n' + coupon.moTa"></small>
+                        <small class="text-muted icon-info" :title="'Mô tả: \n' + coupon.moTa + (getCouponValue(coupon).includes('VNĐ') ? '\nGiới hạn: Chỉ áp dụng với đơn hàng 500.000 VNĐ trở lên.' : '')"></small>
                       </div>
                     </li>
                   </ul>
