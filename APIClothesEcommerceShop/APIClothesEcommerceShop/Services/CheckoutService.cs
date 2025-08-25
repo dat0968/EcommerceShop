@@ -220,7 +220,7 @@ namespace APIClothesEcommerceShop.Services
 
                    <h3>Thông tin đơn hàng</h3>
                    <p><b>Mã đơn hàng:</b> {NewOrder.MaHd}</p>
-                   <p><b>Ngày đặt:</b> {DateTime.Now:dd/MM/yyyy HH:mm}</p>
+                   <p><b>Ngày đặt:</b> {NewOrder.NgayTao:dd/MM/yyyy HH:mm}</p>
 
                    <p>Chúng tôi sẽ sớm liên hệ để xác nhận và giao hàng trong thời gian sớm nhất.</p>
                    <br/>
