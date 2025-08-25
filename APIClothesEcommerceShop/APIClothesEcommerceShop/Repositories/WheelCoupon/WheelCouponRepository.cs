@@ -403,6 +403,7 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                 else
                 {
                     coupon.SoTienGiam = isRequestCreateNull ? _random.Next(10, 15) * 10000 : (int)request!.DecreaseValue!.Value;
+                    coupon.DonHangToiThieu = 500000;
                 }
                 await _db.AddAsync(coupon);
                 await _db.SaveChangesAsync();
