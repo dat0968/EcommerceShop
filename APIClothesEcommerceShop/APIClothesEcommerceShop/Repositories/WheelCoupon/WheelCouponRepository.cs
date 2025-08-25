@@ -392,6 +392,8 @@ namespace APIClothesEcommerceShop.Repositories.Reviews
                     SoLuong = 1,
                     SoLuongDaDung = 0,
                     TrangThai = true,
+                    PhanTramGiam = 0,
+                    SoTienGiam = 0,
                     MaKhachHang = userId
                 };
                 if (isPercent)
