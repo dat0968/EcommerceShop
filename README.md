@@ -99,13 +99,64 @@ Once both backend and frontend services are running:
 
 ---
 
-## ⚙️ Configuration
+## ⚙️ Configuration & Environment Setup
 
-- Set API keys for services like Cloudinary, Gemini AI, Firebase, and VNPAY in your environment variables (`.env`)
-- Update database connection strings in `appsettings.json`
-- Configure third-party API integrations for AI, payments, and email notifications
+To secure API credentials and database credentials, the `appsettings.json` file has been added to `.gitignore` and will not be pushed to the repository. 
 
----
+After cloning the project, you must **manually create a new file named `appsettings.json`** in the backend root directory (`APIClothesEcommerceShop/APIClothesEcommerceShop/`) and paste the following template structure into it:
+
+### 1. Required `appsettings.json` Template:
+
+```json
+{
+  "ConnectionStrings": {
+    "QuanLyCuaHangContext": "Data Source=YOUR_SQL_SERVER_NAME;Initial Catalog=QuanLyCuaHang;Integrated Security=True;Trust Server Certificate=True"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "JWT": {
+    "SecretKey": "YOUR_JWT_SECRET_KEY_HERE_MIN_32_CHARS"
+  },
+  "Authentication": {
+    "Google": {
+      "ClientId": "YOUR_GOOGLE_CLIENT_ID",
+      "ClientSecret": "YOUR_GOOGLE_CLIENT_SECRET"
+    }
+  },
+  "Vnpay": {
+    "TmnCode": "YOUR_VNPAY_TMN_CODE",
+    "HashSecret": "YOUR_VNPAY_HASH_SECRET",
+    "BaseUrl": "https://vnpayment.vn",
+    "ReturnUrl": "https://localhost:7139/api/VNPAY",
+    "Command": "pay",
+    "CurrCode": "VND",
+    "Version": "2.1.0",
+    "Locale": "vn",
+    "TimeZoneId": "SE Asia Standard Time"
+  },
+  "GeminiSettings": {
+    "Google": {
+      "GoogleAPIUrl": "https://googleapis.com",
+      "GoogleAPIKey": "YOUR_GEMINI_API_KEY"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+
+### 2. Configuration Details to Update:
+
+- **`ConnectionStrings`**: Replace `YOUR_SQL_SERVER_NAME` with your local SQL Server instance name (e.g., `.`, `localhost`, or `DESKTOP-XXXX\SQLEXPRESS`).
+- **`JWT.SecretKey`**: Enter a random string of at least 32 characters to secure and sign your JWT tokens.
+- **`Authentication.Google`**: Provide your own `ClientId` and `ClientSecret` from the Google Cloud Console if you need to test the Google Sign-In flow.
+- **`Vnpay`**: Replace `YOUR_VNPAY_TMN_CODE` and `YOUR_VNPAY_HASH_SECRET` with the test keys provided by your VNPAY Sandbox account to debug payments.
+- **`GeminiSettings`**: Paste your personal Gemini API Key generated from Google AI Studio to enable the chatbot, customer support assistant, and AI-driven features.
+
+*Note: Never remove `appsettings.json` from `.gitignore` to prevent accidentally leaking private credentials to shared branches.*
 
 ## 🏗️ Architecture
 
